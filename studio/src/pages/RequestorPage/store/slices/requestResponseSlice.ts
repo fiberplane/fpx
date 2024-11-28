@@ -1,10 +1,8 @@
+import { constructRequestorBody, createKeyValueParameters } from "@/utils";
 import type { StateCreator } from "zustand";
 import { enforceFormDataTerminalDraftParameter } from "../../FormDataForm";
 import type { KeyValueParameter } from "../../KeyValueForm";
-import {
-  createKeyValueParameters,
-  enforceTerminalDraftParameter,
-} from "../../KeyValueForm";
+import { enforceTerminalDraftParameter } from "../../KeyValueForm";
 import type { ProxiedRequestResponse } from "../../queries";
 import { findMatchedRoute } from "../../routes";
 import { isRequestMethod } from "../../types";
@@ -152,7 +150,6 @@ export const requestResponseSlice: StateCreator<
 
   setBody: (body) =>
     set((state) => {
-      console.log("setBody", body, typeof body);
       if (body === undefined) {
         state.body =
           state.body.type === "form-data"
@@ -164,35 +161,30 @@ export const requestResponseSlice: StateCreator<
             : state.body.type === "file"
               ? { type: state.body.type, value: undefined }
               : { type: state.body.type, value: "" };
-        return;
-      }
-
-      if (typeof body === "string") {
+      } else if (typeof body === "string") {
         state.body = { type: "text", value: body };
-        return;
+      } else {
+        if (body.type === "form-data") {
+          const nextBodyValue = enforceFormDataTerminalDraftParameter(
+            body.value,
+          );
+          const shouldForceMultipart = nextBodyValue.some(
+            (param) => param.value.value instanceof File,
+          );
+          state.body = {
+            type: body.type,
+            isMultipart: shouldForceMultipart || body.isMultipart,
+            value: nextBodyValue,
+          };
+          updateContentTypeHeaderInState(state);
+        } else if (body.type === "file") {
+          // When the user adds a file, we want to use the file's type as the content type header
+          state.body = body;
+          updateContentTypeHeaderInState(state);
+        } else {
+          state.body = body;
+        }
       }
-
-      if (body.type === "form-data") {
-        const nextBodyValue = enforceFormDataTerminalDraftParameter(body.value);
-        const shouldForceMultipart = nextBodyValue.some(
-          (param) => param.value.value instanceof File,
-        );
-        state.body = {
-          type: body.type,
-          isMultipart: shouldForceMultipart || body.isMultipart,
-          value: nextBodyValue,
-        };
-        updateContentTypeHeaderInState(state);
-        return;
-      }
-      if (body.type === "file") {
-        // When the user adds a file, we want to use the file's type as the content type header
-        state.body = body;
-        updateContentTypeHeaderInState(state);
-        return;
-      }
-
-      state.body = body;
     }),
 
   handleRequestBodyTypeChange: (requestBodyType, isMultipart) =>
@@ -292,7 +284,9 @@ export const requestResponseSlice: StateCreator<
         : typeof requestBody !== "string"
           ? JSON.stringify(requestBody)
           : requestBody;
-    get().setBody(bodyValue);
+    get().setBody(
+      bodyValue && constructRequestorBody(bodyValue, requestHeaders || {}),
+    );
 
     get().setRequestHeaders(
       createKeyValueParameters(

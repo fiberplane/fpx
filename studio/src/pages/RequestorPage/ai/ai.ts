@@ -1,11 +1,10 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
-import { errorHasMessage, isJson } from "@/utils";
+import { createKeyValueParameters, errorHasMessage, isJson } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { createFormDataParameter } from "../FormDataForm/data";
-import { createKeyValueParameters } from "../KeyValueForm";
 import type { ProxiedRequestResponse } from "../queries";
 import type { RequestorBody } from "../store";
 import { useServiceBaseUrl, useStudioStore } from "../store";

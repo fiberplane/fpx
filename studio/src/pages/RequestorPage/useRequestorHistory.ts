@@ -1,9 +1,12 @@
 import { useOtelTraces } from "@/queries";
-import { constructRequestorBody, removeQueryParams } from "@/utils";
+import {
+  constructRequestorBody,
+  createKeyValueParameters,
+  removeQueryParams,
+} from "@/utils";
 import type { TraceListResponse } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useMemo } from "react";
-import { createKeyValueParameters } from "./KeyValueForm";
 import {
   type ProxiedRequestResponse,
   useFetchRequestorRequests,

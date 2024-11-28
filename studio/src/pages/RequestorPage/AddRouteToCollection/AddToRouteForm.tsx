@@ -112,7 +112,7 @@ function AddToRouteFormItem(props: {
               requestQueryParams: arrayToKeyValue(queryParams),
               requestPathParams: arrayToKeyValue(pathParams),
               requestHeaders: arrayToKeyValue(requestHeaders),
-              requestBody: body,
+              requestBody: body.value,
             },
           });
           props.onSuccess();

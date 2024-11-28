@@ -1,3 +1,4 @@
+import { createParameterId } from "@/pages/RequestorPage/KeyValueForm/data";
 import type { RequestorBody } from "@/pages/RequestorPage/store";
 import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
@@ -264,18 +265,7 @@ export function constructRequestorBody(
   headers: Record<string, string>,
 ): RequestorBody {
   const contentType = headers["Content-Type"];
-  // TODO - Handle form data
-  // if (contentType.startsWith("multipart/form-data")) {
-  //   return {
-  //     type: "form-data" as const,
-  //     isMultipart: true,
-  //     value: bodyValue,
-  //   }
-  // }
-
-  // if (contentType.startsWith("application/x-www-form-urlencoded")) {
-  //   return "form-data";
-  // }
+  // TODO - Add support for form data in all it forms and glory
 
   if (
     typeof contentType === "string" &&
@@ -297,4 +287,17 @@ export function constructRequestorBody(
   //   return contentType.split(";")[0];
   // }
   // return "application/json";
+}
+
+export function createKeyValueParameters(
+  replacements: Array<{ key: string; value: string }>,
+) {
+  return replacements.map(({ key, value }) => {
+    return {
+      id: createParameterId(),
+      key,
+      value,
+      enabled: true,
+    };
+  });
 }
