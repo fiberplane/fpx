@@ -22,10 +22,10 @@ export type RequestorState = Store;
 export const useRequestorStoreRaw = create<RequestorState>()(
   devtools(
     immer((...a) => ({
+      ...requestResponseSlice(...a),
       ...routesSlice(...a),
       ...websocketSlice(...a),
       ...tabsSlice(...a),
-      ...requestResponseSlice(...a),
       ...uiSlice(...a),
     })),
     { name: "RequestorStore" },

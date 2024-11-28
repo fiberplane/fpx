@@ -1,9 +1,11 @@
 import type { StateCreator } from "zustand";
-import type { WebsocketSlice } from "./types";
+import type { Store, WebsocketSlice } from "./types";
 
 export const websocketSlice: StateCreator<
-  WebsocketSlice,
-  [["zustand/immer", never], ["zustand/devtools", never]]
+  Store,
+  [["zustand/immer", never], ["zustand/devtools", never]],
+  [],
+  WebsocketSlice
 > = (set) => ({
   websocketMessage: "",
   setWebsocketMessage: (websocketMessage) =>
