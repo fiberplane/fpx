@@ -10,11 +10,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { COLLECTION_ROUTE } from "@/constants";
 import type { Collection } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { PlusIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { generatePath, useNavigate, useSearchParams } from "react-router-dom";
 import { CreateCollectionForm } from "./CreateCollectionForm";
 
 type Props = {
@@ -29,9 +31,17 @@ export function CreateCollection(props: Props) {
   });
 
   const [open, setOpen] = useState(false);
-  const handleSuccess = useHandler((group: Collection) => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const handleSuccess = useHandler((collection: Collection) => {
     setOpen(false);
-    selectCollection(group);
+    selectCollection(collection);
+    navigate({
+      pathname: generatePath(COLLECTION_ROUTE, {
+        collectionId: collection.id.toString(),
+      }),
+      search: searchParams.toString(),
+    });
   });
 
   return (

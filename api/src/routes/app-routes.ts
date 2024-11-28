@@ -9,7 +9,7 @@ import {
   appResponses,
   appRoutes,
   appRoutesInsertSchema,
-  collectionsAppRoutes,
+  collectionItems,
 } from "../db/schema.js";
 import { reregisterRoutes, schemaProbedRoutes } from "../lib/app-routes.js";
 import {
@@ -42,17 +42,13 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.get("/v0/app-routes", async (ctx) => {
   const db = ctx.get("db");
-
-  const routes = await db.query.appRoutes.findMany({
-    with: {
-      collections: true,
-    },
-  });
+  const routes = await db.query.appRoutes.findMany();
 
   const baseUrl = resolveServiceArg(
     env(ctx).FPX_SERVICE_TARGET as string,
     "http://localhost:8787",
   );
+
   return ctx.json({
     baseUrl,
     routes,
@@ -105,7 +101,7 @@ app.post(
     try {
       if (routes.length > 0) {
         // "Re-register" all current app routes in a database transaction
-        await reregisterRoutes(db, { appRoutes: routes });
+        await reregisterRoutes(db, { routes });
 
         // TODO - Detect if anything actually changed before invalidating the query on the frontend
         //        This would be more of an optimization, but is friendlier to the frontend
@@ -156,7 +152,7 @@ app.delete("/v0/app-requests/", async (ctx) => {
   const db = ctx.get("db");
   await db.delete(appResponses);
   await db.delete(appRequests);
-  await db.delete(collectionsAppRoutes);
+  await db.delete(collectionItems);
   return ctx.text("OK");
 });
 
@@ -276,8 +272,8 @@ app.all(
       | null
       | string
       | {
-        [x: string]: string | SerializedFile | (string | SerializedFile)[];
-      } = null;
+          [x: string]: string | SerializedFile | (string | SerializedFile)[];
+        } = null;
     try {
       requestBody = await serializeRequestBodyForFpxDb(ctx);
     } catch (error) {

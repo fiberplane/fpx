@@ -63,7 +63,7 @@ function useCrumbs(): Crumb[] {
 export function MainTopSection() {
   const crumbs = useCrumbs();
   return (
-    <div className="grid grid-cols-[1fr_auto] h-10 items-center">
+    <div className="grid grid-cols-[1fr_auto] h-14 px-4 items-center">
       <BreadcrumbList>
         {crumbs.map((crumb, index) => {
           if (crumb.href) {

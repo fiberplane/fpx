@@ -1,8 +1,20 @@
 import { Button } from "@/components/ui/button";
+import { ROOT_ROUTE } from "@/constants";
 import { useActiveCollectionId } from "@/hooks/useActiveCollectionId";
 import { useCollections } from "@/queries";
+import {
+  useDeleteCollection,
+  useDeleteItemFromCollection,
+} from "@/queries/collections";
 import { cn } from "@/utils";
+import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import {
+  type To,
+  generatePath,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import { AddRoute } from "../NavigationPanel/CollectionsPanel/AddRoute";
 import { Method } from "../RequestorHistory";
 import { useStudioStore } from "../store";
@@ -16,8 +28,18 @@ export function CollectionSection() {
   }
 
   const { data: collections, error, isLoading } = useCollections();
-  // const { } = useRoutes();
   const { appRoutes: routes } = useStudioStore("appRoutes");
+  const { mutate: deleteItem } = useDeleteItemFromCollection(collectionId);
+  const { mutate: deleteCollection } = useDeleteCollection(collectionId);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const navigateHome = useHandler(() => {
+    const to: To = {
+      pathname: generatePath(ROOT_ROUTE, {}),
+      search: searchParams.toString(),
+    };
+    navigate(to);
+  });
 
   if (error) {
     return <div>{error.message}</div>;
@@ -34,8 +56,6 @@ export function CollectionSection() {
     return <div>Collection not found</div>;
   }
 
-  console.log("collection.appRoutes", collection.appRoutes);
-
   return (
     <div
       className={cn("rounded-md", "border", "h-full", "mt-2", BACKGROUND_LAYER)}
@@ -44,7 +64,16 @@ export function CollectionSection() {
         <div className="grid gap-2">
           <div className="grid grid-cols-[1fr_auto]">
             <h4>Manage collection</h4>
-            <Button variant={"destructive"} type="button" size="icon-xs">
+            <Button
+              variant={"destructive"}
+              type="button"
+              size="icon-xs"
+              onClick={() =>
+                deleteCollection(undefined, {
+                  onSuccess: navigateHome,
+                })
+              }
+            >
               <Icon icon="lucide:trash-2" className="h-3 w-3" />
             </Button>
           </div>
@@ -68,10 +97,22 @@ export function CollectionSection() {
               </h4>
               <div className="flex items-center gap-2 max-w-64 flex-col">
                 <p className="text-muted-foreground">
-                  There are no routes in this collection. Add a route to get
-                  started.
+                  Awesome, you can now:
+                  <ul className="pl-2 list-disc my-4 gap-2 grid">
+                    <li>
+                      navigate to any route and use the{" "}
+                      <Icon
+                        icon="lucide:folder"
+                        className="text-foreground inline-block"
+                      />{" "}
+                      to add it the collection
+                    </li>
+                    <li>
+                      or add a route using the following button
+                      <AddRoute collectionId={collectionId} />
+                    </li>
+                  </ul>
                 </p>
-                <AddRoute collectionId={collectionId} />
               </div>
             </div>
           ) : (
@@ -92,6 +133,9 @@ export function CollectionSection() {
                       variant={"destructive"}
                       type="button"
                       size="icon-xs"
+                      onClick={() => {
+                        deleteItem({ itemId: item.id });
+                      }}
                     >
                       <Icon icon="lucide:trash-2" className="h-3 w-3" />
                     </Button>

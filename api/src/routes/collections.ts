@@ -2,16 +2,17 @@ import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 
+import { ExtraRequestParamsSchema } from "@fiberplane/fpx-types";
 import { zValidator } from "@hono/zod-validator";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   type NewCollection,
   appRoutes,
+  collectionItems,
   collections,
-  collectionsAppRoutes,
 } from "../db/schema.js";
-import { ExtraRequestParamsSchema } from "@fiberplane/fpx-types";;
 import type { Bindings, Variables } from "../lib/types.js";
+import logger from "../logger/index.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -23,7 +24,9 @@ const newCollectionSchema = z.object({
 app.post("/v0/collections", async (ctx) => {
   const db = ctx.get("db");
 
-  const newCollection: NewCollection = newCollectionSchema.parse(await ctx.req.json());
+  const newCollection: NewCollection = newCollectionSchema.parse(
+    await ctx.req.json(),
+  );
 
   try {
     const collection = await db.transaction(async (db) => {
@@ -59,11 +62,9 @@ app.post("/v0/collections", async (ctx) => {
 });
 
 app.post(
-  "/v0/collections/:collectionId/app-routes",
+  "/v0/collections/:collectionId/items",
   zValidator("param", z.object({ collectionId: z.number({ coerce: true }) })),
-  zValidator("json",
-    ExtraRequestParamsSchema.extend(
-      { id: z.number() })),
+  zValidator("json", ExtraRequestParamsSchema.extend({ id: z.number() })),
   async (ctx) => {
     const db = ctx.get("db");
 
@@ -90,16 +91,16 @@ app.post(
           });
         }
 
-        await db.insert(collectionsAppRoutes).values({
+        await db.insert(collectionItems).values({
           collectionId,
           appRouteId,
-          ...extraParams
+          ...extraParams,
         });
 
         return db.query.collections.findFirst({
           where: eq(collections.id, collectionId),
           with: {
-            collectionsAppRoutes: {
+            collectionItems: {
               with: {
                 appRoute: true,
               },
@@ -132,8 +133,8 @@ app.get("/v0/collections", async (ctx) => {
       allCollections.map(async (collection) => {
         const routes = await db
           .select()
-          .from(collectionsAppRoutes)
-          .where(eq(collectionsAppRoutes.collectionId, collection.id));
+          .from(collectionItems)
+          .where(eq(collectionItems.collectionId, collection.id));
         return {
           ...collection,
           appRoutes: routes.map(({ collectionId: _, ...route }) => route),
@@ -161,7 +162,7 @@ app.get(
       const collection = await db.query.collections.findFirst({
         where: eq(collections.id, id),
         with: {
-          collectionsAppRoutes: true,
+          collectionItems: true,
         },
       });
       if (!collection) {
@@ -202,7 +203,10 @@ app.put(
       await ctx.req.json(),
     );
     try {
-      await db.update(collections).set(updatedCollection).where(eq(collections.id, id));
+      await db
+        .update(collections)
+        .set(updatedCollection)
+        .where(eq(collections.id, id));
       return ctx.json({ message: "Collection updated" });
     } catch (error) {
       return ctx.json(
@@ -216,14 +220,53 @@ app.put(
 // Delete a collection by ID
 app.delete(
   "/v0/collections/:id",
-  zValidator("param", z.object({ id: z.number() })),
+  zValidator("param", z.object({ id: z.number({ coerce: true }) })),
   async (ctx) => {
     const { id } = ctx.req.valid("param");
     const db = ctx.get("db");
 
     try {
       await db.delete(collections).where(eq(collections.id, id));
-      await db.delete(collectionsAppRoutes).where(eq(collectionsAppRoutes.collectionId, id));
+      await db
+        .delete(collectionItems)
+        .where(eq(collectionItems.collectionId, id));
+      return ctx.json({ message: "Collection deleted" });
+    } catch (error) {
+      return ctx.json(
+        error instanceof Error ? error.message : "Unexpected error",
+        500,
+      );
+    }
+  },
+);
+
+// Delete a collection item by ID
+app.delete(
+  "/v0/collections/:id/items/:itemId",
+  zValidator(
+    "param",
+    z.object({
+      id: z.number({ coerce: true }),
+      itemId: z.number({ coerce: true }),
+    }),
+  ),
+  async (ctx) => {
+    const { id, itemId } = ctx.req.valid("param");
+    const db = ctx.get("db");
+
+    logger.info(`Deleting collection item ${itemId} from collection ${id}`);
+    logger.info(
+      `Deleting collection item ${typeof itemId} from collection ${typeof id}`,
+    );
+    try {
+      await db
+        .delete(collectionItems)
+        .where(
+          and(
+            eq(collectionItems.collectionId, id),
+            eq(collectionItems.id, itemId),
+          ),
+        );
       return ctx.json({ message: "Collection deleted" });
     } catch (error) {
       return ctx.json(

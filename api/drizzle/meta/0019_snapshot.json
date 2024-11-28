@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c9c25cd8-f845-491b-8e6d-81a74b1eb685",
+  "id": "1e5a83b3-7cd7-4c5e-b933-eddd9c8234fb",
   "prevId": "c3ab23ee-d285-4ddc-89da-ba6475fe9c2b",
   "tables": {
     "ai_request_logs": {
@@ -309,55 +309,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "collections": {
-      "name": "collections",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        }
-      },
-      "indexes": {
-        "collections_name_unique": {
-          "name": "collections_name_unique",
-          "columns": [
-            "name"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "collections_app_routes": {
-      "name": "collections_app_routes",
+    "collection_items": {
+      "name": "collection_items",
       "columns": {
         "id": {
           "name": "id",
@@ -418,9 +371,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "collections_app_routes_collection_id_collections_id_fk": {
-          "name": "collections_app_routes_collection_id_collections_id_fk",
-          "tableFrom": "collections_app_routes",
+        "collection_items_collection_id_collections_id_fk": {
+          "name": "collection_items_collection_id_collections_id_fk",
+          "tableFrom": "collection_items",
           "tableTo": "collections",
           "columnsFrom": [
             "collection_id"
@@ -431,9 +384,9 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "collections_app_routes_app_route_id_app_routes_id_fk": {
-          "name": "collections_app_routes_app_route_id_app_routes_id_fk",
-          "tableFrom": "collections_app_routes",
+        "collection_items_app_route_id_app_routes_id_fk": {
+          "name": "collection_items_app_route_id_app_routes_id_fk",
+          "tableFrom": "collection_items",
           "tableTo": "app_routes",
           "columnsFrom": [
             "app_route_id"
@@ -445,6 +398,53 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "collections": {
+      "name": "collections",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "collections_name_unique": {
+          "name": "collections_name_unique",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },

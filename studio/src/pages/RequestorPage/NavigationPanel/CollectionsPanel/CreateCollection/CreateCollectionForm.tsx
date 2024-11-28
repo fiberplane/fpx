@@ -38,9 +38,7 @@ export function CreateCollectionForm(props: Props) {
         onSuccess: (data) => {
           onSuccess(data);
         },
-        onError: (error) => {
-          console.log("validate", CreateCollectionSchema.parse({ name }));
-          console.log("error", error);
+        onError: () => {
           triggerShake();
         },
       },

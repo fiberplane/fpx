@@ -213,8 +213,8 @@ export const selectCollectionSchema = createSelectSchema(collections);
 export type Collection = z.infer<typeof selectCollectionSchema>;
 export type NewCollection = z.infer<typeof newCollectionSchema>;
 
-// Define the app route -> collection relationship
-export const collectionsAppRoutes = sqliteTable("collections_app_routes", {
+// Define the app route -> collection relationship and store parameters
+export const collectionItems = sqliteTable("collection_items", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   collectionId: integer("collection_id")
     .references(() => collections.id, {
@@ -236,22 +236,22 @@ export const collectionsAppRoutes = sqliteTable("collections_app_routes", {
 });
 
 export const appRoutesRelations = relations(appRoutes, ({ many }) => ({
-  collections: many(collectionsAppRoutes),
+  collectionItems: many(collectionItems),
 }));
 
 export const collectionRelations = relations(collections, ({ many }) => ({
-  collectionsAppRoutes: many(collectionsAppRoutes),
+  collectionItems: many(collectionItems),
 }));
 
-export const collectionsAppRoutesRelations = relations(
-  collectionsAppRoutes,
+export const collectionItemsRelations = relations(
+  collectionItems,
   ({ one }) => ({
     collection: one(collections, {
-      fields: [collectionsAppRoutes.collectionId],
+      fields: [collectionItems.collectionId],
       references: [collections.id],
     }),
     appRoute: one(appRoutes, {
-      fields: [collectionsAppRoutes.appRouteId],
+      fields: [collectionItems.appRouteId],
       references: [appRoutes.id],
     }),
   }),

@@ -75,12 +75,12 @@ export function useAddCollection() {
   return mutation;
 }
 
-async function addRouteToCollection(
+async function addItemToCollection(
   collectionId: string,
   routeId: number,
   extraParams: ExtraRequestParams,
 ) {
-  return fetch(`/v0/collections/${collectionId}/app-routes`, {
+  return fetch(`/v0/collections/${collectionId}/items`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -130,14 +130,70 @@ function resultToError(error: unknown): Error {
   return new Error(getErrorMessage(error));
 }
 
-export function useAddRouteToCollection(collectionId: string) {
+export function useAddItemToCollection(collectionId: string) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: ({
       routeId,
       extraParams,
     }: { routeId: number; extraParams: ExtraRequestParams }) =>
-      addRouteToCollection(collectionId, routeId, extraParams),
+      addItemToCollection(collectionId, routeId, extraParams),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [COLLECTIONS_KEY] });
+    },
+    mutationKey: [collectionId, COLLECTIONS_KEY],
+  });
+
+  return mutation;
+}
+
+export function useDeleteItemFromCollection(collectionId: string) {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: ({ itemId }: { itemId: number }) =>
+      fetch(`/v0/collections/${collectionId}/items/${itemId}`, {
+        method: "DELETE",
+      }).then(async (r) => {
+        if (!r.ok) {
+          const result = await (r.headers
+            .get("Content-Type")
+            ?.startsWith("application/json")
+            ? r.json()
+            : r.text());
+
+          throw resultToError(result);
+        }
+
+        return undefined;
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [COLLECTIONS_KEY] });
+    },
+    mutationKey: [collectionId, COLLECTIONS_KEY],
+  });
+
+  return mutation;
+}
+
+export function useDeleteCollection(collectionId: string) {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: () =>
+      fetch(`/v0/collections/${collectionId}`, {
+        method: "DELETE",
+      }).then(async (r) => {
+        if (!r.ok) {
+          const result = await (r.headers
+            .get("Content-Type")
+            ?.startsWith("application/json")
+            ? r.json()
+            : r.text());
+
+          throw resultToError(result);
+        }
+
+        return undefined;
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [COLLECTIONS_KEY] });
     },
