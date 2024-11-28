@@ -80,7 +80,8 @@ export async function generateRequestWithAiProvider({
     path: string;
   }[];
   middlewareContext?: string;
-}) {
+  // biome-ignore lint/suspicious/noExplicitAny: TODO: replace the temporary type cast with a proper return type
+}): Promise<{ data: any; error?: { message: string } | null }> {
   const { aiProviderConfigurations, aiProvider } = inferenceConfig;
   const aiEnabled = hasValidAiConfig(inferenceConfig);
   if (!aiEnabled) {
