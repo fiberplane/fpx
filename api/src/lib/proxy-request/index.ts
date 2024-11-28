@@ -44,7 +44,7 @@ function createProxyRequestFromNewAppRequest(
     requestHeaders = {};
   }
 
-  let validBody: BodyInit | null = null;
+  let validBody: Required<RequestInit>["body"] | null = null;
   if (requestBody != null) {
     if (
       requestBody instanceof Blob ||

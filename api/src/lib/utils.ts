@@ -219,7 +219,6 @@ export async function serializeRequestBodyForFpxDb(ctx: Context) {
     } else if (contentType?.includes("application/x-www-form-urlencoded")) {
       const formData = await ctx.req.formData();
       requestBody = {};
-      // @ts-expect-error - MDN says formData does indeed have an entries method :thinking_face:
       for (const [key, value] of formData.entries()) {
         requestBody[key] = value;
       }
@@ -253,9 +252,7 @@ function serializeFile(file: File): SerializedFile {
   };
 }
 
-function serializeFormDataValue(
-  value: FormDataEntryValue,
-): string | SerializedFile {
+function serializeFormDataValue(value: string | File): string | SerializedFile {
   if (value instanceof File) {
     return serializeFile(value);
   }

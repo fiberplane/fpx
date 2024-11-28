@@ -18,7 +18,7 @@ export async function makeFpAuthRequest({
 
   logger.debug("Making FP Auth request", `method: ${method}`, `path: ${path}`);
 
-  const headers: HeadersInit = {
+  const headers: Required<RequestInit>["headers"] = {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
   };
