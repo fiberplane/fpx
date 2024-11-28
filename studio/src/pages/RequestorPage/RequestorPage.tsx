@@ -25,7 +25,7 @@ import { MainTopSection } from "./MainTopSection";
 import { NavigationFrame, NavigationPanel } from "./NavigationPanel";
 import { RequestorPageContent } from "./RequestorPageContent";
 import { useRoutes } from "./routes";
-import { useRequestorStore } from "./store";
+import { useStudioStore } from "./store";
 import { useRequestorHistory } from "./useRequestorHistory";
 
 /**
@@ -40,7 +40,7 @@ export const RequestorPage = () => {
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes();
 
-  const { sidePanel } = useRequestorStore("sidePanel");
+  const { sidePanel } = useStudioStore("sidePanel");
 
   // NOTE - Uncomment this to test overflow of requests panel
   // const { setQueryParams } = useRequestorStore("setQueryParams");

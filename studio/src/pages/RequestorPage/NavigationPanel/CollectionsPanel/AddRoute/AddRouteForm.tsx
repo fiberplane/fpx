@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Method } from "@/pages/RequestorPage/RequestorHistory";
 import { useRoutes } from "@/pages/RequestorPage/routes";
-import { useRequestorStore } from "@/pages/RequestorPage/store";
+import { useStudioStore } from "@/pages/RequestorPage/store";
 import { useAddRouteToCollection } from "@/queries";
 import { useHandler } from "@fiberplane/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,7 +32,7 @@ export function AddRouteForm(props: Props) {
   const { mutate: addAppRoute } = useAddRouteToCollection(collectionId);
 
   const { isLoading } = useRoutes();
-  const { appRoutes: routes } = useRequestorStore("appRoutes");
+  const { appRoutes: routes } = useStudioStore("appRoutes");
   const { handleSubmit, register } = useForm<AddRouteFormData>({
     resolver: zodResolver(ValidationSchema),
   });

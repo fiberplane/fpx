@@ -20,7 +20,7 @@ import {
   CodeMirrorJsonEditor,
   CodeMirrorTextEditor,
 } from "@/components/CodeMirrorEditor";
-import { useRequestorStore } from "../store";
+import { useStudioStore } from "../store";
 
 type RequestPanelProps = {
   aiEnabled: boolean;
@@ -71,7 +71,7 @@ export const RequestPanel = memo(function RequestPanel(
     websocketMessage,
     setWebsocketMessage,
     visibleRequestsPanelTabs,
-  } = useRequestorStore(
+  } = useStudioStore(
     "path",
     "body",
     "method",

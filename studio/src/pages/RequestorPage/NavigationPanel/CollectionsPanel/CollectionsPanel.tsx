@@ -27,7 +27,7 @@ import {
 import { Method } from "../../RequestorHistory";
 // import type { ProxiedRequestResponse } from "../../queries";
 import {
-  useRequestorStore,
+  useStudioStore,
   //  useServiceBaseUrl
 } from "../../store";
 // import { RoutesItem } from "../RoutesPanel";
@@ -297,7 +297,7 @@ const NavItem = memo(
       updateMethod,
       updatePath,
       setRequestParams,
-    } = useRequestorStore(
+    } = useStudioStore(
       "appRoutes",
       "updatePath",
       "updateMethod",

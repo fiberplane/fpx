@@ -5,7 +5,7 @@ import {
   reduceKeyValueParameters,
 } from "../../KeyValueForm";
 import type { RequestorBody, RequestorResponseBody } from "../../store";
-import { useRequestorStore } from "../../store";
+import { useStudioStore } from "../../store";
 import { REQUESTOR_REQUESTS_KEY } from "./constants";
 
 export type MakeProxiedRequestQueryFn = ReturnType<
@@ -16,7 +16,7 @@ export function useMakeProxiedRequest() {
   const {
     // clearResponseBodyFromHistory,
     setActiveResponse,
-  } = useRequestorStore(
+  } = useStudioStore(
     // "clearResponseBodyFromHistory",
     "setActiveResponse",
   );

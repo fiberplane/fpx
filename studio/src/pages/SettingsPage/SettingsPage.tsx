@@ -5,7 +5,7 @@ import { cn } from "@/utils";
 import type { Settings } from "@fiberplane/fpx-types";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
-import { useRequestorStore } from "../RequestorPage/store";
+import { useStudioStore } from "../RequestorPage/store";
 import { AISettingsForm } from "./AISettingsForm";
 import { FpxWorkerProxySettingsForm } from "./FpxWorkerProxySettingsForm";
 import { Profile } from "./Profile";
@@ -59,7 +59,7 @@ function SettingsLayout({
   settings,
   user,
 }: { settings: Settings; user?: UserInfo | null }) {
-  const { defaultSettingsTab } = useRequestorStore("defaultSettingsTab");
+  const { defaultSettingsTab } = useStudioStore("defaultSettingsTab");
   const settingsTabFallback = user ? PROFILE_TAB : AI_TAB;
   const defaultTab = defaultSettingsTab ?? settingsTabFallback;
   const [activeTab, setActiveTab] = useState(defaultTab);

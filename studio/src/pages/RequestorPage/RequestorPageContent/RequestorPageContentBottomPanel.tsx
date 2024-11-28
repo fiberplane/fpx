@@ -8,7 +8,7 @@ import { RequestorTimeline } from "../RequestorTimeline";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { AiTestGenerationPanel } from "../ai";
 import type { ProxiedRequestResponse } from "../queries";
-import { useRequestorStore } from "../store";
+import { useStudioStore } from "../store";
 import type { BOTTOM_PANEL_NAMES } from "../store/slices/types";
 
 interface RequestorPageContentBottomPanelProps {
@@ -22,7 +22,7 @@ const RequestorPageContentBottomPanel: React.FC<
   const { traceId, history } = props;
 
   const { bottomPanels, bottomPanelIndex, setBottomPanelIndex } =
-    useRequestorStore(
+    useStudioStore(
       "bottomPanels",
       "bottomPanelIndex",
       "togglePanel",

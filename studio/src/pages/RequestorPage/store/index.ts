@@ -18,8 +18,8 @@ import { websocketSlice } from "./slices/websocketSlice";
 import { _getActiveRoute } from "./utils";
 export { useServiceBaseUrl } from "./useServiceBaseUrl";
 
-export type RequestorState = Store;
-export const useRequestorStoreRaw = create<RequestorState>()(
+export type StudioState = Store;
+export const useStudioStoreRaw = create<StudioState>()(
   devtools(
     immer((...a) => ({
       ...routesSlice(...a),
@@ -35,13 +35,13 @@ export const useRequestorStoreRaw = create<RequestorState>()(
 const getActiveRoute = memoize(_getActiveRoute);
 
 export function useActiveRoute() {
-  return useRequestorStoreRaw(useShallow(getActiveRoute));
+  return useStudioStoreRaw(useShallow(getActiveRoute));
 }
 
-export function useRequestorStore<T extends Store, K extends keyof Store>(
+export function useStudioStore<T extends Store, K extends keyof Store>(
   ...items: Array<keyof Store>
 ): Pick<T, K> {
-  const obj = useRequestorStoreRaw(
+  const obj = useStudioStoreRaw(
     useShallow((state) => {
       const result = {} as Pick<T, K>;
       for (const item of items) {

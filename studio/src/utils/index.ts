@@ -1,3 +1,4 @@
+import type { RequestorBody } from "@/pages/RequestorPage/store";
 import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
@@ -256,4 +257,44 @@ export function isSensitiveEnvVar(key: string) {
     return true;
   }
   return false;
+}
+
+export function constructRequestorBody(
+  bodyValue: string,
+  headers: Record<string, string>,
+): RequestorBody {
+  const contentType = headers["Content-Type"];
+  // TODO - Handle form data
+  // if (contentType.startsWith("multipart/form-data")) {
+  //   return {
+  //     type: "form-data" as const,
+  //     isMultipart: true,
+  //     value: bodyValue,
+  //   }
+  // }
+
+  // if (contentType.startsWith("application/x-www-form-urlencoded")) {
+  //   return "form-data";
+  // }
+
+  if (
+    typeof contentType === "string" &&
+    (contentType.startsWith("application/json") ||
+      contentType.startsWith("text/json"))
+  ) {
+    return {
+      type: "json",
+      value: bodyValue,
+    };
+  }
+
+  return {
+    type: "text",
+    value: bodyValue,
+  };
+
+  // if (contentType) {
+  //   return contentType.split(";")[0];
+  // }
+  // return "application/json";
 }

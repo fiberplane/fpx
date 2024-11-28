@@ -8,7 +8,7 @@ import { createFormDataParameter } from "../FormDataForm/data";
 import { createKeyValueParameters } from "../KeyValueForm";
 import type { ProxiedRequestResponse } from "../queries";
 import type { RequestorBody } from "../store";
-import { useRequestorStore, useServiceBaseUrl } from "../store";
+import { useServiceBaseUrl, useStudioStore } from "../store";
 import { isRequestorBodyType } from "../store/request-body";
 import { useAiRequestData } from "./generate-request-data";
 
@@ -30,7 +30,7 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
     body,
     activeRoute,
     getMatchingMiddleware,
-  } = useRequestorStore(
+  } = useStudioStore(
     "setBody",
     "setQueryParams",
     "updatePath",

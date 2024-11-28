@@ -1,6 +1,6 @@
 import { Switch } from "@/components/ui/switch";
 import { useIsMdScreen } from "@/hooks";
-import { useRequestorStore } from "@/pages/RequestorPage/store";
+import { useStudioStore } from "@/pages/RequestorPage/store";
 import { isMizuOrphanLog } from "@/queries";
 import type { Waterfall } from "@/utils";
 import { memo, useMemo } from "react";
@@ -22,7 +22,7 @@ function TimelineListDetailsComponent({
     toggleTimelineAsTree: setAsTree,
     timelineShowLogs: withLogs,
     toggleTimelineLogs: setWithLogs,
-  } = useRequestorStore(
+  } = useStudioStore(
     "toggleTimelineAsTree",
     "timelineAsTree",
     "toggleTimelineLogs",

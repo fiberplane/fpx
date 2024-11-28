@@ -20,7 +20,7 @@ import { RequestorInput } from "../RequestorInput";
 import { ResponsePanel } from "../ResponsePanel";
 import { useAi } from "../ai";
 import { type ProxiedRequestResponse, useMakeProxiedRequest } from "../queries";
-import { useRequestorStore, useRequestorStoreRaw } from "../store";
+import { useStudioStore, useStudioStoreRaw } from "../store";
 import { BACKGROUND_LAYER } from "../styles";
 import { useMakeWebsocketRequest } from "../useMakeWebsocketRequest";
 import { useRequestorSubmitHandler } from "../useRequestorSubmitHandler";
@@ -44,7 +44,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   const activeTraceId = useActiveTraceId();
   const item = history.find((element) => getId(element) === activeTraceId);
 
-  const { setRequestParams } = useRequestorStore("setRequestParams");
+  const { setRequestParams } = useStudioStore("setRequestParams");
   useEffect(() => {
     if (!item) {
       return;
@@ -132,7 +132,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
 
   const isLgScreen = useIsLgScreen();
 
-  const { togglePanel, setAIDropdownOpen } = useRequestorStore(
+  const { togglePanel, setAIDropdownOpen } = useStudioStore(
     "togglePanel",
     "setAIDropdownOpen",
   );
@@ -221,7 +221,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
       dimension: "width",
     });
 
-  const bottomPanelVisible = useRequestorStoreRaw(
+  const bottomPanelVisible = useStudioStoreRaw(
     useShallow((state) => {
       return state.bottomPanelIndex !== undefined;
     }),

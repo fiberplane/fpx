@@ -5,7 +5,7 @@ import { cn } from "@/utils";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { AddRoute } from "../NavigationPanel/CollectionsPanel/AddRoute";
 import { Method } from "../RequestorHistory";
-import { useRequestorStore } from "../store";
+import { useStudioStore } from "../store";
 import { BACKGROUND_LAYER } from "../styles";
 
 export function CollectionSection() {
@@ -17,7 +17,7 @@ export function CollectionSection() {
 
   const { data: collections, error, isLoading } = useCollections();
   // const { } = useRoutes();
-  const { appRoutes: routes } = useRequestorStore("appRoutes");
+  const { appRoutes: routes } = useStudioStore("appRoutes");
 
   if (error) {
     return <div>{error.message}</div>;

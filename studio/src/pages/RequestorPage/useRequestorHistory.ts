@@ -1,5 +1,5 @@
 import { useOtelTraces } from "@/queries";
-import { removeQueryParams } from "@/utils";
+import { constructRequestorBody, removeQueryParams } from "@/utils";
 import type { TraceListResponse } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useMemo } from "react";
@@ -9,7 +9,7 @@ import {
   useFetchRequestorRequests,
 } from "./queries";
 import { findMatchedRoute } from "./routes";
-import { useRequestorStore } from "./store";
+import { useStudioStore } from "./store";
 import { isRequestMethod, isWsRequest } from "./types";
 import {
   sortProxiedRequestResponsesDescending,
@@ -27,7 +27,7 @@ export function useRequestorHistory() {
     setQueryParams,
     setBody,
     showResponseBodyFromHistory,
-  } = useRequestorStore(
+  } = useStudioStore(
     "appRoutes",
     "setActiveRoute",
     "updatePath",
@@ -142,12 +142,17 @@ export function useRequestorHistory() {
         // NOTE - We set the body to be undefined or a (json serialized) string for now,
         //        since that helps us render it in the UI (specifically in CodeMirror editors)
         const body = match.app_requests.requestBody;
+
+        // const typeHint = getBodyJsonType(headers);
         if (body === undefined || body === null) {
           setBody(undefined);
         } else {
           const safeBody =
             typeof body !== "string" ? JSON.stringify(body) : body;
-          setBody(safeBody);
+          // if (body !== safeBody) {
+          //   //
+          // }
+          setBody(constructRequestorBody(safeBody, headers));
         }
       } else {
         // HACK - move this logic into the reducer

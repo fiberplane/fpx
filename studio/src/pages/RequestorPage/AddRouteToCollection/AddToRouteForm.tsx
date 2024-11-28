@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useRequestorStore } from "@/pages/RequestorPage/store";
+import { useStudioStore } from "@/pages/RequestorPage/store";
 import { useAddRouteToCollection, useCollections } from "@/queries";
 import type { Collection } from "@fiberplane/fpx-types";
 
@@ -37,7 +37,7 @@ export function AddToRouteForm(props: Props) {
   //   console.log("all good?!?");
   //   onSuccess();
   // };
-  const { activeRoute } = useRequestorStore("activeRoute");
+  const { activeRoute } = useStudioStore("activeRoute");
   // No active route? Then there's nothing to do here
   if (!activeRoute) {
     console.warn("No active route");
@@ -88,7 +88,7 @@ function AddToRouteFormItem(props: {
     collection.id.toString(),
   );
   const { activeRoute, queryParams, pathParams, body, requestHeaders } =
-    useRequestorStore(
+    useStudioStore(
       "activeRoute",
       "queryParams",
       "pathParams",

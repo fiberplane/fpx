@@ -5,7 +5,7 @@ import { type To, useNavigate } from "react-router-dom";
 import type { KeyValueParameter } from "./KeyValueForm";
 import type { MakeProxiedRequestQueryFn } from "./queries";
 import type { RequestorBody } from "./store";
-import { useRequestorStore } from "./store";
+import { useStudioStore } from "./store";
 import { useServiceBaseUrl } from "./store/useServiceBaseUrl";
 import { isWsRequest } from "./types";
 
@@ -31,7 +31,7 @@ export function useRequestorSubmitHandler({
     requestHeaders,
     requestType,
     recordRequestInSessionHistory,
-  } = useRequestorStore(
+  } = useStudioStore(
     "activeRoute",
     "body",
     "path",

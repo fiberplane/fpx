@@ -4,7 +4,7 @@ import {
   NavigationFrame,
   NavigationPanel,
 } from "@/pages/RequestorPage/NavigationPanel";
-import { useRequestorStore } from "@/pages/RequestorPage/store";
+import { useStudioStore } from "@/pages/RequestorPage/store";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react";
 import {
@@ -18,7 +18,7 @@ import {
 } from "@radix-ui/react-dialog";
 
 export function FloatingSidePanel() {
-  const { sidePanel, togglePanel } = useRequestorStore(
+  const { sidePanel, togglePanel } = useStudioStore(
     "sidePanel",
     "togglePanel",
     "path",

@@ -2,7 +2,7 @@ import { useActiveTraceId } from "@/hooks";
 // import { useOtelTraces } from "@/queries";
 import { useMemo } from "react";
 import type { ProxiedRequestResponse } from "../queries";
-import { useActiveRoute, useRequestorStore } from "../store";
+import { useActiveRoute, useStudioStore } from "../store";
 import { sortProxiedRequestResponsesDescending } from "../utils";
 
 /**
@@ -19,7 +19,7 @@ export function useMostRecentProxiedRequestResponse(
     method,
     //  activeHistoryResponseTraceId,
     sessionHistory,
-  } = useRequestorStore(
+  } = useStudioStore(
     "path",
     "method",
     // "activeHistoryResponseTraceId",

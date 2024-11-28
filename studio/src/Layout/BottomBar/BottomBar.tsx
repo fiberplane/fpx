@@ -2,10 +2,7 @@ import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { WebhoncBadge } from "@/components/WebhoncBadge";
 import { Button } from "@/components/ui/button";
 import { useProxyRequestsEnabled } from "@/hooks/useProxyRequestsEnabled";
-import {
-  useRequestorStore,
-  useRequestorStoreRaw,
-} from "@/pages/RequestorPage/store";
+import { useStudioStore, useStudioStoreRaw } from "@/pages/RequestorPage/store";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import {
@@ -21,14 +18,14 @@ import { SidePanelTrigger } from "../SidePanel";
 import { LogsToggle } from "./LogsToggle";
 
 export function BottomBar() {
-  const { settingsOpen, setSettingsOpen } = useRequestorStore(
+  const { settingsOpen, setSettingsOpen } = useStudioStore(
     "settingsOpen",
     "setSettingsOpen",
   );
   const shouldShowProxyRequests = useProxyRequestsEnabled();
 
-  const { togglePanel } = useRequestorStore("togglePanel");
-  const activeBottomPanel = useRequestorStoreRaw(
+  const { togglePanel } = useStudioStore("togglePanel");
+  const activeBottomPanel = useStudioStoreRaw(
     useShallow((state) => {
       return state.bottomPanelIndex !== undefined
         ? state.bottomPanels[state.bottomPanelIndex]

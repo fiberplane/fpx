@@ -7,7 +7,7 @@ import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
 import { AddRouteButton } from "../../routes";
-import { useRequestorStore } from "../../store";
+import { useStudioStore } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { Search } from "../Search";
 import { RoutesItem } from "./RoutesItem";
@@ -18,7 +18,7 @@ export function RoutesPanel() {
     appRoutes: routes,
     activeRoute,
     setActiveRoute,
-  } = useRequestorStore("appRoutes", "activeRoute", "setActiveRoute");
+  } = useStudioStore("appRoutes", "activeRoute", "setActiveRoute");
 
   const navigate = useNavigate();
 
