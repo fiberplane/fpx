@@ -19,7 +19,8 @@ import {
   TabItem,
   Tabs
 } from "@astrojs/starlight/components";
-import video from "../../assets/blog/2024-11-28-client-side-guide.mov";
+import videoHydrated from "../../assets/blog/2024-11-28-client-side-guide-hydrated.mov";
+import videoStatic from "../../assets/blog/2024-11-28-client-side-guide-static.mov";
 
 [Hono](https://hono.dev) is a great framework to build serverless apps with
 familiar APIs using Web Standards. It comes with a ton of features out of the
@@ -40,7 +41,7 @@ unlocking the full potential of your projects.
 We're building a simple app that renders a counter component server-side and
 hydrates it client-side.\
 It'll run in Cloudflare Workers, leveraging its
-[static asset bindings](https://developers.cloudflare.com/workers/static-assets/binding)
+[static asset bindings](https://developers.cloudflare.com/workers/static-assets)
 \- though the same principles apply to the other supported environments too.
 
 Using [Vite](https://vitejs.dev) we'll set up two build steps: one for the
@@ -57,7 +58,15 @@ client-side logic and one for the server-side logic.
     width="100%"
     style="border-radius: 0.5rem;"
   >
-    <source src={video} type="video/mp4" />
+    <source src={videoHydrated} type="video/mp4" />
+    <p>
+      Your browser does not support the video tag. You can download the video
+      <a href={videoHydrated} download>here</a>.
+
+      Alternatively, let us know by
+      <a href="https://github.com/fiberplane/fpx/issues/new">opening an issue
+      </a> on GitHub!
+    </p>
   </video>
 
   <figcaption>
@@ -68,7 +77,7 @@ client-side logic and one for the server-side logic.
 
 ## Let us build!
 
-First, let's get started with scaffolding a new Hono app:
+First, let's get started with scaffolding a new Hono app.
 
 <Tabs syncKey="package-manager">
 <TabItem label="npm">
@@ -167,7 +176,8 @@ hydrateRoot(
 <Aside>
   We're _hydrating_ the app client-side as opposed to _rendering_ it; the static
   HTML is rendered server-side by Hono. If you're interested in client-side
-  rendering only, check out the [example on GitHub](https://github.com/oscarvz/cf-workers-hono-client-side).
+  rendering only, check out the
+  [example on GitHub](https://github.com/oscarvz/cf-workers-hono-client-side).
 </Aside>
 
 Your code editor might give you a hint that `document` is not defined. Given we
@@ -232,7 +242,7 @@ error. Let's fix that by adding the build steps!
 
 At this point we both have server-side and client-side logic, and need to add
 two build steps to our project. Let's install Vite and two plugins to facilitate
-this:
+this.
 
 <Tabs syncKey="package-manager">
 <TabItem label="npm">
@@ -273,7 +283,7 @@ bun add -D @hono/vite-build @hono/vite-dev-server
 </Tabs>
 
 In the root of your project, create a `vite.config.ts` file. We'll define the
-config for both the client-side build and the server-side build.
+config for both the client-side build and the server-side build:
 
 ```ts title="vite.config.ts"
 import build from "@hono/vite-build/cloudflare-workers";
@@ -334,15 +344,78 @@ steps. Additionally, we set the type to `module` to allow for ESM imports:
   `.gitignore`.
 </Aside>
 
+#### Running the app
+If you run the app now with the `dev` script, you'll see the counter component
+rendered server-side. The client-side script is not loaded yet, so the counter
+component won't work.
+
+<Tabs syncKey="package-manager">
+<TabItem label="npm">
+
+```sh
+npm run dev
+```
+
+</TabItem>
+
+<TabItem label="yarn">
+
+```sh
+yarn dev
+```
+
+</TabItem>
+
+<TabItem label="pnpm">
+
+```sh
+pnpm dev
+``` 
+
+</TabItem>
+
+<TabItem label="bun">
+
+```sh
+bun dev
+```
+
+</TabItem>
+</Tabs>
+
+<video
+  autoplay
+  disablePictureInPicture
+  loop
+  muted
+  playsinline
+  preload
+  width="100%"
+  style="border-radius: 0.5rem;"
+>
+  <source src={videoStatic} type="video/mp4" />
+  <p>
+    Your browser does not support the video tag. You can download the video
+    <a href={videoHydrated} download>here</a>.
+
+    Alternatively, let us know by
+    <a href="https://github.com/fiberplane/fpx/issues/new">opening an issue
+    </a> on GitHub!
+  </p>
+</video>
+
+There's only one step left to make the counter component work. We're almost
+there!
+
 ### Access the built script
 
-As a final step we need to load the client-side script. We'll add a script tag
-to the JSX renderer.\
-We need to make a distinction between a development and
-production environment. Vite allows us to do this easily with it's
-[built-in env](https://vite.dev/guide/env-and-mode#env-variables).
+As a final step we need to load the client-side script in the document's head.
+
+For the script that we're loading we need to make a distinction between a
+development and production environment. Vite allows us to do this easily with
+its [built-in env](https://vite.dev/guide/env-and-mode#env-variables).
 For the dev environment we can load the client's `.tsx` file; for production we
-can get it from the `public` directory.
+have to read it from the `public` directory.
 
 First we add the `vite/client` types to the TypeScript config:
 
@@ -395,7 +468,7 @@ app.use(
 
 #### Run locally
 
-That's it! You can now run the app with the `dev` script and see the counter
+Great! You can now run the app with the `dev` script and see the counter
 component in action.
 
 <Tabs syncKey="package-manager">
@@ -431,6 +504,27 @@ bun dev
 
 </TabItem>
 </Tabs>
+
+<video
+  autoplay
+  disablePictureInPicture
+  loop
+  muted
+  playsinline
+  preload
+  width="100%"
+  style="border-radius: 0.5rem;"
+>
+  <source src={videoHydrated} type="video/mp4" />
+  <p>
+    Your browser does not support the video tag. You can download the video
+    <a href={videoHydrated} download>here</a>.
+
+    Alternatively, let us know by
+    <a href="https://github.com/fiberplane/fpx/issues/new">opening an issue
+    </a> on GitHub!
+  </p>
+</video>
 
 ## Deploying
 
@@ -468,7 +562,7 @@ Cloudflare Workers platform.
 
 ### Deploy your app
 
-You can now push your app with the `deploy` script:
+You can now deploy your app to Cloudflare Workers with the `deploy` script:
 
 <Tabs syncKey="package-manager">
 <TabItem label="npm">
