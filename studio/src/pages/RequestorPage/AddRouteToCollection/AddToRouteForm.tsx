@@ -87,11 +87,15 @@ function AddToRouteFormItem(props: {
   const { mutate: addCollection } = useAddRouteToCollection(
     collection.id.toString(),
   );
-  const { activeRoute, queryParams } = useRequestorStore(
-    "activeRoute",
-    "queryParams",
-  );
-  console.log("queryParams", queryParams);
+  const { activeRoute, queryParams, pathParams, body, requestHeaders } =
+    useRequestorStore(
+      "activeRoute",
+      "queryParams",
+      "pathParams",
+      "body",
+      "requestHeaders",
+    );
+  // console.log("queryParams", queryParams);
   if (!activeRoute) {
     return null;
   }
@@ -102,16 +106,13 @@ function AddToRouteFormItem(props: {
       <Button
         size={"icon-xs"}
         onClick={() => {
-          const requestQueryParams: Record<string, string> = {};
-          for (const param of queryParams) {
-            if (param.key) {
-              requestQueryParams[param.key] = param.value;
-            }
-          }
           addCollection({
             routeId: activeRoute?.id,
             extraParams: {
-              requestQueryParams,
+              requestQueryParams: arrayToKeyValue(queryParams),
+              requestPathParams: arrayToKeyValue(pathParams),
+              requestHeaders: arrayToKeyValue(requestHeaders),
+              requestBody: body,
             },
           });
           props.onSuccess();
@@ -121,4 +122,17 @@ function AddToRouteFormItem(props: {
       </Button>
     </div>
   );
+}
+
+function arrayToKeyValue<T extends { key: string; value: string }>(
+  list: T[],
+): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const item of list) {
+    if (item.key) {
+      result[item.key] = item.value;
+    }
+  }
+
+  return result;
 }

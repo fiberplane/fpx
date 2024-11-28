@@ -371,7 +371,7 @@ const NavItem = memo(
                 key={item.id}
                 className="grid gap-2 grid-cols-[4rem_auto] ml-6 hover:bg-muted px-2 py-1 rounded cursor-pointer"
                 onClick={() => {
-                  console.log("click");
+                  console.log("click", extraParams);
                   setRequestParams({
                     ...extraParams,
                     requestUrl: `http://localhost:8787${route.path}`,

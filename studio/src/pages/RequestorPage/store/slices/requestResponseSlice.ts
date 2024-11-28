@@ -103,13 +103,14 @@ export const requestResponseSlice: StateCreator<
 
   setPathParams: (pathParams) =>
     set((state) => {
+      console.log("setPathParams", pathParams);
       const nextPath = pathParams.reduce((accPath, param) => {
         if (param.enabled) {
           return accPath.replace(`:${param.key}`, param.value || param.key);
         }
         return accPath;
       }, state.activeRoute?.path ?? state.path);
-
+      console.log("nextPath", nextPath);
       state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
       state.pathParams = pathParams;
     }),
@@ -253,25 +254,9 @@ export const requestResponseSlice: StateCreator<
       requestQueryParams = {},
     } = requestParams;
 
-    const bodyValue =
-      requestBody === undefined || requestBody === null
-        ? undefined
-        : typeof requestBody !== "string"
-          ? JSON.stringify(requestBody)
-          : requestBody;
-    get().setBody(bodyValue);
-
-    get().setRequestHeaders(
-      createKeyValueParameters(
-        Object.entries(requestHeaders || {})
-          .map(([key, value]) => ({ key, value }))
-          .filter(
-            // HACK - We don't want to pass through the trace id header,
-            //        Otherwise each successive request will be correlated!!
-            ({ key }) => key?.toLowerCase() !== "x-fpx-trace-id",
-          ),
-      ),
-    );
+    // Updating the path has the side effect of clearing/resetting the path params
+    // So it's good to do this early
+    get().updatePath(requestParams.requestUrl);
 
     get().updateMethod(
       requestMethod === "WS" || isRequestMethod(requestMethod)
@@ -297,9 +282,25 @@ export const requestResponseSlice: StateCreator<
         })),
       ),
     );
-    get().updatePath(requestParams.requestUrl);
-    // get().updatePath(requestParams.requestUrl);
-    // get().
+    const bodyValue =
+      requestBody === undefined || requestBody === null
+        ? undefined
+        : typeof requestBody !== "string"
+          ? JSON.stringify(requestBody)
+          : requestBody;
+    get().setBody(bodyValue);
+
+    get().setRequestHeaders(
+      createKeyValueParameters(
+        Object.entries(requestHeaders || {})
+          .map(([key, value]) => ({ key, value }))
+          .filter(
+            // HACK - We don't want to pass through the trace id header,
+            //        Otherwise each successive request will be correlated!!
+            ({ key }) => key?.toLowerCase() !== "x-fpx-trace-id",
+          ),
+      ),
+    );
   },
   setResponseParams(responseParams) {
     console.log(responseParams);

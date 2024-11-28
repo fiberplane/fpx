@@ -20,7 +20,6 @@ function useCollectionIdFromRoute() {
   const location = useLocation();
   const match = matchRoutes(ROUTES, location.pathname);
   if (match && match.length > 0) {
-    console.log(":ROUTES", match[0].params);
     return match[0].params.collectionId;
   }
 

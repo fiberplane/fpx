@@ -373,12 +373,13 @@ const NavItem = memo(
                 onClick={() => {
                   setRequestParams({
                     ...extraParams,
-                    requestUrl: `http://localhost:8787${route.path}`,
+                    requestUrl: route.path,
                     requestMethod: route.method,
                     requestRoute: appRouteId.toString(),
                   });
-                  updateMethod(route.method);
-                  updatePath(route.path);
+                  console.log("extraParams", extraParams);
+                  // updateMethod(route.method);
+                  // updatePath(route.path);
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
