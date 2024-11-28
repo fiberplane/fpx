@@ -26,23 +26,25 @@ import videoStatic from "../../assets/blog/2024-11-28-client-side-guide-static.m
 familiar APIs using Web Standards. It comes with a ton of features out of the
 box.
 
+
+
 One of these features is the ability to compose & render HTML server-side, which
-is great for static content. But what if you want to add some client-side logic
-to your app?\
-Well, add some hooks provided by Hono! But... they don't seem to
-work in your browser? That's because we're not shipping any JavaScript to the
+is great for static content.\
+But what if you want to add some client-side logic to your app?
+You can do so by using the hooks provided by Hono! However, they might not work
+in your browser — that's because we're not shipping any JavaScript to the
 browser!
 
-In this guide we'll go over on how to build an Hono app with client-side logic,
+In this guide we'll go over how to build an Hono app with client-side logic,
 unlocking the full potential of your projects.
 
 ## What are we building?
 
 We're building a simple app that renders a counter component server-side and
 hydrates it client-side.\
-It'll run in Cloudflare Workers, leveraging its
+It runs in Cloudflare Workers, leveraging its
 [static asset bindings](https://developers.cloudflare.com/workers/static-assets)
-\- though the same principles apply to the other supported environments too.
+\- though the same principles apply to the other supported environments as well.
 
 Using [Vite](https://vitejs.dev) we'll set up two build steps: one for the
 client-side logic and one for the server-side logic.
@@ -132,7 +134,7 @@ We're adding a `client` directory with an index and component:
 
 ### Adding component & mounting point
 
-Let's start with setting up a simple counter component that increments a count
+Let's start by setting up a simple counter component that increments a count
 when a button is clicked:
 
 ```tsx title="src/client/Counter.tsx"
@@ -240,7 +242,7 @@ error. Let's fix that by adding the build steps!
 
 ### Adding build steps and scripts
 
-At this point we both have server-side and client-side logic, and need to add
+At this point, we have both server-side and client-side logic and need to add
 two build steps to our project. Let's install Vite and two plugins to facilitate
 this.
 
@@ -346,8 +348,8 @@ steps. Additionally, we set the type to `module` to allow for ESM imports:
 
 #### Running the app
 If you run the app now with the `dev` script, you'll see the counter component
-rendered server-side. The client-side script is not loaded yet, so the counter
-component won't work.
+rendered server-side. The client-side script hasn't been loaded yet, so the
+counter component won't work.
 
 <Tabs syncKey="package-manager">
 <TabItem label="npm">
@@ -600,9 +602,9 @@ bun deploy
 
 ## Conclusion
 
-That's it! You built a simple Hono app with client-side logic. You can now
-extend your app with more complex client-side logic, like fetching data from an
-API route, add a form to your project, or even build a full SPA.
+That's it! You've built a simple Hono app with client-side logic. You can now
+extend your app with more complex client-side features, such as fetching data
+from an API route, adding a form to your project, or even building a full SPA.
 
 <Card title="GitHub repo" icon="github">
 Check out the [GitHub example repo](https://github.com/oscarvz/cf-workers-hono-client-side)
