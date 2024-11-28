@@ -42,11 +42,9 @@ export function FetchSpanContent(props: Props) {
           </SubSection>
 
           {requestBody && (
-            <>
-              <CollapsibleSubSection heading="Request Body">
-                <TextOrJsonViewer text={requestBody} textMaxPreviewLines={15} />
-              </CollapsibleSubSection>
-            </>
+            <CollapsibleSubSection heading="Request Body">
+              <TextOrJsonViewer text={requestBody} textMaxPreviewLines={15} />
+            </CollapsibleSubSection>
           )}
         </div>
       </div>
@@ -62,14 +60,9 @@ export function FetchSpanContent(props: Props) {
           </SubSection>
 
           {responseBody && (
-            <>
-              <CollapsibleSubSection heading="Body">
-                <TextOrJsonViewer
-                  text={responseBody}
-                  textMaxPreviewLines={15}
-                />
-              </CollapsibleSubSection>
-            </>
+            <CollapsibleSubSection heading="Body">
+              <TextOrJsonViewer text={responseBody} textMaxPreviewLines={15} />
+            </CollapsibleSubSection>
           )}
         </div>
       </div>
