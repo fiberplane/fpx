@@ -27,6 +27,7 @@ const UserIdPathParamSchema = z.object({
         name: "id",
         in: "path",
       },
+      description: "The ID of the user",
       example: "123",
     }),
 });
@@ -101,6 +102,7 @@ const getUserRoute = createRoute({
 const listUsersRoute = createRoute({
   method: "get",
   path: "/users",
+  description: "List all users",
   request: {
     query: z.object({
       name: z.string().optional(),
@@ -122,6 +124,8 @@ const listUsersRoute = createRoute({
 const createUserRoute = createRoute({
   method: "post",
   path: "/users",
+  title: "CreateUser",
+  description: "Create a new user",
   request: {
     body: {
       content: {

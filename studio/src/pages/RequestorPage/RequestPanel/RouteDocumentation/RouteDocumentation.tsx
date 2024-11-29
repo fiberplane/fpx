@@ -14,60 +14,50 @@ export const RouteDocumentation = memo(function RouteDocumentation({
   const { parameters, requestBody, responses, description, summary } =
     openApiSpec;
 
+  console.log("openApiSpec", openApiSpec);
   return (
-    <ScrollArea className="h-full">
-      <div className="space-y-8 p-6">
-        {/* Description Section */}
+    <ScrollArea className="h-full pb-8">
+      <div className="p-2">
+        {/* Description Section - Updated styling */}
         {(summary || description) && (
           <section>
             {summary && (
-              <h3 className="text-xl font-semibold text-white mb-2">
+              <h3 className="text-2xl font-semibold text-white mb-2">
                 {summary}
               </h3>
             )}
             {description && (
-              <p className="text-sm leading-relaxed text-gray-400">
+              <p className="text-base leading-relaxed text-gray-300">
                 {description}
               </p>
             )}
           </section>
         )}
 
-        {/* Parameters Section */}
+        {/* Parameters Section - Updated layout */}
         {parameters && parameters.length > 0 && (
-          <section>
-            <h4 className="text-sm uppercase tracking-wider text-gray-400 mb-4">
-              Parameters
-            </h4>
-            <div className="space-y-3">
+          <section className="">
+            <SectionHeader>Parameters</SectionHeader>
+            <div className="space-y-2">
               {parameters.map((param, idx) => (
                 <div
                   key={`${param.name}-${idx}`}
-                  className="rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm p-4"
+                  className="flex flex-col space-y-2"
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <code className="font-mono text-blue-400/90 font-medium">
-                      {param.name}
-                    </code>
-                    <Badge
-                      variant="outline"
-                      className="text-xs border-gray-700"
-                    >
-                      {param.in}
-                    </Badge>
-                    {param.required && (
-                      <Badge variant="destructive" className="text-xs">
-                        required
-                      </Badge>
-                    )}
+                  <div className="flex items-center gap-3">
+                    <ParameterName name={param.name} />
+                    <TypeBadge
+                      type={
+                        (param.schema &&
+                          "type" in param.schema &&
+                          param.schema.type) ||
+                        "string"
+                      }
+                    />
+                    {param.required && <RequiredBadge />}
                   </div>
                   {param.description && (
-                    <p className="text-sm text-gray-400 mb-3">
-                      {param.description}
-                    </p>
-                  )}
-                  {param.schema && (
-                    <SchemaViewer schema={param.schema as OpenAPISchema} />
+                    <ParameterDescription description={param.description} />
                   )}
                 </div>
               ))}
@@ -77,23 +67,13 @@ export const RouteDocumentation = memo(function RouteDocumentation({
 
         {/* Request Body Section */}
         {requestBody && (
-          <section>
-            <h4 className="text-sm uppercase tracking-wider text-gray-400 mb-4">
-              Request Body
-            </h4>
-            <div className="space-y-3">
+          <section className="">
+            <SectionHeader>Request Body</SectionHeader>
+            <div className="space-y-2">
               {Object.entries(requestBody.content).map(
                 ([mediaType, content]) => (
-                  <div
-                    key={mediaType}
-                    className="rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm p-4"
-                  >
-                    <Badge
-                      variant="outline"
-                      className="mb-3 text-xs border-gray-700"
-                    >
-                      {mediaType}
-                    </Badge>
+                  <div key={mediaType} className="rounded-lg py-2">
+                    <ContentTypeBadge mediaType={mediaType} />
                     {content.schema && (
                       <SchemaViewer schema={content.schema as OpenAPISchema} />
                     )}
@@ -106,38 +86,33 @@ export const RouteDocumentation = memo(function RouteDocumentation({
 
         {/* Responses Section */}
         {responses && (
-          <section>
-            <h4 className="text-sm uppercase tracking-wider text-gray-400 mb-4">
-              Responses
-            </h4>
-            <div className="space-y-3">
+          <section className="mt-6">
+            <SectionHeader>Responses</SectionHeader>
+            <div className="space-y-4 ">
               {Object.entries(responses).map(([status, response]) => (
                 <div
                   key={status}
-                  className="rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm p-4"
+                  className="space-y-2 border-b border-gray-700 pb-4 border-dashed"
                 >
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-start gap-3">
                     <StatusBadge status={status} />
-                    <span className="text-sm text-gray-400">
+                    <span className="text-sm text-gray-300">
                       {response.description}
                     </span>
                   </div>
                   {response.content && (
-                    <div className="space-y-4 mt-3">
+                    <div className="">
                       {Object.entries(response.content).map(
                         ([mediaType, content]) => (
-                          <div key={mediaType}>
-                            <Badge
-                              variant="outline"
-                              className="mb-2 text-xs border-gray-700"
-                            >
-                              {mediaType}
-                            </Badge>
-                            {content.schema && (
-                              <SchemaViewer
-                                schema={content.schema as OpenAPISchema}
-                              />
-                            )}
+                          <div key={mediaType} className="mt-2">
+                            <ContentTypeBadge mediaType={mediaType} />
+                            <div className="ml-4">
+                              {content.schema && (
+                                <SchemaViewer
+                                  schema={content.schema as OpenAPISchema}
+                                />
+                              )}
+                            </div>
                           </div>
                         ),
                       )}
@@ -166,46 +141,30 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
   return (
     <div className={cn("font-mono text-sm", className)}>
       {schema.type === "object" && schema.properties ? (
-        <div className="grid gap-2">
+        <div className="space-y-4">
           {Object.entries(
             schema.properties as Record<string, OpenAPISchema>,
           ).map(([key, prop]) => (
-            <div key={key} className="flex flex-col rounded bg-background/50">
-              <div className="flex items-center gap-2 px-3 py-2 border-l-2 border-blue-500/20">
-                <span className="text-blue-400/90 font-medium">{key}</span>
-                <code className="text-xs px-1.5 py-0.5 rounded-md bg-gray-800 text-gray-400">
-                  {prop.type}
-                </code>
-                {schema.required?.includes(key) && (
-                  <Badge variant="destructive" className="text-[10px] h-4 px-1">
-                    required
-                  </Badge>
+            <div key={key} className="space-y-2">
+              <div className="flex items-center gap-2">
+                <ParameterName name={key} />
+                <TypeBadge type={prop.type ?? "string"} />
+                {schema.required?.includes(key) && <RequiredBadge />}
+              </div>
+              <div>
+                {prop.description && (
+                  <ParameterDescription description={prop.description} />
+                )}
+
+                {prop.example !== undefined && (
+                  <ParameterExample example={prop.example} />
                 )}
               </div>
-
-              {/* Description and Example section */}
-              {(prop.description || prop.example !== undefined) && (
-                <div className="px-3 py-2 text-xs border-t border-border/10">
-                  {prop.description && (
-                    <p className="text-gray-400 mb-1.5">{prop.description}</p>
-                  )}
-                  {prop.example !== undefined && (
-                    <div className="flex gap-2 items-center text-gray-500">
-                      <span className="text-gray-600">Example:</span>
-                      <code className="font-mono bg-gray-800/50 px-1.5 py-0.5 rounded">
-                        {typeof prop.example === "string"
-                          ? `"${prop.example}"`
-                          : JSON.stringify(prop.example)}
-                      </code>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-gray-400 px-3 py-2">
+        <div className="text-gray-400 px-3 py-2 text-sm">
           <div className="flex items-center gap-2">
             <code className="text-xs px-1.5 py-0.5 rounded-md bg-gray-800 text-gray-400">
               {schema.type}
@@ -217,21 +176,13 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
             )}
           </div>
 
-          {/* Description and Example for non-object types */}
           {(schema.description || schema.example !== undefined) && (
             <div className="mt-2 text-xs">
               {schema.description && (
-                <p className="text-gray-400 mb-1.5">{schema.description}</p>
+                <ParameterDescription description={schema.description} />
               )}
               {schema.example !== undefined && (
-                <div className="flex gap-2 items-center text-gray-500">
-                  <span className="text-gray-600">Example:</span>
-                  <code className="font-mono bg-gray-800/50 px-1.5 py-0.5 rounded">
-                    {typeof schema.example === "string"
-                      ? `"${schema.example}"`
-                      : JSON.stringify(schema.example)}
-                  </code>
-                </div>
+                <ParameterExample example={schema.example} />
               )}
             </div>
           )}
@@ -256,6 +207,78 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <Badge variant={variant} className={cn("text-xs", statusClass)}>
       {status}
+    </Badge>
+  );
+}
+
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <h4 className="text-lg font-medium text-white mb-2 border-b border-gray-700 pb-1">
+      {children}
+    </h4>
+  );
+}
+
+function RequiredBadge() {
+  return (
+    <Badge
+      variant="destructive"
+      className="bg-red-900/30 text-red-400 border-none text-xs font-normal font-sans py-1"
+    >
+      Required
+    </Badge>
+  );
+}
+
+function TypeBadge({ type }: { type: string }) {
+  return (
+    <Badge
+      variant="outline"
+      className="px-2 text-xs bg-gray-800 text-gray-400 border-none font-sans font-normal py-1"
+    >
+      {type}
+    </Badge>
+  );
+}
+
+function ParameterName({ name }: { name: string }) {
+  return (
+    <code className="mr-2 py-1 rounded-md text-sm font-sans tracking-wide text-gray-200">
+      {name}
+    </code>
+  );
+}
+
+type ParameterDescriptionProps = {
+  description: string;
+};
+
+function ParameterDescription({ description }: ParameterDescriptionProps) {
+  return <p className="text-sm text-gray-400">{description}</p>;
+}
+
+type ParameterExampleProps = {
+  example: unknown;
+};
+
+function ParameterExample({ example }: ParameterExampleProps) {
+  return (
+    <div className="text-xs">
+      <span className="text-gray-500">Example: </span>
+      <code className="font-mono bg-gray-800/50 px-1.5 py-0.5 rounded text-gray-400">
+        {typeof example === "string" ? `"${example}"` : JSON.stringify(example)}
+      </code>
+    </div>
+  );
+}
+
+function ContentTypeBadge({ mediaType }: { mediaType: string }) {
+  return (
+    <Badge
+      variant="outline"
+      className="my-1 text-sm text-gray-200 px-0 bg-none font-normal font-mono border-none"
+    >
+      {mediaType}
     </Badge>
   );
 }
