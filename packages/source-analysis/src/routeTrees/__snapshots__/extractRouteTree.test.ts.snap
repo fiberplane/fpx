@@ -1060,22 +1060,48 @@ exports[`run test 'multiple files' with location '../../test-cases/multiple' 1`]
 
 exports[`run test 'single file' with location '../../test-cases/single' 1`] = `
 {
-  "ROUTE_ENTRY:index.ts@55": {
+  "ROUTE_ENTRY:index.ts@125": {
     "fileName": "index.ts",
-    "id": "ROUTE_ENTRY:index.ts@55",
+    "id": "ROUTE_ENTRY:index.ts@125",
+    "method": "post",
+    "modules": Set {},
+    "path": "/single-quote",
+    "position": 125,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@151",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:index.ts@185": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@185",
+    "method": "put",
+    "modules": Set {},
+    "path": "/literal-template-literal-stuff",
+    "position": 185,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@234",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:index.ts@80": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@80",
     "method": "get",
     "modules": Set {},
     "path": "/",
-    "position": 55,
+    "position": 80,
     "sources": Set {
-      "SOURCE_REFERENCE:index.ts@68",
+      "SOURCE_REFERENCE:index.ts@93",
     },
     "type": "ROUTE_ENTRY",
   },
   "ROUTE_TREE:index.ts@36": {
     "baseUrl": "",
     "entries": [
-      "ROUTE_ENTRY:index.ts@55",
+      "ROUTE_ENTRY:index.ts@80",
+      "ROUTE_ENTRY:index.ts@125",
+      "ROUTE_ENTRY:index.ts@185",
     ],
     "fileName": "index.ts",
     "id": "ROUTE_TREE:index.ts@36",
@@ -1085,14 +1111,36 @@ exports[`run test 'single file' with location '../../test-cases/single' 1`] = `
     "sources": Set {},
     "type": "ROUTE_TREE",
   },
-  "SOURCE_REFERENCE:index.ts@68": {
+  "SOURCE_REFERENCE:index.ts@151": {
+    "character": 26,
+    "content": "(c) => c.text("Hello, 'Hono'!")",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@151",
+    "line": 5,
+    "modules": Set {},
+    "position": 151,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@234": {
+    "character": 49,
+    "content": "(c) => c.text("Hello, \`\${Hono}\`!")",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@234",
+    "line": 6,
+    "modules": Set {},
+    "position": 234,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@93": {
     "character": 13,
     "content": "(c) => c.text("Hello, Hono!")",
     "fileName": "index.ts",
-    "id": "SOURCE_REFERENCE:index.ts@68",
+    "id": "SOURCE_REFERENCE:index.ts@93",
     "line": 4,
     "modules": Set {},
-    "position": 68,
+    "position": 93,
     "references": Set {},
     "type": "SOURCE_REFERENCE",
   },

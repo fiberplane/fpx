@@ -266,7 +266,7 @@ function handleHonoMethodCall(
   routeTree: RouteTree,
   context: SearchContext,
 ) {
-  const { ts, resourceManager } = context;
+  const { ts, resourceManager, checker } = context;
 
   if (methodName === "route") {
     return handleRoute(callExpression, routeTree, context);
@@ -293,13 +293,20 @@ function handleHonoMethodCall(
     }
 
     const method = isHonoMethod(methodName) ? methodName : undefined;
+    let path = "";
+
+    if (ts.isStringLiteral(firstArgument)) {
+      path = firstArgument.text;
+    } else if (ts.isTemplateLiteral(firstArgument)) {
+      path = expandTemplateLiteral(firstArgument, context);
+    }
 
     const params: Omit<RouteEntry, "id"> = {
       type: "ROUTE_ENTRY",
       fileName: callExpression.getSourceFile().fileName,
       position: callExpression.getStart(),
       method,
-      path: JSON.parse(firstArgument.getText()),
+      path,
       modules: new Set(),
       sources: new Set(),
     };
@@ -319,6 +326,62 @@ function handleHonoMethodCall(
       }
     }
   }
+}
+
+function expandTemplateLiteral(
+  template: TsNode,
+  context: SearchContext
+): string {
+  const { ts, checker } = context;
+  let result = "";
+
+  template.forEachChild((child) => {
+    if (ts.isTemplateHead(child) || ts.isTemplateMiddle(child) || ts.isTemplateTail(child)) {
+      result += child.text;
+    } else if (ts.isTemplateSpan(child)) {
+      const expression = child.expression;
+      const value = getExpressionValue(expression, context);
+      console.log('value', value)
+      result += value;
+      result += child.literal.text;
+    } else if (ts.isExpression(child)) {
+      const value = getExpressionValue(child, context);
+      result += value;
+    }
+  });
+
+  return result;
+}
+
+function getExpressionValue(expression: TsNode, context: SearchContext): string {
+  const { checker, ts } = context;
+  let constantValue: string | number | undefined;
+  console.log('expression', ts.SyntaxKind[expression.kind], expression.getText());
+  if (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression) || ts.isEnumMember(expression)) {
+    constantValue = checker.getConstantValue(expression);
+  }
+
+  if (constantValue !== undefined) {
+    return String(constantValue);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    const symbol = checker.getSymbolAtLocation(expression);
+    if (symbol) {
+      const declaration = symbol.valueDeclaration;
+      if (declaration && ts.isVariableDeclaration(declaration)) {
+        const initializer = declaration.initializer;
+        if (initializer) {
+          return getExpressionValue(initializer, context);
+        }
+      }
+    }
+  }
+  if (ts.isStringLiteral(expression)) {
+    return expression.text;
+  }
+
+  return expression.getText();
 }
 
 function handleRoute(
