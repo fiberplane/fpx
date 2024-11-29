@@ -1,5 +1,10 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import React, { useEffect } from "react";
 
 interface AiPromptInputProps {
   open: boolean;
@@ -29,14 +34,14 @@ export function AiPromptInput({
   };
 
   // Reset input value when dialog closes
-  React.useEffect(() => {
+  useEffect(() => {
     if (!open) {
       setInputValue("");
     }
   }, [open]);
 
   // Focus input when dialog opens
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       inputRef.current?.focus();
     }
@@ -45,6 +50,12 @@ export function AiPromptInput({
   return (
     <Dialog open={open} onOpenChange={setOpen} modal={false}>
       <DialogContent className="p-0 border shadow-lg max-w-[500px] mx-auto bg-background">
+        <DialogTitle className="sr-only">
+          Generate Request Data with AI
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          Enter a prompt for AI request generation.
+        </DialogDescription>
         <div className="flex items-center border-0 rounded-lg">
           <input
             ref={inputRef}
