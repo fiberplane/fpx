@@ -20,10 +20,6 @@ export {
   type OpenAPIRequestBody,
   OpenApiPathItemSchema,
   OpenApiSpecSchema,
-  // OpenAPIOperationSchema,
-  // OpenAPIComponentsSchema,
-  // OpenAPISchemaSchema,
-  // OpenAPIRequestBodySchema,
 };
 
 export const RefCacheSchema = z.map(z.string(), z.unknown());
