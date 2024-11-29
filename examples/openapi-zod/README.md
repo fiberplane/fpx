@@ -2,6 +2,10 @@
 
 This is an implementation of the Hono-Zod-OpenAPI integration from the Hono docs.
 
+You can use it with Fiberplane Studio to get a feel for Studio's OpenAPI support.
+
+For each documented route, a `Docs` tab should be available in the Studio UI.
+
 ## Commands
 
 ```sh
@@ -16,3 +20,9 @@ pnpm i
 pnpm dev
 ```
 
+To test with Studio, have this app running, and then when you launch the api:
+
+```sh
+cd api
+FPX_WATCH_DIR=../examples/openapi-zod pnpm dev
+```
