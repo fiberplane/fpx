@@ -15,9 +15,12 @@ type Bindings = {
 
 const app = new OpenAPIHono<{ Bindings: Bindings }>();
 
-const ParamsSchema = z.object({
+// Schema that defines presence of an ID in the path
+const UserIdPathParamSchema = z.object({
   id: z
+    // Path params are always strings
     .string()
+    // But an ID is always a number
     .regex(/^\d+$/)
     .openapi({
       param: {
@@ -28,6 +31,7 @@ const ParamsSchema = z.object({
     }),
 });
 
+// Schema that defines the body of a request to create a new user
 const NewUserSchema = z
   .object({
     name: z.string().openapi({
@@ -40,8 +44,8 @@ const NewUserSchema = z
   })
   .openapi("NewUser");
 
+// Schema that defines the response of a request to get a user
 // TODO - Figure out how to extend the NewUserSchema object
-//
 const UserSchema = z
   .object({
     id: z.number().openapi({
@@ -56,11 +60,12 @@ const UserSchema = z
   })
   .openapi("User");
 
+// Define the request/response schema for a route to get a user by ID
 const getUserRoute = createRoute({
   method: "get",
   path: "/users/{id}",
   request: {
-    params: ParamsSchema,
+    params: UserIdPathParamSchema,
   },
   responses: {
     200: {
@@ -92,6 +97,7 @@ const getUserRoute = createRoute({
   },
 });
 
+// Define the request/response schema for a route to list users
 const listUsersRoute = createRoute({
   method: "get",
   path: "/users",
@@ -112,6 +118,7 @@ const listUsersRoute = createRoute({
   },
 });
 
+// Define the request/response schema for a route to create a new user
 const createUserRoute = createRoute({
   method: "post",
   path: "/users",
@@ -136,6 +143,8 @@ const createUserRoute = createRoute({
   },
 });
 
+// Define the request/response schema for a route to delete a user by ID
+// Add in basic auth middleware to the route to show how to add security to an endpoint
 const deleteUserRoute = createRoute({
   method: "delete",
   path: "/users/{id}",
@@ -149,9 +158,9 @@ const deleteUserRoute = createRoute({
       username: "goose",
       password: "honkhonk",
     }),
-  ] as const, // Use `as const` to ensure TypeScript infers the middleware's Context
+  ] as const, // Use `as const` to ensure TypeScript infers the middleware's Context correctly
   request: {
-    params: ParamsSchema,
+    params: UserIdPathParamSchema,
   },
   responses: {
     204: {
@@ -170,11 +179,13 @@ const deleteUserRoute = createRoute({
   },
 });
 
+// Register the basic auth security scheme
 app.openAPIRegistry.registerComponent("securitySchemes", "basicAuth", {
   type: "http",
   scheme: "basic",
 });
 
+// Define the handler for a route to get a user by ID
 app.openapi(getUserRoute, async (c) => {
   const { id } = c.req.valid("param");
   const db = drizzle(c.env.DB);
@@ -196,6 +207,7 @@ app.openapi(getUserRoute, async (c) => {
   return c.json(result, 200);
 });
 
+// Define the handler for a route to list users
 app.openapi(listUsersRoute, async (c) => {
   const { name } = c.req.valid("query");
   const db = drizzle(c.env.DB);
@@ -210,6 +222,7 @@ app.openapi(listUsersRoute, async (c) => {
   return c.json(result, 200);
 });
 
+// Define the handler for a route to create a new user
 app.openapi(createUserRoute, async (c) => {
   const { name, age } = c.req.valid("json");
   const db = drizzle(c.env.DB);
@@ -223,6 +236,7 @@ app.openapi(createUserRoute, async (c) => {
   return c.json(result, 201);
 });
 
+// Define the handler for a route to delete a user by ID
 app.openapi(deleteUserRoute, async (c) => {
   const { id } = c.req.valid("param");
   const db = drizzle(c.env.DB);
@@ -230,6 +244,7 @@ app.openapi(deleteUserRoute, async (c) => {
   return c.body(null, 204);
 });
 
+// Mount the api documentation
 // The OpenAPI documentation will be available at /doc
 app.doc("/doc", {
   openapi: "3.0.0",
@@ -239,6 +254,7 @@ app.doc("/doc", {
   },
 });
 
+// Define a simple route to test the API (this is not part of the OpenAPI spec)
 app.get("/", (c) => {
   return c.text("Hello Hono OpenAPI!");
 });
