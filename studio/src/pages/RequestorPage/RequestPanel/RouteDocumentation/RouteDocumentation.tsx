@@ -106,7 +106,7 @@ export const RouteDocumentation = memo(function RouteDocumentation({
                         ([mediaType, content]) => (
                           <div key={mediaType} className="mt-2">
                             <ContentTypeBadge mediaType={mediaType} />
-                            <div className="ml-4">
+                            <div className="">
                               {content.schema && (
                                 <SchemaViewer
                                   schema={content.schema as OpenAPISchema}
@@ -254,7 +254,7 @@ type ParameterDescriptionProps = {
 };
 
 function ParameterDescription({ description }: ParameterDescriptionProps) {
-  return <p className="text-sm text-gray-400">{description}</p>;
+  return <p className="text-sm text-gray-400 font-sans">{description}</p>;
 }
 
 type ParameterExampleProps = {
@@ -265,7 +265,7 @@ function ParameterExample({ example }: ParameterExampleProps) {
   return (
     <div className="text-xs">
       <span className="text-gray-500">Example: </span>
-      <code className="font-mono bg-gray-800/50 px-1.5 py-0.5 rounded text-gray-400">
+      <code className="font-sans text-gray-200 px-1.5 py-0.5 rounded">
         {typeof example === "string" ? `"${example}"` : JSON.stringify(example)}
       </code>
     </div>
@@ -276,7 +276,7 @@ function ContentTypeBadge({ mediaType }: { mediaType: string }) {
   return (
     <Badge
       variant="outline"
-      className="my-1 text-sm text-gray-200 px-0 bg-none font-normal font-mono border-none"
+      className="my-1 text-sm text-gray-200 px-0 bg-none font-normal font-mono border-none underline"
     >
       {mediaType}
     </Badge>
