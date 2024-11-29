@@ -1,13 +1,12 @@
 import { z } from "zod";
 
 // Create a schema for references
-const SchemaRefSchema = z.object({
+const OpenAPISchemaRefSchema = z.object({
   $ref: z.string(),
 });
 
 // Create a schema for direct type definitions
-const SchemaTypeSchema = z.object({
-  $ref: z.undefined(),
+const OpenAPISchemaTypeSchema = z.object({
   type: z.enum(["string", "number", "integer", "boolean", "array", "object"]),
   format: z.string().optional(),
   enum: z.array(z.string()).optional(),
@@ -16,8 +15,8 @@ const SchemaTypeSchema = z.object({
   // Add other relevant OpenAPI schema properties here
 });
 
-// Combine them with a union instead of discriminatedUnion
-const SchemaSchema = z.union([SchemaRefSchema, SchemaTypeSchema]);
+// This is a terrible name, but it actually is the Schema for an OpenAPI schema
+const SchemaSchema = z.union([OpenAPISchemaRefSchema, OpenAPISchemaTypeSchema]);
 
 // Use this in OpenApiSpecSchema where schema validation is needed
 const ContentSchema = z.object({
@@ -68,6 +67,7 @@ const OpenAPISchemaSchema: z.ZodType<OpenAPISchemaTypeExplicit> = z.lazy(() =>
     allOf: z.array(OpenAPISchemaSchema).optional(),
     anyOf: z.array(OpenAPISchemaSchema).optional(),
     oneOf: z.array(OpenAPISchemaSchema).optional(),
+    // NOTE - In practice, each element of an enum should be of the same type, so we could narrow `enum` further
     enum: z.array(z.union([z.string(), z.number(), z.boolean()])).optional(),
     // Add other complex schema properties as needed
   }),
