@@ -140,7 +140,25 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
 
   return (
     <div className={cn("font-mono text-sm", className)}>
-      {schema.type === "object" && schema.properties ? (
+      {schema.type === "array" ? (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <TypeBadge type="array" />
+            <span className="text-gray-400 text-sm">of</span>
+            {schema.items && (
+              <TypeBadge
+                type={(schema.items as OpenAPISchema).type ?? "object"}
+              />
+            )}
+          </div>
+          {schema.items && (
+            <div className="pl-4 border-l-2 border-gray-700 mt-2">
+              <div className="text-gray-400 text-xs mb-2">Array items:</div>
+              <SchemaViewer schema={schema.items as OpenAPISchema} />
+            </div>
+          )}
+        </div>
+      ) : schema.type === "object" && schema.properties ? (
         <div className="space-y-4">
           {Object.entries(
             schema.properties as Record<string, OpenAPISchema>,
@@ -155,7 +173,6 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
                 {prop.description && (
                   <ParameterDescription description={prop.description} />
                 )}
-
                 {prop.example !== undefined && (
                   <ParameterExample example={prop.example} />
                 )}
