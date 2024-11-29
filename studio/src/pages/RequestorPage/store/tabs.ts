@@ -20,15 +20,18 @@ export const getVisibleRequestPanelTabs = (route: {
   method: RequestMethod;
   openApiSpec: unknown | undefined;
 }): RequestsPanelTab[] => {
-  const hasDocs = !!route.openApiSpec;
   let result: RequestsPanelTab[] = [];
   if (route.requestType === "websocket") {
     result = ["params", "headers", "messages"];
-  }
-  if (route.method === "GET" || route.method === "HEAD") {
+  } else {
     result = ["params", "headers"];
   }
-  result = ["params", "headers", "body"];
+  const canHaveBody = route.method !== "GET" && route.method !== "HEAD";
+  if (canHaveBody) {
+    result.push("body");
+  }
+  // If we have docs, show the docs tab
+  const hasDocs = !!route.openApiSpec;
   if (hasDocs) {
     result.push("docs");
   }
