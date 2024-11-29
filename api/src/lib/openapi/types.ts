@@ -33,7 +33,7 @@ export function isOpenApiSpec(value: unknown): value is OpenApiSpec {
   const result = OpenApiSpecSchema.safeParse(value);
   if (!result.success) {
     logger.error(
-      "[isOpenApiSpec] Error parsing OpenAPI spec:",
+      "[isOpenApiSpec] Error parsing truthy OpenAPI spec:",
       // JSON.stringify(result.error.format(), null, 2),
       JSON.stringify(result.error.issues, null, 2),
     );

@@ -6,14 +6,20 @@ import * as schema from "../db/schema.js";
 const { appRoutes } = schema;
 
 export const schemaProbedRoutes = z.object({
-  openApiSpec: z.unknown().nullish().describe("OpenAPI spec for the entire api"),
+  openApiSpec: z
+    .unknown()
+    .nullish()
+    .describe("OpenAPI spec for the entire api"),
   routes: z.array(
     z.object({
       method: z.string(),
       path: z.string(),
       handler: z.string(),
       handlerType: z.string(),
-      openApiSpec: z.string().nullish().describe("OpenAPI spec for the singular route"),
+      openApiSpec: z
+        .string()
+        .nullish()
+        .describe("OpenAPI spec for the singular route"),
     }),
   ),
 });

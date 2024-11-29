@@ -15,12 +15,17 @@ import { type OpenAPIOperation, isOpenApiSpec } from "./types.js";
 type Routes = z.infer<typeof schemaProbedRoutes>["routes"];
 
 /**
- * Enriches API routes with their corresponding OpenAPI specifications by fetching and mapping
- * OpenAPI definitions to Hono routes. This function handles both single routes and arrays of routes.
+ * Enriches API routes with their corresponding OpenAPI specifications by fetching OpenAPI definitions
+ * and mapping the routes in the spec to Hono routes.
+ *
+ * If an `openApiSpec` is provided, it will be used instead of fetching the latest spec from the database.
+ *
+ * This function handles both single routes and arrays of routes.
  *
  * @param db - LibSQL database instance containing the OpenAPI specifications. Used to fetch the latest spec.
  * @param routes - Single route or array of routes to be enriched. Each route should contain path, method,
  *                and handlerType properties for proper matching with OpenAPI specs.
+ * @param openApiSpec - Optional OpenAPI specification to use instead of fetching from the database.
  *
  * @returns Array of enriched routes. Each route will contain all original properties plus an
  *          `openApiSpec` property that is either:
@@ -40,11 +45,11 @@ export async function addOpenApiSpecToRoutes(
   routes: Routes,
   openApiSpec: unknown,
 ): Promise<Routes> {
-  // Validate openApiSpec is a valid OpenAPI spec object before using it
-  const spec =
-    openApiSpec && isOpenApiSpec(openApiSpec)
-      ? openApiSpec
-      : await fetchOpenApiSpec(db);
+  // Only fetch the spec from the database if the provided spec is not a valid OpenAPI spec
+  const shouldFetchSpec = !openApiSpec || !isOpenApiSpec(openApiSpec);
+  const spec = shouldFetchSpec ? await fetchOpenApiSpec(db) : openApiSpec;
+
+  // Return the routes unchanged if there's no spec to draw from
   if (!spec) {
     return routes;
   }
