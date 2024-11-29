@@ -76,8 +76,13 @@ export function OpenAPISettingsForm({ settings }: OpenAPISettingsFormProps) {
             <span className="font-semibold">About OpenAPI Integration</span>
             <div className="grid gap-1">
               <span>
-                The OpenAPI specification will be used to provide better
-                suggestions for request parameters in the UI.
+                The OpenAPI specification will be used to show documentation and
+                generate more accurate suggestions for request parameters in the
+                UI.
+                <b>
+                  If you are using Hono-Zod-OpenAPI, you do not need to specify
+                  a url to your spec.
+                </b>
               </span>
             </div>
           </div>

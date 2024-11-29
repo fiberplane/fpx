@@ -1,5 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useFeature } from "@/hooks";
 import { type UserInfo, useFetchSettings, useUserInfo } from "@/queries";
 import { cn } from "@/utils";
 import type { Settings } from "@fiberplane/fpx-types";
@@ -66,6 +67,9 @@ function SettingsLayout({
   const defaultTab = defaultSettingsTab ?? settingsTabFallback;
   const [activeTab, setActiveTab] = useState(defaultTab);
 
+  // To enable the custom spec url feature, set `fpx.openApiSettings` to "true" in localStorage
+  const isOpenAPISettingsEnabled = useFeature("openApiSettings");
+
   return (
     <Tabs
       defaultValue={PROFILE_TAB}
@@ -94,13 +98,18 @@ function SettingsLayout({
           You
         </TabsTrigger>
 
-        <TabsTrigger
-          className="whitespace-nowrap justify-start text-left pl-0 pr-4"
-          value={OPENAPI_TAB}
-        >
-          <Icon icon="lucide:file-code" className={cn("w-3.5 h-3.5 mr-1.5")} />
-          OpenAPI
-        </TabsTrigger>
+        {isOpenAPISettingsEnabled && (
+          <TabsTrigger
+            className="whitespace-nowrap justify-start text-left pl-0 pr-4"
+            value={OPENAPI_TAB}
+          >
+            <Icon
+              icon="lucide:file-code"
+              className={cn("w-3.5 h-3.5 mr-1.5")}
+            />
+            OpenAPI
+          </TabsTrigger>
+        )}
 
         <TabsTrigger
           className="whitespace-nowrap justify-start text-left pl-0 pr-4"
