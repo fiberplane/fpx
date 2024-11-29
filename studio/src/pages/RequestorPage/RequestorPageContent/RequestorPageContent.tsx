@@ -25,12 +25,12 @@ import RequestorPageContentBottomPanel from "./RequestorPageContentBottomPanel";
 import { useMostRecentProxiedRequestResponse } from "./useMostRecentProxiedRequestResponse";
 import { getMainSectionWidth } from "./util";
 
-interface RequestorPageContentProps {
+type RequestorPageContentProps = {
   history: ProxiedRequestResponse[];
   historyLoading: boolean;
   overrideTraceId?: string;
   generateNavigation: (traceId: string) => To;
-}
+};
 
 export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   props,
@@ -265,7 +265,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
             toast({
               duration: 3000,
               description: prompt
-                ? `Generating request with prompt: ${prompt}`
+                ? "Generating request with user instructions"
                 : "Generating request parameters with AI",
             });
             fillInRequest();

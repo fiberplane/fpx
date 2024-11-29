@@ -17,11 +17,11 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import React from "react";
 import { useRequestorStore } from "../store";
 
-interface CommandBarProps {
+type CommandBarProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
-  onGenerateRequest?: (prompt?: string) => void;
-}
+  // onGenerateRequest?: (prompt?: string) => void;
+};
 
 export function CommandBar({
   open,

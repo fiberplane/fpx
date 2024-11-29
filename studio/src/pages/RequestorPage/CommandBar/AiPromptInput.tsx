@@ -6,12 +6,12 @@ import {
 } from "@/components/ui/dialog";
 import React, { useEffect } from "react";
 
-interface AiPromptInputProps {
+type AiPromptInputProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
   onGenerateRequest?: (prompt?: string) => void;
   setAiPrompt: (prompt?: string) => void;
-}
+};
 
 export function AiPromptInput({
   open,
