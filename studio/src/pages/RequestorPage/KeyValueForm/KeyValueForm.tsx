@@ -1,4 +1,5 @@
 import { CodeMirrorInput } from "@/components/CodeMirrorEditor";
+import type { CodeMirrorInputType } from "@/components/CodeMirrorEditor/CodeMirrorInput";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn, noop } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
@@ -19,6 +20,8 @@ type Props = {
   onChange: ChangeKeyValueParametersHandler;
   onSubmit?: () => void;
   keyPlaceholder?: string;
+  keyInputType?: CodeMirrorInputType;
+  valueInputType?: CodeMirrorInputType;
 };
 
 type KeyValueRowProps = {
@@ -30,6 +33,8 @@ type KeyValueRowProps = {
   removeValue?: () => void;
   onSubmit?: () => void;
   keyPlaceholder?: string;
+  keyInputType?: CodeMirrorInputType;
+  valueInputType?: CodeMirrorInputType;
 };
 
 export const KeyValueRow = (props: KeyValueRowProps) => {
@@ -42,6 +47,8 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
     parameter,
     onSubmit,
     keyPlaceholder = "name",
+    keyInputType,
+    valueInputType,
   } = props;
   const { enabled, key, value } = parameter;
   const [isHovering, setIsHovering] = useState(false);
@@ -67,6 +74,7 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
         readOnly={!onChangeKey}
         onChange={(value) => onChangeKey?.(value ?? "")}
         onSubmit={onSubmit}
+        inputType={keyInputType}
       />
       <CodeMirrorInput
         className="w-[calc(100%-140px)]"
@@ -74,6 +82,7 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
         placeholder="value"
         onChange={(value) => onChangeValue(value ?? "")}
         onSubmit={onSubmit}
+        inputType={valueInputType}
       />
       <div
         className={cn("ml-1 flex invisible", {
@@ -92,7 +101,14 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
 };
 
 export const KeyValueForm = (props: Props) => {
-  const { onChange, keyValueParameters, onSubmit, keyPlaceholder } = props;
+  const {
+    onChange,
+    keyValueParameters,
+    onSubmit,
+    keyPlaceholder,
+    keyInputType,
+    valueInputType,
+  } = props;
 
   return (
     <div className="flex flex-col gap-0">
@@ -125,6 +141,8 @@ export const KeyValueForm = (props: Props) => {
             }}
             onSubmit={onSubmit}
             keyPlaceholder={keyPlaceholder}
+            keyInputType={keyInputType}
+            valueInputType={valueInputType}
           />
         );
       })}
