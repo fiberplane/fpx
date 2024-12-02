@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
+  "$schema": "node_modules/@biomejs/biome/configuration_schema.json",
   "css": {
     "linter": {
       "enabled": true
@@ -94,22 +94,17 @@
     "ignore": [
       // API related
       "meta/*.json",
-
       // Honc code gen playground outputs
       "honc-code-gen/outputs/**/*",
       "honc-code-gen/storage/**/*",
-
       // Client library and website related
       "dist",
       "www/",
       ".astro",
-
       // ignore all tsconfig.json files
       "tsconfig.json",
-
       // ignore any test data files
       "test-data/*.js"
-
       // Rust code related
       // This caused biome to ignore the entire fpx folder
       // commenting out for now as we still want to find a way to

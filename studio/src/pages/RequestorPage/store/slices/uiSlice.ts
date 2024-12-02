@@ -2,13 +2,16 @@ import { isLgScreen } from "@/utils";
 import type { StateCreator } from "zustand";
 import {
   type BOTTOM_PANEL_NAMES,
+  type Store,
   type UISlice,
   validBottomPanelNames,
 } from "./types";
 
 export const uiSlice: StateCreator<
-  UISlice,
-  [["zustand/immer", never], ["zustand/devtools", never]]
+  Store,
+  [["zustand/immer", never], ["zustand/devtools", never]],
+  [],
+  UISlice
 > = (set) => {
   return {
     settingsOpen: false,

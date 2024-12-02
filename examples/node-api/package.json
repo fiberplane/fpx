@@ -6,11 +6,11 @@
   },
   "dependencies": {
     "@fiberplane/hono-otel": "workspace:*",
-    "@hono/node-server": "^1.13.3",
-    "hono": "^4.6.5"
+    "@hono/node-server": "^1.13.7",
+    "hono": "^4.6.12"
   },
   "devDependencies": {
-    "@types/node": "^20.11.17",
+    "@types/node": "^20.17.8",
     "tsx": "^4.19.2"
   }
 }

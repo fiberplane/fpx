@@ -229,7 +229,6 @@ function DetectedRoutesTitle() {
           }
         }
       }}
-      role="button"
       tabIndex={0}
     >
       Detected in app{" "}

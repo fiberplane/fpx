@@ -159,23 +159,21 @@ export function AiDropDownMenu({
           </div>
         </div>
         {!aiEnabled && (
-          <>
-            <div className="absolute inset-0 dark:bg-gray-800/90 flex flex-col items-center justify-center p-4 text-center">
-              <p className="mb-2 font-semibold">Configure me!</p>
-              <p className="mb-4 text-sm text-white/90">
-                Add an API key in settings to use AI request generation.
-              </p>
-              <Button
-                onClick={() => {
-                  setSettingsOpen(true, AI_TAB);
-                }}
-                size="sm"
-                variant="outline"
-              >
-                Open Settings
-              </Button>
-            </div>
-          </>
+          <div className="absolute inset-0 dark:bg-gray-800/90 flex flex-col items-center justify-center p-4 text-center">
+            <p className="mb-2 font-semibold">Configure me!</p>
+            <p className="mb-4 text-sm text-white/90">
+              Add an API key in settings to use AI request generation.
+            </p>
+            <Button
+              onClick={() => {
+                setSettingsOpen(true, AI_TAB);
+              }}
+              size="sm"
+              variant="outline"
+            >
+              Open Settings
+            </Button>
+          </div>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

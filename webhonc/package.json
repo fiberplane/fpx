@@ -11,12 +11,12 @@
   "dependencies": {
     "@fiberplane/fpx-types": "workspace:*",
     "@hono/zod-validator": "^0.2.2",
-    "hono": "^4.6.5",
+    "hono": "^4.6.12",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20241004.0",
-    "typescript": "^5.5.3",
-    "wrangler": "^3.88.0"
+    "@cloudflare/workers-types": "^4.20241112.0",
+    "typescript": "^5.7.2",
+    "wrangler": "^3.91.0"
   }
 }

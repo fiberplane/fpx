@@ -16,9 +16,9 @@ export function LogRow({ log }: LogRowProps) {
   return (
     <div className={cn(bgColor, "hover:bg-muted")}>
       <div className={cn(isExpanded ? "rounded-t-xl" : "rounded-xl")}>
-        <div
+        <button
           tabIndex={0}
-          role="button"
+          type="button"
           onKeyDown={(event) => {
             if (event.key === "Enter") {
               event.stopPropagation();
@@ -31,7 +31,7 @@ export function LogRow({ log }: LogRowProps) {
             setIsExpanded(!isExpanded);
           }}
           className={cn(
-            "cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 focus:ring-inset",
+            "cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 focus:ring-inset w-full text-left",
             isExpanded ? "rounded-t-lg" : "rounded-lg",
           )}
         >
@@ -40,7 +40,7 @@ export function LogRow({ log }: LogRowProps) {
             message={log.message}
             timestamp={log.timestamp}
           />
-        </div>
+        </button>
         {isExpanded && (
           <div>
             <LogContent
