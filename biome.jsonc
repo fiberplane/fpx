@@ -29,25 +29,19 @@
   },
   "overrides": [
     {
-      "include": [
-        "packages/types/src/schemas.ts"
-      ],
+      "include": ["packages/types/src/schemas.ts"],
       "linter": {
         "enabled": false
       }
     },
     {
-      "include": [
-        "www"
-      ],
+      "include": ["www"],
       "formatter": {
         "enabled": false
       }
     },
     {
-      "include": [
-        "studio"
-      ],
+      "include": ["studio"],
       "linter": {
         "enabled": true,
         "rules": {
@@ -60,9 +54,7 @@
       }
     },
     {
-      "include": [
-        "packages/client-library-otel"
-      ],
+      "include": ["packages/client-library-otel"],
       "linter": {
         "enabled": true,
         "rules": {
