@@ -1,12 +1,19 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
-  "extends": ["../../biome.jsonc"],
+  "$schema": "../../node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": [
+    "../../biome.jsonc"
+  ],
   "files": {
-    "ignore": ["dist", "node_modules"]
+    "ignore": [
+      "dist",
+      "node_modules"
+    ]
   },
   "overrides": [
     {
-      "include": ["src"],
+      "include": [
+        "src"
+      ],
       "linter": {
         "enabled": true,
         "rules": {
