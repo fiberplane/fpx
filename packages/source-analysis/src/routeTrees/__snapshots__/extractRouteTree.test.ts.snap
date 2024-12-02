@@ -77,6 +77,7 @@ exports[`run test 'barrel files' with location '../../test-cases/barrel-files' 1
     ],
     "fileName": "index.ts",
     "id": "ROUTE_TREE:index.ts@102",
+    "library": "hono",
     "modules": Set {},
     "name": "app",
     "position": 102,
@@ -312,6 +313,7 @@ exports[`run test 'hono factory' with location '../../test-cases/hono-factory' 1
     ],
     "fileName": "bye.ts",
     "id": "ROUTE_TREE:bye.ts@36",
+    "library": "hono",
     "modules": Set {},
     "name": "bye",
     "position": 36,
@@ -328,6 +330,7 @@ exports[`run test 'hono factory' with location '../../test-cases/hono-factory' 1
     ],
     "fileName": "factory.ts",
     "id": "ROUTE_TREE:factory.ts@248",
+    "library": "hono",
     "modules": Set {},
     "name": "app",
     "position": 248,
@@ -342,6 +345,7 @@ exports[`run test 'hono factory' with location '../../test-cases/hono-factory' 1
     ],
     "fileName": "index.ts",
     "id": "ROUTE_TREE:index.ts@101",
+    "library": "hono",
     "modules": Set {},
     "name": "subHello",
     "position": 101,
@@ -356,6 +360,7 @@ exports[`run test 'hono factory' with location '../../test-cases/hono-factory' 1
     ],
     "fileName": "index.ts",
     "id": "ROUTE_TREE:index.ts@75",
+    "library": "hono",
     "modules": Set {},
     "name": "app",
     "position": 75,
@@ -369,6 +374,7 @@ exports[`run test 'hono factory' with location '../../test-cases/hono-factory' 1
     ],
     "fileName": "panic.ts",
     "id": "ROUTE_TREE:panic.ts@36",
+    "library": "hono",
     "modules": Set {},
     "name": "app",
     "position": 36,
@@ -382,6 +388,7 @@ exports[`run test 'hono factory' with location '../../test-cases/hono-factory' 1
     ],
     "fileName": "silence.ts",
     "id": "ROUTE_TREE:silence.ts@36",
+    "library": "hono",
     "modules": Set {},
     "name": "silence",
     "position": 36,
@@ -583,6 +590,7 @@ exports[`run test 'import as' with location '../../test-cases/import-as' 1`] = `
     ],
     "fileName": "index.ts",
     "id": "ROUTE_TREE:index.ts@151",
+    "library": "hono",
     "modules": Set {},
     "name": "app",
     "position": 151,
@@ -798,6 +806,7 @@ exports[`run test 'module imports' with location '../../test-cases/module-import
     ],
     "fileName": "index.ts",
     "id": "ROUTE_TREE:index.ts@114",
+    "library": "hono",
     "modules": Set {},
     "name": "app",
     "position": 114,
@@ -1000,6 +1009,7 @@ exports[`run test 'multiple files' with location '../../test-cases/multiple' 1`]
     ],
     "fileName": "index.ts",
     "id": "ROUTE_TREE:index.ts@36",
+    "library": "hono",
     "modules": Set {},
     "name": "app",
     "position": 36,
@@ -1014,6 +1024,7 @@ exports[`run test 'multiple files' with location '../../test-cases/multiple' 1`]
     ],
     "fileName": "other.ts",
     "id": "ROUTE_TREE:other.ts@35",
+    "library": "hono",
     "modules": Set {},
     "name": "app",
     "position": 35,
@@ -1060,87 +1071,89 @@ exports[`run test 'multiple files' with location '../../test-cases/multiple' 1`]
 
 exports[`run test 'single file' with location '../../test-cases/single' 1`] = `
 {
-  "ROUTE_ENTRY:index.ts@125": {
+  "ROUTE_ENTRY:index.ts@126": {
     "fileName": "index.ts",
-    "id": "ROUTE_ENTRY:index.ts@125",
+    "id": "ROUTE_ENTRY:index.ts@126",
     "method": "post",
     "modules": Set {},
     "path": "/single-quote",
-    "position": 125,
+    "position": 126,
     "sources": Set {
-      "SOURCE_REFERENCE:index.ts@151",
+      "SOURCE_REFERENCE:index.ts@152",
     },
     "type": "ROUTE_ENTRY",
   },
-  "ROUTE_ENTRY:index.ts@185": {
+  "ROUTE_ENTRY:index.ts@186": {
     "fileName": "index.ts",
-    "id": "ROUTE_ENTRY:index.ts@185",
+    "id": "ROUTE_ENTRY:index.ts@186",
     "method": "put",
     "modules": Set {},
     "path": "/literal-template-literal-stuff",
-    "position": 185,
+    "position": 186,
     "sources": Set {
-      "SOURCE_REFERENCE:index.ts@234",
+      "SOURCE_REFERENCE:index.ts@235",
     },
     "type": "ROUTE_ENTRY",
   },
-  "ROUTE_ENTRY:index.ts@80": {
+  "ROUTE_ENTRY:index.ts@81": {
     "fileName": "index.ts",
-    "id": "ROUTE_ENTRY:index.ts@80",
+    "id": "ROUTE_ENTRY:index.ts@81",
     "method": "get",
     "modules": Set {},
     "path": "/",
-    "position": 80,
+    "position": 81,
     "sources": Set {
-      "SOURCE_REFERENCE:index.ts@93",
+      "SOURCE_REFERENCE:index.ts@94",
     },
     "type": "ROUTE_ENTRY",
   },
   "ROUTE_TREE:index.ts@36": {
     "baseUrl": "",
     "entries": [
-      "ROUTE_ENTRY:index.ts@80",
-      "ROUTE_ENTRY:index.ts@125",
-      "ROUTE_ENTRY:index.ts@185",
+      "ROUTE_ENTRY:index.ts@81",
+      "ROUTE_ENTRY:index.ts@126",
+      "ROUTE_ENTRY:index.ts@186",
     ],
     "fileName": "index.ts",
     "id": "ROUTE_TREE:index.ts@36",
+    "library": "hono",
     "modules": Set {},
     "name": "app",
     "position": 36,
     "sources": Set {},
     "type": "ROUTE_TREE",
   },
-  "SOURCE_REFERENCE:index.ts@151": {
+  "SOURCE_REFERENCE:index.ts@152": {
     "character": 26,
     "content": "(c) => c.text("Hello, 'Hono'!")",
     "fileName": "index.ts",
-    "id": "SOURCE_REFERENCE:index.ts@151",
+    "id": "SOURCE_REFERENCE:index.ts@152",
     "line": 5,
     "modules": Set {},
-    "position": 151,
+    "position": 152,
     "references": Set {},
     "type": "SOURCE_REFERENCE",
   },
-  "SOURCE_REFERENCE:index.ts@234": {
+  "SOURCE_REFERENCE:index.ts@235": {
     "character": 49,
-    "content": "(c) => c.text("Hello, \`\${Hono}\`!")",
+    "content": "(c) =>
+  c.text("Hello, \`\${Hono}\`!")",
     "fileName": "index.ts",
-    "id": "SOURCE_REFERENCE:index.ts@234",
+    "id": "SOURCE_REFERENCE:index.ts@235",
     "line": 6,
     "modules": Set {},
-    "position": 234,
+    "position": 235,
     "references": Set {},
     "type": "SOURCE_REFERENCE",
   },
-  "SOURCE_REFERENCE:index.ts@93": {
+  "SOURCE_REFERENCE:index.ts@94": {
     "character": 13,
     "content": "(c) => c.text("Hello, Hono!")",
     "fileName": "index.ts",
-    "id": "SOURCE_REFERENCE:index.ts@93",
+    "id": "SOURCE_REFERENCE:index.ts@94",
     "line": 4,
     "modules": Set {},
-    "position": 93,
+    "position": 94,
     "references": Set {},
     "type": "SOURCE_REFERENCE",
   },
@@ -1249,6 +1262,7 @@ exports[`run test 'split routes' with location '../../test-cases/split-routes' 1
     ],
     "fileName": "index.ts",
     "id": "ROUTE_TREE:index.ts@103",
+    "library": "hono",
     "modules": Set {},
     "name": "projects",
     "position": 103,
@@ -1264,6 +1278,7 @@ exports[`run test 'split routes' with location '../../test-cases/split-routes' 1
     ],
     "fileName": "index.ts",
     "id": "ROUTE_TREE:index.ts@601",
+    "library": "hono",
     "modules": Set {},
     "name": "app",
     "position": 601,
@@ -1278,6 +1293,7 @@ exports[`run test 'split routes' with location '../../test-cases/split-routes' 1
     ],
     "fileName": "projects.ts",
     "id": "ROUTE_TREE:projects.ts@36",
+    "library": "hono",
     "modules": Set {},
     "name": "projects",
     "position": 36,
@@ -1292,6 +1308,7 @@ exports[`run test 'split routes' with location '../../test-cases/split-routes' 1
     ],
     "fileName": "users.ts",
     "id": "ROUTE_TREE:users.ts@36",
+    "library": "hono",
     "modules": Set {},
     "name": "users",
     "position": 36,
@@ -1489,6 +1506,233 @@ exports[`run test 'split routes' with location '../../test-cases/split-routes' 1
     "modules": Set {},
     "position": 63,
     "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+}
+`;
+
+exports[`run test 'zod-openapi' with location '../../test-cases/zod-openapi' 1`] = `
+{
+  "MODULE_REFERENCE:%40hono%2Fzod-openapi@createRoute": {
+    "id": "MODULE_REFERENCE:%40hono%2Fzod-openapi@createRoute",
+    "import": "createRoute",
+    "importPath": "@hono/zod-openapi",
+    "name": "@hono/zod-openapi",
+    "pathId": "@hono/zod-openapi",
+    "type": "MODULE_REFERENCE",
+    "version": "0.18.3",
+  },
+  "MODULE_REFERENCE:%40hono%2Fzod-openapi@z": {
+    "id": "MODULE_REFERENCE:%40hono%2Fzod-openapi@z",
+    "import": "z",
+    "importPath": "@hono/zod-openapi",
+    "name": "@hono/zod-openapi",
+    "pathId": "@hono/zod-openapi",
+    "type": "MODULE_REFERENCE",
+    "version": "0.18.3",
+  },
+  "MODULE_REFERENCE:hono%2Fbasic-auth@basicAuth": {
+    "id": "MODULE_REFERENCE:hono%2Fbasic-auth@basicAuth",
+    "import": "basicAuth",
+    "importPath": "hono/basic-auth",
+    "name": "hono",
+    "pathId": "hono/basic-auth",
+    "type": "MODULE_REFERENCE",
+    "version": "4.6.9",
+  },
+  "ROUTE_ENTRY:index.ts@1714": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@1714",
+    "method": "post",
+    "modules": Set {},
+    "path": "/users",
+    "position": 1714,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@949",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:index.ts@1972": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@1972",
+    "method": "get",
+    "modules": Set {},
+    "path": "/users",
+    "position": 1972,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@1987",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:index.ts@2980": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@2980",
+    "method": "get",
+    "modules": Set {},
+    "path": "/",
+    "position": 2980,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@2993",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_TREE:index.ts@169": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:index.ts@1714",
+      "ROUTE_ENTRY:index.ts@1972",
+      "ROUTE_ENTRY:index.ts@2980",
+    ],
+    "fileName": "index.ts",
+    "id": "ROUTE_TREE:index.ts@169",
+    "library": "zod-openapi",
+    "modules": Set {},
+    "name": "app",
+    "position": 169,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "SOURCE_REFERENCE:index.ts@1987": {
+    "character": 2,
+    "content": "createRoute({
+    method: "get",
+    path: "/users",
+    middleware: [
+      basicAuth({
+        username: "goose",
+        password: "honkhonk",
+      }),
+    ] as const, // Use \`as const\` to ensure TypeScript infers the middleware's Context correctly
+    request: {},
+    responses: {
+      20: {
+        content: {
+          "application/json": {
+            schema: z.Array(UserSchema),
+          },
+        },
+        description: "Retrieve all users",
+      },
+    },
+  })",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@1987",
+    "line": 83,
+    "modules": Set {
+      "MODULE_REFERENCE:%40hono%2Fzod-openapi@createRoute",
+      "MODULE_REFERENCE:hono%2Fbasic-auth@basicAuth",
+      "MODULE_REFERENCE:%40hono%2Fzod-openapi@z",
+    },
+    "position": 1987,
+    "references": Set {
+      "SOURCE_REFERENCE:index.ts@621",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@267": {
+    "character": 6,
+    "content": "const NewUserSchema = z
+  .object({
+    name: z.string().openapi({
+      example: "John Doe",
+      description: "The name of the user",
+    }),
+    age: z.number().openapi({
+      example: 42,
+    }),
+  })
+  .openapi("NewUser")",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@267",
+    "line": 7,
+    "modules": Set {
+      "MODULE_REFERENCE:%40hono%2Fzod-openapi@z",
+    },
+    "position": 267,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@2993": {
+    "character": 13,
+    "content": "(c) => {
+  return c.text("Hello Hono OpenAPI!");
+}",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@2993",
+    "line": 124,
+    "modules": Set {},
+    "position": 2993,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@621": {
+    "character": 6,
+    "content": "const UserSchema = z
+  .object({
+    id: z.number().openapi({
+      example: 123,
+    }),
+    name: z.string().openapi({
+      example: "John Doe",
+    }),
+    age: z.number().openapi({
+      example: 42,
+    }),
+  })
+  .openapi("User")",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@621",
+    "line": 21,
+    "modules": Set {
+      "MODULE_REFERENCE:%40hono%2Fzod-openapi@z",
+    },
+    "position": 621,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@949": {
+    "character": 24,
+    "content": "const createUserRoute = createRoute({
+  method: "post",
+  path: "/users",
+  middleware: [
+    basicAuth({
+      username: "goose",
+      password: "honkhonk",
+    }),
+  ] as const, // Use \`as const\` to ensure TypeScript infers the middleware's Context correctly
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: NewUserSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      content: {
+        "application/json": {
+          schema: UserSchema,
+        },
+      },
+      description: "Retrieve the user",
+    },
+  },
+})",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@949",
+    "line": 36,
+    "modules": Set {
+      "MODULE_REFERENCE:%40hono%2Fzod-openapi@createRoute",
+      "MODULE_REFERENCE:hono%2Fbasic-auth@basicAuth",
+    },
+    "position": 949,
+    "references": Set {
+      "SOURCE_REFERENCE:index.ts@267",
+      "SOURCE_REFERENCE:index.ts@621",
+    },
     "type": "SOURCE_REFERENCE",
   },
 }

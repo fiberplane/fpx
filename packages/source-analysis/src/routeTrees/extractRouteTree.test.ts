@@ -6,18 +6,22 @@ test.each([
   {
     name: "single file",
     location: "../../test-cases/single",
+    expectedErrorCount: 0,
   },
   {
     name: "multiple files",
     location: "../../test-cases/multiple",
+    expectedErrorCount: 0,
   },
   {
     name: "module imports",
     location: "../../test-cases/module-imports",
+    expectedErrorCount: 0,
   },
   {
     name: "barrel files",
     location: "../../test-cases/barrel-files",
+    expectedErrorCount: 0,
   },
   // {
   //   name: "bindings",
@@ -26,6 +30,7 @@ test.each([
   {
     name: "split routes",
     location: "../../test-cases/split-routes",
+    expectedErrorCount: 0,
   },
   // {
   //   name: "empty",
@@ -34,10 +39,17 @@ test.each([
   {
     name: "hono factory",
     location: "../../test-cases/hono-factory",
+    expectedErrorCount: 0,
   },
   {
     name: "import as",
     location: "../../test-cases/import-as",
+    expectedErrorCount: 0,
+  },
+  {
+    name: "zod-openapi",
+    location: "../../test-cases/zod-openapi",
+    expectedErrorCount: 2,
   },
 
   // The projects below are larger projects which aren't
@@ -53,7 +65,7 @@ test.each([
   // },
 ])(
   "run test $name with location $location",
-  async ({ location, name }) => {
+  async ({ location, name, expectedErrorCount }) => {
     // Get the exact location
     const absolutePath = path.join(__dirname, location);
     // Create a monitor for the routes
@@ -65,7 +77,6 @@ test.each([
     try {
       // Start monitoring the filesystem
       await monitor.start();
-
       const start = performance.now();
       const result = monitor.findHonoRoutes();
       console.log(
@@ -73,7 +84,7 @@ test.each([
       );
 
       // Expect no errors
-      expect(result.errorCount).toBe(0);
+      expect(result.errorCount).toBe(expectedErrorCount);
 
       // Get all found resources
       const resources = result.resourceManager.getResources();
