@@ -26,12 +26,10 @@ import videoStatic from "../../assets/blog/2024-11-28-client-side-guide-static.m
 familiar APIs using Web Standards. It comes with a ton of features out of the
 box.
 
-
-
 One of these features is the ability to compose & render HTML server-side, which
 is great for static content.\
 But what if you want to add some client-side logic to your app?
-You can do so by using the hooks provided by Hono! However, they might not work
+You can do so by using the hooks provided by Hono. However, they might not work
 in your browser — that's because we're not shipping any JavaScript to the
 browser!
 
@@ -77,7 +75,7 @@ client-side logic and one for the server-side logic.
   </figcaption>
 </figure>
 
-## Let us build!
+## Let's build!
 
 First, let's get started with scaffolding a new Hono app.
 
@@ -132,7 +130,7 @@ We're adding a `client` directory with an index and component:
 
 </FileTree>
 
-### Adding component & mounting point
+### Adding the component & mounting point
 
 Let's start by setting up a simple counter component that increments a count
 when a button is clicked:
@@ -192,7 +190,7 @@ browser environment:
     //...
     "lib": [
       "ESNext",
-      "DOM",
+      "DOM"
     ],
     // ...
   }
@@ -320,8 +318,8 @@ export default defineConfig(({ mode }) => {
 ```
 
 <Aside>
-The client build the `outDir` is set to `./public`. This is the directory where
-the Worker will find the client-side script.
+For the client build, the `outDir` is set to `./public`. This is the directory
+where the Worker will find the client-side script.
 </Aside>
 
 Now we need to adjust the `package.json` scripts to facilitate the new build
@@ -409,7 +407,7 @@ bun dev
 There's only one step left to make the counter component work. We're almost
 there!
 
-### Access the built script
+### Load the client-side script
 
 As a final step we need to load the client-side script in the document's head.
 
@@ -558,7 +556,7 @@ assets = { directory = "./public/" }
 
 <Aside>
 Note that the `wrangler deploy` has the `--no-bundle` flag. The build is taken
-care of by the Vite build step; Wrangler's task is merely to deploy it to the
+care of by the Vite build step. Wrangler's task is merely to deploy it to the
 Cloudflare Workers platform.
 </Aside>
 
