@@ -204,16 +204,12 @@ export function measure<ARGS extends unknown[], RESULT>(
 
         if (isPromiseLike<ExtractInnerResult<RESULT>>(returnValue)) {
           shouldEndSpan = false;
-          return handlePromise(
-            span,
-            returnValue,
-            {
-              onSuccess,
-              onError,
-              checkResult,
-              endSpanManually,
-            },
-          ) as RESULT;
+          return handlePromise(span, returnValue, {
+            onSuccess,
+            onError,
+            checkResult,
+            endSpanManually,
+          }) as RESULT;
         }
 
         span.setStatus({ code: SpanStatusCode.OK });
