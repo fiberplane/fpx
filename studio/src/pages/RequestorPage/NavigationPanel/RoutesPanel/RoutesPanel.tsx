@@ -184,7 +184,7 @@ export function RoutesPanel() {
           <AddRouteButton />
         </div>
       </div>
-      <div className="overflow-y-auto h-full relative">
+      <div className="overflow-y-auto h-full relative flex flex-col gap-2">
         {hasAnyUserAddedRoutes && (
           <RoutesSection title="Custom routes">
             {userAddedRoutes.map((route, index) => (
@@ -203,7 +203,7 @@ export function RoutesPanel() {
 
         {allRoutes.length > 0 && (
           <RoutesSection title={<DetectedRoutesTitle />}>
-            <TabsContent value="list">
+            <TabsContent value="list" className="mt-0">
               <div className="grid">
                 {detectedRoutes.map((route, index) => (
                   <RoutesItem
@@ -222,7 +222,7 @@ export function RoutesPanel() {
                 ))}
               </div>
             </TabsContent>
-            <TabsContent value="fileTree">
+            <TabsContent value="fileTree" className="mt-0">
               {filteredTreeRoutes?.tree.map((tree) => (
                 <RouteTree
                   key={tree.path}
@@ -433,7 +433,7 @@ export function RoutesSection(props: RoutesSectionProps) {
       <h4 className="font-medium font-mono uppercase text-xs text-muted-foreground">
         {title}
       </h4>
-      <div className="space-y-0.5 overflow-y-auto mt-4 w-full overflow-x-hidden">
+      <div className="space-y-0.5 overflow-y-auto mt-2 w-full overflow-x-hidden">
         {children}
       </div>
     </section>

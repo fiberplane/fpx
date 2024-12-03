@@ -51,7 +51,12 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
       data-state-selected={isSelected}
       tabIndex={0}
       className={cn(
-        "grid grid-cols-[auto_1fr] w-full items-center px-2 py-1 rounded cursor-pointer font-mono text-sm text-left gap-2",
+        "grid",
+        {
+          "grid-cols-[auto_1fr]": !canDeleteRoute,
+          "grid-cols-[auto_1fr_auto]": canDeleteRoute,
+        },
+        "w-full items-center px-2 py-1 rounded cursor-pointer font-mono text-sm text-left gap-2",
         "focus:outline-none min-w-0",
         {
           "bg-muted": isActive,

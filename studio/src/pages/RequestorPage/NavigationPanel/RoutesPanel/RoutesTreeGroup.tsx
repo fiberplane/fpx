@@ -17,7 +17,7 @@ export const RoutesTreeGroup = memo(function RoutesTreeGroup({
   const toggleCollapsed = () => setCollapsed((current) => !current);
 
   return (
-    <div className={"pt-2 grid min-w-0"}>
+    <div className={cn("pt-2 grid min-w-0", { "pt-0": level === 0 })}>
       <button
         type="button"
         className={cn(
