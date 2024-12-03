@@ -162,7 +162,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     "mod+shift+g",
     (e) => {
       e.preventDefault();
-      if (aiEnabled && !isLoadingParameters) {
+      if (aiEnabled) {
         setAiPromptOpen(true);
       } else {
         setAIDropdownOpen(true);
