@@ -1,0 +1,194 @@
+---
+title: "Handling Asynchronous Tasks in Cloudflare Workers – Part 2: Decomposing into multiple Workers"
+description: Explore techniques for handling asynchronous tasks in Cloudflare Workers to ensure quick responses and seamless user experiences.
+slug: asynchronous-tasks-in-cloudflare-part2
+date: 2024-12-03
+author: Nele Uhlemann
+tags:
+  - Hono.js
+  - Cloudflare Workers
+  - Web development
+  - asynchronous programming
+---
+
+import { LinkCard } from "@astrojs/starlight/components";
+import PackageManagers from "@/components/PackageManagers.astro";
+
+In Part 1 of this series, we explored strategies for managing asynchronous tasks within a single Cloudflare Worker. From running tasks sequentially to employing fire-and-forget and waitUntil(), we examined how different approaches impact response times, reliability, and business logic dependencies.
+
+While handling all tasks in a single worker can be effective for simple use cases, more complex systems often demand greater flexibility and resilience. 
+This is where decomposing tasks into multiple workers can provide significant advantages, such as improved error handling, streamlined retries, and a clearer separation of concerns.
+
+In Part 2, we’ll explore how to distribute asynchronous tasks across different workers to build more robust and scalable systems. 
+First, we’ll examine Service Bindings, which enable direct function calls between workers without requiring additional protocols. 
+Then, we’ll dive into a more decoupled architecture using Cloudflare Queues, designed to handle tasks asynchronously while enhancing fault tolerance and retry capabilities.
+
+Let’s get started by decomposing the Marathon Sign-up Worker from Part 1!
+
+## Example: A Marathon Registration API and a Email Worker using Cloudflare Service Bindings
+
+In our Marathon Registration API, we have two main tasks: storing the runner's data in a database and sending a confirmation email. 
+To decouple these tasks, we can create a separate Email Worker that handles sending emails.
+
+
+![Example Workers architecture](@/assets/blog/2024-12-03-decomposing-into-two-services-with-direct-binding.png)
+
+
+
+When using Cloudflare’s Service Bindings, workers can call each other within the same thread using fetch or rpc. 
+This means there is no additional latency compared to a single-worker approach, and the performance remains consistent.
+
+<LinkCard
+  title="Follow along on GitHub"
+  description="Here is a repo with the code examples for this post"
+  href="https://github.com/Nlea/cloudflare-handling-asynchronous-tasks-"
+  icon="external"
+  target="_blank"
+  rel="noopener noreferrer"
+/>
+
+### Why opt for separation?
+
+Transitioning to a (micro)service architecture with Cloudflare Workers provides several key benefits:
+
+* Independently deployable: Each service can be updated and deployed without affecting others.
+* Shared services: A single worker can serve multiple APIs or applications, enhancing reusability. Imagine we have an additional newsletter subscription service that also requires sending emails.
+* Improved security: Services can operate without a public interface, reducing exposure and potential attack surfaces. The email worker can be now kept private and only accessed within the Cloudflare network.
+
+### SetUp Service Bindings
+Bindings can be setup quiet easily in the `wrangler.toml` file. 
+
+```toml, title="worker_sign_up/wrangler.toml"
+services = [
+  { binding = "WORKER_EMAIL", service = "worker-email" }
+]
+```
+The only thing you have to ensure is that the service name matches the name of the worker you want to bind to.
+The worker that is being binded to needs to use the `WorkerEntryPoint` class. 
+
+```typescript title="worker_email/index.ts"
+export class WorkerEmail extends WorkerEntrypoint {
+  // Implement worker functions here
+
+  }
+```
+
+If you start both workers locally independly you also see if your binding is working correctly. 
+
+TODO IMAGE OF LOCAL BINDING
+
+Now that the serives are binded we can either use rpc to call a function directly in the other worker or use fetch to call an endpoint. 
+
+```typescript
+// logic goes here
+```
+#### Excursion: Ensure Type Safety
+
+When using TypeScript, it is crucial to ensure type conformity to use the RPC or fetch function effectively. 
+This requires defining an interface for the service you want to bind. 
+However, this can introduce multiple challenges, as discussed in the [Cloudflare forum](https://community.cloudflare.com/t/binding-service-rpc-using-typescript/652041/6). 
+
+
+If both workers are in a monorepo, they can share the same type definition file, simplifying type management. For example:
+
+```typescript title="worker-email-types.ts"
+export interface WorkerEmail {
+    fetch(request: Request): Promise<Response>;
+    send(email: string, firstName: string): Promise<Response>;
+  }
+
+```
+The sign up Worker can call The meail Worker using the shared WorkerEmail interface, ensuring type safety and preventing runtime errors caused by mismatched method signatures:
+```typescript title="worker_sign_up/index.ts"
+import type { WorkerEmail } from '../../worker-email-types';
+
+type Bindings = {
+  WORKER_EMAIL: WorkerEmail;
+};
+
+```
+If you are not working in a monorepo and your workers are independent, they cannot directly share the same type definition file. 
+In this scenario, things become a bit more challenging. You have two options:
+
+* Define the Interface Separately in Both Workers
+  This approach can lead to duplication, as the interface would need to be maintained independently in multiple workers.
+
+* Publish a Shared Type Definition Package
+  A better solution is to publish the type definitions as an NPM package (e.g., worker-email-types) and install it in both projects. 
+  This approach ensures consistency while keeping the type definitions centralized.
+
+
+### Execution patterns
+Since the calls remain within the same thread, it’s not surprising that we handle the invocation to different workers similarly to how we handle asynchronous tasks within a single worker.
+
+This means we should handle them as asynchronous tasks and use the `await` keyword to ensure that the worker completes its operation before the current thread terminates.
+
+Additionally, we can invoke the services using sequential logic. 
+
+```typescript
+app.post("/api/marathon-sequential", async (c) => {
+  const { firstName, lastName, email, address, distance } = await c.req.json();
+
+  await insertData(
+    firstName,
+    lastName,
+    email,
+    address,
+    distance,
+    c.env.DATABASE_URL,
+  );
+
+  //using rpc
+  await c.env.WORKER_EMAIL.send(email, firstName);
+
+  return c.text("Thanks for registering for our Marathon", 200);
+});
+
+
+```
+
+To improve response time, we can use `waitUntil()` to initiate the database insertion and the invocation of the email worker in parallel.
+```typescript
+app.post("/api/marathon-wait-until", async (c) => {
+  const { firstName, lastName, email, address, distance } = await c.req.json();
+
+  //using rpc
+  c.executionCtx.waitUntil(c.env.WORKER_EMAIL.send(email, firstName));
+
+   await insertData(
+    firstName,
+    lastName,
+    email,
+    address,
+    distance,
+    c.env.DATABASE_URL,
+  );
+
+  return c.text("Thanks for registering for our Marathon", 200);
+});
+
+```
+
+Fiberplane studio outlines nicely the invokation of the different workers in both cases. 
+
+TODO: COMBINED IMAGE 
+
+## Example: A Marathon Registration API and a Email Worker using Cloudflare Queues
+
+Remember how we couldn’t implement a reliable way to achieve fire and forget either within a single worker or through direct bindings?
+This is due to the fact that in both ways (single worker/ multiple workers) the asynchronous tasks are sharing the same thread.
+To address this, let’s further decouple the Marathon Registration API and the Email Worker. 
+Both should operate independently, without sharing the same thread, ensuring they are decoupled and do not rely on each other during an invocation.
+The solution to decouple the workers and address this issue is to use Cloudflare Queues.
+
+![Example Queue and Workers architecture](@/assets/blog/2024-12-03-queue-architecture.png)
+
+
+### SetUp Cloudflare Queues
+
+### retries and error handling
+
+### Current limitations when developing locally 
+
+## Conclusion
+
