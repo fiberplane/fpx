@@ -109,8 +109,8 @@ export default instrument(app, {
     // Don't proxy `console.*` functions to send logging data to a local FPX server
     logging: false,
     // Don't proxy Cloudflare bindings automatically
-    cfBindings: false,
-  },
+    cfBindings: false
+  }
 });
 ```
 
@@ -128,6 +128,6 @@ These will show up as spans in your request timeline in Fiberplane Studio, along
 
 For instance, you can see the SQL query executed on D1, the R2 bucket that was accessed, or the arguments passed to the service binding to another Cloudflare Worker.
 
-***
+---
 
 To explore more of what the client library can do, check out the code on [Github](https://github.com/fiberplane/fpx/tree/main/packages/client-library-otel).

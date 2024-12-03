@@ -13,54 +13,62 @@ tags:
 
 import { Aside, LinkCard } from "@astrojs/starlight/components";
 
-Today, we are excited to announce a new feature in [Fiberplane's instrumentation client](https://fiberplane.com/docs/components/client-library/): support for tracing [Cloudflare Service Bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/). 
-Tracing Worker to Worker invocation enables better visibility and debugging for distributed systems built on Cloudflare.
+Today, we are excited to announce a new feature in [Fiberplane's instrumentation client](https://fiberplane.com/docs/components/client-library/): support for tracing [Cloudflare Service Bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/).
+Service bindings allow for Worker-to-Worker communication, and tracing them enables better visibility and debugging for distributed systems built on Cloudflare.
 
 ## Cloudflare Service Bindings
-Cloudflare Workers can invoke other Cloudflare Workers in the same network, facilitating the creation of distributed service architectures on Cloudflare. 
-Workers distribution allows multiple Workers to utilize another Worker's functionality. 
-Decomposing your logic into multiple workers can therefore reduce code duplication, simplify maintenance, and streamline updates.
 
-Additionally with decomposing, certain Workers can remain unexposed to the public internet, enhancing security.
+Cloudflare Workers can invoke other Cloudflare Workers in the same network, facilitating the creation of distributed architectures on Cloudflare.
+
+Workers Service Bindings allow for multiple Workers to utilize another Worker's functionality, like authenticating requests or sending emails.
+
+Decomposing your logic into multiple Workers can therefore reduce code duplication, simplify maintenance, and streamline updates to core parts of your system.
+
+Additionally, when you rely on Service Bindings, certain Workers can remain completely unexposed to the public internet, which gives your application an nice added layer of security.
 
 ### Simple example use case
-Imagine you want to organize a marathon event. To allow athletes to register, you provide a sign-up form on your website. When an athlete submits the form, their data is stored in a database. An email is then sent to confirm their registration. 
-Separately, and not as part of the registration process, you offer a newsletter subscription. 
+
+Imagine you want to organize a marathon event. To allow athletes to register, you provide a sign-up form on your website.
+
+When an athlete submits the form, their data is stored in a database. An email is then sent to confirm their registration.
+
+Separately, and not as part of the registration process, you offer a newsletter subscription.
 When an athlete subscribes to the newsletter, their email address is stored in a different database, and they receive a welcome email.
 
-In this scenario, you could have three workers: one for handling the sign-up form and another for managing the newsletter subscription. 
-Both would use the same email worker to send emails.
+In this scenario, you could have three workers: one for handling the sign-up form, another for managing the newsletter subscription, and then a _shared_ email worker to send emails.
 ![Example Workers architecture](@/assets/blog/2024-12-03-workers-example-architecture.png)
 
+### How it works
 
-### How it works 
 When one Cloudflare Worker invokes another, the calls remain within the same execution thread.
 This design ensures that breaking down service logic into multiple Workers does not introduce network latency, making the architecture both flexible and high-performance.
 
 There are two primary ways Workers can communicate using Service Bindings:
 
-* RPC 
-* HTTP
+- RPC
+- HTTP
 
 Bindings are configured in the `wrangler.toml` file. If you want to learn more about setting up Service Bindings, check out the [Cloudflare documentation](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/).
-Since the calls occur in the same thread, it’s important to handle them asynchronously. 
+Since the calls occur in the same thread, it’s important to handle them asynchronously.
 Otherwise, Worker A might terminate the thread before Worker B has completed its operation. Here is a simple example using rpc:
 
 ```typescript
-  await c.env.WORKER_EMAIL.send(email, firstName);
+await c.env.WORKER_EMAIL.send(email, firstName);
 ```
-If the Service Binding is defined in the wrangler.toml file, the Worker can invoke another Worker’s function by using the binding name and the appropriate function from the other Worker.
+
+If the Service Binding is defined in the `wrangler.toml` file, the Worker can invoke another Worker’s function by using the binding name and the appropriate function from the other Worker.
 
 ## Developing with multiple Workers
-As service distribution increases, so does the complexity of observing and debugging a system. 
-Tracing the full call chain of a request becomes critical to understanding performance and error handling. 
+
+As service distribution increases, so does the complexity of observing and debugging a system.
+Tracing the full call chain of a request becomes critical to understanding performance and error handling.
 This is particularly important when dealing with asynchronous background tasks executed by other Workers.
 
 Observing and measuring response times is already an important aspect of local development.
 It helps you understand your application’s performance and identify bottlenecks.
 
-
 ## Example with Fiberplane
+
 Let’s explore how Fiberplane’s instrumentation client can help trace requests between Cloudflare Workers.
 
 In this example, we use Fiberplane's client to instrument the sign-up Worker, which stores user data in a database and invokes the email Worker to send a confirmation email.
@@ -75,18 +83,12 @@ We can improve the response time by using parallel execution with `waitUntil()`.
 
 ![WaitUntil() Trace](@/assets/blog/2024-12-03-workers-binding-waituntil.png)
 
-
-
 By adopting `waitUntil()` for parallel execution, you can reduce user-facing latency while ensuring that background operations are completed efficiently.
 Tracing across multiple Workers is therefore important to understand dependencies and visualize the total lifecycle of the thread.
 
-Additionally, Fiberplane's studio provides detailed information about the Service Binding: 
-
+Additionally, Fiberplane's studio provides detailed information about the Service Binding:
 
 ![Binding information](@/assets/blog/2024-12-03-workers-binding-information.png)
 
-
-This new feature in Fiberplane's instrumentation client simplifies tracing between Cloudflare Workers, offering developers better visibility and control over distributed architectures. 
+This new feature in Fiberplane's instrumentation client simplifies tracing between Cloudflare Workers, offering developers better visibility and control over distributed architectures.
 Explore the [example code](https://github.com/Nlea/cloudflare-handling-asynchronous-tasks-/tree/seperate-workers/seperate-workers) and start tracing your Cloudflare Workers today!
-
-
