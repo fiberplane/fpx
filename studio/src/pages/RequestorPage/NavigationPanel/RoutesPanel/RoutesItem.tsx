@@ -51,8 +51,8 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
       data-state-selected={isSelected}
       tabIndex={0}
       className={cn(
-        "flex items-center px-2 py-1 rounded cursor-pointer font-mono text-sm text-left w-full",
-        "focus:outline-none",
+        "grid grid-cols-[auto_1fr] w-full items-center px-2 py-1 rounded cursor-pointer font-mono text-sm text-left gap-2",
+        "focus:outline-none min-w-0",
         {
           "bg-muted": isActive,
           "hover:bg-muted": !isActive,
@@ -67,7 +67,7 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
       >
         {method}
       </span>
-      <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap">
+      <span className="overflow-hidden text-ellipsis whitespace-nowrap block">
         {route.path}
       </span>
       {canDeleteRoute && (

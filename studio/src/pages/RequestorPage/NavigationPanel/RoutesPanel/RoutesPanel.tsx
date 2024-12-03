@@ -204,21 +204,23 @@ export function RoutesPanel() {
         {allRoutes.length > 0 && (
           <RoutesSection title={<DetectedRoutesTitle />}>
             <TabsContent value="list">
-              {detectedRoutes.map((route, index) => (
-                <RoutesItem
-                  key={index}
-                  index={userAddedRoutes.length + index}
-                  route={route}
-                  selectedRoute={
-                    selectedRouteIndex === userAddedRoutes.length + index
-                      ? route
-                      : null
-                  }
-                  activeRoute={activeRoute}
-                  handleRouteClick={handleRouteClick}
-                  setSelectedRouteIndex={setSelectedRouteIndex}
-                />
-              ))}
+              <div className="grid">
+                {detectedRoutes.map((route, index) => (
+                  <RoutesItem
+                    key={index}
+                    index={userAddedRoutes.length + index}
+                    route={route}
+                    selectedRoute={
+                      selectedRouteIndex === userAddedRoutes.length + index
+                        ? route
+                        : null
+                    }
+                    activeRoute={activeRoute}
+                    handleRouteClick={handleRouteClick}
+                    setSelectedRouteIndex={setSelectedRouteIndex}
+                  />
+                ))}
+              </div>
             </TabsContent>
             <TabsContent value="fileTree">
               {filteredTreeRoutes?.tree.map((tree) => (

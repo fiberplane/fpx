@@ -1,41 +1,51 @@
+import { cn } from "@/utils";
 import { ChevronDownIcon, ChevronRightIcon } from "@radix-ui/react-icons";
-import {
-  type ReactNode,
-  createContext,
-  memo,
-  useContext,
-  useState,
-} from "react";
+import { type ReactNode, memo, useState } from "react";
 
-type RoutesTreeGroupProps = { children: ReactNode; filePath: string };
-
-const LevelContext = createContext(0);
+type RoutesTreeGroupProps = {
+  children: ReactNode;
+  filePath: string;
+  level?: number;
+};
 
 export const RoutesTreeGroup = memo(function RoutesTreeGroup({
   children,
   filePath,
+  level = 0,
 }: RoutesTreeGroupProps) {
-  const level = useContext(LevelContext);
   const [collapsed, setCollapsed] = useState(false);
   const toggleCollapsed = () => setCollapsed((current) => !current);
 
   return (
-    <LevelContext.Provider value={level + 1}>
-      <div className="border-l border-l-input">
-        <button
-          type="button"
-          className="ml-2 mb-2 flex gap-2 px-2 rounded items-center text-muted-foreground hover:bg-muted"
-          onClick={toggleCollapsed}
+    <div className={"pt-2 grid min-w-0"}>
+      <button
+        type="button"
+        className={cn(
+          "grid px-1 grid-cols-[24px_auto] items-center",
+          "px-1",
+          "rounded text-left",
+          "text-muted-foreground hover:bg-muted",
+        )}
+        onClick={toggleCollapsed}
+      >
+        <span className="">
+          {!collapsed ? <ChevronDownIcon /> : <ChevronRightIcon />}
+        </span>
+        <div className="font-medium font-mono text-xs leading-6">
+          {filePath}
+        </div>
+      </button>
+      {!collapsed && (
+        <div
+          className={cn({
+            "ml-[10px] ": level > 0,
+            "pl-[10px]": true,
+            "border-l border-l-input": level > 0,
+          })}
         >
-          <span className="font-medium font-mono text-xs leading-8">
-            {filePath}
-          </span>
-          <span className="ml-auto">
-            {!collapsed ? <ChevronDownIcon /> : <ChevronRightIcon />}
-          </span>
-        </button>
-        {!collapsed && <div className="pl-4">{children}</div>}
-      </div>
-    </LevelContext.Provider>
+          {children}
+        </div>
+      )}
+    </div>
   );
 });

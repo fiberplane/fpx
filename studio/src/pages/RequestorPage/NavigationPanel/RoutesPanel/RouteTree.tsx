@@ -9,18 +9,21 @@ export function RouteTree({
   activeRoute,
   userAddedRoutes,
   handleRouteClick,
+  level = 0,
 }: {
   activeRoute: ProbedRoute | null;
   tree: TreeNode;
   userAddedRoutes: Array<ProbedRoute>;
   handleRouteClick: (route: ProbedRoute) => void;
+  level?: number;
 }) {
   return (
-    <RoutesTreeGroup key={tree.path} filePath={tree.path}>
+    <RoutesTreeGroup key={tree.path} filePath={tree.path} level={level}>
       {tree.children.map((child) => (
         <RouteTree
           key={child.path}
           tree={child}
+          level={level + 1}
           userAddedRoutes={userAddedRoutes}
           handleRouteClick={handleRouteClick}
           activeRoute={activeRoute}
