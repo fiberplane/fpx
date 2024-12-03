@@ -1,6 +1,4 @@
-# Fiberplane Hono Opentelemetry Library (BETA)
-
-> **Note:** This library is in beta, and is still under active development.
+# Fiberplane Hono Opentelemetry Library
 
 This is a client library that will send telemetry data to a *local* Fiberplane Studio server upon every incoming request and outgoing response, in order to be visualized in the Studio UI.
 
