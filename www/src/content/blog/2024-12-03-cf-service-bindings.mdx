@@ -14,17 +14,17 @@ tags:
 import { Aside, LinkCard } from "@astrojs/starlight/components";
 
 Today, we are excited to announce a new feature in [Fiberplane's instrumentation client](https://fiberplane.com/docs/components/client-library/): support for tracing Cloudflare Service Bindings. 
-Tracing Worker to Worker innvocation enables better visibility and debugging for distributed systems built on Cloudflare.
+Tracing Worker to Worker invocation enables better visibility and debugging for distributed systems built on Cloudflare.
 
 ## Cloudflare Service Bindings
 Cloudflare Workers can invoke other Cloudflare Workers in the same network, facilitating the creation of distributed service architectures on Cloudflare. 
-Workers distribution allows multiple Workers utilize the functionality of another Worker. 
-Decomposing your logic into multiple workers can therefore reduces code duplication, simplifies maintenance, and streamlines updates.
+Workers distribution allows multiple Workers to utilize another Worker's functionality. 
+Decomposing your logic into multiple workers can therefore reduce code duplication, simplify maintenance, and streamline updates.
 
 Additionally with decomposing, certain Workers can remain unexposed to the public internet, enhancing security.
 
 ### Simple example use case
-Imagine you want to organize a marathon event. To allow athletes to register, you provide a sign-up form on your website. When an athlete submits the form, their data is stored in a database, and an email is sent to confirm their registration. 
+Imagine you want to organize a marathon event. To allow athletes to register, you provide a sign-up form on your website. When an athlete submits the form, their data is stored in a database. An email is then sent to confirm their registration. 
 Separately, and not as part of the registration process, you offer a newsletter subscription. 
 When an athlete subscribes to the newsletter, their email address is stored in a different database, and they receive a welcome email.
 
