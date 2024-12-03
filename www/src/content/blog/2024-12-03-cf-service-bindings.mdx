@@ -79,7 +79,29 @@ With Fiberplane, you can visualize the entire call chain of this request.
 In the trace above, we see a sequential execution model where the sign-up Worker first performs database operations and then invokes the email Worker.
 The total execution time depends on the entire call chain, as shown below.
 
-We can improve the response time by using parallel execution with `waitUntil()`. Using Fiberplane, we can also visualize the improved execution model:
+We can improve the response time by using parallel execution with `waitUntil()`.
+
+```typescript
+app.post("/api/marathon-wait-until", async (c) => {
+  const { firstName, lastName, email, address, distance } = await c.req.json();
+
+  //using waitUntil() and invoke email worker via rpc
+  c.executionCtx.waitUntil(c.env.WORKER_EMAIL.send(email, firstName));
+
+  await insertData(
+    firstName,
+    lastName,
+    email,
+    address,
+    distance,
+    c.env.DATABASE_URL
+  );
+
+  return c.text("Thanks for registering for our Marathon", 200);
+});
+```
+
+Using Fiberplane, we can also visualize the improved execution model:
 
 ![WaitUntil() Trace](@/assets/blog/2024-12-03-workers-binding-waituntil.png)
 
