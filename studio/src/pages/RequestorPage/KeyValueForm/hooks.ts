@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 
+import type { KeyValueParameter } from "../store";
 import { createParameterId, isDraftParameter } from "./data";
-import type { DraftKeyValueParameter, KeyValueParameter } from "./types";
+import type { DraftKeyValueParameter } from "./types";
 
 const INITIAL_KEY_VALUE_PARAMETER: KeyValueParameter = {
   id: createParameterId(),

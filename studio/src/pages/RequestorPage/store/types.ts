@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { KeyValueParameterSchema } from "../KeyValueForm";
 import {
   ProbedRouteSchema,
   RequestMethodSchema,
@@ -68,6 +67,19 @@ export const isRequestorActiveResponse = (
 export type RequestorActiveResponse = z.infer<
   typeof RequestorActiveResponseSchema
 >;
+
+export const KeyValueParameterSchema = z.object({
+  id: z.string(),
+  key: z.string(),
+  value: z.string(),
+  enabled: z.boolean(),
+});
+
+/**
+ * A "key-value parameter" is a record containing `key` and `value` properties.
+ * It can be used to represent things like query parameters or headers.
+ */
+export type KeyValueParameter = z.infer<typeof KeyValueParameterSchema>;
 
 export const RequestorStateSchema = z.object({
   appRoutes: z.array(ProbedRouteSchema).describe("All routes"),

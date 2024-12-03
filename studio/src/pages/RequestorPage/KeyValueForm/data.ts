@@ -1,7 +1,7 @@
+import type { KeyValueParameter } from "../store";
 import type {
   ChangeKeyValueParametersHandler,
   DraftKeyValueParameter,
-  KeyValueParameter,
 } from "./types";
 
 export const createParameterId = () => generateUUID();

@@ -1,6 +1,10 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
-import { createKeyValueParameters, errorHasMessage, isJson } from "@/utils";
+import {
+  createKeyValueParametersFromValues,
+  errorHasMessage,
+  isJson,
+} from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
@@ -138,7 +142,7 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
 
       // NOTE - We need to be clear on the types here, otherwise this could wreak havoc on our form data
       if (validateKeyValueParamsFromResponse(queryParams)) {
-        const newParameters = createKeyValueParameters(queryParams);
+        const newParameters = createKeyValueParametersFromValues(queryParams);
         setQueryParams(newParameters);
       } else {
         // TODO - Should we clear the query params if they are not present in the response?
@@ -161,7 +165,7 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
       }
 
       if (validateKeyValueParamsFromResponse(headers)) {
-        const newHeaders = createKeyValueParameters(headers);
+        const newHeaders = createKeyValueParametersFromValues(headers);
         setRequestHeaders(newHeaders);
       } else {
         // TODO - Clear headers if they are not present in the response?

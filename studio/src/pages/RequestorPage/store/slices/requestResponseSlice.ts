@@ -1,7 +1,9 @@
-import { constructRequestorBody, createKeyValueParameters } from "@/utils";
+import {
+  constructRequestorBody,
+  createKeyValueParametersFromValues,
+} from "@/utils";
 import type { StateCreator } from "zustand";
 import { enforceFormDataTerminalDraftParameter } from "../../FormDataForm";
-import type { KeyValueParameter } from "../../KeyValueForm";
 import { enforceTerminalDraftParameter } from "../../KeyValueForm";
 import type { ProxiedRequestResponse } from "../../queries";
 import { findMatchedRoute } from "../../routes";
@@ -9,6 +11,7 @@ import { isRequestMethod } from "../../types";
 import { updateContentTypeHeaderInState } from "../content-type";
 import { setBodyTypeInState } from "../set-body-type";
 import { getVisibleRequestPanelTabs } from "../tabs";
+import type { KeyValueParameter } from "../types";
 import {
   addBaseUrl,
   extractMatchedPathParams,
@@ -262,7 +265,7 @@ export const requestResponseSlice: StateCreator<
     );
 
     get().setPathParams(
-      createKeyValueParameters(
+      createKeyValueParametersFromValues(
         Object.entries(requestPathParams || {}).map(([key, value]) => ({
           key,
           value,
@@ -271,7 +274,7 @@ export const requestResponseSlice: StateCreator<
     );
 
     get().setQueryParams(
-      createKeyValueParameters(
+      createKeyValueParametersFromValues(
         Object.entries(requestQueryParams || {}).map(([key, value]) => ({
           key,
           value,
@@ -289,7 +292,7 @@ export const requestResponseSlice: StateCreator<
     );
 
     get().setRequestHeaders(
-      createKeyValueParameters(
+      createKeyValueParametersFromValues(
         Object.entries(requestHeaders || {})
           .map(([key, value]) => ({ key, value }))
           .filter(

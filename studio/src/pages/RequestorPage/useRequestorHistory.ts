@@ -1,7 +1,7 @@
 import { useOtelTraces } from "@/queries";
 import {
   constructRequestorBody,
-  createKeyValueParameters,
+  createKeyValueParametersFromValues,
   removeQueryParams,
 } from "@/utils";
 import type { TraceListResponse } from "@fiberplane/fpx-types";
@@ -122,7 +122,7 @@ export function useRequestorHistory() {
 
         const headers = match.app_requests.requestHeaders ?? {};
         setRequestHeaders(
-          createKeyValueParameters(
+          createKeyValueParametersFromValues(
             Object.entries(headers)
               .map(([key, value]) => ({ key, value }))
               .filter(
@@ -134,7 +134,7 @@ export function useRequestorHistory() {
         );
 
         setQueryParams(
-          createKeyValueParameters(
+          createKeyValueParametersFromValues(
             Object.entries(queryParams).map(([key, value]) => ({
               key,
               value,
@@ -183,13 +183,13 @@ export function useRequestorHistory() {
 
         const headers = match.app_requests.requestHeaders ?? {};
         setRequestHeaders(
-          createKeyValueParameters(
+          createKeyValueParametersFromValues(
             Object.entries(headers).map(([key, value]) => ({ key, value })),
           ),
         );
 
         setQueryParams(
-          createKeyValueParameters(
+          createKeyValueParametersFromValues(
             Object.entries(queryParams).map(([key, value]) => ({
               key,
               value,

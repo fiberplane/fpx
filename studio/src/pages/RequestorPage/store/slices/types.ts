@@ -4,7 +4,6 @@ import type {
   RequestsPanelTab,
   ResponsePanelTab,
 } from "..";
-import type { KeyValueParameter } from "../../KeyValueForm";
 import type { ProxiedRequestResponse } from "../../queries";
 import type { ProbedRoute } from "../../types";
 import type {
@@ -12,7 +11,7 @@ import type {
   RequestMethodInputValue,
   RequestType,
 } from "../../types";
-import type { RequestorActiveResponse } from "../types";
+import type { KeyValueParameter, RequestorActiveResponse } from "../types";
 
 type RequestorTraceId = string;
 

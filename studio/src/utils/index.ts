@@ -1,5 +1,8 @@
 import { createParameterId } from "@/pages/RequestorPage/KeyValueForm/data";
-import type { RequestorBody } from "@/pages/RequestorPage/store";
+import type {
+  KeyValueParameter,
+  RequestorBody,
+} from "@/pages/RequestorPage/store";
 import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
@@ -151,6 +154,7 @@ export function truncatePathWithEllipsis(path: string | null) {
   if (path === null) {
     return null;
   }
+
   const maxLength = 50;
   return path.length > maxLength ? `${path.slice(0, maxLength)}...` : path;
 }
@@ -218,46 +222,22 @@ export function isSensitiveEnvVar(key: string) {
   if (!key) {
     return false;
   }
-  if (key.includes("APIKEY")) {
-    return true;
-  }
-  if (key.includes("API_KEY")) {
-    return true;
-  }
-  if (key.includes("ACCESS")) {
-    return true;
-  }
-  if (key.includes("AUTH_")) {
-    return true;
-  }
-  if (key.includes("CREDENTIALS")) {
-    return true;
-  }
-  if (key.includes("CERTIFICATE")) {
-    return true;
-  }
-  if (key.includes("PASSPHRASE")) {
-    return true;
-  }
-  if (key.includes("DATABASE_URL")) {
-    return true;
-  }
-  if (key.includes("CONNECTION_STRING")) {
-    return true;
-  }
-  if (key.includes("SECRET")) {
-    return true;
-  }
-  if (key.includes("PASSWORD")) {
-    return true;
-  }
-  if (key.includes("PRIVATE")) {
-    return true;
-  }
-  if (key.includes("TOKEN")) {
-    return true;
-  }
-  return false;
+
+  return (
+    key.includes("APIKEY") ||
+    key.includes("API_KEY") ||
+    key.includes("ACCESS") ||
+    key.includes("AUTH_") ||
+    key.includes("CREDENTIALS") ||
+    key.includes("CERTIFICATE") ||
+    key.includes("PASSPHRASE") ||
+    key.includes("DATABASE_URL") ||
+    key.includes("CONNECTION_STRING") ||
+    key.includes("SECRET") ||
+    key.includes("PASSWORD") ||
+    key.includes("PRIVATE") ||
+    key.includes("TOKEN")
+  );
 }
 
 export function constructRequestorBody(
@@ -282,17 +262,12 @@ export function constructRequestorBody(
     type: "text",
     value: bodyValue,
   };
-
-  // if (contentType) {
-  //   return contentType.split(";")[0];
-  // }
-  // return "application/json";
 }
 
-export function createKeyValueParameters(
-  replacements: Array<{ key: string; value: string }>,
+export function createKeyValueParametersFromValues(
+  values: Array<{ key: string; value: string }>,
 ) {
-  return replacements.map(({ key, value }) => {
+  return values.map(({ key, value }) => {
     return {
       id: createParameterId(),
       key,
@@ -301,3 +276,27 @@ export function createKeyValueParameters(
     };
   });
 }
+
+export function createObjectFromKeyValueParameters<
+  T extends Array<KeyValueParameter>,
+>(parameters: T): Record<T[0]["key"], T[0]["value"]> {
+  const result: Record<string, string> = {};
+  for (const item of parameters) {
+    if (item.key) {
+      result[item.key] = item.value;
+    }
+  }
+
+  return result;
+}
+
+const p1 = {
+  id: "1",
+  enabled: true,
+  key: "my_key" as const,
+  value: "my_value" as const,
+};
+
+const o1 = createObjectFromKeyValueParameters([p1]);
+
+console.log("p1", o1);

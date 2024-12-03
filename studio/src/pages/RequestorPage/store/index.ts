@@ -1,9 +1,3 @@
-export type { ResponsePanelTab, RequestsPanelTab } from "./tabs";
-export type {
-  RequestBodyType,
-  RequestorBody,
-  RequestorResponseBody,
-} from "./types";
 import { memoize } from "proxy-memoize";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
@@ -16,7 +10,16 @@ import type { Store } from "./slices/types";
 import { uiSlice } from "./slices/uiSlice";
 import { websocketSlice } from "./slices/websocketSlice";
 import { _getActiveRoute } from "./utils";
+
+export type { ResponsePanelTab, RequestsPanelTab } from "./tabs";
+export type {
+  RequestBodyType,
+  RequestorBody,
+  RequestorResponseBody,
+  KeyValueParameter,
+} from "./types";
 export { useServiceBaseUrl } from "./useServiceBaseUrl";
+export { KeyValueParameterSchema } from "./types";
 
 export type StudioState = Store;
 export const useStudioStoreRaw = create<StudioState>()(
@@ -51,5 +54,6 @@ export function useStudioStore<T extends Store, K extends keyof Store>(
       return result;
     }),
   );
+
   return obj as Pick<T, K>;
 }

@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { type SubmitHandler, useForm } from "react-hook-form";
 
 type CollectionFormData = {
-  name: string;
+  collectionName: string;
 };
 
 type Props = {
@@ -25,14 +25,10 @@ export function CreateCollectionForm(props: Props) {
     failureReason: error,
     isPending,
   } = useAddCollection();
-  const onSubmit: SubmitHandler<CollectionFormData> = ({
-    name,
-  }: {
-    name: string;
-  }) => {
+  const onSubmit: SubmitHandler<CollectionFormData> = ({ collectionName }) => {
     addCollection(
       {
-        name,
+        name: collectionName,
       },
       {
         onSuccess: (data) => {
@@ -68,11 +64,14 @@ export function CreateCollectionForm(props: Props) {
           Name
         </Label>
         <Input
-          {...register("name")}
+          {...register("collectionName")}
           id="collectionName"
           type="text"
           className="col-span-2 h-8 font-mono"
           autoFocus
+          autoComplete="off"
+          data-1p-ignore
+          data-lpignore="true"
         />
       </div>
       <div className="flex justify-end">

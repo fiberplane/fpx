@@ -87,7 +87,7 @@ export function CollectionSection() {
             <AddRoute collectionId={collectionId} />
           </div>
           {collection.appRoutes.length === 0 ? (
-            <div className="text-sm text-muted-foreground py-2 px-3 mt-2 flex gap-2 items-center flex-col">
+            <div className="text-sm text-muted-foreground py-2 px-3 mt-2 flex gap-4 items-center flex-col">
               <h4 className="flex items-center gap-2 justify-center text-base">
                 <Icon
                   icon="lucide:triangle-alert"
@@ -95,24 +95,22 @@ export function CollectionSection() {
                 />
                 Empty collection
               </h4>
-              <div className="flex items-center gap-2 max-w-64 flex-col">
-                <p className="text-muted-foreground">
-                  Awesome, you can now:
-                  <ul className="pl-2 list-disc my-4 gap-2 grid">
-                    <li>
-                      navigate to any route and use the{" "}
-                      <Icon
-                        icon="lucide:folder"
-                        className="text-foreground inline-block"
-                      />{" "}
-                      to add it the collection
-                    </li>
-                    <li>
-                      or add a route using the following button
-                      <AddRoute collectionId={collectionId} />
-                    </li>
-                  </ul>
-                </p>
+              <div className="flex items-center max-w-64 flex-col gap-1">
+                <p className="text-muted-foreground">Awesome, you can now:</p>
+                <ul className="pl-2 list-disc my-2 gap-2 grid">
+                  <li>
+                    navigate to any route and use the{" "}
+                    <Icon
+                      icon="lucide:folder"
+                      className="text-foreground inline-block"
+                    />{" "}
+                    to add it the collection
+                  </li>
+                  <li>
+                    or add a route using the following button
+                    <AddRoute collectionId={collectionId} />
+                  </li>
+                </ul>
               </div>
             </div>
           ) : (

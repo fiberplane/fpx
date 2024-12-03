@@ -14,14 +14,16 @@ export type TraceDetailSpansResponse = Array<OtelSpan>;
 
 export const CollectionSchema = z.object({
   id: z.number(),
-  name: z.string().trim().min(1, { message: 'Is required.' }),
+  name: z.string().trim().min(1, { message: "Is required." }),
   createdAt: z.string(),
   updatedAt: z.string(),
-})
+});
 export type Collection = z.infer<typeof CollectionSchema>;
 
 export const CollectionListResponseSchema = z.array(CollectionSchema);
-export type CollectionListResponse = z.infer<typeof CollectionListResponseSchema>;
+export type CollectionListResponse = z.infer<
+  typeof CollectionListResponseSchema
+>;
 
 export const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
   z.union([
