@@ -8,7 +8,7 @@ import {
   trace,
 } from "@opentelemetry/api";
 import type { FpxLogger } from "./logger";
-import { isPromise } from "./utils";
+import { isPromiseLike } from "./utils";
 
 export type MeasureOptions<
   /**
@@ -202,18 +202,14 @@ export function measure<ARGS extends unknown[], RESULT>(
           ) as RESULT;
         }
 
-        if (isPromise<ExtractInnerResult<RESULT>>(returnValue)) {
+        if (isPromiseLike<ExtractInnerResult<RESULT>>(returnValue)) {
           shouldEndSpan = false;
-          return handlePromise(
-            span,
-            returnValue as Promise<ExtractInnerResult<RESULT>>,
-            {
-              onSuccess,
-              onError,
-              checkResult,
-              endSpanManually,
-            },
-          ) as RESULT;
+          return handlePromise(span, returnValue, {
+            onSuccess,
+            onError,
+            checkResult,
+            endSpanManually,
+          }) as RESULT;
         }
 
         span.setStatus({ code: SpanStatusCode.OK });
@@ -223,7 +219,7 @@ export function measure<ARGS extends unknown[], RESULT>(
               span,
               returnValue as ExtractInnerResult<RESULT>,
             );
-            if (isPromise(result)) {
+            if (isPromiseLike(result)) {
               shouldEndSpan = false;
               result.finally(() => {
                 if (!endSpanManually) {
@@ -277,17 +273,17 @@ export function measure<ARGS extends unknown[], RESULT>(
  *
  * @returns the promise
  */
-async function handlePromise<T extends Promise<unknown>>(
+async function handlePromise<T>(
   span: Span,
-  resultPromise: T,
+  resultPromise: PromiseLike<T>,
   options: Pick<
-    MeasureOptions<unknown[], T>,
+    MeasureOptions<unknown[], Promise<T>>,
     "onSuccess" | "onError" | "checkResult" | "endSpanManually"
   >,
 ) {
   const { onSuccess, onError, checkResult, endSpanManually = false } = options;
   try {
-    const result = (await resultPromise) as ExtractInnerResult<T>;
+    const result = await resultPromise;
 
     if (checkResult) {
       try {
@@ -317,7 +313,7 @@ async function handlePromise<T extends Promise<unknown>>(
           }
         }
 
-        return result as ExtractInnerResult<T>;
+        return result;
       }
     }
 
