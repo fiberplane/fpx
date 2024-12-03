@@ -1,4 +1,9 @@
-import { type OpenApiSpec, OpenApiSpecSchema } from "@fiberplane/fpx-types";
+import {
+  type OpenAPIOperation,
+  OpenAPIOperationSchema,
+  type OpenApiSpec,
+  OpenApiSpecSchema,
+} from "@fiberplane/fpx-types";
 
 export type { OpenAPIOperation } from "@fiberplane/fpx-types";
 export type { OpenAPISchema } from "@fiberplane/fpx-types";
@@ -12,5 +17,10 @@ export function isOpenApiSpec(value: unknown): value is OpenApiSpec {
       JSON.stringify(result.error.issues, null, 2),
     );
   }
+  return result.success;
+}
+
+export function isOpenApiOperation(value: unknown): value is OpenAPIOperation {
+  const result = OpenAPIOperationSchema.safeParse(value);
   return result.success;
 }

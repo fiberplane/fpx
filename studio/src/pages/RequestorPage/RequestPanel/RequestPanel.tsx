@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { cn, objectWithKey } from "@/utils";
+import { cn } from "@/utils";
 import { EraserIcon, InfoCircledIcon } from "@radix-ui/react-icons";
 import { type Dispatch, type SetStateAction, memo, useMemo } from "react";
 import { FormDataForm } from "../FormDataForm";
@@ -22,6 +22,7 @@ import {
 } from "@/components/CodeMirrorEditor";
 import { useRequestorStore } from "../store";
 import { RouteDocumentation } from "./RouteDocumentation/RouteDocumentation";
+import { isOpenApiOperation } from "./RouteDocumentation/openapi";
 
 type RequestPanelProps = {
   aiEnabled: boolean;
@@ -36,14 +37,6 @@ type RequestPanelProps = {
   sendWebsocketMessage: (message: string) => void;
   onSubmit: () => void;
 };
-
-function isValidOpenApiSpec(openApiSpec: unknown): boolean {
-  return (
-    objectWithKey(openApiSpec, "parameters") ||
-    objectWithKey(openApiSpec, "requestBody") ||
-    objectWithKey(openApiSpec, "responses")
-  );
-}
 
 export const RequestPanel = memo(function RequestPanel(
   props: RequestPanelProps,
@@ -116,7 +109,7 @@ export const RequestPanel = memo(function RequestPanel(
       return null;
     }
   }, [activeRoute?.openApiSpec]);
-  const shouldShowDocs = isValidOpenApiSpec(openApiSpec);
+  const shouldShowDocs = isOpenApiOperation(openApiSpec);
 
   return (
     <Tabs

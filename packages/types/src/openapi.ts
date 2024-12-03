@@ -77,7 +77,7 @@ const OpenAPIRequestBodySchema = z.object({
   content: z.record(ContentSchema),
 });
 
-const OpenAPIOperationSchema = z.object({
+export const OpenAPIOperationSchema = z.object({
   title: z.string().optional(),
   summary: z.string().optional(),
   description: z.string().optional(),
