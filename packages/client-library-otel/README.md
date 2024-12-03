@@ -1,6 +1,4 @@
-# Fiberplane Hono Opentelemetry Library (BETA)
-
-> **Note:** This library is in beta, and is still under active development.
+# Fiberplane Hono OpenTelemetry Library
 
 This is a client library that will send telemetry data to a *local* Fiberplane Studio server upon every incoming request and outgoing response, in order to be visualized in the Studio UI.
 
@@ -25,7 +23,7 @@ npm create hono@latest my-hono-project
 Install the Fiberplane Hono Opentelemetry Library
 
 ```sh
-npm i @fiberplane/hono-otel@beta
+npm i @fiberplane/hono-otel
 ```
 
 Add middleware to your project
@@ -61,10 +59,12 @@ It assumes you already have a Hono app running locally.
 
 ### Installation
 
-Install the library in your project. At writing, the library is in beta, so you need to install it with the `@beta` tag:
+Install the library in your project. If you're feeling adventurous, you can install the `canary` version:
 
 ```bash
-npm install @fiberplane/hono-otel@beta
+npm install @fiberplane/hono-otel@latest
+# or
+npm install @fiberplane/hono-otel@canary
 ```
 
 Wrap your Hono app with the `instrument` function:
@@ -111,7 +111,7 @@ The options are:
 
 - `monitor.fetch`: Whether to create traces for all fetch requests. (Default: `true`)
 - `monitor.logging`: Whether to proxy `console.*` functions to send logging data to a local Fiberplane Studio server. (Default: `true`)
-- `monitor.cfBindings`: Whether to proxy Cloudflare bindings (D1, R2, KV, AI) to add instrumentation to them. (Default: `false`)
+- `monitor.cfBindings`: Whether to proxy Cloudflare bindings (D1, R2, KV, AI) to add instrumentation to them. (Default: `true`)
 - `libraryDebugMode`: Whether to enable debug logging in the library. (Default: `false`)
 
 Here is an example:
@@ -128,12 +128,12 @@ export default instrument(app, {
   // Enable debug logging in the library
   libraryDebugMode: true,
   monitor: {
-    // Don't create traces for fetch requests
+    // Do not create traces for fetch requests
     fetch: false,
-    // Don't proxy `console.*` functions to send logging data to a local FPX server
+    // Do not proxy `console.*` functions to send logging data to a local FPX server
     logging: false,
-    // Proxy Cloudflare bindings (D1, R2, KV, AI) to add instrumentation to them
-    cfBindings: true,
+    // Do not proxy Cloudflare bindings (D1, R2, KV, AI, Service Bindings) to add instrumentation to them
+    cfBindings: false,
   },
 });
 ```
