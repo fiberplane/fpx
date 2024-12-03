@@ -20,14 +20,9 @@ import { useRequestorStore } from "../store";
 type CommandBarProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
-  // onGenerateRequest?: (prompt?: string) => void;
 };
 
-export function CommandBar({
-  open,
-  setOpen,
-  // onGenerateRequest,
-}: CommandBarProps) {
+export function CommandBar({ open, setOpen }: CommandBarProps) {
   const { togglePanel, visibleRequestsPanelTabs, setActiveRequestsPanelTab } =
     useRequestorStore(
       "togglePanel",
@@ -36,14 +31,6 @@ export function CommandBar({
     );
 
   const [inputValue, setInputValue] = React.useState("");
-
-  // const handleGenerateRequest = (currentInput: string) => {
-  //   // Extract any text after "generate" as the prompt
-  //   const prompt = currentInput.replace(/^generate\s*/, "").trim();
-  //   onGenerateRequest?.(prompt.length > 0 ? prompt : undefined);
-  //   setOpen(false);
-  //   setInputValue("");
-  // };
 
   return (
     <Dialog open={open} onOpenChange={setOpen} modal={false}>
@@ -63,19 +50,6 @@ export function CommandBar({
           />
           <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden">
             <CommandEmpty>No results found.</CommandEmpty>
-            {/* <CommandGroup heading="Actions" className="py-2">
-              <CommandItem
-                className="flex items-center gap-2 px-2 hover:bg-accent rounded-sm cursor-pointer"
-                onSelect={() => handleGenerateRequest(inputValue)}
-              >
-                <MagicWandIcon className="flex-shrink-0" />
-                <span>Generate Request Data</span>
-                <span className="text-xs text-muted-foreground ml-auto">
-                  Type additional text for custom prompt
-                </span>
-              </CommandItem>
-            </CommandGroup> */}
-            {/* <CommandSeparator className="mx-2" /> */}
             <CommandGroup heading="Navigation" className="py-2">
               <CommandItem
                 className="flex items-center gap-2 px-2 hover:bg-accent rounded-sm cursor-pointer"
