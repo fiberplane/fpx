@@ -309,7 +309,7 @@ export const RequestPanel = memo(function RequestPanel(
       )}
       {shouldShowDocs && (
         <CustomTabsContent value="docs">
-          <RouteDocumentation openApiSpec={openApiSpec} />
+          <RouteDocumentation openApiSpec={openApiSpec} route={activeRoute} />
         </CustomTabsContent>
       )}
       {shouldShowMessages && (

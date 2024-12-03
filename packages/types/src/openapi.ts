@@ -78,6 +78,7 @@ const OpenAPIRequestBodySchema = z.object({
 });
 
 const OpenAPIOperationSchema = z.object({
+  title: z.string().optional(),
   summary: z.string().optional(),
   description: z.string().optional(),
   parameters: z.array(OpenAPIParameterSchema).optional(),

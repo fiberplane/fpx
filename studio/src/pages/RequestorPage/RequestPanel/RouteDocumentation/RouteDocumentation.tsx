@@ -6,35 +6,55 @@ import type { OpenAPIOperation, OpenAPISchema } from "./openapi";
 
 type RouteDocumentationProps = {
   openApiSpec: OpenAPIOperation;
+  route: { path: string; method: string } | null;
+};
+
+const getTitleWithFallback = (
+  title: string | undefined,
+  route: { path: string; method: string } | null,
+) => {
+  if (title) {
+    return title;
+  }
+  if (!route) {
+    return "Untitled";
+  }
+  return `${route.method} ${route.path}`;
 };
 
 export const RouteDocumentation = memo(function RouteDocumentation({
   openApiSpec,
+  route,
 }: RouteDocumentationProps) {
-  const { parameters, requestBody, responses, description, summary } =
+  const { parameters, requestBody, responses, description, summary, title } =
     openApiSpec;
 
+  const modTitle = getTitleWithFallback(title, route);
   console.log("openApiSpec", openApiSpec);
   return (
     <ScrollArea className="h-full pb-8">
       <div className="p-2">
-        {/* Description Section - Updated styling */}
-        {(summary || description) && (
-          <section>
-            {summary && (
-              <h3 className="text-2xl font-semibold text-white mb-2">
-                {summary}
+        {(modTitle || summary || description) && (
+          <section className="mb-4">
+            {modTitle && (
+              <h3 className="text-xl font-semibold text-white mb-1">
+                {modTitle}
               </h3>
             )}
             {description && (
-              <p className="text-base leading-relaxed text-gray-300">
+              <p className="text-base leading-relaxed text-gray-300 mb-1">
                 {description}
               </p>
+            )}
+            {summary && (
+              <h3 className="text-lg font-semibold text-gray-300 mb-2">
+                {summary}
+              </h3>
             )}
           </section>
         )}
 
-        {/* Parameters Section - Updated layout */}
+        {/* URL Parameters Section */}
         {parameters && parameters.length > 0 && (
           <section className="">
             <SectionHeader>Parameters</SectionHeader>
@@ -44,7 +64,7 @@ export const RouteDocumentation = memo(function RouteDocumentation({
                   key={`${param.name}-${idx}`}
                   className="flex flex-col space-y-2"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-baseline gap-3">
                     <ParameterName name={param.name} />
                     <TypeBadge
                       type={
@@ -68,19 +88,21 @@ export const RouteDocumentation = memo(function RouteDocumentation({
         {/* Request Body Section */}
         {requestBody && (
           <section className="">
-            <SectionHeader>Request Body</SectionHeader>
-            <div className="space-y-2">
-              {Object.entries(requestBody.content).map(
-                ([mediaType, content]) => (
-                  <div key={mediaType} className="rounded-lg py-2">
-                    <ContentTypeBadge mediaType={mediaType} />
+            {Object.entries(requestBody.content).map(([mediaType, content]) => (
+              <div key={mediaType}>
+                <SectionHeader>
+                  Request Body
+                  <ContentTypeBadge mediaType={mediaType} className="ml-auto" />
+                </SectionHeader>
+                <div className="space-y-2">
+                  <div className="rounded-lg py-2">
                     {content.schema && (
                       <SchemaViewer schema={content.schema as OpenAPISchema} />
                     )}
                   </div>
-                ),
-              )}
-            </div>
+                </div>
+              </div>
+            ))}
           </section>
         )}
 
@@ -94,19 +116,46 @@ export const RouteDocumentation = memo(function RouteDocumentation({
                   key={status}
                   className="space-y-2 border-b border-gray-700 pb-4 border-dashed"
                 >
-                  <div className="flex items-start gap-3">
-                    <StatusBadge status={status} />
-                    <span className="text-sm text-gray-300">
-                      {response.description}
-                    </span>
-                  </div>
+                  {!response.content && (
+                    <div className="">
+                      <div className="mt-2">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <StatusBadge status={status} />
+                          </div>
+                          <ContentTypeBadge mediaType={"—"} />
+                        </div>
+                        {/* Commenting this out solely because it looks bad */}
+                        {/* {response.description && (
+                              <div className="text-sm text-gray-300">
+                                {response.description}
+                              </div>
+                            )} */}
+                        <div className="mt-2 pl-3 text-gray-400 text-sm">
+                          No Content
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {response.content && (
                     <div className="">
                       {Object.entries(response.content).map(
                         ([mediaType, content]) => (
                           <div key={mediaType} className="mt-2">
-                            <ContentTypeBadge mediaType={mediaType} />
-                            <div className="">
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-2">
+                                <StatusBadge status={status} />
+                              </div>
+                              <ContentTypeBadge mediaType={mediaType} />
+                            </div>
+                            {/* Commenting this out solely because it looks bad */}
+                            {/* {response.description && (
+                              <div className="text-sm text-gray-300">
+                                {response.description}
+                              </div>
+                            )} */}
+                            <div className="mt-2 pl-3">
                               {content.schema && (
                                 <SchemaViewer
                                   schema={content.schema as OpenAPISchema}
@@ -144,7 +193,7 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <TypeBadge type="array" />
-            <span className="text-gray-400 text-sm">of</span>
+            <span className="text-gray-400 text-xs">of</span>
             {schema.items && (
               <TypeBadge
                 type={(schema.items as OpenAPISchema).type ?? "object"}
@@ -163,13 +212,13 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
           {Object.entries(
             schema.properties as Record<string, OpenAPISchema>,
           ).map(([key, prop]) => (
-            <div key={key} className="space-y-2">
-              <div className="flex items-center gap-2">
+            <div key={key} className="space-y-1">
+              <div className="flex items-baseline gap-2">
                 <ParameterName name={key} />
                 <TypeBadge type={prop.type ?? "string"} />
                 {schema.required?.includes(key) && <RequiredBadge />}
               </div>
-              <div>
+              <div className="flex flex-col space-y-1">
                 {prop.description && (
                   <ParameterDescription description={prop.description} />
                 )}
@@ -230,7 +279,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
-    <h4 className="text-lg font-medium text-white mb-2 border-b border-gray-700 pb-1">
+    <h4 className="text-lg font-medium text-white mb-2 border-b border-gray-700 pb-1 flex items-center">
       {children}
     </h4>
   );
@@ -238,29 +287,23 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
 
 function RequiredBadge() {
   return (
-    <Badge
-      variant="destructive"
-      className="bg-red-900/30 text-red-400 border-none text-xs font-normal font-sans py-1"
-    >
-      Required
-    </Badge>
+    <span className="px-0.5 py-0 text-xs text-orange-300 border-none font-normal font-sans">
+      required
+    </span>
   );
 }
 
 function TypeBadge({ type }: { type: string }) {
   return (
-    <Badge
-      variant="outline"
-      className="px-2 text-xs bg-gray-800 text-gray-400 border-none font-sans font-normal py-1"
-    >
+    <span className="px-0.5 py-0 text-xs text-gray-400 border-none font-normal font-sans ">
       {type}
-    </Badge>
+    </span>
   );
 }
 
 function ParameterName({ name }: { name: string }) {
   return (
-    <code className="mr-2 py-1 rounded-md text-sm font-sans tracking-wide text-gray-200">
+    <code className="mr-2 py-0.5 rounded-md text-sm font-sans tracking-wide text-gray-200">
       {name}
     </code>
   );
@@ -271,7 +314,7 @@ type ParameterDescriptionProps = {
 };
 
 function ParameterDescription({ description }: ParameterDescriptionProps) {
-  return <p className="text-sm text-gray-400 font-sans">{description}</p>;
+  return <p className="text-xs text-gray-400 font-sans">{description}</p>;
 }
 
 type ParameterExampleProps = {
@@ -289,11 +332,20 @@ function ParameterExample({ example }: ParameterExampleProps) {
   );
 }
 
-function ContentTypeBadge({ mediaType }: { mediaType: string }) {
+function ContentTypeBadge({
+  mediaType,
+  className,
+}: {
+  mediaType: string;
+  className?: string;
+}) {
   return (
     <Badge
       variant="outline"
-      className="my-1 text-sm text-gray-200 px-0 bg-none font-normal font-mono border-none underline"
+      className={cn(
+        "my-1 text-xs text-gray-400 px-0 bg-none font-normal font-mono border-none",
+        className,
+      )}
     >
       {mediaType}
     </Badge>
