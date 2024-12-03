@@ -142,7 +142,7 @@ const createUserRoute = createRoute({
           schema: UserSchema,
         },
       },
-      description: "Retrieve the user",
+      description: "Newly created user",
     },
   },
 });
