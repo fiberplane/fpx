@@ -161,6 +161,11 @@ function proxyServiceBinding(o: object, bindingName: string) {
         // The name for the span, which will show up in the UI
         const name = `${bindingName}.${serviceMethod}`;
 
+        // For the `fetch` method, we need to bind `this` (the javascript `this` keyword) to the service target,
+        // otherwise `fetch` will fail!
+        // For RPC calls we do not need to do any special `this` binding
+        const shouldBindThis = serviceMethod === "fetch";
+
         const measuredBinding = measure(
           {
             name,
@@ -181,7 +186,7 @@ function proxyServiceBinding(o: object, bindingName: string) {
             },
             onError: handleError,
           },
-          serviceValue,
+          shouldBindThis ? serviceValue.bind(serviceTarget) : serviceValue,
         );
 
         return measuredBinding;

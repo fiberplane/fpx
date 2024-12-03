@@ -17,8 +17,8 @@ export class WoofWorker extends WorkerEntrypoint {
 
   // From Cloudflare docs: "Currently, entrypoints without a named handler are not supported"
   // TODO - Check if this is still the case that we need a fetch handler?
-  async fetch() {
-    return new Response(null, { status: 404 });
+  async fetch(request: Request | string) {
+    return fetch("https://placegoose.mies.workers.dev/geese");
   }
 }
 
