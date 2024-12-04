@@ -1,5 +1,5 @@
 ---
-title: "File tree view for routes"
+title: "Organize Your API Routes with File Tree View"
 description: "Discover the new file tree view for routes and learn how to organize your API routes more effectively."
 slug: file-tree-view-for-routes
 date: 2024-12-04
@@ -17,15 +17,16 @@ Welcome to **MEGA Launch Week Day 3!** Wow, we made it halfway through the week.
 
 ## File Tree View
 
-TL;DR: file tree view is a toggle in the "Routes" left sidebar that allows you to better see your API routes in the Fiberplane Studio as they are organized in your project files.
+TL;DR: The file tree view is a toggle in the "Routes" left sidebar that allows you to better visualize your API routes in Fiberplane Studio—organizing them by the project files they are defined in.
 
 ![File tree view](@/assets/blog/2024-12-04-route-file-tree.png)
 
 ## How it works
 
 The file tree view builds on top of two technologies:
-- automatic route detection, powered by our client library;
-- static code analysis to map the routes to the correct files.
+
+- Automatic route detection, powered by our client library
+- Static code analysis to map the routes to their corresponding files
 
 First, we detect and report all the routes that are registered in your application using the client library.
 
@@ -38,7 +39,6 @@ We talked more about this and how we run our static analysis engine in a previou
   description="Fiberplane Studio static code analysis for auto Hono.js API routes"
   href="https://fiberplane.com/blog/code-analysis/"
 />
-
 
 ## Modularizing an example marathon API
 
@@ -71,7 +71,7 @@ app.put("/tracks/:id", (c) => {}); // Update a track
 export default app;
 ```
 
-As your application grows, however, managing all your routes in one file becomes unwieldy. In Hono, you can split them into separate modules, grouping related routes into individual files like `athletes.ts`, `marathons.ts`, and `tracks.ts`. 
+As your application grows, however, managing all your routes in one file becomes unwieldy. In Hono, you can split them into separate modules, grouping related routes into individual files like `athletes.ts`, `marathons.ts`, and `tracks.ts`.
 
 ```typescript
 // marathons.ts
@@ -125,8 +125,18 @@ app.route("/tracks", tracks);
 export default app;
 ```
 
-Once you have this setup the mental model of your application is also more modular: you can now think of your API as a set of modules, each responsible for a different aspect of the marathon.
+Once you have this set up, the mental model of your application is also more modular: you can now think of your API as a set of modules, each responsible for a different aspect of the marathon.
 
-The issue, however, was that this modularity was not reflected in the Fiberplane Studio yet: all your routes used to be still shown as one long list in the "Routes" section.
+The issue, however, was that this modularity was not reflected in the Fiberplane Studio yet. All your routes used to be shown as one long list in the "Routes" section.
 
 No more! You can now toggle the file tree view and see the routes organized as they are in your project files, allowing you to hide and focus certain specific parts of your API that you want to test.
+
+---
+
+That's all for today! Keep an eye out for more releases this week as we wrap up our mega launch.
+
+<LinkCard
+  title="🚀 Mega Launch Week"
+  description="Check out all the new features and updates from Fiberplane's mega launch week"
+  href="/blog/mega-launch-week-2024"
+/>
