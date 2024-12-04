@@ -8,7 +8,9 @@
     "db:studio": "drizzle-kit studio",
     "db:touch": "wrangler d1 execute zod-openapi --local --command='SELECT 1'",
     "db:migrate:prod": "GOOSIFY_ENV=production drizzle-kit migrate",
-    "db:studio:prod": "GOOSIFY_ENV=production drizzle-kit studio"
+    "db:studio:prod": "GOOSIFY_ENV=production drizzle-kit studio",
+    "format": "biome check . --write",
+    "lint": "biome lint ."
   },
   "dependencies": {
     "@fiberplane/hono-otel": "workspace:*",

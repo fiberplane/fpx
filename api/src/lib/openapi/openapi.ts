@@ -23,7 +23,7 @@ type Routes = z.infer<typeof schemaProbedRoutes>["routes"];
  * This function handles both single routes and arrays of routes.
  *
  * @param db - LibSQL database instance containing the OpenAPI specifications. Used to fetch the latest spec.
- * @param routes - Single route or array of routes to be enriched. Each route should contain path, method,
+ * @param routes - Array of routes to be enriched. Each route should contain path, method,
  *                and handlerType properties for proper matching with OpenAPI specs.
  * @param openApiSpec - Optional OpenAPI specification to use instead of fetching from the database.
  *
