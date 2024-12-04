@@ -75,9 +75,9 @@ app.get("/v0/app-routes-file-tree", async (ctx) => {
   const routeEntries = [];
   for (const currentRoute of routes) {
     const url = new URL("http://localhost");
-    url.pathname = currentRoute.path ?? "DADADA";
+    url.pathname = currentRoute.path ?? "";
     const request = new Request(url, {
-      method: currentRoute.method ?? "DIDIDI",
+      method: currentRoute.method ?? "",
     });
     result.resetHistory();
     const response = await result.currentApp.fetch(request);
