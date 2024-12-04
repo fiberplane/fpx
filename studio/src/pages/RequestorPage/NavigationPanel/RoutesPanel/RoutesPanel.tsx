@@ -257,7 +257,9 @@ export function RoutesPanel() {
         {hasAnyRoutes && (
           <RoutesSection title={<DetectedRoutesTitle />}>
             <TabsContent value="list" className="mt-0">
-              <div className="grid">
+              {detectedRoutes.length === 0 ? <div className="italic text-center text-muted-foreground text-xs my-4">
+                No routes match filter criteria
+              </div> : <div className="grid">
                 {detectedRoutes.map((route, index) => (
                   <RoutesItem
                     key={index}
@@ -274,6 +276,7 @@ export function RoutesPanel() {
                   />
                 ))}
               </div>
+              }
             </TabsContent>
             <TabsContent value="fileTree" className="mt-0">
               {filteredTreeRoutes?.tree.map((tree) => (
@@ -322,7 +325,7 @@ export function RoutesPanel() {
                 route={route}
                 selectedRoute={
                   selectedRouteIndex ===
-                  userAddedRoutes.length + detectedRoutes.length + index
+                    userAddedRoutes.length + detectedRoutes.length + index
                     ? route
                     : null
                 }
@@ -333,7 +336,7 @@ export function RoutesPanel() {
             ))}
           </RoutesSection>
         )}
-        {hasAnyRoutes && <EmptyState />}
+        {!hasAnyRoutes && <EmptyState />}
       </div>
     </Tabs>
   );
