@@ -1,5 +1,5 @@
-import type { TreeNode } from "@/queries/app-routes";
 import { noop } from "@/utils";
+import type { CollapsableTreeNode } from "../../store/types";
 import type { ProbedRoute } from "../../types";
 import { RoutesItem } from "./RoutesItem";
 import { RoutesTreeGroup } from "./RoutesTreeGroup";
@@ -14,13 +14,18 @@ export function RouteTree({
 }: {
   activeRoute: ProbedRoute | null;
   selectedRoute: ProbedRoute | null;
-  tree: TreeNode;
+  tree: CollapsableTreeNode;
   userAddedRoutes: Array<ProbedRoute>;
   handleRouteClick: (route: ProbedRoute) => void;
   level?: number;
 }) {
   return (
-    <RoutesTreeGroup key={tree.path} filePath={tree.path} level={level}>
+    <RoutesTreeGroup
+      key={tree.path}
+      filePath={tree.path}
+      level={level}
+      collapsed={tree.collapsed}
+    >
       {tree.children.map((child) => (
         <RouteTree
           key={child.path}

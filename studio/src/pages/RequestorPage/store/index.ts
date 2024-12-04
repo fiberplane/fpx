@@ -4,6 +4,7 @@ export type {
   RequestorBody,
   RequestorResponseBody,
   NavigationRoutesView,
+  CollapsableTreeNode,
 } from "./types";
 import { memoize } from "proxy-memoize";
 import { create } from "zustand";

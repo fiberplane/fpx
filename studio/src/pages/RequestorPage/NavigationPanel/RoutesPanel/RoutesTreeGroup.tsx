@@ -1,21 +1,23 @@
 import { cn } from "@/utils";
 import { ChevronDownIcon, ChevronRightIcon } from "@radix-ui/react-icons";
-import { type ReactNode, memo, useState } from "react";
+import { type ReactNode, memo } from "react";
+import { useRequestorStore } from "../../store";
 
 type RoutesTreeGroupProps = {
   children: ReactNode;
   filePath: string;
   level?: number;
+  collapsed?: boolean;
 };
 
 export const RoutesTreeGroup = memo(function RoutesTreeGroup({
   children,
   filePath,
   level = 0,
+  collapsed = false,
 }: RoutesTreeGroupProps) {
-  const [collapsed, setCollapsed] = useState(false);
-  const toggleCollapsed = () => setCollapsed((current) => !current);
-
+  const { toggleTreeNode: toggleCollapsed } =
+    useRequestorStore("toggleTreeNode");
   return (
     <div className={cn("pt-2 grid min-w-0", { "pt-0": level === 0 })}>
       <button
@@ -26,7 +28,7 @@ export const RoutesTreeGroup = memo(function RoutesTreeGroup({
           "rounded text-left",
           "text-muted-foreground hover:bg-muted",
         )}
-        onClick={toggleCollapsed}
+        onClick={() => toggleCollapsed(filePath)}
       >
         <span className="">
           {!collapsed ? <ChevronDownIcon /> : <ChevronRightIcon />}

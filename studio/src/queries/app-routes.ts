@@ -1,5 +1,7 @@
+import { useRequestorStore } from "@/pages/RequestorPage/store";
 import { ProbedRouteSchema } from "@/pages/RequestorPage/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { z } from "zod";
 import { queryClient } from "./queries";
 
@@ -76,7 +78,7 @@ const AppRoutesTreeResponseSchema = z.object({
 export type AppRoutesTreeResponse = z.infer<typeof AppRoutesTreeResponseSchema>;
 
 export function useFetchFileTreeRoutes() {
-  return useQuery({
+  const result = useQuery({
     queryKey: ["routesFileTree"],
     queryFn: async () => {
       const response = await fetch("/v0/app-routes-file-tree");
@@ -85,4 +87,14 @@ export function useFetchFileTreeRoutes() {
     },
     throwOnError: true,
   });
+
+  const { updateTreeResult } = useRequestorStore("updateTreeResult");
+  const { data } = result;
+  useEffect(() => {
+    if (data) {
+      updateTreeResult(data);
+    }
+  }, [data, updateTreeResult]);
+
+  return result;
 }

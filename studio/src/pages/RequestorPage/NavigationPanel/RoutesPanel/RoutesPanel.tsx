@@ -18,7 +18,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
 import { AddRouteButton } from "../../routes";
 import { useRequestorStore } from "../../store";
-import type { NavigationRoutesView } from "../../store";
+import type { CollapsableTreeNode, NavigationRoutesView } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { Search } from "../Search";
 import { RouteTree } from "./RouteTree";
@@ -32,9 +32,13 @@ export function RoutesPanel() {
     setActiveRoute,
     navigationPanelRoutesView: tab,
     setNavigationPanelRoutesView: setTab,
+    unmatched,
+    collapsibleTree,
   } = useRequestorStore(
     "routes",
     "activeRoute",
+    "unmatched",
+    "collapsibleTree",
     "setActiveRoute",
     "navigationPanelRoutesView",
     "setNavigationPanelRoutesView",
@@ -88,28 +92,28 @@ export function RoutesPanel() {
     );
   }, [filteredRoutes]);
 
-  const { data: fileTreeRoutes } = useFetchFileTreeRoutes();
+  // Trigger fetching of the file tree data
+  useFetchFileTreeRoutes();
 
   const filteredTreeRoutes = useMemo(() => {
-    if (!fileTreeRoutes) {
-      return;
-    }
-
     const cleanFilter = filterValue.trim().toLowerCase();
     if (cleanFilter.length < 3) {
-      return fileTreeRoutes;
+      return {
+        tree: collapsibleTree,
+        unmatched,
+      };
     }
 
     return {
-      tree: filterTree(fileTreeRoutes?.tree, cleanFilter),
-      unmatched: fileTreeRoutes?.unmatched.filter((route) =>
+      tree: filterTree(collapsibleTree, cleanFilter),
+      unmatched: unmatched.filter((route) =>
         route.path.toLowerCase().includes(cleanFilter),
       ),
     };
-  }, [filterValue, fileTreeRoutes]);
+  }, [filterValue, unmatched, collapsibleTree]);
 
   function filterTree(
-    nodes: Array<TreeNode>,
+    nodes: Array<CollapsableTreeNode>,
     cleanFilter: string,
   ): Array<TreeNode> {
     return nodes?.map((node) => {
@@ -124,7 +128,13 @@ export function RoutesPanel() {
   }
 
   const flattenedTreeRoutes = useMemo(() => {
-    const getRoutes = (node: TreeNode): Array<AppRouteWithFileName> => {
+    const getRoutes = (
+      node: CollapsableTreeNode,
+    ): Array<AppRouteWithFileName> => {
+      if (node.collapsed) {
+        return [];
+      }
+
       return [
         ...node.routes,
         ...node.children.flatMap((child) => getRoutes(child)),

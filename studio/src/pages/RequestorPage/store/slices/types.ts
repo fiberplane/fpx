@@ -1,3 +1,4 @@
+import type { TreeNode } from "@/queries/app-routes";
 import type {
   RequestBodyType,
   RequestorBody,
@@ -11,7 +12,11 @@ import type {
   RequestMethodInputValue,
   RequestType,
 } from "../../types";
-import type { NavigationRoutesView, RequestorActiveResponse } from "../types";
+import type {
+  CollapsableTreeNode,
+  NavigationRoutesView,
+  RequestorActiveResponse,
+} from "../types";
 
 type RequestorTraceId = string;
 
@@ -58,8 +63,19 @@ export interface RequestResponseSlice {
 export interface RoutesSlice {
   routes: ProbedRoute[];
   activeRoute: ProbedRoute | null;
+
   setRoutes: (routes: ProbedRoute[]) => void;
   setActiveRoute: (route: ProbedRoute) => void;
+
+  unmatched: Array<ProbedRoute>;
+  collapsibleTree: Array<CollapsableTreeNode>;
+  updateTreeResult: (
+    result:
+      | { unmatched: Array<ProbedRoute>; tree: Array<TreeNode> }
+      | undefined,
+  ) => void;
+  setTree: (node: Array<TreeNode>) => void;
+  toggleTreeNode: (path: string) => void;
 
   routesAndMiddleware: ProbedRoute[];
   getMatchingMiddleware: () => null | ProbedRoute[];
