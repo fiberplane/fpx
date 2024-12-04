@@ -17,6 +17,7 @@ export const RequestMethodSchema = z.enum([
   "OPTIONS",
   "PATCH",
   "HEAD",
+  "ALL",
 ]);
 
 export type RequestMethod = z.infer<typeof RequestMethodSchema>;
