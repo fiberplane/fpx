@@ -70,42 +70,50 @@ app.get("/v0/app-routes-file-tree", async (ctx) => {
         eq(appRoutes.routeOrigin, "discovered"),
       ),
   });
+  try {
+    const result = await getResult();
 
-  const result = await getResult();
+    const routeEntries = [];
+    for (const currentRoute of routes) {
+      const url = new URL("http://localhost");
+      url.pathname = currentRoute.path ?? "";
+      const request = new Request(url, {
+        method: currentRoute.method ?? "",
+      });
+      result.resetHistory();
+      const response = await result.currentApp.fetch(request);
+      const responseText = await response.text();
 
-  const routeEntries = [];
-  for (const currentRoute of routes) {
-    const url = new URL("http://localhost");
-    url.pathname = currentRoute.path ?? "";
-    const request = new Request(url, {
-      method: currentRoute.method ?? "",
-    });
-    result.resetHistory();
-    const response = await result.currentApp.fetch(request);
-    const responseText = await response.text();
+      if (responseText !== "Ok") {
+        logger.warn(
+          "Failed to fetch route for context expansion",
+          responseText,
+        );
+        continue;
+      }
 
-    if (responseText !== "Ok") {
-      logger.warn("Failed to fetch route for context expansion", responseText);
-      continue;
+      const history = result.getHistory();
+      const routeEntryId = history[history.length - 1];
+      const routeEntry = result.getRouteEntryById(routeEntryId as RouteEntryId);
+
+      routeEntries.push({
+        ...currentRoute,
+        fileName: routeEntry?.fileName,
+      });
     }
 
-    const history = result.getHistory();
-    const routeEntryId = history[history.length - 1];
-    const routeEntry = result.getRouteEntryById(routeEntryId as RouteEntryId);
+    const tree = buildRouteTree(
+      routeEntries.filter(
+        (route) => route?.fileName !== undefined,
+      ) as Array<AppRouteWithFileName>,
+    );
 
-    routeEntries.push({
-      ...currentRoute,
-      fileName: routeEntry?.fileName,
-    });
+    return ctx.json(tree);
+  } catch (error) {
+    logger.info("Error constructing file tree routes:", error);
+    const tree = buildRouteTree(routes as Array<AppRouteWithFileName>);
+    return ctx.json(tree);
   }
-
-  const tree = buildRouteTree(
-    routeEntries.filter(
-      (route) => route?.fileName !== undefined,
-    ) as Array<AppRouteWithFileName>,
-  );
-
-  return ctx.json(tree);
 });
 
 /**
