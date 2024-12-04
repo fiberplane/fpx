@@ -4,7 +4,7 @@ import { config } from "dotenv";
 import { defineConfig } from "drizzle-kit";
 
 let dbConfig: ReturnType<typeof defineConfig>;
-if (process.env.GOOSIFY_ENV === "production") {
+if (process.env.ENVIRONMENT === "production") {
   config({ path: "./.prod.vars" });
   dbConfig = defineConfig({
     schema: "./src/db/schema.ts",
