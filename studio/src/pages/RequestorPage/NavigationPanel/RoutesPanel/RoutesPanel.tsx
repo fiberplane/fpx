@@ -257,26 +257,29 @@ export function RoutesPanel() {
         {hasAnyRoutes && (
           <RoutesSection title={<DetectedRoutesTitle />}>
             <TabsContent value="list" className="mt-0">
-              {detectedRoutes.length === 0 ? <div className="italic text-center text-muted-foreground text-xs my-4">
-                No routes match filter criteria
-              </div> : <div className="grid">
-                {detectedRoutes.map((route, index) => (
-                  <RoutesItem
-                    key={index}
-                    index={userAddedRoutes.length + index}
-                    route={route}
-                    selectedRoute={
-                      selectedRouteIndex === userAddedRoutes.length + index
-                        ? route
-                        : null
-                    }
-                    activeRoute={activeRoute}
-                    handleRouteClick={handleRouteClick}
-                    setSelectedRouteIndex={setSelectedRouteIndex}
-                  />
-                ))}
-              </div>
-              }
+              {detectedRoutes.length === 0 ? (
+                <div className="italic text-center text-muted-foreground text-xs my-4">
+                  No routes match filter criteria
+                </div>
+              ) : (
+                <div className="grid">
+                  {detectedRoutes.map((route, index) => (
+                    <RoutesItem
+                      key={index}
+                      index={userAddedRoutes.length + index}
+                      route={route}
+                      selectedRoute={
+                        selectedRouteIndex === userAddedRoutes.length + index
+                          ? route
+                          : null
+                      }
+                      activeRoute={activeRoute}
+                      handleRouteClick={handleRouteClick}
+                      setSelectedRouteIndex={setSelectedRouteIndex}
+                    />
+                  ))}
+                </div>
+              )}
             </TabsContent>
             <TabsContent value="fileTree" className="mt-0">
               {filteredTreeRoutes?.tree.map((tree) => (
@@ -325,7 +328,7 @@ export function RoutesPanel() {
                 route={route}
                 selectedRoute={
                   selectedRouteIndex ===
-                    userAddedRoutes.length + detectedRoutes.length + index
+                  userAddedRoutes.length + detectedRoutes.length + index
                     ? route
                     : null
                 }
