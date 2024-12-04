@@ -11,13 +11,34 @@ tags:
   - routes
 ---
 
+import { LinkCard } from "@astrojs/starlight/components";
+
 Welcome to **MEGA Launch Week Day 3!** Wow, we made it halfway through the week. Wednesday always carries a "mini-Sunday" vibe, so we have a more relaxed update for you today. Introducing: file tree view for routes!
 
 ## File Tree View
 
-TL;DR: file tree view is a small toggle that allows you to better see your API routes in the Fiberplane Studio as they are organized in your project files.
+TL;DR: file tree view is a toggle in the "Routes" left sidebar that allows you to better see your API routes in the Fiberplane Studio as they are organized in your project files.
 
 ![File tree view](@/assets/blog/2024-12-04-route-file-tree.png)
+
+## How it works
+
+The file tree view builds on top of two technologies:
+- automatic route detection, powered by our client library;
+- static code analysis to map the routes to the correct files.
+
+First, we detect and report all the routes that are registered in your application using the client library.
+
+Then, comes the fun part: we need to figure out what file path each route is associated with. We do this by mocking a Hono application in our static analysis engine and seeing where each route sends traffic to and which parts of the middleware "light up" when a route is triggered. That information flags the file that we're then able to map the route to in the UI.
+
+We talked more about this and how we run our static analysis engine in a previous blog post on launch day 1:
+
+<LinkCard
+  title="Code Analysis"
+  description="Fiberplane Studio static code analysis for auto Hono.js API routes"
+  href="https://fiberplane.com/blog/code-analysis/"
+/>
+
 
 ## Modularizing an example marathon API
 
