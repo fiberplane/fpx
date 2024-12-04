@@ -152,6 +152,7 @@ export function RoutesPanel() {
     ];
   }, [filteredTreeRoutes]);
 
+  const hasAnyRoutes = routes.length > 0;
   const visibleRoutes = tab === "list" ? detectedRoutes : flattenedTreeRoutes;
   const allRoutes = useMemo(() => {
     return [...userAddedRoutes, ...visibleRoutes, ...openApiRoutes];
@@ -253,7 +254,7 @@ export function RoutesPanel() {
           </RoutesSection>
         )}
 
-        {allRoutes.length > 0 && (
+        {hasAnyRoutes && (
           <RoutesSection title={<DetectedRoutesTitle />}>
             <TabsContent value="list" className="mt-0">
               <div className="grid">
@@ -332,7 +333,7 @@ export function RoutesPanel() {
             ))}
           </RoutesSection>
         )}
-        {allRoutes.length === 0 && <EmptyState />}
+        {hasAnyRoutes && <EmptyState />}
       </div>
     </Tabs>
   );
