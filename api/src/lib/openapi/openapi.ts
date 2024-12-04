@@ -1,7 +1,7 @@
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type { z } from "zod";
 import type * as schema from "../../db/schema.js";
-import type { schemaProbedRoutes } from "../../lib/app-routes.js";
+import type { schemaProbedRoutes } from "../../lib/app-routes/index.js";
 import logger from "../../logger/index.js";
 import {
   CircularReferenceError,
