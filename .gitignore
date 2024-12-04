@@ -2,7 +2,6 @@
 shared/dist
 .env
 .envrc
-.cursorrules
 
 # Cursor
 .cursorrules
