@@ -7,11 +7,13 @@ import { RoutesTreeGroup } from "./RoutesTreeGroup";
 export function RouteTree({
   tree,
   activeRoute,
+  selectedRoute,
   userAddedRoutes,
   handleRouteClick,
   level = 0,
 }: {
   activeRoute: ProbedRoute | null;
+  selectedRoute: ProbedRoute | null;
   tree: TreeNode;
   userAddedRoutes: Array<ProbedRoute>;
   handleRouteClick: (route: ProbedRoute) => void;
@@ -23,6 +25,7 @@ export function RouteTree({
         <RouteTree
           key={child.path}
           tree={child}
+          selectedRoute={selectedRoute}
           level={level + 1}
           userAddedRoutes={userAddedRoutes}
           handleRouteClick={handleRouteClick}
@@ -35,7 +38,7 @@ export function RouteTree({
           index={userAddedRoutes.length + index}
           // HACk: nullish into optional workaround
           route={{ ...route, openApiSpec: route.openApiSpec ?? undefined }}
-          selectedRoute={null}
+          selectedRoute={selectedRoute}
           activeRoute={activeRoute}
           handleRouteClick={handleRouteClick}
           // TODO: fix index based nav in tree

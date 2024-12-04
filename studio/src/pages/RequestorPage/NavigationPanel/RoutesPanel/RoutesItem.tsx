@@ -29,8 +29,13 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
     route.routeOrigin === "open_api";
 
   const method = isWsRequest(route.requestType) ? "WS" : route.method;
-  const isSelected = selectedRoute === route;
-  const isActive = activeRoute === route;
+  const isSelected =
+    selectedRoute === route ||
+    (route.path === selectedRoute?.path &&
+      route.method === selectedRoute.method);
+  const isActive =
+    activeRoute === route ||
+    (route.path === activeRoute?.path && route.method === activeRoute.method);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {

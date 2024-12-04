@@ -1,6 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { type TreeNode, useFetchFileTreeRoutes } from "@/queries/app-routes";
+import {
+  type AppRouteWithFileName,
+  type TreeNode,
+  useFetchFileTreeRoutes,
+} from "@/queries/app-routes";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
@@ -75,9 +79,67 @@ export function RoutesPanel() {
     );
   }, [filteredRoutes]);
 
+  const { data: fileTreeRoutes } = useFetchFileTreeRoutes();
+
+  const filteredTreeRoutes = useMemo(() => {
+    if (!fileTreeRoutes) {
+      return;
+    }
+
+    const cleanFilter = filterValue.trim().toLowerCase();
+    if (cleanFilter.length < 3) {
+      return fileTreeRoutes;
+    }
+
+    return {
+      tree: filterTree(fileTreeRoutes?.tree, cleanFilter),
+      unmatched: fileTreeRoutes?.unmatched.filter((route) =>
+        route.path.toLowerCase().includes(cleanFilter),
+      ),
+    };
+  }, [filterValue, fileTreeRoutes]);
+
+  function filterTree(
+    nodes: Array<TreeNode>,
+    cleanFilter: string,
+  ): Array<TreeNode> {
+    return nodes?.map((node) => {
+      const routes = node.routes.filter((route) =>
+        route.path?.toLowerCase().includes(cleanFilter),
+      );
+
+      const children = filterTree(node.children, cleanFilter);
+
+      return { ...node, routes, children };
+    });
+  }
+
+  const flattenedTreeRoutes = useMemo(() => {
+    const getRoutes = (node: TreeNode): Array<AppRouteWithFileName> => {
+      return [
+        ...node.routes,
+        ...node.children.flatMap((child) => getRoutes(child)),
+      ];
+    };
+
+    if (!filteredTreeRoutes) {
+      return [];
+    }
+    return [
+      ...filteredTreeRoutes.tree.flatMap(
+        (node) => getRoutes(node),
+        ...filteredTreeRoutes.unmatched,
+      ),
+    ];
+  }, [filteredTreeRoutes]);
+
+  type ListType = "list" | "fileTree";
+  const [tab, setTab] = useState<ListType>("list");
+
+  const visibleRoutes = tab === "list" ? detectedRoutes : flattenedTreeRoutes;
   const allRoutes = useMemo(() => {
-    return [...userAddedRoutes, ...detectedRoutes, ...openApiRoutes];
-  }, [userAddedRoutes, detectedRoutes, openApiRoutes]);
+    return [...userAddedRoutes, ...visibleRoutes, ...openApiRoutes];
+  }, [userAddedRoutes, visibleRoutes, openApiRoutes]);
 
   const activeRouteIndex = useMemo(() => {
     return allRoutes.findIndex(
@@ -131,43 +193,15 @@ export function RoutesPanel() {
     }
   };
 
-  const { data: fileTreeRoutes } = useFetchFileTreeRoutes();
-
-  const filteredTreeRoutes = useMemo(() => {
-    if (!fileTreeRoutes) {
-      return;
-    }
-
-    const cleanFilter = filterValue.trim().toLowerCase();
-    if (cleanFilter.length < 3) {
-      return fileTreeRoutes;
-    }
-
-    return {
-      tree: filterTree(fileTreeRoutes?.tree, cleanFilter),
-      unmatched: fileTreeRoutes?.unmatched.filter((route) =>
-        route.path.toLowerCase().includes(cleanFilter),
-      ),
-    };
-  }, [filterValue, fileTreeRoutes]);
-
-  function filterTree(
-    nodes: Array<TreeNode>,
-    cleanFilter: string,
-  ): Array<TreeNode> {
-    return nodes?.map((node) => {
-      const routes = node.routes.filter((route) =>
-        route.path?.toLowerCase().includes(cleanFilter),
-      );
-
-      const children = filterTree(node.children, cleanFilter);
-
-      return { ...node, routes, children };
-    });
-  }
+  const selectedRoute =
+    selectedRouteIndex !== null ? allRoutes[selectedRouteIndex] : null;
 
   return (
-    <Tabs defaultValue="list" className={cn("h-full", "flex", "flex-col")}>
+    <Tabs
+      value={tab}
+      className={cn("h-full", "flex", "flex-col")}
+      onValueChange={(tabValue: string) => setTab(tabValue as ListType)}
+    >
       <div>
         <div className="flex items-center space-x-2 pb-3">
           <Search
@@ -228,6 +262,7 @@ export function RoutesPanel() {
                   key={tree.path}
                   tree={tree}
                   activeRoute={activeRoute}
+                  selectedRoute={selectedRoute}
                   userAddedRoutes={userAddedRoutes}
                   handleRouteClick={handleRouteClick}
                 />
