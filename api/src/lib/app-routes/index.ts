@@ -1,7 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { z } from "zod";
-import * as schema from "../db/schema.js";
+import * as schema from "../../db/schema.js";
+import type {
+  AppRouteWithFileName,
+  AppRoutesTreeResponse,
+  TreeNode,
+} from "./types.js";
 
 const { appRoutes } = schema;
 
@@ -90,5 +95,73 @@ export async function reregisterRoutes(
         });
       }
     }
+  });
+}
+/**
+ * Builds a route tree structure for a file tree browser in the UI.
+ *
+ * This function processes an array of route entries and organizes them into a tree
+ * structure based on their file paths. Routes without a `fileName` are added to an
+ * "unmatched" list. The resulting tree is optimized to consolidate nodes with a single
+ * child into a single path segment.
+ */
+export function buildRouteTree(
+  entries: Array<AppRouteWithFileName>,
+): AppRoutesTreeResponse {
+  const tree: Array<TreeNode> = [];
+  const unmatched: Array<schema.AppRoute> = [];
+
+  for (const entry of entries) {
+    if (!entry.fileName) {
+      unmatched.push(entry);
+    } else {
+      const filePathParts = entry.fileName.split("/");
+      let currentNodeArray = tree;
+
+      for (const [index, part] of filePathParts.entries()) {
+        let childNode = currentNodeArray.find((child) => child.path === part);
+
+        if (!childNode) {
+          childNode = { path: part, routes: [], children: [] };
+          currentNodeArray.push(childNode);
+        }
+
+        if (index === filePathParts.length - 1) {
+          childNode.routes.push(entry);
+        }
+
+        currentNodeArray = childNode.children;
+      }
+    }
+  }
+
+  return { tree: consolidateSingleChildNodes(tree), unmatched };
+}
+
+/**
+ * Optimizes the structure of a route tree by consolidating nodes with a single child.
+ *
+ * This function traverses the tree and combines consecutive nodes with a single child
+ * into a single node with a concatenated path. It is used to simplify the visual
+ * representation of the file tree in the UI.
+ */
+function consolidateSingleChildNodes(nodes: Array<TreeNode>): Array<TreeNode> {
+  return nodes.map((node) => {
+    if (node.children.length === 1) {
+      const child = node.children[0];
+
+      return consolidateSingleChildNodes([
+        {
+          path: `${node.path}/${child.path}`,
+          routes: [...node.routes, ...child.routes],
+          children: child.children,
+        },
+      ])[0];
+    }
+
+    return {
+      ...node,
+      children: consolidateSingleChildNodes(node.children),
+    };
   });
 }

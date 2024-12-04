@@ -3,19 +3,23 @@ export type {
   RequestBodyType,
   RequestorBody,
   RequestorResponseBody,
+  NavigationRoutesView,
+  CollapsableTreeNode,
 } from "./types";
 import { memoize } from "proxy-memoize";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { useShallow } from "zustand/react/shallow";
-import { aiSlice } from "./slices/aiSlice";
-import { requestResponseSlice } from "./slices/requestResponseSlice";
-import { routesSlice } from "./slices/routesSlice";
-import { tabsSlice } from "./slices/tabsSlice";
-import type { Store } from "./slices/types";
-import { uiSlice } from "./slices/uiSlice";
-import { websocketSlice } from "./slices/websocketSlice";
+import {
+  type Store,
+  aiSlice,
+  requestResponseSlice,
+  routesSlice,
+  tabsSlice,
+  uiSlice,
+  websocketSlice,
+} from "./slices";
 import { _getActiveRoute } from "./utils";
 export { useServiceBaseUrl } from "./useServiceBaseUrl";
 
@@ -41,7 +45,7 @@ export function useActiveRoute() {
 }
 
 export function useRequestorStore<T extends Store, K extends keyof Store>(
-  ...items: Array<keyof Store>
+  ...items: Array<K>
 ): Pick<T, K> {
   const obj = useRequestorStoreRaw(
     useShallow((state) => {

@@ -1,3 +1,4 @@
+import type { TreeNode } from "@/queries/app-routes";
 import type { StateCreator } from "zustand";
 import { findAllSmartRouterMatches, findMatchedRoute } from "../../routes";
 import type { ProbedRoute, RequestMethod } from "../../types";
@@ -6,6 +7,7 @@ import {
   getVisibleRequestPanelTabs,
   getVisibleResponsePanelTabs,
 } from "../tabs";
+import type { CollapsableTreeNode } from "../types";
 import {
   addBaseUrl,
   extractMatchedPathParams,
@@ -100,6 +102,80 @@ export const routesSlice: StateCreator<
 
       // Add content type header (you might want to move this to a separate function)
       updateContentTypeHeaderInState(state);
+    }),
+
+  unmatched: [],
+  collapsibleTree: [],
+
+  updateTreeResult: (
+    result:
+      | {
+          unmatched: Array<ProbedRoute>;
+          tree: Array<TreeNode>;
+        }
+      | undefined,
+  ) => {
+    // If there's no result, reset the state
+    if (!result) {
+      set((state) => {
+        state.unmatched = [];
+        state.collapsibleTree = [];
+      });
+      return;
+    }
+
+    get().setTree(result.tree);
+    set((state) => {
+      state.unmatched = result.unmatched;
+    });
+  },
+
+  setTree: (newTree: Array<TreeNode>) =>
+    set((state) => {
+      const copyCollapsedState = (
+        newNode: TreeNode,
+        oldNode: CollapsableTreeNode | null,
+      ): CollapsableTreeNode => {
+        return {
+          ...newNode,
+          collapsed: oldNode ? oldNode.collapsed : false,
+          children: newNode.children.map((child) =>
+            copyCollapsedState(
+              child,
+              oldNode?.children.find((n) => n.path === child.path) ?? null,
+            ),
+          ),
+        };
+      };
+
+      state.collapsibleTree = newTree.map((item) =>
+        copyCollapsedState(
+          item,
+          state.collapsibleTree.find((n) => n.path === item.path) ?? null,
+        ),
+      );
+    }),
+
+  toggleTreeNode: (path: string) =>
+    set((state) => {
+      if (!state.collapsibleTree) {
+        return;
+      }
+
+      const toggleNode = (node: CollapsableTreeNode): CollapsableTreeNode => {
+        if (node.path === path) {
+          return { ...node, collapsed: !node.collapsed };
+        }
+
+        return {
+          ...node,
+          children: node.children.map(toggleNode),
+        };
+      };
+
+      state.collapsibleTree = state.collapsibleTree.map((item) =>
+        toggleNode(item),
+      );
     }),
 
   routesAndMiddleware: [],
