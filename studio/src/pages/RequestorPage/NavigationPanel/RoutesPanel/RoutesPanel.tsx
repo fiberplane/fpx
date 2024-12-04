@@ -18,6 +18,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
 import { AddRouteButton } from "../../routes";
 import { useRequestorStore } from "../../store";
+import type { NavigationRoutesView } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { Search } from "../Search";
 import { RouteTree } from "./RouteTree";
@@ -25,10 +26,18 @@ import { RoutesItem } from "./RoutesItem";
 import { useRefreshRoutes } from "./useRefreshRoutes";
 
 export function RoutesPanel() {
-  const { routes, activeRoute, setActiveRoute } = useRequestorStore(
+  const {
+    routes,
+    activeRoute,
+    setActiveRoute,
+    navigationPanelRoutesView: tab,
+    setNavigationPanelRoutesView: setTab,
+  } = useRequestorStore(
     "routes",
     "activeRoute",
     "setActiveRoute",
+    "navigationPanelRoutesView",
+    "setNavigationPanelRoutesView",
   );
 
   const navigate = useNavigate();
@@ -133,9 +142,6 @@ export function RoutesPanel() {
     ];
   }, [filteredTreeRoutes]);
 
-  type ListType = "list" | "fileTree";
-  const [tab, setTab] = useState<ListType>("list");
-
   const visibleRoutes = tab === "list" ? detectedRoutes : flattenedTreeRoutes;
   const allRoutes = useMemo(() => {
     return [...userAddedRoutes, ...visibleRoutes, ...openApiRoutes];
@@ -200,7 +206,9 @@ export function RoutesPanel() {
     <Tabs
       value={tab}
       className={cn("h-full", "flex", "flex-col")}
-      onValueChange={(tabValue: string) => setTab(tabValue as ListType)}
+      onValueChange={(tabValue: string) =>
+        setTab(tabValue as NavigationRoutesView)
+      }
     >
       <div>
         <div className="flex items-center space-x-2 pb-3">

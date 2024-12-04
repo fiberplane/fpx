@@ -1,5 +1,6 @@
 import { isLgScreen } from "@/utils";
 import type { StateCreator } from "zustand";
+import type { NavigationRoutesView } from "../types";
 import {
   type BOTTOM_PANEL_NAMES,
   type UISlice,
@@ -11,6 +12,11 @@ export const uiSlice: StateCreator<
   [["zustand/immer", never], ["zustand/devtools", never]]
 > = (set) => {
   return {
+    navigationPanelRoutesView: "list",
+    setNavigationPanelRoutesView: (tab: NavigationRoutesView) =>
+      set((state) => {
+        state.navigationPanelRoutesView = tab;
+      }),
     settingsOpen: false,
     defaultSettingsTab: null,
     setSettingsOpen: (

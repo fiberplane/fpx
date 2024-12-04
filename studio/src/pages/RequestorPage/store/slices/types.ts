@@ -11,7 +11,7 @@ import type {
   RequestMethodInputValue,
   RequestType,
 } from "../../types";
-import type { RequestorActiveResponse } from "../types";
+import type { NavigationRoutesView, RequestorActiveResponse } from "../types";
 
 type RequestorTraceId = string;
 
@@ -81,6 +81,8 @@ export interface WebsocketSlice {
 }
 
 export interface UISlice {
+  navigationPanelRoutesView: NavigationRoutesView;
+  setNavigationPanelRoutesView: (tab: NavigationRoutesView) => void;
   settingsOpen: boolean;
   defaultSettingsTab: string | null;
   setSettingsOpen: (open: boolean, defaultSettingsTab?: string | null) => void;

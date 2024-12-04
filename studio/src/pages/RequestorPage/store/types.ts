@@ -128,3 +128,4 @@ export type RequestorState = z.infer<typeof RequestorStateSchema>;
 
 export type RequestorBody = RequestorState["body"];
 export type RequestBodyType = RequestorBody["type"];
+export type NavigationRoutesView = "list" | "fileTree";
