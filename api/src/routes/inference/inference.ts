@@ -19,6 +19,7 @@ const generateRequestSchema = z.object({
   history: z.array(z.string()).nullish(),
   persona: z.string(),
   openApiSpec: z.string().nullish(),
+  prompt: z.string().nullish(),
 });
 
 app.post(
@@ -26,7 +27,7 @@ app.post(
   cors(),
   zValidator("json", generateRequestSchema),
   async (ctx) => {
-    const { handler, method, path, history, persona, openApiSpec } =
+    const { handler, method, path, history, persona, openApiSpec, prompt } =
       ctx.req.valid("json");
 
     const db = ctx.get("db");
@@ -93,6 +94,8 @@ app.post(
       // middleware: middleware ?? undefined,
       middleware: undefined,
       middlewareContext: middlewareContextPerformant ?? undefined,
+      // additional user prompt (from studio)
+      prompt: prompt ?? undefined,
     };
 
     const { data: parsedArgs, error: generateError } =

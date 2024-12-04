@@ -13,6 +13,7 @@ import { immer } from "zustand/middleware/immer";
 import { useShallow } from "zustand/react/shallow";
 import {
   type Store,
+  aiSlice,
   requestResponseSlice,
   routesSlice,
   tabsSlice,
@@ -31,6 +32,7 @@ export const useRequestorStoreRaw = create<RequestorState>()(
       ...tabsSlice(...a),
       ...requestResponseSlice(...a),
       ...uiSlice(...a),
+      ...aiSlice(...a),
     })),
     { name: "RequestorStore" },
   ),

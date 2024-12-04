@@ -31,6 +31,7 @@ export async function sendRoutes(
   promiseStore?: PromiseStore,
 ) {
   const routes = getRoutesFromApp(app) ?? [];
+  const openApiSpec = getOpenApiSpecFromApp(app);
 
   try {
     // NOTE - Construct url to the routes endpoint here, given the FPX endpoint.
@@ -41,7 +42,7 @@ export async function sendRoutes(
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ routes }),
+      body: JSON.stringify({ routes, openApiSpec }),
     });
 
     if (promiseStore) {
@@ -95,4 +96,8 @@ function getRoutesEndpoint(fpxEndpoint: string) {
   const routesEndpoint = new URL(fpxEndpoint);
   routesEndpoint.pathname = "/v0/probed-routes";
   return routesEndpoint.toString();
+}
+
+function getOpenApiSpecFromApp(app: HonoLikeApp) {
+  return app.getOpenAPIDocument?.();
 }

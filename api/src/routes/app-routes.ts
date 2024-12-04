@@ -18,6 +18,7 @@ import {
 } from "../lib/app-routes/index.js";
 import type { AppRouteWithFileName } from "../lib/app-routes/types.js";
 import { getResult } from "../lib/code-analysis.js";
+import { addOpenApiSpecToRoutes } from "../lib/openapi/index.js";
 import {
   OTEL_TRACE_ID_REGEX,
   generateOtelTraceId,
@@ -69,42 +70,50 @@ app.get("/v0/app-routes-file-tree", async (ctx) => {
         eq(appRoutes.routeOrigin, "discovered"),
       ),
   });
+  try {
+    const result = await getResult();
 
-  const result = await getResult();
+    const routeEntries = [];
+    for (const currentRoute of routes) {
+      const url = new URL("http://localhost");
+      url.pathname = currentRoute.path ?? "";
+      const request = new Request(url, {
+        method: currentRoute.method ?? "",
+      });
+      result.resetHistory();
+      const response = await result.currentApp.fetch(request);
+      const responseText = await response.text();
 
-  const routeEntries = [];
-  for (const currentRoute of routes) {
-    const url = new URL("http://localhost");
-    url.pathname = currentRoute.path ?? "";
-    const request = new Request(url, {
-      method: currentRoute.method ?? "",
-    });
-    result.resetHistory();
-    const response = await result.currentApp.fetch(request);
-    const responseText = await response.text();
+      if (responseText !== "Ok") {
+        logger.warn(
+          "Failed to fetch route for context expansion",
+          responseText,
+        );
+        continue;
+      }
 
-    if (responseText !== "Ok") {
-      logger.warn("Failed to fetch route for context expansion", responseText);
-      continue;
+      const history = result.getHistory();
+      const routeEntryId = history[history.length - 1];
+      const routeEntry = result.getRouteEntryById(routeEntryId as RouteEntryId);
+
+      routeEntries.push({
+        ...currentRoute,
+        fileName: routeEntry?.fileName,
+      });
     }
 
-    const history = result.getHistory();
-    const routeEntryId = history[history.length - 1];
-    const routeEntry = result.getRouteEntryById(routeEntryId as RouteEntryId);
+    const tree = buildRouteTree(
+      routeEntries.filter(
+        (route) => route?.fileName !== undefined,
+      ) as Array<AppRouteWithFileName>,
+    );
 
-    routeEntries.push({
-      ...currentRoute,
-      fileName: routeEntry?.fileName,
-    });
+    return ctx.json(tree);
+  } catch (error) {
+    logger.info("Error constructing file tree routes:", error);
+    const tree = buildRouteTree(routes as Array<AppRouteWithFileName>);
+    return ctx.json(tree);
   }
-
-  const tree = buildRouteTree(
-    routeEntries.filter(
-      (route) => route?.fileName !== undefined,
-    ) as Array<AppRouteWithFileName>,
-  );
-
-  return ctx.json(tree);
 });
 
 /**
@@ -148,12 +157,18 @@ app.post(
   zValidator("json", schemaProbedRoutes),
   async (ctx) => {
     const db = ctx.get("db");
-    const { routes } = ctx.req.valid("json");
 
+    const { routes, openApiSpec } = ctx.req.valid("json");
+
+    const routesWithOpenApiSpec = await addOpenApiSpecToRoutes(
+      db,
+      routes,
+      openApiSpec,
+    );
     try {
       if (routes.length > 0) {
         // "Re-register" all current app routes in a database transaction
-        await reregisterRoutes(db, { routes });
+        await reregisterRoutes(db, { routes: routesWithOpenApiSpec });
 
         // TODO - Detect if anything actually changed before invalidating the query on the frontend
         //        This would be more of an optimization, but is friendlier to the frontend

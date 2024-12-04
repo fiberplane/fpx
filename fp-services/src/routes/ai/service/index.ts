@@ -12,6 +12,7 @@ export async function generateRequest({
   openApiSpec,
   middleware,
   middlewareContext,
+  prompt,
 }: GenerateRequestOptions & { apiKey: string }) {
   return generateRequestWithOpenAI({
     apiKey,
@@ -25,6 +26,7 @@ export async function generateRequest({
     openApiSpec,
     middleware,
     middlewareContext,
+    prompt,
   }).catch((error) => {
     if (error instanceof Error) {
       return { data: null, error: { message: error.message } };

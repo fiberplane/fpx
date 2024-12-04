@@ -129,6 +129,13 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             return await originalFetch(request, rawEnv, executionContext);
           }
 
+          // Ignore instrumentation for requests that have the x-fpx-ignore header
+          // This is useful for not triggering infinite loops when the OpenAPI spec is fetched from Studio
+          if (request.headers.get("x-fpx-ignore")) {
+            logger.debug("Ignoring request");
+            return await originalFetch(request, rawEnv, executionContext);
+          }
+
           // If the request is from the route inspector, send latest routes to the Studio API and respond with 200 OK
           if (isRouteInspectorRequest(request)) {
             logger.debug("Responding to route inspector request");

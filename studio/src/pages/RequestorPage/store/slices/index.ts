@@ -1,3 +1,4 @@
+export { aiSlice } from "./aiSlice";
 export { requestResponseSlice } from "./requestResponseSlice";
 export { routesSlice } from "./routesSlice";
 export { tabsSlice } from "./tabsSlice";

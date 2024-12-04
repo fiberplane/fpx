@@ -27,7 +27,7 @@ export const tabsSlice: StateCreator<
 
 // Helper functions
 function isRequestsPanelTab(tab: string): tab is RequestsPanelTab {
-  return ["params", "headers", "body", "websocket"].includes(tab);
+  return ["params", "headers", "body", "docs", "websocket"].includes(tab);
 }
 
 function isResponsePanelTab(tab: string): tab is ResponsePanelTab {
