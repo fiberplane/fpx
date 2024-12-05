@@ -14,3 +14,4 @@ export { useActiveTraceId } from "./useActiveTraceId.ts";
 export { useActiveCollectionId } from "./useActiveCollectionId.ts";
 export { useActiveCollectionEntryId } from "./useActiveCollectionEntryId.ts";
 export { useShake } from "./useShake.ts";
+export { useFeature } from "./useFeature.ts";

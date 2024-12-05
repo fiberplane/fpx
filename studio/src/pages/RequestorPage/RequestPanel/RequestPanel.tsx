@@ -3,7 +3,7 @@ import { Tabs } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/utils";
 import { EraserIcon, InfoCircledIcon } from "@radix-ui/react-icons";
-import { type Dispatch, type SetStateAction, memo } from "react";
+import { type Dispatch, type SetStateAction, memo, useMemo } from "react";
 import { FormDataForm } from "../FormDataForm";
 import { KeyValueForm } from "../KeyValueForm";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
@@ -21,6 +21,8 @@ import {
   CodeMirrorTextEditor,
 } from "@/components/CodeMirrorEditor";
 import { useStudioStore } from "../store";
+import { RouteDocumentation } from "./RouteDocumentation/RouteDocumentation";
+import { isOpenApiOperation } from "./RouteDocumentation/openapi";
 
 type RequestPanelProps = {
   aiEnabled: boolean;
@@ -71,6 +73,7 @@ export const RequestPanel = memo(function RequestPanel(
     websocketMessage,
     setWebsocketMessage,
     visibleRequestsPanelTabs,
+    activeRoute,
   } = useStudioStore(
     "path",
     "body",
@@ -89,6 +92,7 @@ export const RequestPanel = memo(function RequestPanel(
     "websocketMessage",
     "setWebsocketMessage",
     "visibleRequestsPanelTabs",
+    "activeRoute",
   );
   const { toast } = useToast();
 
@@ -98,6 +102,14 @@ export const RequestPanel = memo(function RequestPanel(
 
   const shouldShowBody = shouldShowRequestTab("body");
   const shouldShowMessages = shouldShowRequestTab("messages");
+  const openApiSpec = useMemo(() => {
+    try {
+      return JSON.parse(activeRoute?.openApiSpec ?? "{}");
+    } catch (_e) {
+      return null;
+    }
+  }, [activeRoute?.openApiSpec]);
+  const shouldShowDocs = isOpenApiOperation(openApiSpec);
 
   return (
     <Tabs
@@ -134,6 +146,9 @@ export const RequestPanel = memo(function RequestPanel(
               <span className="inline-block w-2 h-2 ml-2 bg-orange-300 rounded-full" />
             )}
           </CustomTabTrigger>
+        )}
+        {shouldShowDocs && (
+          <CustomTabTrigger value="docs">Docs</CustomTabTrigger>
         )}
         {shouldShowMessages && (
           <CustomTabTrigger value="messages">
@@ -241,7 +256,6 @@ export const RequestPanel = memo(function RequestPanel(
               setBody(undefined);
             }}
           />
-          {/* TODO - Have a proper text editor */}
           {body.type === "text" && (
             <CodeMirrorTextEditor
               onChange={setBody}
@@ -284,6 +298,11 @@ export const RequestPanel = memo(function RequestPanel(
               }}
             />
           )}
+        </CustomTabsContent>
+      )}
+      {shouldShowDocs && (
+        <CustomTabsContent value="docs">
+          <RouteDocumentation openApiSpec={openApiSpec} route={activeRoute} />
         </CustomTabsContent>
       )}
       {shouldShowMessages && (

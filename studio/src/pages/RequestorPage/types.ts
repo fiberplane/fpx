@@ -17,6 +17,7 @@ export const RequestMethodSchema = z.enum([
   "OPTIONS",
   "PATCH",
   "HEAD",
+  "ALL",
 ]);
 
 export type RequestMethod = z.infer<typeof RequestMethodSchema>;
@@ -48,7 +49,7 @@ export const ProbedRouteSchema = z.object({
   currentlyRegistered: z.boolean(),
   registrationOrder: z.number().default(-1),
   routeOrigin: z.enum(["discovered", "custom", "open_api"]),
-  openApiSpec: z.string().optional(),
+  openApiSpec: z.string().nullish().optional(),
   requestType: RequestTypeSchema,
   // NOTE - Added on the frontend, not stored in DB
   isDraft: z

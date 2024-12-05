@@ -86,11 +86,20 @@ export const requestResponseSlice: StateCreator<
       // Update other state properties based on the new method and request type
       // (e.g., activeRoute, visibleRequestsPanelTabs, activeRequestsPanelTab, etc.)
       // You might want to move some of this logic to separate functions or slices
+      const matchedRoute = findMatchedRoute(
+        state.appRoutes,
+        removeBaseUrl(state.serviceBaseUrl, state.path),
+        state.method,
+        state.requestType,
+      );
+      const nextActiveRoute = matchedRoute ? matchedRoute.route : null;
+      state.activeRoute = nextActiveRoute;
 
       // Update visibleRequestsPanelTabs based on the new method and request type
       state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
         requestType,
         method,
+        openApiSpec: state.activeRoute?.openApiSpec,
       });
 
       // Ensure the activeRequestsPanelTab is valid

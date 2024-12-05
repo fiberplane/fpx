@@ -5,6 +5,7 @@ export const RequestsPanelTabSchema = z.enum([
   "params",
   "headers",
   "body",
+  "docs",
   "messages",
 ]);
 
@@ -17,14 +18,24 @@ export const isRequestsPanelTab = (tab: unknown): tab is RequestsPanelTab => {
 export const getVisibleRequestPanelTabs = (route: {
   requestType: RequestType;
   method: RequestMethod;
+  openApiSpec: unknown | undefined;
 }): RequestsPanelTab[] => {
+  let result: RequestsPanelTab[] = [];
   if (route.requestType === "websocket") {
-    return ["params", "headers", "messages"];
+    result = ["params", "headers", "messages"];
+  } else {
+    result = ["params", "headers"];
   }
-  if (route.method === "GET" || route.method === "HEAD") {
-    return ["params", "headers"];
+  const canHaveBody = route.method !== "GET" && route.method !== "HEAD";
+  if (canHaveBody) {
+    result.push("body");
   }
-  return ["params", "headers", "body"];
+  // If we have docs, show the docs tab
+  const hasDocs = !!route.openApiSpec;
+  if (hasDocs) {
+    result.push("docs");
+  }
+  return result;
 };
 
 export const ResponsePanelTabSchema = z.enum([

@@ -1,15 +1,27 @@
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  type AppRouteWithFileName,
+  type TreeNode,
+  useFetchFileTreeRoutes,
+} from "@/queries/app-routes";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
-import { ReloadIcon } from "@radix-ui/react-icons";
+import {
+  ActivityLogIcon,
+  ListBulletIcon,
+  ReloadIcon,
+} from "@radix-ui/react-icons";
 import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
 import { AddRouteButton } from "../../routes";
 import { useStudioStore } from "../../store";
+import type { CollapsableTreeNode, NavigationRoutesView } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { Search } from "../Search";
+import { RouteTree } from "./RouteTree";
 import { RoutesItem } from "./RoutesItem";
 import { useRefreshRoutes } from "./useRefreshRoutes";
 
@@ -18,7 +30,19 @@ export function RoutesPanel() {
     appRoutes: routes,
     activeRoute,
     setActiveRoute,
-  } = useStudioStore("appRoutes", "activeRoute", "setActiveRoute");
+    navigationPanelRoutesView: tab,
+    setNavigationPanelRoutesView: setTab,
+    unmatched,
+    collapsibleTree,
+  } = useStudioStore(
+    "appRoutes",
+    "activeRoute",
+    "unmatched",
+    "collapsibleTree",
+    "setActiveRoute",
+    "navigationPanelRoutesView",
+    "setNavigationPanelRoutesView",
+  );
 
   const navigate = useNavigate();
 
@@ -68,9 +92,71 @@ export function RoutesPanel() {
     );
   }, [filteredRoutes]);
 
+  // Trigger fetching of the file tree data
+  useFetchFileTreeRoutes();
+
+  const filteredTreeRoutes = useMemo(() => {
+    const cleanFilter = filterValue.trim().toLowerCase();
+    if (cleanFilter.length < 3) {
+      return {
+        tree: collapsibleTree,
+        unmatched,
+      };
+    }
+
+    return {
+      tree: filterTree(collapsibleTree, cleanFilter),
+      unmatched: unmatched.filter((route) =>
+        route.path.toLowerCase().includes(cleanFilter),
+      ),
+    };
+  }, [filterValue, unmatched, collapsibleTree]);
+
+  function filterTree(
+    nodes: Array<CollapsableTreeNode>,
+    cleanFilter: string,
+  ): Array<TreeNode> {
+    return nodes?.map((node) => {
+      const routes = node.routes.filter((route) =>
+        route.path?.toLowerCase().includes(cleanFilter),
+      );
+
+      const children = filterTree(node.children, cleanFilter);
+
+      return { ...node, routes, children };
+    });
+  }
+
+  const flattenedTreeRoutes = useMemo(() => {
+    const getRoutes = (
+      node: CollapsableTreeNode,
+    ): Array<AppRouteWithFileName> => {
+      if (node.collapsed) {
+        return [];
+      }
+
+      return [
+        ...node.routes,
+        ...node.children.flatMap((child) => getRoutes(child)),
+      ];
+    };
+
+    if (!filteredTreeRoutes) {
+      return [];
+    }
+    return [
+      ...filteredTreeRoutes.tree.flatMap(
+        (node) => getRoutes(node),
+        ...filteredTreeRoutes.unmatched,
+      ),
+    ];
+  }, [filteredTreeRoutes]);
+
+  const hasAnyRoutes = routes.length > 0;
+  const visibleRoutes = tab === "list" ? detectedRoutes : flattenedTreeRoutes;
   const allRoutes = useMemo(() => {
-    return [...userAddedRoutes, ...detectedRoutes, ...openApiRoutes];
-  }, [userAddedRoutes, detectedRoutes, openApiRoutes]);
+    return [...userAddedRoutes, ...visibleRoutes, ...openApiRoutes];
+  }, [userAddedRoutes, visibleRoutes, openApiRoutes]);
 
   const activeRouteIndex = useMemo(() => {
     return allRoutes.findIndex(
@@ -124,8 +210,17 @@ export function RoutesPanel() {
     }
   };
 
+  const selectedRoute =
+    selectedRouteIndex !== null ? allRoutes[selectedRouteIndex] : null;
+
   return (
-    <div className={cn("h-full", "flex", "flex-col")}>
+    <Tabs
+      value={tab}
+      className={cn("h-full", "flex", "flex-col")}
+      onValueChange={(tabValue: string) =>
+        setTab(tabValue as NavigationRoutesView)
+      }
+    >
       <div>
         <div className="flex items-center space-x-2 pb-3">
           <Search
@@ -142,7 +237,7 @@ export function RoutesPanel() {
           <AddRouteButton />
         </div>
       </div>
-      <div className="overflow-y-auto h-full relative">
+      <div className="overflow-y-auto h-full relative flex flex-col gap-2">
         {hasAnyUserAddedRoutes && (
           <RoutesSection title="Custom routes">
             {userAddedRoutes.map((route, index) => (
@@ -159,23 +254,68 @@ export function RoutesPanel() {
           </RoutesSection>
         )}
 
-        {allRoutes.length > 0 && (
+        {hasAnyRoutes && (
           <RoutesSection title={<DetectedRoutesTitle />}>
-            {detectedRoutes.map((route, index) => (
-              <RoutesItem
-                key={index}
-                index={userAddedRoutes.length + index}
-                route={route}
-                selectedRoute={
-                  selectedRouteIndex === userAddedRoutes.length + index
-                    ? route
-                    : null
-                }
-                activeRoute={activeRoute}
-                handleRouteClick={handleRouteClick}
-                setSelectedRouteIndex={setSelectedRouteIndex}
-              />
-            ))}
+            <TabsContent value="list" className="mt-0">
+              {detectedRoutes.length === 0 ? (
+                <div className="italic text-center text-muted-foreground text-xs my-4">
+                  No routes match filter criteria
+                </div>
+              ) : (
+                <div className="grid">
+                  {detectedRoutes.map((route, index) => (
+                    <RoutesItem
+                      key={index}
+                      index={userAddedRoutes.length + index}
+                      route={route}
+                      selectedRoute={
+                        selectedRouteIndex === userAddedRoutes.length + index
+                          ? route
+                          : null
+                      }
+                      activeRoute={activeRoute}
+                      handleRouteClick={handleRouteClick}
+                      setSelectedRouteIndex={setSelectedRouteIndex}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="fileTree" className="mt-0">
+              {filteredTreeRoutes?.tree.map((tree) => (
+                <RouteTree
+                  key={tree.path}
+                  tree={tree}
+                  activeRoute={activeRoute}
+                  selectedRoute={selectedRoute}
+                  userAddedRoutes={userAddedRoutes}
+                  handleRouteClick={handleRouteClick}
+                />
+              ))}
+              {filteredTreeRoutes &&
+                filteredTreeRoutes.unmatched.length > 0 && (
+                  <div className="mt-4">
+                    <span className="font-medium font-mono text-xs text-muted-foreground">
+                      Unmatched routes
+                    </span>
+                    {filteredTreeRoutes.unmatched.map((route, index) => (
+                      <RoutesItem
+                        key={index}
+                        index={userAddedRoutes.length + index}
+                        route={route}
+                        selectedRoute={
+                          selectedRouteIndex === userAddedRoutes.length + index
+                            ? route
+                            : null
+                        }
+                        activeRoute={activeRoute}
+                        handleRouteClick={handleRouteClick}
+                        setSelectedRouteIndex={setSelectedRouteIndex}
+                      />
+                    ))}
+                  </div>
+                )}
+            </TabsContent>
           </RoutesSection>
         )}
 
@@ -199,9 +339,9 @@ export function RoutesPanel() {
             ))}
           </RoutesSection>
         )}
-        {allRoutes.length === 0 && <EmptyState />}
+        {!hasAnyRoutes && <EmptyState />}
       </div>
-    </div>
+    </Tabs>
   );
 }
 
@@ -209,32 +349,41 @@ function DetectedRoutesTitle() {
   const { refreshRoutes, isRefreshing } = useRefreshRoutes();
 
   return (
-    <button
-      type="button"
-      className={cn(
-        "flex items-center gap-2 cursor-pointer hover:text-foreground transition-colors",
-        isRefreshing && "opacity-80",
-        isRefreshing && "cursor-default",
-      )}
-      disabled={isRefreshing}
-      onClick={() => {
-        if (!isRefreshing) {
-          refreshRoutes();
-        }
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
+    <div className="flex">
+      <button
+        type="button"
+        className={cn(
+          "flex items-center gap-2 cursor-pointer hover:text-foreground transition-colors",
+          isRefreshing && "opacity-80",
+          isRefreshing && "cursor-default",
+        )}
+        disabled={isRefreshing}
+        onClick={() => {
           if (!isRefreshing) {
             refreshRoutes();
           }
-        }
-      }}
-      role="button"
-      tabIndex={0}
-    >
-      Detected in app{" "}
-      <ReloadIcon className={cn("w-3 h-3", isRefreshing && "animate-spin")} />
-    </button>
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            if (!isRefreshing) {
+              refreshRoutes();
+            }
+          }
+        }}
+        tabIndex={0}
+      >
+        Detected in app{" "}
+        <ReloadIcon className={cn("w-3 h-3", isRefreshing && "animate-spin")} />
+      </button>
+      <TabsList className="ml-auto -mr-2">
+        <TabsTrigger value="list">
+          <ListBulletIcon />
+        </TabsTrigger>
+        <TabsTrigger value="fileTree">
+          <ActivityLogIcon className="h-3 w-3" />
+        </TabsTrigger>
+      </TabsList>
+    </div>
   );
 }
 
@@ -344,7 +493,7 @@ export function RoutesSection(props: RoutesSectionProps) {
       <h4 className="font-medium font-mono uppercase text-xs text-muted-foreground">
         {title}
       </h4>
-      <div className="space-y-0.5 overflow-y-auto mt-4 w-full overflow-x-hidden">
+      <div className="space-y-0.5 overflow-y-auto mt-2 w-full overflow-x-hidden">
         {children}
       </div>
     </section>

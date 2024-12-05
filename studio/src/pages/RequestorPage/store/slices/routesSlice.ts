@@ -1,3 +1,4 @@
+import type { TreeNode } from "@/queries/app-routes";
 import type { StateCreator } from "zustand";
 import { findAllSmartRouterMatches, findMatchedRoute } from "../../routes";
 import type { ProbedRoute, RequestMethod } from "../../types";
@@ -6,6 +7,7 @@ import {
   getVisibleRequestPanelTabs,
   getVisibleResponsePanelTabs,
 } from "../tabs";
+import type { CollapsableTreeNode } from "../types";
 import {
   addBaseUrl,
   extractMatchedPathParams,
@@ -14,6 +16,11 @@ import {
   pathHasValidBaseUrl,
   removeBaseUrl,
 } from "../utils";
+import {
+  // extractJsonBodyFromOpenApiDefinition,
+  extractQueryParamsFromOpenApiDefinition,
+  filterDisabledEmptyQueryParams,
+} from "../utils-openapi";
 import type { RoutesSlice, Store } from "./types";
 
 export const routesSlice: StateCreator<
@@ -56,11 +63,26 @@ export const routesSlice: StateCreator<
       state.requestType = nextRequestType;
       state.pathParams = extractPathParams(route.path).map(mapPathParamKey);
       state.activeResponse = null;
+      // Filter out disabled and empty query params
+      // TODO - Only do this if the route has an open api definition?
+      state.queryParams = filterDisabledEmptyQueryParams(state.queryParams);
+      // Extract query params from the open api definition, if it exists
+      state.queryParams = extractQueryParamsFromOpenApiDefinition(
+        state.queryParams,
+        route,
+      );
+
+      // TODO - Instead of automatically setting body here,
+      //        have a button? Idk.
+      //        All I know is it'd take some bookkeeping to do "automagical bodies" elegantly
+      //
+      // state.body = extractJsonBodyFromOpenApiDefinition(state.body, route);
 
       // Update tabs (you might want to move this logic to a separate slice)
       state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
         requestType: nextRequestType,
         method: nextMethod,
+        openApiSpec: route?.openApiSpec,
       });
       state.activeRequestsPanelTab = state.visibleRequestsPanelTabs.includes(
         state.activeRequestsPanelTab,
@@ -79,6 +101,80 @@ export const routesSlice: StateCreator<
 
       // Add content type header (you might want to move this to a separate function)
       updateContentTypeHeaderInState(state);
+    }),
+
+  unmatched: [],
+  collapsibleTree: [],
+
+  updateTreeResult: (
+    result:
+      | {
+          unmatched: Array<ProbedRoute>;
+          tree: Array<TreeNode>;
+        }
+      | undefined,
+  ) => {
+    // If there's no result, reset the state
+    if (!result) {
+      set((state) => {
+        state.unmatched = [];
+        state.collapsibleTree = [];
+      });
+      return;
+    }
+
+    get().setTree(result.tree);
+    set((state) => {
+      state.unmatched = result.unmatched;
+    });
+  },
+
+  setTree: (newTree: Array<TreeNode>) =>
+    set((state) => {
+      const copyCollapsedState = (
+        newNode: TreeNode,
+        oldNode: CollapsableTreeNode | null,
+      ): CollapsableTreeNode => {
+        return {
+          ...newNode,
+          collapsed: oldNode ? oldNode.collapsed : false,
+          children: newNode.children.map((child) =>
+            copyCollapsedState(
+              child,
+              oldNode?.children.find((n) => n.path === child.path) ?? null,
+            ),
+          ),
+        };
+      };
+
+      state.collapsibleTree = newTree.map((item) =>
+        copyCollapsedState(
+          item,
+          state.collapsibleTree.find((n) => n.path === item.path) ?? null,
+        ),
+      );
+    }),
+
+  toggleTreeNode: (path: string) =>
+    set((state) => {
+      if (!state.collapsibleTree) {
+        return;
+      }
+
+      const toggleNode = (node: CollapsableTreeNode): CollapsableTreeNode => {
+        if (node.path === path) {
+          return { ...node, collapsed: !node.collapsed };
+        }
+
+        return {
+          ...node,
+          children: node.children.map(toggleNode),
+        };
+      };
+
+      state.collapsibleTree = state.collapsibleTree.map((item) =>
+        toggleNode(item),
+      );
     }),
 
   routesAndMiddleware: [],

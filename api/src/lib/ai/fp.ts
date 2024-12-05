@@ -16,6 +16,7 @@ type GenerateRequestOptions = {
     path: string;
   }[];
   middlewareContext?: string;
+  prompt?: string;
 };
 
 export async function generateRequestWithFp({
@@ -29,6 +30,7 @@ export async function generateRequestWithFp({
   openApiSpec,
   middleware,
   middlewareContext,
+  prompt,
 }: GenerateRequestOptions) {
   logger.debug(
     "Generating request data with FP",
@@ -56,6 +58,7 @@ export async function generateRequestWithFp({
       openApiSpec,
       middleware,
       middlewareContext,
+      prompt,
     },
   });
 

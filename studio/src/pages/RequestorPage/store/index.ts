@@ -3,12 +3,15 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { useShallow } from "zustand/react/shallow";
-import { requestResponseSlice } from "./slices/requestResponseSlice";
-import { routesSlice } from "./slices/routesSlice";
-import { tabsSlice } from "./slices/tabsSlice";
-import type { Store } from "./slices/types";
-import { uiSlice } from "./slices/uiSlice";
-import { websocketSlice } from "./slices/websocketSlice";
+import {
+  type Store,
+  aiSlice,
+  requestResponseSlice,
+  routesSlice,
+  tabsSlice,
+  uiSlice,
+  websocketSlice,
+} from "./slices";
 import { _getActiveRoute } from "./utils";
 
 export type { ResponsePanelTab, RequestsPanelTab } from "./tabs";
@@ -16,6 +19,8 @@ export type {
   RequestBodyType,
   RequestorBody,
   RequestorResponseBody,
+  NavigationRoutesView,
+  CollapsableTreeNode,
   KeyValueParameter,
 } from "./types";
 export { useServiceBaseUrl } from "./useServiceBaseUrl";
@@ -30,6 +35,7 @@ export const useStudioStoreRaw = create<StudioState>()(
       ...tabsSlice(...a),
       ...requestResponseSlice(...a),
       ...uiSlice(...a),
+      ...aiSlice(...a),
     })),
     { name: "RequestorStore" },
   ),
@@ -42,7 +48,7 @@ export function useActiveRoute() {
 }
 
 export function useStudioStore<T extends Store, K extends keyof Store>(
-  ...items: Array<keyof Store>
+  ...items: Array<K>
 ): Pick<T, K> {
   const obj = useStudioStoreRaw(
     useShallow((state) => {

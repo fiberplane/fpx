@@ -142,38 +142,41 @@ export function RequestsPanel() {
   );
 
   return (
-    <div className={cn("h-full", "flex", "flex-col")}>
-      <div>
-        <div className="flex items-center space-x-2 pb-3">
-          <Search
-            ref={searchRef}
-            value={filterValue}
-            onChange={setFilterValue}
-            onFocus={() => {
-              setSelectedItemId(null);
-            }}
-            placeholder="requests"
-            onItemSelect={() => {}}
-            itemCount={filteredItems.length}
-          />
-        </div>
+    <div className={cn("h-full flex flex-col min-w-0")}>
+      <div className="flex items-center space-x-2 pb-3">
+        <Search
+          ref={searchRef}
+          value={filterValue}
+          onChange={setFilterValue}
+          onFocus={() => {
+            setSelectedItemId(null);
+          }}
+          placeholder="requests"
+          onItemSelect={() => {}}
+          itemCount={filteredItems.length}
+        />
       </div>
-      <div className="overflow-y-auto h-full relative">
+      <div className="overflow-y-auto overflow-x-hidden h-full relative flex flex-col justify-start">
+        {" "}
         {filteredItems.length === 0 && <EmptyState />}
-        {filteredItems.map((item) => (
-          <NavItem
-            key={getId(item)}
-            item={item}
-            isSelected={getId(item) === selectedItemId}
-            searchParams={searchParams}
-            to={{
-              pathname: generatePath(REQUESTOR_TRACE_ROUTE, {
-                traceId: getId(item),
-              }),
-              search: searchParams.toString(),
-            }}
-          />
-        ))}
+        {filteredItems.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <>
+            {filteredItems.map((item) => (
+              <NavItem
+                key={getId(item)}
+                item={item}
+                isSelected={getId(item) === selectedItemId}
+                searchParams={searchParams}
+                to={{
+                  pathname: `/request/${getId(item)}`,
+                  search: searchParams.toString(),
+                }}
+              />
+            ))}
+          </>
+        )}
       </div>
     </div>
   );
@@ -252,6 +255,8 @@ const NavItem = memo(({ to, item, isSelected }: NavItemProps) => {
       to={to}
       className={cn(
         "grid grid-cols-[38px_38px_1fr] gap-2 hover:bg-muted px-2 py-1 rounded cursor-pointer items-center",
+        "w-full",
+        "h-fit min-w-0",
         "focus:outline-none",
         {
           "bg-muted": id === getId(item),
@@ -276,9 +281,7 @@ const NavItem = memo(({ to, item, isSelected }: NavItemProps) => {
       <div>
         <MethodCell item={item} />
       </div>
-      <div>
-        <PathCell item={item} />
-      </div>
+      <PathCell item={item} />
     </Link>
   );
 });

@@ -102,7 +102,6 @@ export function useRequestorHistory() {
           // pathParams
         );
 
-        // @ts-expect-error - We don't handle ALL methods well yet
         if (matchedRoute.route.method === "ALL") {
           // TODO - Add based off of method of trace...
           if (isRequestMethod(match.app_requests.requestMethod)) {

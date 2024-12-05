@@ -1,3 +1,4 @@
+import type { TreeNode } from "@/queries/app-routes";
 import type {
   RequestBodyType,
   RequestorBody,
@@ -11,7 +12,12 @@ import type {
   RequestMethodInputValue,
   RequestType,
 } from "../../types";
-import type { KeyValueParameter, RequestorActiveResponse } from "../types";
+import type {
+  CollapsableTreeNode,
+  KeyValueParameter,
+  NavigationRoutesView,
+  RequestorActiveResponse,
+} from "../types";
 
 type RequestorTraceId = string;
 
@@ -76,8 +82,19 @@ export interface RequestResponseSlice {
 export interface RoutesSlice {
   appRoutes: ProbedRoute[];
   activeRoute: ProbedRoute | null;
+
   setRoutes: (routes: ProbedRoute[]) => void;
   setActiveRoute: (route: ProbedRoute) => void;
+
+  unmatched: Array<ProbedRoute>;
+  collapsibleTree: Array<CollapsableTreeNode>;
+  updateTreeResult: (
+    result:
+      | { unmatched: Array<ProbedRoute>; tree: Array<TreeNode> }
+      | undefined,
+  ) => void;
+  setTree: (node: Array<TreeNode>) => void;
+  toggleTreeNode: (path: string) => void;
 
   routesAndMiddleware: ProbedRoute[];
   getMatchingMiddleware: () => null | ProbedRoute[];
@@ -99,6 +116,8 @@ export interface WebsocketSlice {
 }
 
 export interface UISlice {
+  navigationPanelRoutesView: NavigationRoutesView;
+  setNavigationPanelRoutesView: (tab: NavigationRoutesView) => void;
   settingsOpen: boolean;
   defaultSettingsTab: string | null;
   setSettingsOpen: (open: boolean, defaultSettingsTab?: string | null) => void;
@@ -125,8 +144,14 @@ export const validBottomPanelNames: BOTTOM_PANEL_NAMES[] = [
 
 export type PanelState = "open" | "closed";
 
+export type AiState = {
+  currentAiPrompt: string | undefined;
+  setAiPrompt: (prompt?: string) => void;
+};
+
 export type Store = RequestResponseSlice &
   RoutesSlice &
   TabsSlice &
   WebsocketSlice &
-  UISlice;
+  UISlice &
+  AiState;
