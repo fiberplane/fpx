@@ -49,6 +49,9 @@ test.each([
   {
     name: "zod-openapi",
     location: "../../test-cases/zod-openapi",
+    // There are two typescript errors when analyzing the test-case
+    // What's triggering them is `.openapi("SOMETHING")`
+    // Typescript error is: `No symbol found for type`
     expectedErrorCount: 2,
   },
 

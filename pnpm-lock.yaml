@@ -574,6 +574,9 @@ importers:
       '@fiberplane/hono-otel':
         specifier: ^0.3.1
         version: 0.3.1
+      '@hono/zod-openapi':
+        specifier: ^0.18.0
+        version: 0.18.0(hono@4.6.9)(zod@3.23.8)
       '@types/node':
         specifier: ^22.8.7
         version: 22.8.7
