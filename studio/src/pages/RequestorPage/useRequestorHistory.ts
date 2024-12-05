@@ -3,13 +3,17 @@ import { removeQueryParams } from "@/utils";
 import type { TraceListResponse } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useMemo } from "react";
-import { createKeyValueParameters } from "./KeyValueForm";
+import {
+  type KeyValueParameter,
+  createKeyValueParameters,
+} from "./KeyValueForm";
 import {
   type ProxiedRequestResponse,
   useFetchRequestorRequests,
 } from "./queries";
 import { findMatchedRoute } from "./routes";
-import { useRequestorStore } from "./store";
+import { type RequestorBody, useRequestorStore } from "./store";
+import type { RequestorBodyType } from "./store/request-body";
 import { isRequestMethod, isWsRequest } from "./types";
 import {
   sortProxiedRequestResponsesDescending,
@@ -17,6 +21,7 @@ import {
 } from "./utils";
 
 const EMPTY_TRACES: TraceListResponse = [];
+
 export function useRequestorHistory() {
   const {
     routes,
@@ -146,7 +151,9 @@ export function useRequestorHistory() {
         } else {
           const safeBody =
             typeof body !== "string" ? JSON.stringify(body) : body;
-          setBody(safeBody);
+          const bodyType = determineBodyType(headers);
+          const transformedBody = transformBodyValue(bodyType, safeBody);
+          setBody(transformedBody);
         }
       } else {
         // HACK - move this logic into the reducer
@@ -196,4 +203,149 @@ export function useRequestorHistory() {
     isLoading,
     loadHistoricalRequest,
   };
+}
+
+type BodyType = {
+  type: RequestorBodyType;
+  isMultipart?: boolean;
+};
+
+/**
+ * Transforms the body value based on the body type into something that can be displayed in the UI
+ *
+ * @NOTE - This is a temporary solution. Currently does not work for form data.
+ */
+function transformBodyValue(
+  bodyType: BodyType,
+  bodyValue: string | undefined | null,
+): RequestorBody {
+  switch (bodyType.type) {
+    case "json": {
+      try {
+        const parsed = JSON.parse(bodyValue || "");
+        return { type: "json", value: JSON.stringify(parsed, null, 2) }; // Pretty-print JSON
+      } catch {
+        if (!bodyValue) {
+          return { type: "json", value: undefined };
+        }
+        if (typeof bodyValue === "string") {
+          return { type: "json", value: bodyValue };
+        }
+        return { type: "json", value: JSON.stringify(bodyValue) };
+      }
+    }
+    case "text": {
+      return { type: "text", value: bodyValue ?? undefined };
+    }
+
+    case "form-data": {
+      /**
+       * NOTE - Handling form bodies is tricky because of how the middleware might serialize them
+       * E.g., this is a multipart form data request body as the trace shows it
+       *
+       * ```
+       * {"avatar":{"name":"IMG_5635.png","type":"image/png","size":3141659}}
+       * ```
+       *
+       * E.g., this is a urlencoded form data request body as the trace shows it
+       *
+       * ```
+       * {"name":"Samwise the Brave"}
+       * ```
+       */
+      if (bodyType.isMultipart) {
+        // Handle multipart form-data
+        // const formattedValue = parseUrlEncodedFormBody(bodyValue ?? "");
+        return {
+          type: "form-data",
+          isMultipart: true,
+          value: [],
+        };
+      }
+      // Handle urlencoded form-data
+      const formattedValue = parseUrlEncodedFormBody(bodyValue ?? "");
+      return {
+        type: "form-data",
+        isMultipart: false,
+        value: formattedValue.map((param) => ({
+          ...param,
+          value: {
+            value: param.value,
+            type: "text",
+          },
+        })),
+      };
+    }
+    case "file":
+      return { type: "file", value: undefined };
+
+    default:
+      return { type: "text", value: bodyValue ?? undefined };
+  }
+}
+
+function determineBodyType(headers: Record<string, string>): BodyType {
+  const contentType = headers["Content-Type"] || headers["content-type"];
+  if (!contentType) {
+    return { type: "text" };
+  }
+
+  if (contentType.includes("application/json")) {
+    return { type: "json" };
+  }
+  if (
+    contentType.includes("application/xml") ||
+    contentType.includes("text/xml")
+  ) {
+    return { type: "text" };
+  }
+  if (contentType.includes("text/plain")) {
+    return { type: "text" };
+  }
+  if (contentType.includes("application/x-www-form-urlencoded")) {
+    return { type: "form-data", isMultipart: false };
+  }
+  if (contentType.includes("multipart/form-data")) {
+    return { type: "form-data", isMultipart: true };
+  }
+  if (contentType.includes("application/octet-stream")) {
+    return { type: "file" };
+  }
+
+  return { type: "text" };
+}
+
+function parseUrlEncodedFormBody(body: string): KeyValueParameter[] {
+  if (isStringifiedRecordWithKeys(body)) {
+    return createKeyValueParameters(
+      Object.entries(JSON.parse(body)).map(([key, value]) => ({
+        key,
+        value: String(value),
+        enabled: true,
+      })),
+    );
+  }
+
+  // Split the body by '&' to get key-value pairs
+  const pairs = body.split("&");
+
+  // Map each pair to a KeyValueParameter
+  const keyValueParameters = pairs.map((pair) => {
+    const [key, value] = pair.split("=").map(decodeURIComponent);
+    return { key, value };
+  });
+
+  // Use createKeyValueParameters to generate the final structure
+  return createKeyValueParameters(keyValueParameters);
+}
+
+function isStringifiedRecordWithKeys(
+  obj: unknown,
+): obj is Record<string, string> {
+  try {
+    const parsed = JSON.parse(obj as string);
+    return typeof parsed === "object" && parsed !== null;
+  } catch {
+    return false;
+  }
 }

@@ -3,12 +3,12 @@ import type {
   ModuleReference,
   TsModuleResolutionHost,
   TsNode,
+  TsPackageType,
   TsSourceFile,
-  TsType,
 } from "../types";
 
 export function findNodeAtPosition(
-  ts: TsType,
+  ts: TsPackageType,
   sourceFile: TsSourceFile,
   position: number,
 ): TsNode | undefined {
