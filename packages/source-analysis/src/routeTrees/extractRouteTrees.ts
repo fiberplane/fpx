@@ -118,7 +118,7 @@ function visitToFindRouteTree(
         .getSourceFile()
         .getLineAndCharacterOfPosition(node.getStart());
       logger.info(
-        `Location: /${node.getSourceFile().fileName}:${prettyLocation.line + 1}:${prettyLocation.character + 1}`,
+        `Location: ${node.getSourceFile().fileName}:${prettyLocation.line + 1}:${prettyLocation.character + 1}`,
       );
       logger.debug("Syntax kind:", ts.SyntaxKind[node.kind]);
       logger.debug("Type error details:", getTypeErrorDetails(type));

@@ -64,6 +64,7 @@ export async function generateRequestWithAiProvider({
   openApiSpec,
   middleware,
   middlewareContext,
+  prompt,
 }: {
   fpApiKey?: string;
   inferenceConfig: Settings;
@@ -80,6 +81,7 @@ export async function generateRequestWithAiProvider({
     path: string;
   }[];
   middlewareContext?: string;
+  prompt?: string;
 }) {
   const { aiProviderConfigurations, aiProvider } = inferenceConfig;
   const aiEnabled = hasValidAiConfig(inferenceConfig);
@@ -109,6 +111,7 @@ export async function generateRequestWithAiProvider({
       persona,
       method,
       path,
+      prompt,
     });
   }
 
@@ -166,6 +169,7 @@ Here is some additional context for the handler source code, if you need it:
       openApiSpec,
       middleware,
       middlewareContext,
+      prompt,
     });
 
     const systemPrompt = getSystemPrompt(persona, aiProvider);

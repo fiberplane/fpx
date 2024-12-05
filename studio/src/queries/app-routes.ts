@@ -1,4 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
+import { useRequestorStore } from "@/pages/RequestorPage/store";
+import { ProbedRouteSchema } from "@/pages/RequestorPage/types";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { z } from "zod";
+import { queryClient } from "./queries";
 
 export const PROBED_ROUTES_KEY = "appRoutes";
 
@@ -30,5 +35,66 @@ export const refreshAppRoutes = async () => {
 export function useRefreshRoutesMutation() {
   return useMutation({
     mutationFn: refreshAppRoutes,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["routesFileTree"] });
+    },
   });
+}
+
+// Make sure the types are modeled after the db schema
+const AppRouteSchema = ProbedRouteSchema.extend({
+  openApiSpec: z.string().nullish().optional(),
+});
+
+const AppRouteWithFileNameSchema = AppRouteSchema.extend({
+  fileName: z.string(),
+});
+
+export type AppRouteWithFileName = z.infer<typeof AppRouteWithFileNameSchema>;
+
+const TreeNodeSchema: z.ZodType<{
+  path: string;
+  routes: Array<AppRouteWithFileName>;
+  children: Array<TreeNode>;
+}> = z.lazy(() =>
+  z.object({
+    path: z.string(),
+    routes: z.array(
+      AppRouteWithFileNameSchema.extend({
+        registrationOrder: z.number(), // Required to make the recursion types work for some reason
+      }),
+    ),
+    children: z.array(TreeNodeSchema),
+  }),
+);
+
+export type TreeNode = z.infer<typeof TreeNodeSchema>;
+
+const AppRoutesTreeResponseSchema = z.object({
+  tree: z.array(TreeNodeSchema),
+  unmatched: z.array(ProbedRouteSchema),
+});
+
+export type AppRoutesTreeResponse = z.infer<typeof AppRoutesTreeResponseSchema>;
+
+export function useFetchFileTreeRoutes() {
+  const result = useQuery({
+    queryKey: ["routesFileTree"],
+    queryFn: async () => {
+      const response = await fetch("/v0/app-routes-file-tree");
+      const json = await response.json();
+      return AppRoutesTreeResponseSchema.parse(json);
+    },
+    throwOnError: true,
+  });
+
+  const { updateTreeResult } = useRequestorStore("updateTreeResult");
+  const { data } = result;
+  useEffect(() => {
+    if (data) {
+      updateTreeResult(data);
+    }
+  }, [data, updateTreeResult]);
+
+  return result;
 }

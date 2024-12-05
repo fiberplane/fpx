@@ -14,10 +14,9 @@ import {
   USER_PROJECT_ROOT_DIR,
 } from "./constants.js";
 import * as schema from "./db/schema.js";
-import { hasValidAiConfig } from "./lib/ai/index.js";
 import { getAuthServer } from "./lib/fp-services/server.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
-import { getInferenceConfig, getSetting } from "./lib/settings/index.js";
+import { getSetting } from "./lib/settings/index.js";
 import { resolveWebhoncUrl } from "./lib/utils.js";
 import * as webhonc from "./lib/webhonc/index.js";
 import logger from "./logger/index.js";
@@ -114,10 +113,4 @@ if (proxyRequestsEnabled ?? false) {
   await webhonc.start();
 }
 
-// check settings if ai is enabled, and proactively start the typescript language server
-const inferenceConfig = await getInferenceConfig(db);
-const aiEnabled = hasValidAiConfig(inferenceConfig);
-
-if (aiEnabled) {
-  enableCodeAnalysis();
-}
+enableCodeAnalysis();

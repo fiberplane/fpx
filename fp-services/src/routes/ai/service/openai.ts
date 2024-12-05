@@ -28,6 +28,7 @@ export async function generateRequestWithOpenAI({
   openApiSpec,
   middleware,
   middlewareContext,
+  prompt,
 }: GenerateRequestOptions & { model: string; apiKey: string }) {
   logger.debug(
     "Generating request data with OpenAI",
@@ -55,6 +56,7 @@ export async function generateRequestWithOpenAI({
     openApiSpec,
     middleware,
     middlewareContext,
+    prompt,
   });
 
   const openai = openaiClient(model, {

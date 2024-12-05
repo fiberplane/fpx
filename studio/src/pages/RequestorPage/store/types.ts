@@ -1,3 +1,4 @@
+import type { TreeNode } from "@/queries/app-routes";
 import { z } from "zod";
 import { KeyValueParameterSchema } from "../KeyValueForm";
 import {
@@ -128,3 +129,8 @@ export type RequestorState = z.infer<typeof RequestorStateSchema>;
 
 export type RequestorBody = RequestorState["body"];
 export type RequestBodyType = RequestorBody["type"];
+export type NavigationRoutesView = "list" | "fileTree";
+export type CollapsableTreeNode = Pick<TreeNode, "path" | "routes"> & {
+  collapsed?: boolean;
+  children: Array<CollapsableTreeNode>;
+};

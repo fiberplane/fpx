@@ -31,6 +31,7 @@ const DEFAULT_VALUES = {
   },
   proxyRequestsEnabled: false,
   proxyBaseUrl: "https://webhonc.mies.workers.dev",
+  openApiSpecUrl: undefined,
 } satisfies Settings;
 
 export function useSettingsForm(settings: Settings) {

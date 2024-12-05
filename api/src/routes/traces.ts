@@ -35,6 +35,7 @@ app.get("/v1/traces", async (ctx) => {
   const spans = await db.query.otelSpans.findMany({
     where: sql`inner->>'scope_name' = 'fpx-tracer'`,
     orderBy: desc(sql`inner->>'end_time'`),
+    limit: 1000,
   });
 
   const traceMap = new Map<string, Array<(typeof spans)[0]>>();

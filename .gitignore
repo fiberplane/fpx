@@ -2,6 +2,8 @@
 shared/dist
 .env
 .envrc
+
+# Cursor
 .cursorrules
 
 # Fpx

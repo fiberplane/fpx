@@ -90,6 +90,8 @@ The client library allows you to override the default behavior of the `instrumen
 
 By default, `instrument` will change the behavior of `fetch` and `console.*` methods, in order to produce telemetry data for all `fetch` requests and logging events.
 
+If your code runs inside a Cloudflare Worker, then the client library also proxies Cloudflare bindings automatically.
+
 You can disable these features by setting the following configuration parameters to `false`:
 
 ```js ins={9-14} title="index.ts"
@@ -105,9 +107,27 @@ export default instrument(app, {
     // Don't create traces for fetch requests
     fetch: false,
     // Don't proxy `console.*` functions to send logging data to a local FPX server
-    logging: false
+    logging: false,
+    // Don't proxy Cloudflare bindings automatically
+    cfBindings: false
   }
 });
 ```
+
+### Autoinstrumented Cloudflare bindings
+
+If your code runs inside a Cloudflare Worker, then the client library also proxies the following Cloudflare bindings automatically:
+
+- R2
+- Workers Ai
+- KV
+- D1
+- Service Bindings to other Cloudflare Workers
+
+These will show up as spans in your request timeline in Fiberplane Studio, along with relevant metadata and request context.
+
+For instance, you can see the SQL query executed on D1, the R2 bucket that was accessed, or the arguments passed to the service binding to another Cloudflare Worker.
+
+---
 
 To explore more of what the client library can do, check out the code on [Github](https://github.com/fiberplane/fpx/tree/main/packages/client-library-otel).
