@@ -7,7 +7,7 @@ export const bundledTypescript = bundledTs;
 export const relativeResolve = relative.sync;
 
 // Alias some exported typescript types
-export type TsType = typeof bundledTs;
+export type TsPackageType = typeof bundledTs;
 export type TsArrowFunction = bundledTs.ArrowFunction;
 export type TsCallExpression = bundledTs.CallExpression;
 export type TsCompilerOptions = bundledTs.CompilerOptions;
@@ -40,6 +40,7 @@ export type ConfigFileContent = Pick<
 > & {
   configPath?: string;
 };
+export type TsType = bundledTs.Type;
 
 export type RouteTreeId = Tagged<string, "RouteTreeId">;
 export type RouteTreeReferenceId = Tagged<string, "RouteTreeReferenceId">;
@@ -76,6 +77,7 @@ export type RouteTree = {
 
   sources: Set<SourceReferenceId>;
   modules: Set<ModuleReferenceId>;
+  library: "hono" | "zod-openapi";
 } & FileReference;
 
 export type RouteTreeReference = {
@@ -211,7 +213,7 @@ export type LocalFileResourceId = LocalFileResource["id"];
 export type SearchContext = {
   resourceManager: ResourceManager;
   service: TsLanguageService;
-  ts: TsType;
+  ts: TsPackageType;
   errorCount: number;
   program: TsProgram;
   checker: TsTypeChecker;

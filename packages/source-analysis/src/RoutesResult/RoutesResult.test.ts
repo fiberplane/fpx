@@ -126,3 +126,33 @@ test("multiple", async () => {
     monitor.stop();
   }
 });
+
+test("zod-openapi", async () => {
+  const absolutePath = path.join(__dirname, "../../test-cases/zod-openapi");
+  const monitor = createRoutesMonitor(absolutePath);
+  monitor.autoCreateResult = false;
+  try {
+    await monitor.start();
+    const factory = monitor.updateRoutesResult();
+    assert(factory.rootId);
+
+    let request = new Request("http://localhost/users", { method: "POST" });
+    let response = await factory.currentApp.fetch(request);
+    expect(await response.text()).toEqual("Ok");
+    expect(factory.getHistoryLength()).toBe(2);
+    expect(factory.hasVisited(factory.rootId)).toBeTruthy();
+    expect(factory.getFilesForHistory()).toMatchSnapshot();
+
+    factory.resetHistory();
+    // Try to visit another route
+    request = new Request("http://localhost/users", { method: "GET" });
+    response = await factory.currentApp.fetch(request);
+    expect(await response.text()).toEqual("Ok");
+    expect(factory.getHistoryLength()).toBe(2);
+    expect(factory.hasVisited(factory.rootId)).toBeTruthy();
+    expect(factory.getFilesForHistory()).toMatchSnapshot();
+
+  } finally {
+    monitor.stop();
+  }
+});
