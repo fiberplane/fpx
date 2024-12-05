@@ -283,7 +283,7 @@ function extractRouteTreeContent(includeIds: boolean, resource: RouteTree) {
       ? `// id:${resource.id}
 `
       : ""
-  }const ${resource.name} = new Hono();`;
+  }const ${resource.name} = new ${resource.library === "hono" ? "Hono" : "OpenAPIHono"}();`;
   if (resource.baseUrl) {
     content += `\n${resource.name}.baseUrl = "${resource.baseUrl}";`;
   }

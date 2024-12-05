@@ -1,4 +1,5 @@
 import { EventEmitter } from "node:events";
+import { statSync } from "node:fs";
 import path from "node:path";
 import {
   type FileRemovedEvent,
@@ -13,9 +14,10 @@ import { getParsedTsConfig, getTsLib, startServer } from "./service";
 import type {
   TsISnapShot,
   TsLanguageService,
+  TsPackageType,
   TsProgram,
-  TsType,
 } from "./types";
+import { debounce } from "./utils";
 
 type AnalysisStarted = {
   type: "analysisStarted";
@@ -68,7 +70,7 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
   /**
    * Reference to the users' typescript instance
    */
-  private _ts: TsType;
+  private _ts: TsPackageType;
 
   /**
    * The language service used to analyze the routes
@@ -109,7 +111,32 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
 
   constructor(projectRoot: string) {
     super();
-    this.projectRoot = projectRoot;
+    const folder = path.isAbsolute(projectRoot)
+      ? projectRoot
+      : path.resolve(projectRoot);
+
+    // check if folder exists
+    try {
+      const isDirectory = statSync(folder).isDirectory();
+      if (!isDirectory) {
+        throw new Error("Not a directory");
+      }
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        logger.error(`Folder ${folder} does not exist. Error: ${e.message}`);
+      } else {
+        logger.error("Unknown error while checking folder", {
+          folder: projectRoot,
+          error: e,
+        });
+      }
+
+      logger.warn(
+        "This is likely to cause issues with the file watcher & source analysis",
+      );
+    }
+
+    this.projectRoot = folder;
     this._ts = getTsLib(this.projectRoot);
 
     // Use the tsconfig include option to determine which files/locations to watch
@@ -185,7 +212,6 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
       return;
     }
 
-    logger.debug("Starting to monitor", this.projectRoot);
     this.addEventListenersToFileWatcher();
     await this.fileWatcher.start();
 
@@ -199,12 +225,52 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
       readFile: this.readFile.bind(this),
       ts: this._ts,
     });
-    this._program = this._service.getProgram() ?? null;
+
+    await this.isCompilerReady();
+
     this._isRunning = true;
   }
 
+  private async isCompilerReady(): Promise<boolean> {
+    if (!this._service) {
+      throw new Error("Service not initialized");
+    }
+
+    // Sometimes the test suite failed (finding 0 routes) so now we check if all files
+    // we are watching are in the program before we continue
+    let retryCount = 0;
+    let valid = true;
+    do {
+      valid = true;
+      this._program = this._service.getProgram() ?? null;
+      const sourceFiles = this._program?.getSourceFiles();
+      const sourceFileNames = sourceFiles?.map((sf) => sf.fileName);
+      for (const watchedFilePath of this.fileWatcher.knownFileNamesArray) {
+        if (sourceFileNames?.includes(watchedFilePath) !== true) {
+          const retryDelay = 100 + retryCount * 100;
+          logger.warn(
+            `File ${watchedFilePath} not (yet) available in the Typescript program, retrying...`,
+            { retryCount, retryDelay },
+          );
+
+          valid = false;
+          await new Promise((resolve) => setTimeout(resolve, retryDelay));
+          break;
+        }
+      }
+    } while (!valid && retryCount++ < 5);
+
+    if (retryCount >= 5) {
+      logger.error(
+        `Failed to monitor all files after ${retryCount} retries. Code analysis might be incomplete.`,
+      );
+    }
+
+    return valid;
+  }
+
   public updateRoutesResult() {
-    if (!this.isRunning) {
+    if (!this._isRunning) {
       throw new Error("Monitor not running");
     }
 
@@ -255,7 +321,6 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
 
     return this._ts.sys.readFile(fileName);
   }
-
   private getScriptSnapshot(fileName: string): TsISnapShot | undefined {
     if (this._aggressiveCaching) {
       const info = this.getFileInfo(fileName);
@@ -314,7 +379,6 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
       }
     });
   }
-
   public findHonoRoutes() {
     this.fileExistsCache = {};
 
@@ -366,21 +430,4 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
   private getFileNames() {
     return Object.keys(this.fileMap);
   }
-}
-
-function debounce<T extends (...args: Array<unknown>) => void | Promise<void>>(
-  func: T,
-  wait: number,
-): (...args: Parameters<T>) => void {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-
-  return (...args: Parameters<T>) => {
-    if (timeout !== null) {
-      clearTimeout(timeout);
-    }
-
-    timeout = setTimeout(() => {
-      func(...args);
-    }, wait);
-  };
 }
