@@ -23,6 +23,7 @@ const fetchAiRequestData = async (
   bodyType: RequestBodyType,
   history: Array<ProxiedRequestResponse>,
   persona: string,
+  prompt?: string,
 ) => {
   // FIXME - type wonkiness
   const { handler, method, path, openApiSpec } = route ?? {};
@@ -46,6 +47,7 @@ const fetchAiRequestData = async (
       persona,
       openApiSpec,
       middleware,
+      prompt,
     }),
   }).then(async (r) => {
     if (!r.ok) {
@@ -62,11 +64,19 @@ export function useAiRequestData(
   bodyType: RequestBodyType,
   history: Array<ProxiedRequestResponse>,
   persona = "Friendly",
+  prompt?: string,
 ) {
   return useQuery({
     queryKey: ["generateRequest"],
     queryFn: () =>
-      fetchAiRequestData(route, matchingMiddleware, bodyType, history, persona),
+      fetchAiRequestData(
+        route,
+        matchingMiddleware,
+        bodyType,
+        history,
+        persona,
+        prompt,
+      ),
     enabled: false,
     retry: false,
   });

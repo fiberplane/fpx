@@ -57,6 +57,12 @@ export function patchCloudflareBindings(
  * @returns A proxied binding
  */
 function patchCloudflareBinding(o: object, bindingName: string) {
+  // HACK - Check this first, since Worker bindings are a special case
+  //        where any property access is interpreted as an RPC call to the worker.
+  if (isCloudflareWorkerBinding(o)) {
+    return proxyServiceBinding(o, bindingName);
+  }
+
   if (!isCloudflareBinding(o)) {
     return o;
   }
@@ -114,6 +120,82 @@ function patchCloudflareBinding(o: object, bindingName: string) {
 
   // We need to mark the binding as proxied so that we don't proxy it again in the future,
   // since Workers can re-use env vars across requests.
+  markAsProxied(proxiedBinding);
+
+  return proxiedBinding;
+}
+
+/**
+ * Proxy a Service binding to add instrumentation to its RPC calls
+ *
+ * @param o - The Service binding to proxy
+ *
+ * @returns A proxied binding for a bound Worker (see: https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/)
+ */
+function proxyServiceBinding(o: object, bindingName: string) {
+  if (!isCloudflareWorkerBinding(o)) {
+    return o;
+  }
+
+  if (isAlreadyProxied(o)) {
+    return o;
+  }
+
+  const proxiedBinding = new Proxy(o, {
+    get(serviceTarget, serviceProp) {
+      const serviceMethod = String(serviceProp);
+      const serviceValue = Reflect.get(serviceTarget, serviceProp);
+
+      // NOTE - Should ignore some common methods and properties on the binding
+      if (
+        serviceMethod === "toJSON" ||
+        serviceMethod === "connect" ||
+        serviceMethod === "constructor"
+      ) {
+        return serviceValue;
+      }
+
+      if (typeof serviceValue === "function") {
+        const bindingType = "Worker";
+
+        // The name for the span, which will show up in the UI
+        const name = `${bindingName}.${serviceMethod}`;
+
+        // For the `fetch` method, we need to bind `this` (the javascript `this` keyword) to the service target,
+        // otherwise `fetch` will fail!
+        // For RPC calls we do not need to do any special `this` binding
+        const shouldBindThis = serviceMethod === "fetch";
+
+        const measuredBinding = measure(
+          {
+            name,
+            attributes: getCfBindingAttributes(
+              bindingType,
+              bindingName,
+              serviceMethod,
+            ),
+            onStart: (span, args) => {
+              span.setAttributes({
+                args: safelySerializeJSON(args),
+              });
+            },
+            // NOTE - Must be async, since the `result` is a custom thenable from Cloudflare
+            onSuccess: async (span, result) => {
+              addResultAttribute(span, result);
+              return result;
+            },
+            onError: handleError,
+          },
+          shouldBindThis ? serviceValue.bind(serviceTarget) : serviceValue,
+        );
+
+        return measuredBinding;
+      }
+
+      return serviceValue;
+    },
+  });
+
   markAsProxied(proxiedBinding);
 
   return proxiedBinding;
@@ -259,6 +341,7 @@ function handleError(span: Span, error: unknown) {
 // TODO - Remove this, it is temporary
 function isCloudflareBinding(o: unknown): o is object {
   return (
+    isCloudflareWorkerBinding(o) ||
     isCloudflareAiBinding(o) ||
     isCloudflareR2Binding(o) ||
     isCloudflareD1Binding(o) ||
@@ -293,6 +376,23 @@ function isCloudflareD1Binding(o: unknown) {
   }
 
   return true;
+}
+
+/**
+ * Check if an object is a Cloudflare Worker binding
+ *
+ * This uses some heuristics to check for a Worker binding, since `instanceof WorkerEntrypoint` does not work.
+ *
+ * @param o - The object to check
+ * @returns `true` if the object is a Cloudflare Worker binding, `false` otherwise
+ */
+function isCloudflareWorkerBinding(o: unknown): boolean {
+  const isFetcher = getConstructorName(o) === "Fetcher";
+  return (
+    isFetcher &&
+    hasFunctionWithName(o, "fetch") &&
+    hasFunctionWithName(o, "connect")
+  );
 }
 
 function hasCloudflareD1Session(
@@ -331,12 +431,38 @@ function getConstructorName(o: unknown) {
 }
 
 /**
+ * Check if an object has a function property with a given name
+ *
+ * @param o - The object to check
+ * @param name - The name of the function to check for
+ * @returns `true` if the object has a function with the given name, `false` otherwise
+ */
+function hasFunctionWithName(o: unknown, name: string): boolean {
+  const result =
+    o &&
+    typeof o === "object" &&
+    name in o &&
+    typeof (o as Record<string, unknown>)[name] === "function";
+
+  return !!result;
+}
+
+/**
  * Check if a Cloudflare binding is already proxied by us
  *
  * @param o - The binding to check
  * @returns `true` if the binding is already proxied, `false` otherwise
  */
 function isAlreadyProxied(o: object) {
+  // Any property access on a worker binding will be true,
+  // since the property access is interpreted as an RPC call to the worker.
+  // So, we need to check if there's a property descriptor on the object that we set.
+  //
+  if (isCloudflareWorkerBinding(o)) {
+    const descriptor = getProxiedKey(o);
+    return !!descriptor;
+  }
+
   if (IS_PROXIED_KEY in o) {
     return !!o[IS_PROXIED_KEY];
   }
@@ -355,4 +481,8 @@ function markAsProxied(o: object) {
     writable: true,
     configurable: true,
   });
+}
+
+function getProxiedKey(o: object) {
+  return Object.getOwnPropertyDescriptor(o, IS_PROXIED_KEY);
 }

@@ -1,0 +1,23 @@
+name = "zod-openapi"
+compatibility_date = "2024-11-19"
+compatibility_flags = [ "nodejs_compat" ]
+
+# [dev]
+# port = 3003
+
+# [[kv_namespaces]]
+# binding = "KV"
+# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# [[r2_buckets]]
+# binding = "R2"
+# bucket_name = "zod-openapi-bucket"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "zod-openapi"
+database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+migrations_dir = "drizzle/migrations"
+
+# [ai]
+# binding = "AI"

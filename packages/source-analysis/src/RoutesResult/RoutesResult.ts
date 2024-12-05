@@ -4,6 +4,7 @@ import type { ResourceManager } from "../ResourceManager";
 import { logger } from "../logger";
 import type {
   MiddlewareEntryId,
+  RouteEntry,
   RouteEntryId,
   RouteTree,
   RouteTreeId,
@@ -190,5 +191,9 @@ export class RoutesResult {
 
   public getFilesForHistory() {
     return generate(this._resourceManager, this._history, this._includeIds);
+  }
+
+  public getRouteEntryById(id: RouteEntryId): RouteEntry | undefined {
+    return this._resourceManager.getResource(id);
   }
 }

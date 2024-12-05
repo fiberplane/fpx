@@ -5,8 +5,12 @@ export * from "./request";
 export * from "./wrapper";
 export { cloneResponse } from "./response";
 
-export function isPromise<T>(value: unknown): value is Promise<T> {
-  return value instanceof Promise;
+export function isPromiseLike<T>(value: unknown): value is PromiseLike<T> {
+  return (
+    isObject(value) &&
+    "then" in value &&
+    typeof (value as { then: unknown }).then === "function"
+  );
 }
 
 export function isObject(value: unknown): value is object {
