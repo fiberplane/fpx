@@ -36,7 +36,7 @@ export function objectWithKeyAndValue<T extends string, V>(
   return objectWithKey(value, key) && value[key] === expectedValue;
 }
 
-export function noop() {}
+export function noop() { }
 
 export function isJson(str: string) {
   try {
@@ -289,14 +289,3 @@ export function createObjectFromKeyValueParameters<
 
   return result;
 }
-
-const p1 = {
-  id: "1",
-  enabled: true,
-  key: "my_key" as const,
-  value: "my_value" as const,
-};
-
-const o1 = createObjectFromKeyValueParameters([p1]);
-
-console.log("p1", o1);

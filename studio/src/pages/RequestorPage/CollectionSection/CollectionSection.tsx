@@ -58,7 +58,7 @@ export function CollectionSection() {
 
   return (
     <div
-      className={cn("rounded-md", "border", "h-full", "mt-2", BACKGROUND_LAYER)}
+      className={cn("rounded-md border", "flex-auto overflow-x-hidden overflow-y-auto", BACKGROUND_LAYER)}
     >
       <div className="p-4 grid gap-6">
         <div className="grid gap-2">
@@ -87,11 +87,11 @@ export function CollectionSection() {
             <AddRoute collectionId={collectionId} />
           </div>
           {collection.appRoutes.length === 0 ? (
-            <div className="text-sm text-muted-foreground py-2 px-3 mt-2 flex gap-4 items-center flex-col">
+            <div className="text-sm text-muted-foreground py-2 px-3 my-2 flex gap-4 items-center flex-col">
               <h4 className="flex items-center gap-2 justify-center text-base">
                 <Icon
-                  icon="lucide:triangle-alert"
-                  className="text-yellow-500"
+                  icon="lucide:info"
+                  className="text-success"
                 />
                 Empty collection
               </h4>
