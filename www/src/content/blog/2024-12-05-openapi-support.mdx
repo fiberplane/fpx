@@ -1,0 +1,121 @@
+---
+title: "Announcing OpenAPI Support"
+description: "Something"
+slug: announcing-openapi-support
+date: 2024-12-05
+author: Fiberplane Team
+tags:
+  - launch week
+  - hono
+  - openapi
+  - zod
+---
+
+import { LinkCard } from "@astrojs/starlight/components";
+
+Nowadays, building HTTP APIs for external usage without implementing the [OpenAPI spec](https://swagger.io/specification/) is like buying an IKEA shelf without assembly instructions.
+OpenAPI serves as a guide to your API and is an open standard that can be interpreted by various tools to display information on how to interact with your application's API.
+This makes it easy to generate documentation for your API.
+
+Today, we are excited to announce that Fiberplane has added support for OpenAPI specs generate with [Hono Zod OpenAPI](https://hono.dev/examples/zod-openapi) middleware , providing you with an IKEA catalog for your APIs!
+
+## OpenAPI Support in Fiberplane
+
+With Fiberplane's support for OpenAPI specs, integrating API documentation into Fiberplane Studio provides a central place to test and debug your Hono application APIs.
+On one hand, the OpenAPI spec helps design the correct payload.
+On the other hand, it helps you verify if the schemas and routes are correctly defined with Zod and fine-tune your application's API spec.
+
+The Fiberplane client library now supports the detection of OpenAPI specs generated with Zod, and Fiberplane Studio displays the corresponding information.
+
+When an OpenAPI definition is detected, a new tab in Studio will show the OpenAPI details.
+
+![Documentation tab in Fiberplane](@/assets/blog/2024-12-05-documentation-tab.png)
+
+You can view the expected responses and easily see the required input parameters along with their types, making it simple to craft correct payloads for your application's API.
+
+## Leveraging Hono Zod
+
+If you want to test it out, we have a code example [here](https://github.com/fiberplane/fpx/tree/main/examples/openapi-zod). It’s a simple user API that allows you to get information about stored users, delete a user, or add a new user to your database.
+The application uses Zod to generate the OpenAPI spec.
+
+[Zod](https://zod.dev/?id=introduction) is a TypeScript-first library to define schema declarations . [Zod to OpenAPI](https://github.com/asteasolutions/zod-to-openapi) uses the zod schemas to generate OpenAPI documentation.
+For Hono applications, [Zod OpenAPI](https://hono.dev/examples/zod-openapi) is a third-party middleware that extends the Hono class.
+
+```typescript
+import { OpenAPIHono } from "@hono/zod-openapi";
+const app = new OpenAPIHono<{ Bindings: Bindings }>();
+```
+
+The application can then use Zod schemas to define request and response parameters and bodies:
+
+```typescript
+import { z } from "@hono/zod-openapi";
+
+// Schema that defines the body of a request to create a new user
+const NewUserSchema = z
+  .object({
+    name: z.string().openapi({
+      example: "John Doe",
+      description: "The name of the user"
+    }),
+    age: z.number().openapi({
+      example: 42
+    })
+  })
+  .openapi("NewUser");
+```
+
+Next, you can leverage Zod to define the routes of your API and use the schemas you've defined:
+
+```typescript
+import { createRoute } from "@hono/zod-openapi";
+
+// Define the request/response schema for a route to create a new user
+const createUserRoute = createRoute({
+  method: "post",
+  path: "/users",
+  title: "CreateUser",
+  description: "Create a new user",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: NewUserSchema
+        }
+      }
+    }
+  },
+  responses: {
+    201: {
+      content: {
+        "application/json": {
+          schema: UserSchema
+        }
+      },
+      description: "Newly created user"
+    }
+  }
+});
+```
+
+Use the route in your application:
+
+```typescript
+app.openapi(createUserRoute, async (c) => {
+  //your business logic
+});
+```
+
+Generate OpenAPI docs from your application by adding:
+
+```typescript
+// Mount the api documentation
+// The OpenAPI documentation will be available at /doc
+app.doc("/doc", {
+  openapi: "3.0.0",
+  info: {
+    version: "1.0.0",
+    title: "Simple Hono OpenAPI API"
+  }
+});
+```
