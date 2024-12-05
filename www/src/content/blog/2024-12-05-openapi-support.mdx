@@ -13,15 +13,17 @@ tags:
 
 import { LinkCard } from "@astrojs/starlight/components";
 
-Nowadays, building HTTP APIs for external usage without implementing the [OpenAPI spec](https://swagger.io/specification/) is like buying an IKEA shelf without assembly instructions.
-OpenAPI serves as a guide to your API and is an open standard that can be interpreted by various tools to display information on how to interact with your application's API.
-This makes it easy to generate documentation for your API.
+Nowadays, building HTTP APIs for external use without delivering an [OpenAPI spec](https://swagger.io/specification/) is like shipping IKEA furniture without assembly instructions.
 
-Today, we are excited to announce that Fiberplane has added support for OpenAPI specs generated with Hono's [Zod OpenAPI extension](https://hono.dev/examples/zod-openapi), providing you with an IKEA-quality catalog for your APIs!
+OpenAPI serves as an instruction manual for your API and is an open standard that can be interpreted by various tools to display information on how to interact with your API.
+
+Today, we are excited to announce that Fiberplane has added automagical support for OpenAPI specs generated with Hono's [Zod OpenAPI extension](https://hono.dev/examples/zod-openapi), 
+building an IKEA-grade catalog for your APIs directly into Fiberplane Studio!
 
 ## OpenAPI Support in Fiberplane
 
-Fiberplane's initial support for OpenAPI specs integrates API documentation into Studio, providing a central place to test and debug your Hono application APIs.
+Fiberplane's initial support for OpenAPI specs integrates API documentation into Studio, providing a central place to test, debug, and verify your Hono APIs.
+
 On one hand, the OpenAPI spec helps design the correct payload.
 On the other hand, it helps you verify if the schemas and routes are correctly defined with Zod and fine-tune your application's API spec.
 
@@ -31,15 +33,11 @@ When an OpenAPI definition is detected, a new tab in Studio will show a given ro
 
 ![Documentation tab in Fiberplane](@/assets/blog/2024-12-05-documentation-tab.png)
 
-You can view the expected responses and reference the required input parameters along with their types, making it simple to craft correct payloads for your application's API.
+You can view the expected responses and reference the required input parameters along with their types, making it simple to craft test payloads for your API.
 
 ## Leveraging Hono Zod
 
-If you want to test it out, we have a code example [here](https://github.com/fiberplane/fpx/tree/main/examples/openapi-zod). It’s a simple user management API that allows you to get information about stored users, delete a user, or add a new user to your database.
-The application uses Zod to define schemas for the OpenAPI spec.
-
-[Zod](https://zod.dev/?id=introduction) is a TypeScript-first library to define schema declarations. [Zod to OpenAPI](https://github.com/asteasolutions/zod-to-openapi) uses the zod schemas to generate OpenAPI documentation.
-For Hono applications, [Zod OpenAPI](https://hono.dev/examples/zod-openapi) is an extension to Hono applications that provides utilities for generating OpenAPI specs directly from your code.
+Let's look at how to set this up. First, create your Hono app with OpenAPI support:
 
 ```typescript
 import { OpenAPIHono } from "@hono/zod-openapi";
@@ -59,7 +57,8 @@ const NewUserSchema = z
       description: "The name of the user"
     }),
     age: z.number().openapi({
-      example: 42
+      example: 42,
+      description: "The user's age"
     })
   })
   .openapi("NewUser");
@@ -120,4 +119,15 @@ app.doc("/doc", {
 });
 ```
 
-And that's it! You've now added OpenAPI support to your Hono application, your docs will update whenever you change your code, and Studio will leverage your spec to provide a better development experience.
+And that's it! You've now added OpenAPI support to your Hono application. Your documentation will automatically update whenever you change your code, and Studio will leverage your spec to provide a better development experience. Try it out by visiting the `/doc` endpoint of your application!
+
+
+---
+
+That's a wrap for today. Keep an eye out for our final Mega Launch Week release tomorrow.
+
+<LinkCard
+  title="🚀 Mega Launch Week"
+  description="Check out all the new features and updates from Fiberplane's mega launch week"
+  href="/blog/mega-launch-week-2024"
+/>
