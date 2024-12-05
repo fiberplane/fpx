@@ -8,51 +8,53 @@ sidebar:
 import { Image } from "astro:assets";
 import { Aside, LinkCard } from "@astrojs/starlight/components";
 
-When using Hono with the [Zod OpenAPI extension](https://hono.dev/examples/zod-openapi), Studio automatically detects your OpenAPI documentation and provides an integrated documentation viewer right in your development environment. 
+When using Hono with the [Zod OpenAPI extension](https://hono.dev/examples/zod-openapi), Studio automatically detects your OpenAPI documentation and provides an integrated documentation viewer right in your development environment.
 
 This makes it easy to inspect and test your API documentation as you build it. On top of that, Studio will use your OpenAPI definitions to generate example requests with [AI Request Autofill](/docs/features/generating-with-ai).
 
 ## Integrated Live Documentation
 
-Studio automatically detects when you're using `@hono/zod-openapi` in your project. 
+Studio automatically detects when you're using `@hono/zod-openapi` in your project.
 So, maybe your API looks like this:
 
 ```ts title="src/index.ts"
-import { instrument } from "@fiberplane/hono-otel"
-import { OpenAPIHono } from "@hono/zod-openapi"
-import { z } from "@hono/zod-openapi"
+import { instrument } from "@fiberplane/hono-otel";
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { z } from "@hono/zod-openapi";
 
-const app = new OpenAPIHono()
+const app = new OpenAPIHono();
 
 // Define your schemas
-const UserSchema = z.object({
-  id: z.string().openapi({
-    example: "123"
-  }),
-  name: z.string().openapi({
-    example: "Yusuke Isthebest"
+const UserSchema = z
+  .object({
+    id: z.string().openapi({
+      example: "123"
+    }),
+    name: z.string().openapi({
+      example: "Yusuke Isthebest"
+    })
   })
-}).openapi("User")
+  .openapi("User");
 
 // Create routes with OpenAPI definitions
 const route = createRoute({
-  method: 'get',
-  path: '/users/{id}',
+  method: "get",
+  path: "/users/{id}",
   responses: {
     200: {
       content: {
-        'application/json': {
+        "application/json": {
           schema: UserSchema
         }
       },
-      description: 'Retrieve the user'
+      description: "Retrieve the user"
     }
   }
-})
+});
 
 app.openapi(route, (c) => {
   // Your handler implementation
-})
+});
 
 // ...
 
@@ -79,4 +81,3 @@ For more details on using Hono with Zod OpenAPI, check out the official document
   The OpenAPI integration is automatically enabled when Studio detects
   `@hono/zod-openapi` in your project. No additional configuration is required.
 </Aside>
-
