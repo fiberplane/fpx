@@ -10,15 +10,12 @@ import { Aside, LinkCard } from "@astrojs/starlight/components";
 
 When using Hono with the [Zod OpenAPI extension](https://hono.dev/examples/zod-openapi), Studio automatically detects your OpenAPI documentation and provides an integrated documentation viewer right in your development environment. 
 
-This makes it easy to inspect and test your API documentation as you build it.
+This makes it easy to inspect and test your API documentation as you build it. On top of that, Studio will use your OpenAPI definitions to generate example requests with [AI Request Autofill](/docs/features/generating-with-ai).
 
-Further, Studio will use your OpenAPI definitions to generate example requests with [AI Request Autofill](/docs/features/generating-with-ai).
-
-## How it Works
+## Integrated Live Documentation
 
 Studio automatically detects when you're using `@hono/zod-openapi` in your project. 
-
-When detected, Studio adds a "Docs" tab to the request panel where you can view the OpenAPI documentation for each route.
+So, maybe your API looks like this:
 
 ```ts title="src/index.ts"
 import { instrument } from "@fiberplane/hono-otel"
@@ -62,24 +59,14 @@ app.openapi(route, (c) => {
 export default instrument(app);
 ```
 
-## Viewing Documentation
-
-Once you've defined your routes and schemas using Hono Zod OpenAPI, you can view the documentation for any route directly in Studio:
-
-1. Select a route from the sidebar
-2. Click the "Docs" tab in the request panel
-3. View the OpenAPI documentation including:
-   - Request/response schemas
-   - Example payloads
-   - Parameter definitions
-   - Response types
+In that case, Studio adds a "Docs" tab to the request panel for the `/users/:id` route where you can view that route's OpenAPI documentation:
 
 <Aside type="tip">
   The documentation viewer updates in real-time as you modify your API definitions,
   making it easy to iterate on your API design.
 </Aside>
 
-## Benefits
+### Benefits
 
 - **Integrated Development**: View and test your API documentation without leaving your development environment
 - **Real-time Updates**: Documentation updates automatically as you modify your API definitions
