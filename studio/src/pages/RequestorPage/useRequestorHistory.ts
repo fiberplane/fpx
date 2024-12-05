@@ -210,6 +210,11 @@ type BodyType = {
   isMultipart?: boolean;
 };
 
+/**
+ * Transforms the body value based on the body type into something that can be displayed in the UI
+ *
+ * @NOTE - This is a temporary solution. Currently does not work for form data.
+ */
 function transformBodyValue(
   bodyType: BodyType,
   bodyValue: string | undefined | null,
@@ -234,19 +239,27 @@ function transformBodyValue(
     }
 
     case "form-data": {
+      /**
+       * NOTE - Handling form bodies is tricky because of how the middleware might serialize them
+       * E.g., this is a multipart form data request body as the trace shows it
+       *
+       * ```
+       * {"avatar":{"name":"IMG_5635.png","type":"image/png","size":3141659}}
+       * ```
+       *
+       * E.g., this is a urlencoded form data request body as the trace shows it
+       *
+       * ```
+       * {"name":"Samwise the Brave"}
+       * ```
+       */
       if (bodyType.isMultipart) {
         // Handle multipart form-data
-        const formattedValue = parseUrlEncodedFormBody(bodyValue ?? "");
+        // const formattedValue = parseUrlEncodedFormBody(bodyValue ?? "");
         return {
           type: "form-data",
           isMultipart: true,
-          value: formattedValue.map((param) => ({
-            ...param,
-            value: {
-              value: param.value,
-              type: "text",
-            },
-          })),
+          value: [],
         };
       }
       // Handle urlencoded form-data
@@ -302,7 +315,17 @@ function determineBodyType(headers: Record<string, string>): BodyType {
   return { type: "text" };
 }
 
-export function parseUrlEncodedFormBody(body: string): KeyValueParameter[] {
+function parseUrlEncodedFormBody(body: string): KeyValueParameter[] {
+  if (isStringifiedRecordWithKeys(body)) {
+    return createKeyValueParameters(
+      Object.entries(JSON.parse(body)).map(([key, value]) => ({
+        key,
+        value: String(value),
+        enabled: true,
+      })),
+    );
+  }
+
   // Split the body by '&' to get key-value pairs
   const pairs = body.split("&");
 
@@ -314,4 +337,15 @@ export function parseUrlEncodedFormBody(body: string): KeyValueParameter[] {
 
   // Use createKeyValueParameters to generate the final structure
   return createKeyValueParameters(keyValueParameters);
+}
+
+function isStringifiedRecordWithKeys(
+  obj: unknown,
+): obj is Record<string, string> {
+  try {
+    const parsed = JSON.parse(obj as string);
+    return typeof parsed === "object" && parsed !== null;
+  } catch {
+    return false;
+  }
 }
