@@ -1,15 +1,18 @@
+
+<img src="./studio/src/assets/fp-logo-fav.svg" alt="Fiberplane Logo" width="50" />
+
 # Fiberplane Studio
 
-<!-- TODO - REPLACE LOGO -->
-![FPX](fpx.svg)
+Fiberplane Studio is a local tool for building and debugging Hono APIs. It can make requests against your api, inspect relevant runtime information when things go wrong, and help you build on the fly with confidence.
 
 [website & docs](https://fiberplane.com/)
 
-Fiberplane Studio is a local tool for building and debugging Hono APIs. It can make requests against your api, inspect relevant runtime information when things go wrong, and help you build on the fly with confidence.
+![Fiberplane Studio](./assets/studio.png)
 
 ## Quick Start
 
 Create Hono project
+
 ```sh
 # Create a hono project, using cloudflare-workers runtime
 npm create hono@latest my-hono-project
