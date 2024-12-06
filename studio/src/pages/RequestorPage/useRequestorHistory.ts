@@ -1,9 +1,5 @@
 import { useOtelTraces } from "@/queries";
-import {
-  constructRequestorBody,
-  createKeyValueParametersFromValues,
-  removeQueryParams,
-} from "@/utils";
+import { createKeyValueParametersFromValues, removeQueryParams } from "@/utils";
 import type { TraceListResponse } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useMemo } from "react";
@@ -12,7 +8,12 @@ import {
   useFetchRequestorRequests,
 } from "./queries";
 import { findMatchedRoute } from "./routes";
-import { type RequestorBody, type RequestorBodyType, useStudioStore } from "./store";
+import {
+  type KeyValueParameter,
+  type RequestorBody,
+  type RequestorBodyType,
+  useStudioStore,
+} from "./store";
 import { isRequestMethod, isWsRequest } from "./types";
 import {
   sortProxiedRequestResponsesDescending,
@@ -318,7 +319,7 @@ function determineBodyType(headers: Record<string, string>): BodyType {
 
 function parseUrlEncodedFormBody(body: string): KeyValueParameter[] {
   if (isStringifiedRecordWithKeys(body)) {
-    return createKeyValueParameters(
+    return createKeyValueParametersFromValues(
       Object.entries(JSON.parse(body)).map(([key, value]) => ({
         key,
         value: String(value),
@@ -337,7 +338,7 @@ function parseUrlEncodedFormBody(body: string): KeyValueParameter[] {
   });
 
   // Use createKeyValueParameters to generate the final structure
-  return createKeyValueParameters(keyValueParameters);
+  return createKeyValueParametersFromValues(keyValueParameters);
 }
 
 function isStringifiedRecordWithKeys(

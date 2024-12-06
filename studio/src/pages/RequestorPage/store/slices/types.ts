@@ -1,7 +1,7 @@
 import type { TreeNode } from "@/queries/app-routes";
 import type {
-  RequestBodyType,
   RequestorBody,
+  RequestorBodyType,
   RequestsPanelTab,
   ResponsePanelTab,
 } from "..";
@@ -40,7 +40,7 @@ export interface RequestResponseSlice {
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
   setBody: (body: undefined | string | RequestorBody) => void;
   handleRequestBodyTypeChange: (
-    requestBodyType: RequestBodyType,
+    requestBodyType: RequestorBodyType,
     isMultipart?: boolean,
   ) => void;
   /** Response related state */

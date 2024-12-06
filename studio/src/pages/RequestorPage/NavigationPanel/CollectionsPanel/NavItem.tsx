@@ -1,12 +1,12 @@
 import { COLLECTION_ROUTE, COLLECTION_WITH_ROUTE_ID } from "@/constants";
 import { useActiveCollectionEntryId } from "@/hooks";
-import { generatePathWithSearchParams, cn } from "@/utils";
+import { cn, generatePathWithSearchParams } from "@/utils";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { memo, useRef, useEffect } from "react";
-import { useSearchParams, Link, generatePath } from "react-router-dom";
+import { memo, useEffect, useRef } from "react";
+import { Link, generatePath, useSearchParams } from "react-router-dom";
 import { Method } from "../../RequestorHistory";
 import { useStudioStore } from "../../store";
-import { CollectionWithAppRoute } from "./CollectionsPanel";
+import type { CollectionWithAppRoute } from "./CollectionsPanel";
 
 type NavItemProps = {
   collection: CollectionWithAppRoute;
@@ -21,12 +21,15 @@ export const NavItem = memo(
     // const id = useActiveTraceId();
     const itemRef = useRef<HTMLAnchorElement>(null);
     const {
-      appRoutes: routes, updateMethod, updatePath, setRequestParams,
+      appRoutes: routes,
+      updateMethod,
+      updatePath,
+      setRequestParams,
     } = useStudioStore(
       "appRoutes",
       "updatePath",
       "updateMethod",
-      "setRequestParams"
+      "setRequestParams",
     );
 
     const [params] = useSearchParams();
@@ -51,7 +54,7 @@ export const NavItem = memo(
             {
               collectionId: collection.id.toString(),
             },
-            searchParams
+            searchParams,
           )}
           className={cn(
             "flex gap-2 hover:bg-muted px-2 py-1 rounded cursor-pointer items-center",
@@ -59,8 +62,9 @@ export const NavItem = memo(
             {
               "bg-muted": matchesId,
               "hover:bg-muted": !matchesId,
-              "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-25 focus:ring-inset": !matchesId && isSelected,
-            }
+              "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-25 focus:ring-inset":
+                !matchesId && isSelected,
+            },
           )}
           onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) => {
             if (e.key === "Enter") {
@@ -74,12 +78,13 @@ export const NavItem = memo(
         >
           <Icon
             icon="lucide:folder"
-            className="w-4 h-4 text-gray-400 stroke-1" />
+            className="w-4 h-4 text-gray-400 stroke-1"
+          />
           <div className="flex-1 text-nowrap text-ellipsis overflow-hidden text-muted-foreground">
             {collection.name}
           </div>
         </Link>
-        <div className="grid gap-1">
+        <div className="grid gap-1 my-2">
           {collection.collectionItems.map((item) => {
             const { id, appRouteId, ...extraParams } = item;
             const route = routes.find((r) => r.id === appRouteId);
@@ -98,10 +103,11 @@ export const NavItem = memo(
                 }}
                 key={item.id}
                 className={cn(
-                  "grid gap-2 grid-cols-[4rem_auto] ml-6 hover:bg-muted px-2 py-1 rounded cursor-pointer",
+                  "grid gap-2 grid-cols-[auto_1fr] ml-6 hover:bg-muted px-2 py-1 rounded cursor-pointer",
+                  "font-mono text-sm",
                   {
                     "bg-muted": entryId === item.id.toString(),
-                  }
+                  },
                 )}
                 onClick={() => {
                   console.log("click", extraParams);
@@ -123,13 +129,13 @@ export const NavItem = memo(
                 tabIndex={0}
                 role="button"
               >
-                <Method method={route.method} />
-                <span className="font-mono">{item.name || route.path}</span>
+                <Method method={route.method} className="text-xs font-mono min-w-12" />
+                <span>{item.name || route.path}</span>
               </Link>
             );
           })}
         </div>
       </div>
     );
-  }
+  },
 );

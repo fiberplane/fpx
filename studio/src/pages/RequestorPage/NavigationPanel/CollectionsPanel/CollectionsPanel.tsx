@@ -1,10 +1,6 @@
-import {
-  useActiveCollectionEntryId,
-} from "@/hooks";
+import { useActiveCollectionEntryId } from "@/hooks";
 import { type CollectionWithAppRouteList, useCollections } from "@/queries";
-import {
-  cn,
-} from "@/utils";
+import { cn, noop } from "@/utils";
 import { Icon } from "@iconify/react";
 import { useMemo, useRef, useState } from "react";
 import { Search } from "../Search";
@@ -188,7 +184,7 @@ export function CollectionsPanel() {
               // setSelectedItemId(null);
             }}
             placeholder="collections"
-            onItemSelect={() => { }}
+            onItemSelect={noop}
             itemCount={filteredItems.length}
           />
           <CreateCollection
@@ -203,10 +199,7 @@ export function CollectionsPanel() {
         {filteredItems.length === 0 && <EmptyState />}
         <div className="grid gap-2">
           {filteredItems.map((collection) => (
-            <NavItem
-              key={collection.id}
-              collection={collection}
-            />
+            <NavItem key={collection.id} collection={collection} />
           ))}
         </div>
       </div>
