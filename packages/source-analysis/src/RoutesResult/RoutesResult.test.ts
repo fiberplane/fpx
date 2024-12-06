@@ -151,7 +151,6 @@ test("zod-openapi", async () => {
     expect(factory.getHistoryLength()).toBe(2);
     expect(factory.hasVisited(factory.rootId)).toBeTruthy();
     expect(factory.getFilesForHistory()).toMatchSnapshot();
-
   } finally {
     monitor.stop();
   }
