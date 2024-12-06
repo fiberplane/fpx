@@ -51,7 +51,8 @@ export type HonoLikeApp = {
   fetch: HonoLikeFetch;
   routes: RouterRoute[];
   // NOTE - This exists on instances of OpenAPIHono
-  getOpenAPIDocument?: () => unknown;
+  // biome-ignore lint/suspicious/noExplicitAny: we do not want red-squiggles for the end user's app, using any is the easiest way to avoid that
+  getOpenAPIDocument?: (...args: any[]) => any;
 };
 
 type RouterRoute = {
