@@ -1,34 +1,18 @@
-import { COLLECTION_ROUTE, COLLECTION_WITH_ROUTE_ID } from "@/constants";
 import {
   useActiveCollectionEntryId,
-  //  useActiveCollectionId
 } from "@/hooks";
 import { type CollectionWithAppRouteList, useCollections } from "@/queries";
 import {
   cn,
-  generatePathWithSearchParams,
-  // generatePathWithSearchParams
 } from "@/utils";
-// import type { Collection } from "@fiberplane/fpx-types";
 import { Icon } from "@iconify/react";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
-import {
-  Link,
-  // type To,
-  generatePath,
-  // useNavigate,
-  useSearchParams,
-} from "react-router-dom";
-import { Method } from "../../RequestorHistory";
-import { useStudioStore } from "../../store";
+import { useMemo, useRef, useState } from "react";
 import { Search } from "../Search";
 import { CreateCollection } from "./CreateCollection";
-// import { useHandler } from "@fiberplane/hooks";
-// import { getId } from "@/components/Timeline/DetailsList/TimelineDetailsList/utils";
+import { NavItem } from "./NavItem";
 
-type CollectionWithAppRoute = CollectionWithAppRouteList[0];
+export type CollectionWithAppRoute = CollectionWithAppRouteList[0];
 export function CollectionsPanel() {
-  // const { history: items } = useRequestorHistory();
   const { data: items, error: collectionsError } = useCollections();
   const [filterValue, setFilterValue] = useState("");
   const hasDataRef = useRef(false);
@@ -204,7 +188,7 @@ export function CollectionsPanel() {
               // setSelectedItemId(null);
             }}
             placeholder="collections"
-            onItemSelect={() => {}}
+            onItemSelect={() => { }}
             itemCount={filteredItems.length}
           />
           <CreateCollection
@@ -218,16 +202,10 @@ export function CollectionsPanel() {
       <div className="overflow-y-auto h-full relative">
         {filteredItems.length === 0 && <EmptyState />}
         <div className="grid gap-2">
-          {filteredItems.map((item) => (
+          {filteredItems.map((collection) => (
             <NavItem
-              key={item.id}
-              item={item}
-              // searchParams={searchParams}
-              // collectionId={item.id.toString()}
-              // to={{
-              //   pathname: `/collections/${item.id.toString()}`,
-              //   search: searchParams.toString(),
-              // }}
+              key={collection.id}
+              collection={collection}
             />
           ))}
         </div>
@@ -286,140 +264,3 @@ function EmptyState() {
     </div>
   );
 }
-
-type NavItemProps = {
-  item: CollectionWithAppRoute;
-  // isSelected: boolean;
-  // to: To;
-  // searchParams: URLSearchParams;
-  // setSelectedItemId: (id: string) => void;
-  // collectionId: string;
-};
-
-const NavItem = memo(
-  ({
-    // to,
-    item,
-    // collectionId,
-    // isSelected, collectionId
-  }: NavItemProps) => {
-    // const id = useActiveTraceId();
-    const itemRef = useRef<HTMLAnchorElement>(null);
-    const {
-      appRoutes: routes,
-      updateMethod,
-      updatePath,
-      setRequestParams,
-    } = useStudioStore(
-      "appRoutes",
-      "updatePath",
-      "updateMethod",
-      "setRequestParams",
-    );
-
-    const [params] = useSearchParams();
-    const entryId = useActiveCollectionEntryId();
-    const [searchParams] = useSearchParams();
-    const isSelected = entryId === item.id.toString();
-    useEffect(() => {
-      if (isSelected && itemRef.current) {
-        itemRef.current.focus();
-      }
-    }, [isSelected]);
-
-    // const matchesId = getId(item) === id;
-    const matchesId = isSelected;
-    console.log("matchesId", matchesId);
-    return (
-      <div>
-        <Link
-          ref={itemRef}
-          to={generatePathWithSearchParams(
-            COLLECTION_ROUTE,
-            {
-              collectionId: item.id.toString(),
-            },
-            searchParams,
-          )}
-          className={cn(
-            "flex gap-2 hover:bg-muted px-2 py-1 rounded cursor-pointer items-center",
-            "focus:outline-none",
-            {
-              "bg-muted": matchesId,
-              "hover:bg-muted": !matchesId,
-              "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-25 focus:ring-inset":
-                !matchesId && isSelected,
-            },
-          )}
-          onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              e.currentTarget.click();
-            }
-          }}
-          data-state-active={matchesId}
-          data-state-selected={isSelected}
-          id={`item-${item.id.toString()}`}
-        >
-          <Icon
-            icon="lucide:folder"
-            className="w-4 h-4 text-gray-400 stroke-1"
-          />
-          <div className="flex-1 text-nowrap text-ellipsis overflow-hidden text-muted-foreground">
-            {item.name}
-          </div>
-        </Link>
-        <div className="grid gap-1">
-          {item.collectionItems.map((item) => {
-            const { id, appRouteId, ...extraParams } = item;
-            const route = routes.find((r) => r.id === appRouteId);
-            if (!route) {
-              return null;
-            }
-
-            return (
-              <Link
-                to={{
-                  pathname: generatePath(COLLECTION_WITH_ROUTE_ID, {
-                    collectionId: item.id.toString(),
-                    entryId: id.toString(),
-                  }),
-                  search: params.toString(),
-                }}
-                key={item.id}
-                className={cn(
-                  "grid gap-2 grid-cols-[4rem_auto] ml-6 hover:bg-muted px-2 py-1 rounded cursor-pointer",
-                  {
-                    "bg-muted": entryId === item.id.toString(),
-                  },
-                )}
-                onClick={() => {
-                  console.log("click", extraParams);
-                  setRequestParams({
-                    ...extraParams,
-                    requestUrl: `http://localhost:8787${route.path}`,
-                    requestMethod: route.method,
-                    requestRoute: appRouteId.toString(),
-                  });
-                  updateMethod(route.method);
-                  // updatePath(route.path);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    updateMethod(route.method);
-                    updatePath(route.path);
-                  }
-                }}
-                tabIndex={0}
-                role="button"
-              >
-                <Method method={route.method} />
-                <span className="font-mono">{item.name || route.path}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-    );
-  },
-);

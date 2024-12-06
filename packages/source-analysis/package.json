@@ -1,6 +1,6 @@
 {
   "name": "@fiberplane/source-analysis",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "type": "module",
   "types": "./dist/index.d.ts",
   "author": "Fiberplane<info@fiberplane.com>",
@@ -22,6 +22,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241011.0",
     "@fiberplane/hono-otel": "^0.3.1",
+    "@hono/zod-openapi": "^0.18.0",
     "@types/node": "^22.8.7",
     "@types/resolve": "^1.20.6",
     "vitest": "^2.1.3"

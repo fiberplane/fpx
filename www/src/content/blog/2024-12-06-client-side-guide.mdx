@@ -1,0 +1,621 @@
+---
+title: "Step-by-step guide: Adding client-side logic to your Hono app"
+description: A guide to adding client-side logic to your Hono app.
+slug: client-side-guide
+date: 2024-12-06
+author: Oscar van Zijverden
+tags:
+  - guide
+  - Hono
+  - hono.js
+  - typescript
+  - hydration
+---
+
+import {
+  Aside,
+  Card,
+  FileTree,
+  TabItem,
+  Tabs
+} from "@astrojs/starlight/components";
+import videoHydrated from "../../assets/blog/2024-12-06-client-side-guide-hydrated.mov";
+import videoStatic from "../../assets/blog/2024-12-06-client-side-guide-static.mov";
+
+[Hono](https://hono.dev) is a great framework to build serverless apps with
+familiar APIs using Web Standards. It comes with a ton of features out of the
+box.
+
+One of these features is the ability to compose & render HTML server-side, which
+is great for static content.\
+But what if you want to add some client-side logic to your app?
+You can do so by using the hooks provided by Hono. However, they might not work
+in your browser — that's because we're not shipping any JavaScript to the
+browser!
+
+<Aside>
+We'll achieve this with client-side hydration. The app gets rendered server-side
+first, and then the client-side script takes over. The
+[React docs](https://react.dev/reference/react-dom/client/hydrateRoot#hydrating-server-rendered-html)
+describe it well:
+> [It] will “attach” your components’ logic to the initial generated HTML from the
+> server. Hydration turns the initial HTML snapshot from the server into a fully
+> interactive app that runs in the browser.
+</Aside>
+
+In this guide we'll go over how to build an Hono app with client-side logic,
+unlocking the full potential of your projects.
+
+## What are we building?
+
+We're building a simple app that renders a counter component server-side and
+hydrates it client-side.\
+It runs in Cloudflare Workers, leveraging its
+[static asset bindings](https://developers.cloudflare.com/workers/static-assets)
+\- though the same principles apply to the other supported environments as well.
+
+Using [Vite](https://vitejs.dev) we'll set up two build steps: one for the
+client-side logic and one for the server-side logic.
+
+<figure>
+  <video
+    autoplay
+    disablePictureInPicture
+    loop
+    muted
+    playsinline
+    preload
+    width="100%"
+    style="border-radius: 0.5rem;"
+  >
+    <source src={videoHydrated} type="video/mp4" />
+    <p>
+      Your browser does not support the video tag. You can download the video
+      <a href={videoHydrated} download>here</a>.
+
+      Alternatively, let us know by
+      <a href="https://github.com/fiberplane/fpx/issues/new">opening an issue
+      </a> on GitHub!
+    </p>
+  </video>
+
+  <figcaption>
+    The final result: a counter component that increments a count when a button
+    is clicked!
+  </figcaption>
+</figure>
+
+## Let's build!
+
+First, let's get started with scaffolding a new Hono app.
+
+<Tabs syncKey="package-manager">
+<TabItem label="npm">
+
+```sh
+npm create hono@latest hono-client
+```
+
+</TabItem>
+
+<TabItem label="yarn">
+
+```sh
+yarn create hono hono-client
+```
+
+</TabItem>
+
+<TabItem label="pnpm">
+
+```sh
+pnpm create hono hono-client
+```
+
+</TabItem>
+
+<TabItem label="bun">
+
+```sh
+bunx create-hono hono-client
+```
+
+</TabItem>
+</Tabs>
+
+<Aside>
+  Make sure to select the `cloudflare-workers` template when prompted.
+</Aside>
+
+The `src` directory contains a single `index.ts` file with a simple Hono app.
+We're adding a `client` directory with an index and component:
+
+<FileTree>
+
+- src
+  - index.ts
+  - **client**
+    - **index.tsx** logic to mount the app on the client
+    - **Counter.tsx** component to demonstrate client-side logic
+
+</FileTree>
+
+### Adding the component & mounting point
+
+Let's start by setting up a simple counter component that increments a count
+when a button is clicked:
+
+```tsx title="src/client/Counter.tsx"
+import { useState } from "hono/jsx";
+
+export function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <button onClick={() => setCount((c) => c + 1)} type="button">
+        Increase count
+      </button>
+      <span>Count: {count}</span>
+    </div>
+  );
+}
+```
+
+Then we import the component & hydrate it in the client entry file:
+
+```tsx title="src/client/index.tsx"
+import { StrictMode } from "hono/jsx";
+import { hydrateRoot } from "hono/jsx/dom/client";
+
+import { Counter } from "./Counter";
+
+const root = document.getElementById("root");
+if (!root) {
+  throw new Error("Root element not found");
+}
+
+hydrateRoot(
+  root,
+  <StrictMode>
+    <Counter />
+  </StrictMode>
+);
+```
+
+<Aside>
+  We're _hydrating_ the app client-side as opposed to _rendering_ it; the static
+  HTML is rendered server-side by Hono. If you're interested in client-side
+  rendering only, check out the
+  [example on GitHub](https://github.com/oscarvz/cf-workers-hono-client-side).
+</Aside>
+
+Your code editor might give you a hint that `document` is not defined. Given we
+added the client-side logic, we need to tell TypeScript that we're running in a
+browser environment:
+
+```json title="tsconfig.json" ins={6}
+{
+  "compilerOptions": {
+    //...
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
+    // ...
+  }
+}
+```
+
+We're going to add some JSX to the `src/index.ts` file, so we first need to
+change the file extension to `.tsx`.
+Once that's done, we can add Hono's
+[JSX renderer middleware](https://hono.dev/docs/middleware/builtin/jsx-renderer)
+to the `/` route and return the statically rendered `<Counter />` component:
+
+```tsx title="src/index.tsx" ins={2, 4, 8-23, 26} del={25}
+import { Hono } from "hono";
+import { jsxRenderer } from "hono/jsx-renderer";
+
+import { Counter } from "./client/Counter";
+
+const app = new Hono();
+
+app.use(
+  jsxRenderer(
+    ({ children }) => (
+      <html lang="en">
+        <head>
+          <meta charSet="utf-8" />
+          <meta content="width=device-width, initial-scale=1" name="viewport" />
+          <title>hono-client</title>
+        </head>
+        <div id="root">{children}</div>
+      </html>
+    ),
+    { docType: true }
+  )
+);
+
+app.get("/", (c) => {
+  return c.text("Hello Hono!");
+  return c.render(<Counter />);
+});
+
+export default app;
+```
+
+We're almost there. If you run the app now with the `dev` script, you'll get an
+error. Let's fix that by adding the build steps!
+
+### Adding build steps and scripts
+
+At this point, we have both server-side and client-side logic and need to add
+two build steps to our project. Let's install Vite and two plugins to facilitate
+this.
+
+<Tabs syncKey="package-manager">
+<TabItem label="npm">
+
+```sh
+npm install vite
+npm install -D @hono/vite-build @hono/vite-dev-server
+```
+
+</TabItem>
+
+<TabItem label="yarn">
+
+  ```sh
+  yarn add vite
+  yarn add -D @hono/vite-build @hono/vite-dev-server
+  ```
+
+</TabItem>
+
+<TabItem label="pnpm">
+
+  ```sh
+  pnpm add vite
+  pnpm add -D @hono/vite-build @hono/vite-dev-server
+  ```
+
+</TabItem>
+
+<TabItem label="bun">
+
+```sh
+bun add vite
+bun add -D @hono/vite-build @hono/vite-dev-server
+```
+
+</TabItem>
+</Tabs>
+
+In the root of your project, create a `vite.config.ts` file. We'll define the
+config for both the client-side build and the server-side build:
+
+```ts title="vite.config.ts"
+import build from "@hono/vite-build/cloudflare-workers";
+import devServer from "@hono/vite-dev-server";
+import cloudflareAdapter from "@hono/vite-dev-server/cloudflare";
+import { defineConfig } from "vite";
+
+export default defineConfig(({ mode }) => {
+  if (mode === "client") {
+    return {
+      build: {
+        rollupOptions: {
+          input: "./src/client/index.tsx",
+          output: {
+            entryFileNames: "assets/[name].js",
+          },
+        },
+        outDir: "./public"
+      }
+    };
+  }
+
+  const entry = "./src/index.tsx";
+  return {
+    server: { port: 8787 },
+    plugins: [
+      devServer({ adapter: cloudflareAdapter, entry }),
+      build({ entry })
+    ]
+  };
+});
+```
+
+<Aside>
+For the client build, the `outDir` is set to `./public`. This is the directory
+where the Worker will find the client-side script.
+</Aside>
+
+Now we need to adjust the `package.json` scripts to facilitate the new build
+steps. Additionally, we set the type to `module` to allow for ESM imports:
+
+```json title="package.json" del={5} ins={3, 6, 7}
+{
+  "name": "hono-client",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "dev": "vite dev",
+    "build": "vite build --mode client && vite build",
+    "deploy": "wrangler deploy --minify"
+  }
+  // ...
+}
+```
+
+<Aside type="tip">
+  This would be a good moment to add the `public` directory to your
+  `.gitignore`.
+</Aside>
+
+#### Running the app
+If you run the app now with the `dev` script, you'll see the counter component
+rendered server-side. The client-side script hasn't been loaded yet, so the
+counter component won't work.
+
+<Tabs syncKey="package-manager">
+<TabItem label="npm">
+
+```sh
+npm run dev
+```
+
+</TabItem>
+
+<TabItem label="yarn">
+
+```sh
+yarn dev
+```
+
+</TabItem>
+
+<TabItem label="pnpm">
+
+```sh
+pnpm dev
+``` 
+
+</TabItem>
+
+<TabItem label="bun">
+
+```sh
+bun dev
+```
+
+</TabItem>
+</Tabs>
+
+<video
+  autoplay
+  disablePictureInPicture
+  loop
+  muted
+  playsinline
+  preload
+  width="100%"
+  style="border-radius: 0.5rem;"
+>
+  <source src={videoStatic} type="video/mp4" />
+  <p>
+    Your browser does not support the video tag. You can download the video
+    <a href={videoHydrated} download>here</a>.
+
+    Alternatively, let us know by
+    <a href="https://github.com/fiberplane/fpx/issues/new">opening an issue
+    </a> on GitHub!
+  </p>
+</video>
+
+There's only one step left to make the counter component work. We're almost
+there!
+
+### Load the client-side script
+
+As a final step we need to load the client-side script in the document's head.
+
+For the script that we're loading we need to make a distinction between a
+development and production environment. Vite allows us to do this easily with
+its [built-in env](https://vite.dev/guide/env-and-mode#env-variables).
+For the dev environment we can load the client's `.tsx` file; for production we
+have to read it from the `public` directory.
+
+First we add the `vite/client` types to the TypeScript config:
+
+```json title="tsconfig.json" ins={6}
+{
+  "compilerOptions": {
+    //...
+    "types": [
+      // ...
+      "vite/client"
+    ]
+    //...
+  }
+}
+```
+
+Then we adjust the `src/index.tsx` file to load the client-side script,
+depending on the environment:
+
+```tsx title="src/index.tsx" ins={11-18}
+// ...
+app.use(
+  jsxRenderer(
+    ({ children }) => (
+      <html lang="en">
+        <head>
+          <meta charSet="utf-8" />
+          <meta content="width=device-width, initial-scale=1" name="viewport" />
+          <title>hono-client</title>
+
+          <script
+            type="module"
+            src={
+              import.meta.env.PROD
+                ? "/assets/index.js"
+                : "/src/client/index.tsx"
+            }
+          />
+        </head>
+        <body>
+          <div id="root">{children}</div>
+        </body>
+      </html>
+    ),
+    { docType: true }
+  )
+);
+// ...
+```
+
+#### Run locally
+
+Great! You can now run the app with the `dev` script and see the counter
+component in action.
+
+<Tabs syncKey="package-manager">
+<TabItem label="npm">
+
+```sh
+npm run dev
+```
+
+</TabItem>
+
+<TabItem label="yarn">
+
+```sh
+yarn dev
+```
+
+</TabItem>
+
+<TabItem label="pnpm">
+
+```sh
+pnpm dev
+```
+
+</TabItem>
+
+<TabItem label="bun">
+
+```sh
+bun dev
+```
+
+</TabItem>
+</Tabs>
+
+<video
+  autoplay
+  disablePictureInPicture
+  loop
+  muted
+  playsinline
+  preload
+  width="100%"
+  style="border-radius: 0.5rem;"
+>
+  <source src={videoHydrated} type="video/mp4" />
+  <p>
+    Your browser does not support the video tag. You can download the video
+    <a href={videoHydrated} download>here</a>.
+
+    Alternatively, let us know by
+    <a href="https://github.com/fiberplane/fpx/issues/new">opening an issue
+    </a> on GitHub!
+  </p>
+</video>
+
+## Deploying
+
+To deploy the app to Cloudflare Workers we have to update `wrangler.toml` so it
+points to the correct worker build & resolves the public assets directory.
+Lastly, we update the `deploy` script.
+
+```toml title="wrangler.toml" del={2} ins={3, 5}
+name = "hono-client"
+main = "src/index.ts"
+main = "dist/index.js"
+
+assets = { directory = "./public/" }
+# ...
+```
+
+```json title="package.json" del={6} ins={7}
+{
+  // ...
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build --mode client && vite build",
+    "deploy": "wrangler deploy --minify",
+    "deploy": "$npm_execpath run build && wrangler deploy --no-bundle"
+  }
+  // ...
+}
+```
+
+<Aside>
+Note that the `wrangler deploy` has the `--no-bundle` flag. The build is taken
+care of by the Vite build step. Wrangler's task is merely to deploy it to the
+Cloudflare Workers platform.
+</Aside>
+
+### Deploy your app
+
+You can now deploy your app to Cloudflare Workers with the `deploy` script:
+
+<Tabs syncKey="package-manager">
+<TabItem label="npm">
+
+```sh
+npm run deploy
+```
+
+</TabItem>
+
+<TabItem label="yarn">
+
+```sh
+yarn deploy
+```
+
+</TabItem>
+
+<TabItem label="pnpm">
+
+```sh
+pnpm deploy
+```
+
+</TabItem>
+
+<TabItem label="bun">
+
+```sh
+bun deploy
+```
+
+</TabItem>
+</Tabs>
+
+## Conclusion
+
+That's it! You've built a simple Hono app with client-side logic. You can now
+extend your app with more complex client-side features, such as fetching data
+from an API route, adding a form to your project, or even building a full SPA.
+
+<Card title="GitHub repo" icon="github">
+Check out the [GitHub example repo](https://github.com/oscarvz/cf-workers-hono-client-side)
+if you'd like to see the full application code. It has a few additional
+features, like a simple Hono RPC implementation, and a SPA example.
+</Card>

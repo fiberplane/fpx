@@ -25,6 +25,7 @@ export type {
 } from "./types";
 export { useServiceBaseUrl } from "./useServiceBaseUrl";
 export { KeyValueParameterSchema } from "./types";
+export type { RequestorBodyType } from "./request-body"
 
 export type StudioState = Store;
 export const useStudioStoreRaw = create<StudioState>()(

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { logger } from "./logger";
-import type { TsNode, TsType, TsTypeChecker } from "./types";
+import type { TsNode, TsPackageType, TsTypeChecker } from "./types";
 
 /**
  * Gets the file uri to be used in the typescript language server
@@ -39,7 +39,7 @@ export function isSubpath(parentPath: string, subPath: string): boolean {
 export function debugSymbolAtLocation(
   node: TsNode,
   checker: TsTypeChecker,
-  ts: TsType,
+  ts: TsPackageType,
 ) {
   function logSymbolInfo(node: TsNode, depth: number) {
     const symbol = checker.getSymbolAtLocation(node);
@@ -55,4 +55,20 @@ export function debugSymbolAtLocation(
   }
 
   logSymbolInfo(node, 8); // Adjust depth as needed
+}
+
+export function debounce<
+  T extends (...args: Array<unknown>) => void | Promise<void>,
+>(func: T, wait: number): (...args: Parameters<T>) => void {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
+  return (...args: Parameters<T>) => {
+    if (timeout !== null) {
+      clearTimeout(timeout);
+    }
+
+    timeout = setTimeout(() => {
+      func(...args);
+    }, wait);
+  };
 }
