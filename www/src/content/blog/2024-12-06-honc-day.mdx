@@ -10,7 +10,9 @@ tags:
   - HONC
 ---
 
+import { Image } from "astro:assets";
 import { LinkCard } from "@astrojs/starlight/components";
+import hatchExample from "@/assets/blog/2024-12-06-hatch-example.png";
 
 It's HONC Day 2k24! 
 
@@ -27,9 +29,14 @@ Just add the `--hatch` flag to the `create-honc-app` command:
 npm create honc-app@latest -- --hatch
 ```
 
-And you'll be prompted to describe what your app should do.
+And you'll be prompted to describe what you want to build:
 
-> **TODO** - Image of the prompt
+<Image
+  width={400}
+  src={hatchExample}
+  alt="Create honc app with a 'hatch' prompt"
+  style="border-radius: 10px;"
+/>
 
 After that, you go through the normal `create-honc-app` flow, 
 and your template files will be modified to scaffold an api according to your description.
@@ -42,14 +49,24 @@ This one's worthy of its own separate post on the blog! Check it out here:
 
 <LinkCard
   title="Step-by-step guide: Adding client-side logic to your Hono app"
-  description="A guide to adding client-side logic to your Hono app."
+  description="A minimal setup for client-side hydration in Hono apps."
   href="/blog/client-side-guide"
 />
 
 
-## Meet the Placegoose API: A Goosier Take on JSON Placeholder
+## Placegoose: A Goosier Take on JSON Placeholder
 
-https://placegoose.fp.dev/
+Sometimes **you just need some honkin' data**, and that's where [placegoose](https://placegoose.fp.dev/) comes in. It's like JSON Placeholder, but with geese.
+
+The code is open source, and it demonstrates some advanced patterns for building an api with Hono/HONC.
+Placegoose is a great reference for modeling more complex data relationships with Drizzle, separating out resources into different routers, and 
+implementing request validation with centralized error handling.
+
+<LinkCard
+  title="Check out the Placegoose Code"
+  description="Placegoose is a good reference app for more advanced patterns in Hono."
+  href="https://github.com/fiberplane/create-honc-app/tree/9b14422df4907acc2b7a90171f38f122ff58d113/examples/placegoose"
+/>
 
 ## Drizzle Seed Support in create-honc-app
 
