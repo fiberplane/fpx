@@ -131,9 +131,6 @@ export function RequestorInput({
             </TooltipContent>
           </Tooltip>
         )}
-        <Button size="sm" variant="ghost">
-          <Icon icon="lucide:group" className={cn("w-3.5 h-3.5")} />
-        </Button>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

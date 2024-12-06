@@ -1,15 +1,16 @@
 import { Button } from "@/components/ui/button";
-import { ROOT_ROUTE } from "@/constants";
+import { COLLECTION_WITH_ROUTE_ID, ROOT_ROUTE } from "@/constants";
 import { useActiveCollectionId } from "@/hooks/useActiveCollectionId";
 import { useCollections } from "@/queries";
 import {
   useDeleteCollection,
   useDeleteItemFromCollection,
 } from "@/queries/collections";
-import { cn } from "@/utils";
+import { cn, generatePathWithSearchParams } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import {
+  Link,
   type To,
   generatePath,
   useNavigate,
@@ -58,11 +59,15 @@ export function CollectionSection() {
 
   return (
     <div
-      className={cn("rounded-md border", "flex-auto overflow-x-hidden overflow-y-auto", BACKGROUND_LAYER)}
+      className={cn(
+        "rounded-md border",
+        "h-full flex-auto overflow-x-hidden overflow-y-auto",
+        BACKGROUND_LAYER,
+      )}
     >
       <div className="p-4 grid gap-6">
         <div className="grid gap-2">
-          <div className="grid grid-cols-[1fr_auto]">
+          <div className="grid grid-cols-[1fr_auto] items-center">
             <h4>Manage collection</h4>
             <Button
               variant={"destructive"}
@@ -82,24 +87,21 @@ export function CollectionSection() {
           </p>
         </div>
         <div className="border rounded border-muted grid gap-2 p-2">
-          <div className="grid grid-cols-[1fr_auto] border-b mb-2 pu-2">
-            <h5 className="text-muted-foreground">Current routes:</h5>
+          <div className="grid grid-cols-[1fr_auto] border-b mb-2 pb-2">
+            <h5 className="text-muted-foreground">Current items:</h5>
             <AddRoute collectionId={collectionId} />
           </div>
-          {collection.appRoutes.length === 0 ? (
+          {collection.collectionItems.length === 0 ? (
             <div className="text-sm text-muted-foreground py-2 px-3 my-2 flex gap-4 items-center flex-col">
-              <h4 className="flex items-center gap-2 justify-center text-base">
-                <Icon
-                  icon="lucide:info"
-                  className="text-success"
-                />
+              <h4 className="flex items-center gap-3 justify-center text-base">
+                <Icon icon="lucide:info" className="text-green-500" />
                 Empty collection
               </h4>
-              <div className="flex items-center max-w-64 flex-col gap-1">
+              <div className="flex max-w-64 flex-col gap-1 text-left">
                 <p className="text-muted-foreground">Awesome, you can now:</p>
-                <ul className="pl-2 list-disc my-2 gap-2 grid">
+                <ul className="ml-1.5 pl-2 list-disc my-2 gap-2 grid">
                   <li>
-                    navigate to any route and use the{" "}
+                    navigate to any route and use the&nbsp;&nbsp;
                     <Icon
                       icon="lucide:folder"
                       className="text-foreground inline-block"
@@ -114,19 +116,33 @@ export function CollectionSection() {
               </div>
             </div>
           ) : (
-            <ul className="grid gap-2 pb-4">
-              {collection.appRoutes.map((item) => {
+            <ul className="grid gap-2 pb-2">
+              {collection.collectionItems.map((item) => {
                 const route = routes.find((r) => r.id === item.appRouteId);
                 if (!route) {
                   return null;
                 }
-                // console.log('route', route, routeId, index);
+
                 return (
-                  <li key={item.id} className="grid grid-cols-[1fr_auto]">
-                    <div className="grid gap-2 grid-cols-[4rem_auto] ml-6">
+                  <li
+                    key={item.id}
+                    className="grid grid-cols-[1fr_auto] gap-2 items-center"
+                  >
+                    <Link
+                      to={generatePathWithSearchParams(
+                        COLLECTION_WITH_ROUTE_ID,
+                        {
+                          collectionId: collectionId,
+                          entryId: item.id.toString(),
+                        },
+                        searchParams,
+                      )}
+                      className="grid gap-2 px-2 rounded-md grid-cols-[4rem_1fr_1fr] hover:bg-muted"
+                    >
                       <Method method={route.method} />
-                      {route.path}
-                    </div>
+                      <span>{route.path}</span>
+                      <span>{item.name}</span>
+                    </Link>
                     <Button
                       variant={"destructive"}
                       type="button"

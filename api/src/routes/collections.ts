@@ -72,7 +72,7 @@ app.post(
     const { id: appRouteId, ...extraParams } = ctx.req.valid("json");
 
     try {
-      const updatedCollection = await db.transaction(async (db) => {
+      const insertedItem = await db.transaction(async (db) => {
         const collection = db.query.collections.findFirst({
           where: eq(collections.id, collectionId),
         });
@@ -91,25 +91,26 @@ app.post(
           });
         }
 
-        await db.insert(collectionItems).values({
+        const result = await db.insert(collectionItems).values({
           collectionId,
           appRouteId,
           ...extraParams,
         });
 
-        return db.query.collections.findFirst({
-          where: eq(collections.id, collectionId),
-          with: {
-            collectionItems: {
-              with: {
-                appRoute: true,
-              },
-            },
-          },
+        if (result.lastInsertRowid === undefined) {
+          throw new Error(
+            "Unexpected result from database (No id returned after insert)",
+          );
+        }
+
+        const insertedItem = await db.query.collectionItems.findFirst({
+          where: eq(collectionItems.id, Number(result.lastInsertRowid)),
         });
+
+        return insertedItem;
       });
 
-      return ctx.json(updatedCollection);
+      return ctx.json(insertedItem);
     } catch (error) {
       if (error instanceof HTTPException) {
         return ctx.json(error.message, error.status);
@@ -131,13 +132,13 @@ app.get("/v0/collections", async (ctx) => {
     const allCollections = await db.select().from(collections);
     const collectionWithRoutes = await Promise.all(
       allCollections.map(async (collection) => {
-        const routes = await db
+        const items = await db
           .select()
           .from(collectionItems)
           .where(eq(collectionItems.collectionId, collection.id));
         return {
           ...collection,
-          appRoutes: routes.map(({ collectionId: _, ...route }) => route),
+          collectionItems: items.map(({ collectionId: _, ...item }) => item),
         };
       }),
     );

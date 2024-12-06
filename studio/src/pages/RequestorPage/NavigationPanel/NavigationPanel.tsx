@@ -1,4 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  NAVIGATION_PANEL_KEY,
+  type NavigationTab,
+  TAB_KEYS,
+} from "@/constants";
 import { useKeySequence } from "@/hooks/useKeySequence";
 import { useHandler } from "@fiberplane/hooks";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -6,12 +11,8 @@ import { CollectionsPanel } from "./CollectionsPanel";
 import { RequestsPanel } from "./RequestsPanel";
 import { RoutesPanel } from "./RoutesPanel";
 
-const FILTER_TAB_KEY = "filter-tab";
-const TAB_KEYS = ["routes", "collections", "history"] as const;
-type NavigationTab = (typeof TAB_KEYS)[number];
-
 function getTab(searchParams: URLSearchParams): NavigationTab | undefined {
-  const tab = searchParams.get(FILTER_TAB_KEY);
+  const tab = searchParams.get(NAVIGATION_PANEL_KEY);
   if (tab && TAB_KEYS.includes(tab as NavigationTab)) {
     return tab as NavigationTab;
   }
@@ -27,7 +28,7 @@ function useActiveTab(): {
   const tab = getTab(params) ?? (collectionId ? "collections" : "routes");
 
   const setTab = useHandler((newTab: NavigationTab) => {
-    setParams({ [FILTER_TAB_KEY]: newTab }, { replace: true });
+    setParams({ [NAVIGATION_PANEL_KEY]: newTab }, { replace: true });
   });
 
   return {

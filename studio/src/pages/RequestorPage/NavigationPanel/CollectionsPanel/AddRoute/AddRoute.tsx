@@ -32,7 +32,7 @@ export function AddRoute(props: Props) {
           + Add route
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-96 max-lg:hidden">
+      <PopoverContent className="w-96" align="end">
         <AddRouteForm collectionId={collectionId} onSuccess={handleSuccess} />
       </PopoverContent>
     </Popover>

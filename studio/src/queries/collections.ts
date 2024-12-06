@@ -9,20 +9,22 @@ import { z } from "zod";
 
 export const COLLECTIONS_KEY = "collections";
 
-const CollectionItemSchema = ExtraRequestParamsSchema.extend({
+export const CollectionItemSchema = ExtraRequestParamsSchema.extend({
   id: z.number(),
   name: z.string().nullable(),
   appRouteId: z.number(),
 });
 
-const CollectionWithAppRouteListSchema = z.array(
+export type CollectionItem = z.infer<typeof CollectionItemSchema>;
+
+const CollectionWithItemsListSchema = z.array(
   CollectionSchema.extend({
-    appRoutes: z.array(CollectionItemSchema),
+    collectionItems: z.array(CollectionItemSchema),
   }),
 );
 
-export type CollectionWithAppRouteList = z.infer<
-  typeof CollectionWithAppRouteListSchema
+export type CollectionWithItemsList = z.infer<
+  typeof CollectionWithItemsListSchema
 >;
 
 export function useCollections() {
@@ -31,7 +33,7 @@ export function useCollections() {
     queryFn: async () => {
       const response = await fetch("/v0/collections");
       const json = await response.json();
-      return CollectionWithAppRouteListSchema.parse(json);
+      return CollectionWithItemsListSchema.parse(json);
     },
   });
 }
@@ -101,7 +103,8 @@ async function addItemToCollection(
       throw resultToError(result);
     }
 
-    return undefined;
+    const data = await r.json();
+    return CollectionItemSchema.parse(data);
   });
 }
 

@@ -5,6 +5,7 @@ import type {
 } from "@/pages/RequestorPage/store";
 import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
+import { type PathParam, generatePath } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
 
 export * from "./screen-size";
@@ -36,7 +37,7 @@ export function objectWithKeyAndValue<T extends string, V>(
   return objectWithKey(value, key) && value[key] === expectedValue;
 }
 
-export function noop() { }
+export function noop() {}
 
 export function isJson(str: string) {
   try {
@@ -288,4 +289,20 @@ export function createObjectFromKeyValueParameters<
   }
 
   return result;
+}
+
+export function generatePathWithSearchParams<Path extends string>(
+  originalPath: Path,
+  params: {
+    [key in PathParam<Path>]: string | null;
+  },
+  searchParams: URLSearchParams,
+): string {
+  const searchString = searchParams.toString();
+  const generatedPath = generatePath(originalPath, params);
+  if (!searchString) {
+    return generatedPath;
+  }
+
+  return `${generatedPath}${generatedPath.includes("?") ? "&" : "?"}${searchString}`;
 }

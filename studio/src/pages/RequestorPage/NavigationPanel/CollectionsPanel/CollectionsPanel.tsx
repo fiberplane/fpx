@@ -1,39 +1,30 @@
-import { COLLECTION_WITH_ROUTE_ID } from "@/constants";
-// import { RequestMethod } from "@/components/Timeline";
-// import { Button } from "@/components/ui/button";
-// import { Status } from "@/components/ui/status";
-// import { useInputFocusDetection } from "@/hooks";
-// import { useActiveTraceId } from "@/hooks";
-import { type CollectionWithAppRouteList, useCollections } from "@/queries";
-import { cn } from "@/utils";
-import type { Collection } from "@fiberplane/fpx-types";
-import { Icon } from "@iconify/react";
+import { COLLECTION_ROUTE, COLLECTION_WITH_ROUTE_ID } from "@/constants";
 import {
-  memo,
-  //  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-// import { useHotkeys } from "react-hotkeys-hook";
+  useActiveCollectionEntryId,
+  //  useActiveCollectionId
+} from "@/hooks";
+import { type CollectionWithAppRouteList, useCollections } from "@/queries";
+import {
+  cn,
+  generatePathWithSearchParams,
+  // generatePathWithSearchParams
+} from "@/utils";
+// import type { Collection } from "@fiberplane/fpx-types";
+import { Icon } from "@iconify/react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   Link,
-  type To,
+  // type To,
   generatePath,
-  //  useNavigate,
+  // useNavigate,
   useSearchParams,
 } from "react-router-dom";
 import { Method } from "../../RequestorHistory";
-// import type { ProxiedRequestResponse } from "../../queries";
-import {
-  useStudioStore,
-  //  useServiceBaseUrl
-} from "../../store";
-// import { RoutesItem } from "../RoutesPanel";
+import { useStudioStore } from "../../store";
 import { Search } from "../Search";
-// import { AddRoute } from "./AddRoute";
 import { CreateCollection } from "./CreateCollection";
+// import { useHandler } from "@fiberplane/hooks";
+// import { getId } from "@/components/Timeline/DetailsList/TimelineDetailsList/utils";
 
 type CollectionWithAppRoute = CollectionWithAppRouteList[0];
 export function CollectionsPanel() {
@@ -66,14 +57,32 @@ export function CollectionsPanel() {
   // const activeIndex = useMemo(() => {
   //   return filteredItems.findIndex((item) => getId(item) === id);
   // }, [filteredItems, id]);
+  const selectedItemId = useActiveCollectionEntryId();
+  // const collectionId = useActiveCollectionId();
+  // const navigate = useNavigate();
+  // const [searchParams] = useSearchParams();
+  // const setSelectedItemId = useHandler((id: string | null) => {
+  //   if (!id || !collectionId) {
+  //     return;
+  //   }
 
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(() => {
-    return null;
-    // return activeIndex !== -1 ? getId(filteredItems[activeIndex]) : null;
-  });
+  //   navigate(
+  //     generatePathWithSearchParams(
+  //       COLLECTION_WITH_ROUTE_ID,
+  //       {
+  //         collectionId,
+  //         entryId: id,
+  //       },
+  //       searchParams,
+  //     ),
+  //   );
+  // });
+  // const [selectedItemId, setSelectedItemId] = useState<string | null>(() => {
+  //   return null;
+  //   // return activeIndex !== -1 ? getId(filteredItems[activeIndex]) : null;
+  // });
 
   // const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const searchRef = useRef<HTMLInputElement>(null);
 
   // const handleItemSelect = useCallback(
@@ -174,6 +183,7 @@ export function CollectionsPanel() {
   //   },
   //   { enableOnFormTags: ["input"] },
   // );
+  console.log("selectedItemId", selectedItemId);
   if (collectionsError) {
     return <div>Error: {collectionsError.message}</div>;
   }
@@ -191,17 +201,17 @@ export function CollectionsPanel() {
             value={filterValue}
             onChange={setFilterValue}
             onFocus={() => {
-              setSelectedItemId(null);
+              // setSelectedItemId(null);
             }}
             placeholder="collections"
             onItemSelect={() => {}}
             itemCount={filteredItems.length}
           />
           <CreateCollection
-            selectCollection={(collection: Collection) => {
-              const id = getId(collection);
-              setSelectedItemId(id);
-            }}
+          // selectCollection={(collection: Collection) => {
+          //   // const id = getId(collection);
+          //   // setSelectedItemId(id);
+          // }}
           />
         </div>
       </div>
@@ -210,16 +220,14 @@ export function CollectionsPanel() {
         <div className="grid gap-2">
           {filteredItems.map((item) => (
             <NavItem
-              key={getId(item)}
+              key={item.id}
               item={item}
-              isSelected={getId(item) === selectedItemId}
-              searchParams={searchParams}
-              collectionId={item.id.toString()}
-              setSelectedItemId={setSelectedItemId}
-              to={{
-                pathname: `/collections/${getId(item)}`,
-                search: searchParams.toString(),
-              }}
+              // searchParams={searchParams}
+              // collectionId={item.id.toString()}
+              // to={{
+              //   pathname: `/collections/${item.id.toString()}`,
+              //   search: searchParams.toString(),
+              // }}
             />
           ))}
         </div>
@@ -281,15 +289,20 @@ function EmptyState() {
 
 type NavItemProps = {
   item: CollectionWithAppRoute;
-  isSelected: boolean;
-  to: To;
-  searchParams: URLSearchParams;
-  setSelectedItemId: (id: string) => void;
-  collectionId: string;
+  // isSelected: boolean;
+  // to: To;
+  // searchParams: URLSearchParams;
+  // setSelectedItemId: (id: string) => void;
+  // collectionId: string;
 };
 
 const NavItem = memo(
-  ({ to, item, isSelected, setSelectedItemId, collectionId }: NavItemProps) => {
+  ({
+    // to,
+    item,
+    // collectionId,
+    // isSelected, collectionId
+  }: NavItemProps) => {
     // const id = useActiveTraceId();
     const itemRef = useRef<HTMLAnchorElement>(null);
     const {
@@ -305,7 +318,9 @@ const NavItem = memo(
     );
 
     const [params] = useSearchParams();
-
+    const entryId = useActiveCollectionEntryId();
+    const [searchParams] = useSearchParams();
+    const isSelected = entryId === item.id.toString();
     useEffect(() => {
       if (isSelected && itemRef.current) {
         itemRef.current.focus();
@@ -314,15 +329,18 @@ const NavItem = memo(
 
     // const matchesId = getId(item) === id;
     const matchesId = isSelected;
-
+    console.log("matchesId", matchesId);
     return (
       <div>
         <Link
           ref={itemRef}
-          to={to}
-          onClick={() => {
-            setSelectedItemId(getId(item));
-          }}
+          to={generatePathWithSearchParams(
+            COLLECTION_ROUTE,
+            {
+              collectionId: item.id.toString(),
+            },
+            searchParams,
+          )}
           className={cn(
             "flex gap-2 hover:bg-muted px-2 py-1 rounded cursor-pointer items-center",
             "focus:outline-none",
@@ -341,7 +359,7 @@ const NavItem = memo(
           }}
           data-state-active={matchesId}
           data-state-selected={isSelected}
-          id={`item-${getId(item)}`}
+          id={`item-${item.id.toString()}`}
         >
           <Icon
             icon="lucide:folder"
@@ -352,7 +370,7 @@ const NavItem = memo(
           </div>
         </Link>
         <div className="grid gap-1">
-          {item.appRoutes.map((item) => {
+          {item.collectionItems.map((item) => {
             const { id, appRouteId, ...extraParams } = item;
             const route = routes.find((r) => r.id === appRouteId);
             if (!route) {
@@ -363,13 +381,18 @@ const NavItem = memo(
               <Link
                 to={{
                   pathname: generatePath(COLLECTION_WITH_ROUTE_ID, {
-                    collectionId,
+                    collectionId: item.id.toString(),
                     entryId: id.toString(),
                   }),
                   search: params.toString(),
                 }}
                 key={item.id}
-                className="grid gap-2 grid-cols-[4rem_auto] ml-6 hover:bg-muted px-2 py-1 rounded cursor-pointer"
+                className={cn(
+                  "grid gap-2 grid-cols-[4rem_auto] ml-6 hover:bg-muted px-2 py-1 rounded cursor-pointer",
+                  {
+                    "bg-muted": entryId === item.id.toString(),
+                  },
+                )}
                 onClick={() => {
                   console.log("click", extraParams);
                   setRequestParams({
@@ -391,7 +414,7 @@ const NavItem = memo(
                 role="button"
               >
                 <Method method={route.method} />
-                <span>{route.path}</span>
+                <span className="font-mono">{item.name || route.path}</span>
               </Link>
             );
           })}
@@ -400,10 +423,3 @@ const NavItem = memo(
     );
   },
 );
-
-/**
- * Gets ths id of a collection (as a string)
- */
-const getId = (item: Collection) => {
-  return item.id.toString();
-};

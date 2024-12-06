@@ -39,6 +39,7 @@ export const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
 export type JsonSchemaType = z.infer<typeof JsonSchema>;
 
 export const ExtraRequestParamsSchema = z.object({
+  name: z.string().optional(),
   requestUrl: z.string().optional(),
   requestMethod: z.string().optional(),
   requestRoute: z.string().optional(),

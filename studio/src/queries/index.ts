@@ -20,4 +20,4 @@ export {
   useCollections,
   useAddItemToCollection as useAddRouteToCollection,
 } from "./collections";
-export type { CollectionWithAppRouteList } from "./collections";
+export type { CollectionWithItemsList as CollectionWithAppRouteList } from "./collections";

@@ -75,6 +75,17 @@ export const REQUESTOR_HISTORY_ROUTE = "/history/:traceId";
 export const REQUESTOR_TRACE_ROUTE = "/requests/:traceId";
 export const COLLECTION_WITH_ROUTE_ID = `${COLLECTION_ROUTE}/:entryId`;
 
+export const NAVIGATION_PANEL_KEY = "filter-tab";
+export const NAVIGATION_PANEL_ROUTES = "routes" as const;
+export const NAVIGATION_PANEL_COLLECTIONS = "collections" as const;
+export const NAVIGATION_PANEL_HISTORY = "history" as const;
+export const TAB_KEYS = [
+  NAVIGATION_PANEL_ROUTES,
+  NAVIGATION_PANEL_COLLECTIONS,
+  NAVIGATION_PANEL_HISTORY,
+] as const;
+export type NavigationTab = (typeof TAB_KEYS)[number];
+
 export const TRACE_ID_ROUTES = [REQUESTOR_TRACE_ROUTE];
 
 export const COLLECTION_ID_ROUTES = [

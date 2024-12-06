@@ -19,12 +19,16 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { generatePath, useNavigate, useSearchParams } from "react-router-dom";
 import { CreateCollectionForm } from "./CreateCollectionForm";
 
-type Props = {
-  selectCollection: (group: Collection) => void;
-};
+// type Props = {
+//   // selectCollection: (group: Collection) => void;
+// };
 
-export function CreateCollection(props: Props) {
-  const { selectCollection } = props;
+export function CreateCollection(
+  // props: Props
+) {
+  // const {
+  //   //  selectCollection
+  // } = props;
   useHotkeys("c", (e) => {
     e.preventDefault();
     setOpen(true);
@@ -35,7 +39,7 @@ export function CreateCollection(props: Props) {
   const [searchParams] = useSearchParams();
   const handleSuccess = useHandler((collection: Collection) => {
     setOpen(false);
-    selectCollection(collection);
+    // selectCollection(collection);
     navigate({
       pathname: generatePath(COLLECTION_ROUTE, {
         collectionId: collection.id.toString(),

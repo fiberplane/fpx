@@ -11,7 +11,13 @@ import { useCollections } from "@/queries";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Fragment } from "react";
 import type { ReactNode } from "react";
-import { Link, generatePath, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  Route,
+  Routes,
+  generatePath,
+  useSearchParams,
+} from "react-router-dom";
 import { AddRouteToCollection } from "./AddRouteToCollection";
 
 type Crumb = {
@@ -24,11 +30,11 @@ function useCrumbs(): Crumb[] {
   const collectionIdText = useActiveCollectionId();
   const traceId = useActiveTraceId();
   const entryId = useActiveCollectionEntryId();
-  // const flattened = useParams();
+
   const [searchParams] = useSearchParams();
   const flattenedParams = searchParams.toString();
-  const { data: collections } = useCollections();
 
+  const { data: collections } = useCollections();
   const collectionId = Number.parseInt(collectionIdText ?? "");
 
   if (!Number.isNaN(collectionId)) {
@@ -51,11 +57,15 @@ function useCrumbs(): Crumb[] {
     }
   }
 
-  // console.log('traceId', traceId)
   if (traceId) {
     crumbs.push({ label: "Route" });
-  } else if (entryId) {
-    crumbs.push({ label: "Route" });
+  } else if (entryId && collectionId) {
+    const collection = collections?.find((item) => item.id === collectionId);
+    const collectionItem = collection?.collectionItems.find(
+      (item) => item.id.toString() === entryId,
+    );
+    const label = collectionItem?.name || "Route";
+    crumbs.push({ label });
   }
   return crumbs;
 }
@@ -69,22 +79,33 @@ export function MainTopSection() {
           if (crumb.href) {
             return (
               <Fragment key={index}>
-                {index > 0 && <BreadcrumbSeparator />}
+                {index > 0 && (
+                  <BreadcrumbSeparator className="flex items-center" />
+                )}
                 <BreadcrumbLink key={index} asChild>
-                  <Link to={crumb.href}>{crumb.label}</Link>
+                  <li className="flex items-center">
+                    <Link to={crumb.href} className="flex items-center">
+                      {crumb.label}
+                    </Link>
+                  </li>
                 </BreadcrumbLink>
               </Fragment>
             );
           }
           return (
             <Fragment key={index}>
-              {index > 0 && <BreadcrumbSeparator />}
+              {index > 0 && (
+                <BreadcrumbSeparator className="flex items-center" />
+              )}
               <BreadcrumbItem key={index}>{crumb.label}</BreadcrumbItem>
             </Fragment>
           );
         })}
       </BreadcrumbList>
-      <AddRouteToCollection />
+      <Routes>
+        <Route path={COLLECTION_ROUTE} element={null} />
+        <Route path="*" element={<AddRouteToCollection />} />
+      </Routes>
     </div>
   );
 }

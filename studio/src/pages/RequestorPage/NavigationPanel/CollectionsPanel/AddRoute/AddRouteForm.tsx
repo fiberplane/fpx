@@ -70,7 +70,7 @@ export function AddRouteForm(props: Props) {
   if (routes.length === 0) {
     return <div>Empty</div>;
   }
-  // console.log("routesERrors", routesErrors);
+
   const routeProps = register("routes");
   return (
     <div className="max-h-60 grid grid-rows-[auto_auto_1fr] gap-2">
@@ -82,9 +82,7 @@ export function AddRouteForm(props: Props) {
       >
         <div className="grid gap-2 overflow-auto">
           {routes.map((route, index) => {
-            // const id = `add-route-${route.method}-${route.path}`;
             const id = `route-${route.id.toString()}`;
-            // console.log('route', route.id);
             return (
               <div
                 key={index}

@@ -26,7 +26,7 @@ export function CreateCollectionForm(props: Props) {
     isPending,
   } = useAddCollection();
   const onSubmit: SubmitHandler<CollectionFormData> = ({ name }) => {
-    console.log('yes!');
+    console.log("yes!");
     addCollection(
       {
         name,
@@ -58,10 +58,7 @@ export function CreateCollectionForm(props: Props) {
         )}
       </div>
       <div className="space-y-2">
-        <Label
-          className="text-sm text-muted-foreground"
-          htmlFor="name"
-        >
+        <Label className="text-sm text-muted-foreground" htmlFor="name">
           Name
         </Label>
         <Input

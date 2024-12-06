@@ -125,36 +125,31 @@ export const RequestorPage = () => {
           </>
         )}
         <ResizablePanel id="main" order={1}>
-          {/* <Routes>
-            <Route path={REQUESTS_ROUTE} element={<RequestsPage />} />
-            <Route path={ROOT_ROUTE} element={<RequestorPage />} />
-            <Route path={COLLECTION_ROUTE} element={<RequestorPage />} />
-            <Route path={REQUESTOR_TRACE_ROUTE} element={<RequestorPage />} />
-
-          </Routes> */}
-          <MainTopSection />
-          <Routes>
-            <Route path={COLLECTION_ROUTE} element={<CollectionSection />} />
-            <Route
-              path="*"
-              element={
-                requestType === "history" && !!id ? (
-                  <RequestDetailsPageV2
-                    traceId={id}
-                    paginationHidden
-                    generateLinkToTrace={generateLinkToTrace}
-                  />
-                ) : (
-                  <RequestorPageContent
-                    history={history}
-                    historyLoading={isLoading}
-                    overrideTraceId={id}
-                    generateNavigation={generateNavigation}
-                  />
-                )
-              }
-            />
-          </Routes>
+          <div className="h-full flex flex-col min-h-0">
+            <MainTopSection />
+            <Routes>
+              <Route path={COLLECTION_ROUTE} element={<CollectionSection />} />
+              <Route
+                path="*"
+                element={
+                  requestType === "history" && !!id ? (
+                    <RequestDetailsPageV2
+                      traceId={id}
+                      paginationHidden
+                      generateLinkToTrace={generateLinkToTrace}
+                    />
+                  ) : (
+                    <RequestorPageContent
+                      history={history}
+                      historyLoading={isLoading}
+                      overrideTraceId={id}
+                      generateNavigation={generateNavigation}
+                    />
+                  )
+                }
+              />
+            </Routes>
+          </div>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
