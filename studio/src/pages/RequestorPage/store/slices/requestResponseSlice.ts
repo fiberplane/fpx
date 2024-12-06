@@ -19,10 +19,10 @@ import {
   mapPathParamKey,
   removeBaseUrl,
 } from "../utils";
-import type { RequestResponseSlice, Store } from "./types";
+import type { RequestResponseSlice, StudioState } from "./types";
 
 export const requestResponseSlice: StateCreator<
-  Store,
+  StudioState,
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   RequestResponseSlice
@@ -238,10 +238,7 @@ export const requestResponseSlice: StateCreator<
     set((state) => {
       state.sessionHistory.push(traceId);
     }),
-  // setActiveHistoryResponseTraceId: (traceId: string | null) =>
-  //   set((state) => {
-  //     state.activeHistoryResponseTraceId = traceId;
-  //   }),
+
   setRequestParams: (
     requestParams: Pick<
       ProxiedRequestResponse["app_requests"],
@@ -296,9 +293,7 @@ export const requestResponseSlice: StateCreator<
         : typeof requestBody !== "string"
           ? JSON.stringify(requestBody)
           : requestBody;
-    get().setBody(
-      bodyValue && constructRequestorBody(bodyValue, requestHeaders || {}),
-    );
+    get().setBody(bodyValue && constructRequestorBody(bodyValue));
 
     get().setRequestHeaders(
       createKeyValueParametersFromValues(

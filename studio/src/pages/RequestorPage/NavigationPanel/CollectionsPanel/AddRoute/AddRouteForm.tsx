@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Method } from "@/pages/RequestorPage/RequestorHistory";
 import { useRoutes } from "@/pages/RequestorPage/routes";
 import { useStudioStore } from "@/pages/RequestorPage/store";
-import { useAddRouteToCollection } from "@/queries";
+import { useAddItemToCollection } from "@/queries";
 import { useHandler } from "@fiberplane/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -29,7 +29,7 @@ type AddRouteFormData = z.infer<typeof ValidationSchema>;
 export function AddRouteForm(props: Props) {
   // console.log(props);
   const { collectionId, onSuccess } = props;
-  const { mutate: addAppRoute } = useAddRouteToCollection(collectionId);
+  const { mutate: addAppRoute } = useAddItemToCollection(collectionId);
 
   const { isLoading } = useRoutes();
   const { appRoutes: routes } = useStudioStore("appRoutes");

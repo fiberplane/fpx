@@ -1,5 +1,4 @@
-import { useActiveCollectionEntryId } from "@/hooks";
-import { type CollectionWithAppRouteList, useCollections } from "@/queries";
+import { type CollectionWithItemsList, useCollections } from "@/queries";
 import { cn, noop } from "@/utils";
 import { Icon } from "@iconify/react";
 import { useMemo, useRef, useState } from "react";
@@ -7,7 +6,8 @@ import { Search } from "../Search";
 import { CreateCollection } from "./CreateCollection";
 import { NavItem } from "./NavItem";
 
-export type CollectionWithAppRoute = CollectionWithAppRouteList[0];
+export type CollectionWithItems = CollectionWithItemsList[0];
+
 export function CollectionsPanel() {
   const { data: items, error: collectionsError } = useCollections();
   const [filterValue, setFilterValue] = useState("");
@@ -37,7 +37,7 @@ export function CollectionsPanel() {
   // const activeIndex = useMemo(() => {
   //   return filteredItems.findIndex((item) => getId(item) === id);
   // }, [filteredItems, id]);
-  const selectedItemId = useActiveCollectionEntryId();
+  // const selectedItemId = useActiveCollectionEntryId();
   // const collectionId = useActiveCollectionId();
   // const navigate = useNavigate();
   // const [searchParams] = useSearchParams();
@@ -163,7 +163,6 @@ export function CollectionsPanel() {
   //   },
   //   { enableOnFormTags: ["input"] },
   // );
-  console.log("selectedItemId", selectedItemId);
   if (collectionsError) {
     return <div>Error: {collectionsError.message}</div>;
   }

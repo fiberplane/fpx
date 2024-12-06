@@ -4,17 +4,17 @@ import {
   NAVIGATION_PANEL_COLLECTIONS,
   NAVIGATION_PANEL_KEY,
 } from "@/constants";
-import { useStudioStore } from "@/pages/RequestorPage/store";
 import { useCollections } from "@/queries";
 import {
   createObjectFromKeyValueParameters,
   generatePathWithSearchParams,
 } from "@/utils";
-import type { Collection } from "@fiberplane/fpx-types";
+import type { Collection, ExtraRequestParams } from "@fiberplane/fpx-types";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Dialog } from "@radix-ui/react-dialog";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useStudioStore } from "../store";
 import { NamingRouteForm } from "./NamingRouteForm";
 
 type Props = {
@@ -82,11 +82,11 @@ function AddToRouteFormItem(props: {
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
-  const extraParams = {
+  const extraParams: ExtraRequestParams = {
     requestQueryParams: createObjectFromKeyValueParameters(queryParams),
     requestPathParams: createObjectFromKeyValueParameters(pathParams),
     requestHeaders: createObjectFromKeyValueParameters(requestHeaders),
-    requestBody: body.value,
+    requestBody: body,
   };
 
   if (!activeRoute) {

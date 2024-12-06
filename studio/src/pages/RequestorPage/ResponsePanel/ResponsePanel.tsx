@@ -8,7 +8,9 @@ import { Method, StatusCode } from "../RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { ProxiedRequestResponse } from "../queries";
 import type { ResponsePanelTab } from "../store";
-import { useActiveRoute, useServiceBaseUrl, useStudioStore } from "../store";
+import { useServiceBaseUrl } from "../store";
+import { useStudioStore } from "../store";
+import { useActiveRoute } from "../store/hooks/useActiveRoute";
 import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,

@@ -1,7 +1,7 @@
 import { useHandler } from "@fiberplane/hooks";
-import { useStudioStore } from ".";
-import type { RequestType } from "../types";
-import { addBaseUrl, removeBaseUrl } from "./utils";
+import type { RequestType } from "../../types";
+import { addBaseUrl, removeBaseUrl } from "../utils";
+import { useStudioStore } from "./useStudioStore";
 
 const addServiceUrlIfBarePath = (
   serviceBaseUrl: string,

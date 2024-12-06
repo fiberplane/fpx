@@ -2,7 +2,8 @@ import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { WebhoncBadge } from "@/components/WebhoncBadge";
 import { Button } from "@/components/ui/button";
 import { useProxyRequestsEnabled } from "@/hooks/useProxyRequestsEnabled";
-import { useStudioStore, useStudioStoreRaw } from "@/pages/RequestorPage/store";
+import { useStudioStore } from "@/pages/RequestorPage/store";
+import { useStudioStoreRaw } from "@/pages/RequestorPage/store/hooks";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import {

@@ -3,6 +3,7 @@ import type {
   KeyValueParameter,
   RequestorBody,
 } from "@/pages/RequestorPage/store";
+import { RequestorBodySchema } from "@/pages/RequestorPage/store/request-body";
 import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
 import { type PathParam, generatePath } from "react-router-dom";
@@ -243,20 +244,18 @@ export function isSensitiveEnvVar(key: string) {
 
 export function constructRequestorBody(
   bodyValue: string,
-  headers: Record<string, string>,
+  // headers: Record<string, string>,
 ): RequestorBody {
-  const contentType = headers["Content-Type"];
-  // TODO - Add support for form data in all it forms and glory
+  try {
+    const parsed = JSON.parse(bodyValue);
+    const result = RequestorBodySchema.safeParse(parsed);
+    if (result.success) {
+      return result.data;
+    }
 
-  if (
-    typeof contentType === "string" &&
-    (contentType.startsWith("application/json") ||
-      contentType.startsWith("text/json"))
-  ) {
-    return {
-      type: "json",
-      value: bodyValue,
-    };
+    console.log("fallback", result.error, parsed);
+  } catch {
+    // swallow error
   }
 
   return {

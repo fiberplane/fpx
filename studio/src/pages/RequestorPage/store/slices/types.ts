@@ -1,3 +1,4 @@
+import type { CollectionWithItemsList } from "@/queries";
 import type { TreeNode } from "@/queries/app-routes";
 import type {
   RequestorBody,
@@ -99,6 +100,9 @@ export interface RoutesSlice {
   routesAndMiddleware: ProbedRoute[];
   getMatchingMiddleware: () => null | ProbedRoute[];
   setRoutesAndMiddleware: (routesAndMiddleware: ProbedRoute[]) => void;
+
+  collections: CollectionWithItemsList;
+  setCollections: (collections: CollectionWithItemsList) => void;
 }
 
 export interface TabsSlice {
@@ -124,19 +128,19 @@ export interface UISlice {
   aiDropdownOpen: boolean;
   setAIDropdownOpen: (open: boolean) => void;
   sidePanel: PanelState;
-  bottomPanels: BOTTOM_PANEL_NAMES[];
+  bottomPanels: BottomPanelName[];
   bottomPanelIndex: undefined | number;
   timelineShowLogs: boolean;
   timelineAsTree: boolean;
   toggleTimelineLogs: () => void;
   toggleTimelineAsTree: () => void;
   setBottomPanelIndex(index: number | undefined): void;
-  togglePanel: (panelName: "sidePanel" | BOTTOM_PANEL_NAMES) => void;
+  togglePanel: (panelName: "sidePanel" | BottomPanelName) => void;
 }
 
-export type BOTTOM_PANEL_NAMES = "logsPanel" | "timelinePanel" | "aiPanel";
+export type BottomPanelName = "logsPanel" | "timelinePanel" | "aiPanel";
 
-export const validBottomPanelNames: BOTTOM_PANEL_NAMES[] = [
+export const validBottomPanelNames: BottomPanelName[] = [
   "logsPanel",
   "timelinePanel",
   "aiPanel",
@@ -149,7 +153,7 @@ export type AiState = {
   setAiPrompt: (prompt?: string) => void;
 };
 
-export type Store = RequestResponseSlice &
+export type StudioState = RequestResponseSlice &
   RoutesSlice &
   TabsSlice &
   WebsocketSlice &

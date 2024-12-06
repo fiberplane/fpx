@@ -18,6 +18,6 @@ export * from "./user-info";
 export {
   useAddCollection,
   useCollections,
-  useAddItemToCollection as useAddRouteToCollection,
+  useAddItemToCollection,
 } from "./collections";
-export type { CollectionWithItemsList as CollectionWithAppRouteList } from "./collections";
+export type { CollectionWithItemsList } from "./collections";

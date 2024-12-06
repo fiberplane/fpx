@@ -2,7 +2,7 @@ import { isLgScreen } from "@/utils";
 import type { StateCreator } from "zustand";
 import type { NavigationRoutesView } from "../types";
 import {
-  type BOTTOM_PANEL_NAMES,
+  type BottomPanelName,
   type UISlice,
   validBottomPanelNames,
 } from "./types";
@@ -45,7 +45,7 @@ export const uiSlice: StateCreator<
       set((state) => {
         state.timelineShowLogs = !state.timelineShowLogs;
       }),
-    togglePanel: (panelName: "sidePanel" | BOTTOM_PANEL_NAMES) =>
+    togglePanel: (panelName: "sidePanel" | BottomPanelName) =>
       set((state) => {
         if (!isBottomPanelName(panelName)) {
           state[panelName] = state[panelName] === "open" ? "closed" : "open";
@@ -79,9 +79,9 @@ export const uiSlice: StateCreator<
   };
 };
 
-function isBottomPanelName(element: unknown): element is BOTTOM_PANEL_NAMES {
+function isBottomPanelName(element: unknown): element is BottomPanelName {
   return (
     typeof element === "string" &&
-    validBottomPanelNames.includes(element as BOTTOM_PANEL_NAMES)
+    validBottomPanelNames.includes(element as BottomPanelName)
   );
 }

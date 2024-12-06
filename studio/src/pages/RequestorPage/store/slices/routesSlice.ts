@@ -1,3 +1,4 @@
+import type { CollectionWithItemsList } from "@/queries";
 import type { TreeNode } from "@/queries/app-routes";
 import type { StateCreator } from "zustand";
 import { findAllSmartRouterMatches, findMatchedRoute } from "../../routes";
@@ -21,10 +22,10 @@ import {
   extractQueryParamsFromOpenApiDefinition,
   filterDisabledEmptyQueryParams,
 } from "../utils-openapi";
-import type { RoutesSlice, Store } from "./types";
+import type { RoutesSlice, StudioState } from "./types";
 
 export const routesSlice: StateCreator<
-  Store,
+  StudioState,
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   RoutesSlice
@@ -248,6 +249,12 @@ export const routesSlice: StateCreator<
     }
     return middleware;
   },
+
+  collections: [],
+  setCollections: (collections: CollectionWithItemsList) =>
+    set((state) => {
+      state.collections = collections;
+    }),
 });
 
 const SUPPORTED_METHODS: Array<RequestMethod> = [

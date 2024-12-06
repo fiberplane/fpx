@@ -6,7 +6,7 @@ import { DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useShake } from "@/hooks";
-import { useAddRouteToCollection } from "@/queries";
+import { useAddItemToCollection } from "@/queries";
 import { cn } from "@/utils";
 import {
   type ExtraRequestParams,
@@ -31,7 +31,7 @@ export function NamingRouteForm(props: Props) {
     mutate: addToCollection,
     failureReason: error,
     isPending,
-  } = useAddRouteToCollection(id);
+  } = useAddItemToCollection(id);
 
   // const {
   // mutate: addCollection,

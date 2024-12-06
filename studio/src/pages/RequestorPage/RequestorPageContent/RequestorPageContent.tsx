@@ -5,7 +5,15 @@ import {
   usePanelConstraints,
 } from "@/components/ui/resizable";
 import { useToast } from "@/components/ui/use-toast";
-import { useActiveTraceId, useIsLgScreen, useKeySequence } from "@/hooks";
+import {
+  useActiveCollectionEntryId,
+  useActiveCollectionId,
+  useActiveTraceId,
+  useIsLgScreen,
+  useKeySequence,
+  useLatest,
+} from "@/hooks";
+import type { CollectionItem } from "@/queries/collections";
 import { cn } from "@/utils";
 import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -17,8 +25,10 @@ import { RequestorInput } from "../RequestorInput";
 import { ResponsePanel } from "../ResponsePanel";
 import { useAi } from "../ai";
 import { type ProxiedRequestResponse, useMakeProxiedRequest } from "../queries";
-import { useStudioStore, useStudioStoreRaw } from "../store";
+import { useStudioStoreRaw } from "../store";
+import { useStudioStore } from "../store";
 import { BACKGROUND_LAYER } from "../styles";
+import type { ProbedRoute } from "../types";
 import { useMakeWebsocketRequest } from "../useMakeWebsocketRequest";
 import { useRequestorSubmitHandler } from "../useRequestorSubmitHandler";
 import RequestorPageContentBottomPanel from "./RequestorPageContentBottomPanel";
@@ -32,6 +42,42 @@ type RequestorPageContentProps = {
   generateNavigation: (traceId: string) => To;
 };
 
+/**
+ * Gets the collection item for the current route (if applicable)
+ */
+function useCollectionItem():
+  | { entryId: string; collectionItem: CollectionItem; appRoute: ProbedRoute }
+  | undefined {
+  const collectionId = useActiveCollectionId();
+  const entryId = useActiveCollectionEntryId();
+
+  const { collections, appRoutes } = useStudioStore("collections", "appRoutes");
+
+  if (!entryId || !collectionId) {
+    return;
+  }
+
+  const collection = collections.find(
+    (item) => item.id.toString() === collectionId,
+  );
+  const collectionItem = collection?.collectionItems.find(
+    (element) => element.id.toString() === entryId,
+  );
+  const appRoute = appRoutes.find(
+    (route) => route.id === collectionItem?.appRouteId,
+  );
+
+  if (!collectionItem || !appRoute) {
+    return;
+  }
+
+  return {
+    entryId,
+    collectionItem,
+    appRoute,
+  };
+}
+
 export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   props,
 ) => {
@@ -41,7 +87,42 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   const activeTraceId = useActiveTraceId();
   const item = history.find((element) => getId(element) === activeTraceId);
 
-  const { setRequestParams } = useStudioStore("setRequestParams");
+  const {
+    togglePanel,
+    setAIDropdownOpen,
+    setAiPrompt,
+    setRequestParams,
+    updateMethod,
+  } = useStudioStore(
+    "togglePanel",
+    "setAIDropdownOpen",
+    "setAiPrompt",
+    "setRequestParams",
+    "updateMethod",
+  );
+
+  const { entryId, collectionItem, appRoute } = useCollectionItem() ?? {};
+  const collectionItemRef = useLatest<CollectionItem | undefined>(
+    collectionItem,
+  );
+  const appRouteRef = useLatest<ProbedRoute | undefined>(appRoute);
+
+  useEffect(() => {
+    if (!entryId || !collectionItemRef.current || !appRouteRef.current) {
+      return;
+    }
+    const { id, appRouteId, ...extraParams } = collectionItemRef.current;
+
+    // const {}
+    setRequestParams({
+      ...extraParams,
+      requestUrl: `http://localhost:8787${appRouteRef.current.path}`,
+      requestMethod: appRouteRef.current.method,
+      requestRoute: appRouteId.toString(),
+    });
+    updateMethod(appRouteRef.current.method);
+  }, [entryId, collectionItemRef, appRouteRef, setRequestParams, updateMethod]);
+
   useEffect(() => {
     if (!item) {
       return;
@@ -128,12 +209,6 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   } = useAi(history);
 
   const isLgScreen = useIsLgScreen();
-
-  const { togglePanel, setAIDropdownOpen, setAiPrompt } = useStudioStore(
-    "togglePanel",
-    "setAIDropdownOpen",
-    "setAiPrompt",
-  );
 
   const [commandBarOpen, setCommandBarOpen] = useState(false);
   const [aiPromptOpen, setAiPromptOpen] = useState(false);

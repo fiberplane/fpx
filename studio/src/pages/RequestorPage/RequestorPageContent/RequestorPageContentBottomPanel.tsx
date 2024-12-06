@@ -8,8 +8,7 @@ import { RequestorTimeline } from "../RequestorTimeline";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { AiTestGenerationPanel } from "../ai";
 import type { ProxiedRequestResponse } from "../queries";
-import { useStudioStore } from "../store";
-import type { BOTTOM_PANEL_NAMES } from "../store/slices/types";
+import { type BottomPanelName, useStudioStore } from "../store";
 
 interface RequestorPageContentBottomPanelProps {
   traceId?: string;
@@ -52,7 +51,7 @@ const RequestorPageContentBottomPanel: React.FC<
       <Tabs
         value={activePanel}
         onValueChange={(value) => {
-          const index = bottomPanels.indexOf(value as BOTTOM_PANEL_NAMES);
+          const index = bottomPanels.indexOf(value as BottomPanelName);
           if (index !== -1) {
             setBottomPanelIndex(index);
           }

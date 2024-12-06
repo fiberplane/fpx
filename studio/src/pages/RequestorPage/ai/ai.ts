@@ -11,7 +11,8 @@ import { z } from "zod";
 import { createFormDataParameter } from "../FormDataForm/data";
 import type { ProxiedRequestResponse } from "../queries";
 import type { RequestorBody } from "../store";
-import { useServiceBaseUrl, useStudioStore } from "../store";
+import { useServiceBaseUrl } from "../store";
+import { useStudioStore } from "../store";
 import { isRequestorBodyType } from "../store/request-body";
 import { useAiRequestData } from "./generate-request-data";
 

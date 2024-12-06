@@ -81,7 +81,6 @@ export const RequestorPage = () => {
   );
 
   const generateNavigation = useHandler((traceId: string) => {
-    console.log("generateNavigation", traceId);
     const search = searchParams.toString();
     return {
       pathname: generatePath(REQUESTOR_TRACE_ROUTE, { traceId }),

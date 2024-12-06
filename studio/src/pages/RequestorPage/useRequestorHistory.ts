@@ -8,12 +8,12 @@ import {
   useFetchRequestorRequests,
 } from "./queries";
 import { findMatchedRoute } from "./routes";
-import {
-  type KeyValueParameter,
-  type RequestorBody,
-  type RequestorBodyType,
-  useStudioStore,
+import type {
+  KeyValueParameter,
+  RequestorBody,
+  RequestorBodyType,
 } from "./store";
+import { useStudioStore } from "./store";
 import { isRequestMethod, isWsRequest } from "./types";
 import {
   sortProxiedRequestResponsesDescending,

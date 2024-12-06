@@ -22,7 +22,7 @@ export function useCrumbs(): Crumb[] {
   const { activeRoute, updatePath, updateMethod } = useStudioStore(
     "activeRoute",
     "updatePath",
-    "updateMethod"
+    "updateMethod",
   );
 
   const [searchParams] = useSearchParams();

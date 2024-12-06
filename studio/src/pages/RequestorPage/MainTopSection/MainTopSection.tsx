@@ -5,11 +5,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { COLLECTION_ROUTE } from "@/constants";
+import { noop } from "@/utils";
 import { Fragment } from "react";
 import { Link, Route, Routes } from "react-router-dom";
 import { AddRouteToCollection } from "../AddRouteToCollection";
 import { useCrumbs } from "./useCrumbs";
-import { noop } from "@/utils";
 
 export function MainTopSection() {
   const crumbs = useCrumbs();
@@ -25,7 +25,11 @@ export function MainTopSection() {
                 )}
                 <BreadcrumbLink key={index} asChild>
                   <li className="flex items-center">
-                    <Link to={crumb.href} className="flex items-center" onClick={crumb.onActivate || noop}>
+                    <Link
+                      to={crumb.href}
+                      className="flex items-center"
+                      onClick={crumb.onActivate || noop}
+                    >
                       {crumb.label}
                     </Link>
                   </li>

@@ -6,10 +6,10 @@ import { memo, useEffect, useRef } from "react";
 import { Link, generatePath, useSearchParams } from "react-router-dom";
 import { Method } from "../../RequestorHistory";
 import { useStudioStore } from "../../store";
-import type { CollectionWithAppRoute } from "./CollectionsPanel";
+import type { CollectionWithItems } from "./CollectionsPanel";
 
 type NavItemProps = {
-  collection: CollectionWithAppRoute;
+  collection: CollectionWithItems;
 };
 export const NavItem = memo(
   ({
@@ -20,17 +20,7 @@ export const NavItem = memo(
   }: NavItemProps) => {
     // const id = useActiveTraceId();
     const itemRef = useRef<HTMLAnchorElement>(null);
-    const {
-      appRoutes: routes,
-      updateMethod,
-      updatePath,
-      setRequestParams,
-    } = useStudioStore(
-      "appRoutes",
-      "updatePath",
-      "updateMethod",
-      "setRequestParams",
-    );
+    const { appRoutes: routes } = useStudioStore("appRoutes");
 
     const [params] = useSearchParams();
     const entryId = useActiveCollectionEntryId();
@@ -42,9 +32,7 @@ export const NavItem = memo(
       }
     }, [isSelected]);
 
-    // const matchesId = getId(item) === id;
     const matchesId = isSelected;
-    console.log("matchesId", matchesId);
     return (
       <div>
         <Link
@@ -86,7 +74,7 @@ export const NavItem = memo(
         </Link>
         <div className="grid gap-1 my-2">
           {collection.collectionItems.map((item) => {
-            const { id, appRouteId, ...extraParams } = item;
+            const { id, appRouteId } = item;
             const route = routes.find((r) => r.id === appRouteId);
             if (!route) {
               return null;
@@ -103,33 +91,19 @@ export const NavItem = memo(
                 }}
                 key={item.id}
                 className={cn(
-                  "grid gap-2 grid-cols-[auto_1fr] ml-6 hover:bg-muted px-2 py-1 rounded cursor-pointer",
+                  "grid gap-2 grid-cols-[auto_1fr] ml-6 mr-1 hover:bg-muted px-2 py-1 rounded cursor-pointer",
                   "font-mono text-sm",
                   {
                     "bg-muted": entryId === item.id.toString(),
                   },
                 )}
-                onClick={() => {
-                  console.log("click", extraParams);
-                  setRequestParams({
-                    ...extraParams,
-                    requestUrl: `http://localhost:8787${route.path}`,
-                    requestMethod: route.method,
-                    requestRoute: appRouteId.toString(),
-                  });
-                  updateMethod(route.method);
-                  // updatePath(route.path);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    updateMethod(route.method);
-                    updatePath(route.path);
-                  }
-                }}
                 tabIndex={0}
                 role="button"
               >
-                <Method method={route.method} className="text-xs font-mono min-w-12" />
+                <Method
+                  method={route.method}
+                  className="text-xs font-mono min-w-12"
+                />
                 <span>{item.name || route.path}</span>
               </Link>
             );

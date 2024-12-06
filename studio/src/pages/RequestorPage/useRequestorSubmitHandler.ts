@@ -4,8 +4,7 @@ import { useHandler } from "@fiberplane/hooks";
 import { type To, useNavigate } from "react-router-dom";
 import type { MakeProxiedRequestQueryFn } from "./queries";
 import type { KeyValueParameter, RequestorBody } from "./store";
-import { useStudioStore } from "./store";
-import { useServiceBaseUrl } from "./store/useServiceBaseUrl";
+import { useServiceBaseUrl, useStudioStore } from "./store";
 import { isWsRequest } from "./types";
 
 export function useRequestorSubmitHandler({

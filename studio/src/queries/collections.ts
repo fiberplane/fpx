@@ -1,3 +1,4 @@
+import { useStudioStore } from "@/pages/RequestorPage/store";
 import {
   CollectionSchema,
   type ExtraRequestParams,
@@ -5,6 +6,7 @@ import {
 } from "@fiberplane/fpx-types";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { z } from "zod";
 
 export const COLLECTIONS_KEY = "collections";
@@ -28,7 +30,7 @@ export type CollectionWithItemsList = z.infer<
 >;
 
 export function useCollections() {
-  return useQuery({
+  const result = useQuery({
     queryKey: [COLLECTIONS_KEY],
     queryFn: async () => {
       const response = await fetch("/v0/collections");
@@ -36,6 +38,18 @@ export function useCollections() {
       return CollectionWithItemsListSchema.parse(json);
     },
   });
+  const { data: collections } = result;
+  const { setCollections } = useStudioStore("setCollections");
+  useEffect(() => {
+    if (!collections) {
+      setCollections([]);
+      return;
+    }
+
+    setCollections(collections);
+  }, [setCollections, collections]);
+
+  return result;
 }
 
 export type Route = {
