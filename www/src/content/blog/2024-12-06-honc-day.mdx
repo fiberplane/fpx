@@ -10,15 +10,29 @@ tags:
   - HONC
 ---
 
-It's HONC Day! Today we're excited to announce several new features and tools that make building with HONC even better. Let's dive in!
+It's HONC Day 2k24! 
+
+Today we're excited to announce several new features and tools that make building with HONC even better.
+Let's take a gander at what's new.
 
 ## Introducing Hatch: AI-Powered HONC App Generation
 
-[Description of Hatch - how it uses AI to bootstrap HONC applications, key features, examples of what it can generate]
+If you're feeling adventurous, you can now let AI generate a HONC app for you, according to a short description.
+
+Just add the `--hatch` flag to the `create-honc-app` command:
+
+```shell
+npm create honc-app@latest -- --hatch
+```
+
+And you'll be prompted to describe what your app should do.
+
+After that, you go through the normal `create-honc-app` flow, 
+and your template files will be modified to scaffold an api according to your description.
 
 ## Adding Client-Side Interactivity to Your HONC Apps
 
-Fiberplane's Oscar van Zijverden put together a guide on client-side hydration for Hono apps.
+Fiberplane's Oscar van Zijverden put together a guide on client-side hydration for Hono apps, which shows how to add components that go beyond the basic SSR functionality of `hono/jsx`.
 
 This one's worthy of its own separate post on the blog! Check it out here:
 
