@@ -2,7 +2,8 @@
 import { getCollection } from "astro:content";
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 
-const postsUnsorted = await getCollection("blog");
+const allPostsUnsorted = await getCollection("blog");
+const postsUnsorted = allPostsUnsorted.filter((b) => b.data.draft !== true);
 const postsSortedByDateDesc = postsUnsorted.toSorted(
   (a, b) => b.data.date.getTime() - a.data.date.getTime()
 );

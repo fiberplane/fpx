@@ -14,7 +14,7 @@ import { Image } from "astro:assets";
 import { LinkCard } from "@astrojs/starlight/components";
 import hatchExample from "@/assets/blog/2024-12-06-hatch-example.png";
 
-It's HONC Day 2k24! 
+It's HONC Day 2k24!
 
 Today we're excited to announce several new features and tools that make building with HONC even better.
 Let's take a gander at what's new.
@@ -38,7 +38,7 @@ And you'll be prompted to describe what you want to build:
   style="border-radius: 10px;"
 />
 
-After that, you go through the normal `create-honc-app` flow, 
+After that, you go through the normal `create-honc-app` flow,
 and your template files will be modified to scaffold an api according to your description.
 
 ## Adding Client-Side Interactivity to Your HONC Apps
@@ -53,13 +53,12 @@ This one's worthy of its own separate post on the blog! Check it out here:
   href="/blog/client-side-guide"
 />
 
-
 ## Placegoose: A Goosier Take on JSON Placeholder
 
 Sometimes **you just need some honkin' data**, and that's where [placegoose](https://placegoose.fp.dev/) comes in. It's like JSON Placeholder, but with geese.
 
 The code is open source, and it demonstrates some advanced patterns for building an api with Hono/HONC.
-Placegoose is a great reference for modeling more complex data relationships with Drizzle, separating out resources into different routers, and 
+Placegoose is a great reference for modeling more complex data relationships with Drizzle, separating out resources into different routers, and
 implementing request validation with centralized error handling.
 
 <LinkCard
@@ -70,11 +69,10 @@ implementing request validation with centralized error handling.
 
 ## Drizzle Seed Support in create-honc-app
 
-A few short weeks ago, [Drizzle announced support](https://x.com/DrizzleORM/status/1859932421514576210) for seeding databases with fake data. 
+A few short weeks ago, [Drizzle announced support](https://x.com/DrizzleORM/status/1859932421514576210) for seeding databases with fake data.
 Today, we've integrated that support into `create-honc-app`.
 
 Say goodbye to our hackadoo seed scripts that always yielded the same 3 elements in your database in the HONC templates, and hello to the power of Drizzle's `seed` command. It uses a pseudorandom number generator and their dataset to use consistent but diverse fake data, which is a fancy word for "same same but different" - you can read more about `drizzle-seed` [in their documentation](https://orm.drizzle.team/docs/seed-overview#drizzle-seed).
-
 
 ## What's Next?
 
@@ -87,7 +85,6 @@ A few things on our radar:
 - SSR components for `hono/jsx` ([already in the works](https://github.com/fiberplane/create-honc-app/tree/9b14422df4907acc2b7a90171f38f122ff58d113/ascuii))
 - A Web UI to generate new HONC apps with AI
 - Guides to writing external APIs with Hono/HONC
-
 
 ## That's a wrap
 
