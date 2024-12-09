@@ -14,7 +14,9 @@ export const users = sqliteTable("users", {
 
 export const messages = sqliteTable("messages", {
   id: integer("id", { mode: "number" }).primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id),
   content: text("content").notNull(),
   createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
 });

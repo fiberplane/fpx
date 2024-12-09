@@ -1,7 +1,7 @@
 import { instrument } from "@fiberplane/hono-otel";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
-import { eq } from "drizzle-orm";
 import * as schema from "./db/schema";
 
 type Bindings = {
@@ -15,8 +15,7 @@ app.get("/", (c) => {
   return c.text("Welcome to the Telegram Bot API!");
 });
 
-
-app.post('/webhook', async (c) => {
+app.post("/webhook", async (c) => {
   const TOKEN = c.env.TELEGRAM_API_TOKEN;
   const TELEGRAM_API = `https://api.telegram.org/bot${TOKEN}`;
 
@@ -40,7 +39,7 @@ app.post('/webhook', async (c) => {
   //   });
   // }
 
-  return c.text('OK', 200);
+  return c.text("OK", 200);
 });
 
 // CRUD for Messages
@@ -54,10 +53,13 @@ app.post("/api/messages", async (c) => {
   const db = drizzle(c.env.DB);
   const { userId, content } = await c.req.json();
 
-  const [newMessage] = await db.insert(schema.messages).values({
-    userId: userId,
-    content: content,
-  }).returning();
+  const [newMessage] = await db
+    .insert(schema.messages)
+    .values({
+      userId: userId,
+      content: content,
+    })
+    .returning();
 
   return c.json(newMessage);
 });
@@ -67,9 +69,13 @@ app.put("/api/messages/:id", async (c) => {
   const id = Number.parseInt(c.req.param("id"));
   const { content } = await c.req.json();
 
-  const [updatedMessage] = await db.update(schema.messages).set({
-    content: content,
-  }).where(eq(schema.messages.id, id)).returning();
+  const [updatedMessage] = await db
+    .update(schema.messages)
+    .set({
+      content: content,
+    })
+    .where(eq(schema.messages.id, id))
+    .returning();
 
   return c.json(updatedMessage);
 });
