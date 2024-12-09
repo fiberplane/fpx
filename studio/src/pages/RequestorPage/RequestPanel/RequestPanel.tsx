@@ -306,13 +306,11 @@ export const RequestPanel = memo(function RequestPanel(
             <CodeMirrorJsonEditor
               onChange={(bodyValue) => {
                 const requestBody = { type: "json" as const, value: bodyValue };
-                setBody(requestBody)
+                setBody(requestBody);
                 updateCollectionItem({
                   requestBody: requestBody,
                 });
-              }
-
-              }
+              }}
               value={body.value}
               maxHeight="800px"
               onSubmit={onSubmit}
@@ -327,7 +325,7 @@ export const RequestPanel = memo(function RequestPanel(
                   isMultipart: body.isMultipart,
                   value: params,
                 };
-                setBody(requestBody)
+                setBody(requestBody);
                 updateCollectionItem({
                   requestBody: requestBody,
                 });
@@ -343,11 +341,10 @@ export const RequestPanel = memo(function RequestPanel(
                   type: "file" as const,
                   value: file,
                 };
-                setBody(requestBody)
+                setBody(requestBody);
                 updateCollectionItem({
                   requestBody: requestBody,
                 });
-
               }}
             />
           )}

@@ -2,56 +2,47 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useShake } from "@/hooks";
-import { useAddCollection } from "@/queries";
 import { cn } from "@/utils";
-import { type Collection, CollectionSchema } from "@fiberplane/fpx-types";
+import { CollectionSchema } from "@fiberplane/fpx-types";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
 
-type CollectionFormData = {
+export type CollectionFormData = {
   name: string;
 };
 
 type Props = {
-  onSuccess: (collection: Collection) => void;
+  initialData?: Partial<CollectionFormData>;
+  onSubmit: SubmitHandler<CollectionFormData>;
+  isPending?: boolean;
+  error: Error | null;
 };
 
 const CreateCollectionSchema = CollectionSchema.pick({ name: true });
 
-export function CreateCollectionForm(props: Props) {
-  const { onSuccess } = props;
-  const {
-    mutate: addCollection,
-    failureReason: error,
-    isPending,
-  } = useAddCollection();
-  const onSubmit: SubmitHandler<CollectionFormData> = ({ name }) => {
-    console.log("yes!");
-    addCollection(
-      {
-        name,
-      },
-      {
-        onSuccess: (data) => {
-          onSuccess(data);
-        },
-        onError: () => {
-          triggerShake();
-        },
-      },
-    );
-  };
-
+export function CollectionForm(props: Props) {
+  const { onSubmit, isPending, error, initialData } = props;
   const { register, handleSubmit } = useForm<CollectionFormData>({
     resolver: zodResolver(CreateCollectionSchema),
+    defaultValues: initialData || {},
   });
   const { shakeClassName, triggerShake } = useShake();
+  useEffect(() => {
+    if (isPending) {
+      return;
+    }
+
+    if (error) {
+      triggerShake();
+    }
+  }, [error, triggerShake, isPending]);
 
   return (
     <form className="grid gap-4" onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-2">
         <h4 className="text-md text-muted-foreground text-center">
-          New collection
+          {initialData ? "Edit" : "New"} collection
         </h4>
         {error && (
           <p className="text-sm text-destructive-foreground">{error.message}</p>
@@ -78,7 +69,7 @@ export function CreateCollectionForm(props: Props) {
           disabled={isPending}
           className={cn("h-7", shakeClassName)}
         >
-          Create
+          {initialData ? "Save" : "Create"}
         </Button>
       </div>
     </form>

@@ -94,6 +94,39 @@ export function useAddCollection() {
   return mutation;
 }
 
+export function useUpdateCollection() {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (data: { collectionId: string; params: { name: string } }) =>
+      fetch(`/v0/collections/${data.collectionId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data.params),
+      }).then(async (r) => {
+        if (!r.ok) {
+          const result = await (r.headers
+            .get("Content-Type")
+            ?.startsWith("application/json")
+            ? r.json()
+            : r.text());
+
+          throw resultToError(result);
+        }
+
+        await r.text();
+        return undefined;
+        // return CollectionSchema.parse(json);
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [COLLECTIONS_KEY] });
+    },
+  });
+
+  return mutation;
+}
+
 async function addItemToCollection(
   collectionId: string,
   routeId: number,
@@ -298,12 +331,9 @@ export function useUpdateCollectionItem() {
         }
 
         return undefined;
-        // const data = await r.json();
-        // return CollectionItemSchema.parse(data);
       });
     },
     onSuccess: () => {
-      console.log('eh.. invalidate plaease')
       queryClient.invalidateQueries({ queryKey: [COLLECTIONS_KEY] });
     },
     mutationKey: [COLLECTIONS_KEY, "upate-collection-item"],

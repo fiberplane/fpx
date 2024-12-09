@@ -191,7 +191,7 @@ app.get(
 // Update a collection by ID
 app.put(
   "/v0/collections/:id",
-  zValidator("param", z.object({ id: z.number() })),
+  zValidator("param", z.object({ id: z.number({ coerce: true }) })),
   zValidator("json", z.object({ name: z.string() })),
   async (ctx) => {
     const { id } = ctx.req.valid("param");

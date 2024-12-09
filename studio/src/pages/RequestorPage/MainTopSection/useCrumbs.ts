@@ -5,13 +5,17 @@ import {
   useActiveTraceId,
 } from "@/hooks";
 import { useCollections } from "@/queries";
-import { Icon } from "@iconify/react/dist/iconify.js";
-import type { ReactNode } from "react";
+import type { IconProps } from "@iconify/react/dist/iconify.js";
 import { generatePath, useSearchParams } from "react-router-dom";
 import { useStudioStore } from "../store";
 
-type Crumb = {
-  label: ReactNode;
+export type Crumb = {
+  label:
+    | string
+    | {
+        icon: IconProps["icon"];
+        text: string;
+      };
   href?: string;
   onActivate?: () => void;
 };
@@ -48,12 +52,10 @@ export function useCrumbs(): Crumb[] {
     const collection = collections?.find((c) => c.id === collectionId);
     if (collection) {
       crumbs.push({
-        label: (
-          <span className="flex gap-2 items-center">
-            <Icon icon="lucide:folder" />
-            {collection.name}
-          </span>
-        ),
+        label: {
+          icon: "lucide:folder",
+          text: collection.name,
+        },
         href: collectionLink,
       });
     } else {

@@ -11,13 +11,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { COLLECTION_ROUTE } from "@/constants";
+import { useAddCollection } from "@/queries";
 import type { Collection } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { PlusIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
+import type { SubmitHandler } from "react-hook-form";
 import { useHotkeys } from "react-hotkeys-hook";
 import { generatePath, useNavigate, useSearchParams } from "react-router-dom";
-import { CreateCollectionForm } from "./CreateCollectionForm";
+import {
+  CollectionForm,
+  type CollectionFormData,
+} from "../../../CollectionForm";
 
 // type Props = {
 //   // selectCollection: (group: Collection) => void;
@@ -48,6 +53,27 @@ export function CreateCollection(
     });
   });
 
+  const {
+    mutate: addCollection,
+    failureReason: error,
+    isPending,
+  } = useAddCollection();
+  const onSubmit: SubmitHandler<CollectionFormData> = ({ name }) => {
+    addCollection(
+      {
+        name,
+      },
+      {
+        onSuccess: (data) => {
+          handleSuccess(data);
+        },
+        onError: () => {
+          // triggerShake();
+        },
+      },
+    );
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
@@ -69,7 +95,11 @@ export function CreateCollection(
         </TooltipContent>
       </Tooltip>
       <PopoverContent className="w-80 max-w-dvw" align="end">
-        <CreateCollectionForm onSuccess={handleSuccess} />
+        <CollectionForm
+          onSubmit={onSubmit}
+          isPending={isPending}
+          error={error}
+        />
       </PopoverContent>
     </Popover>
   );

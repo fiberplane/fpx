@@ -20,6 +20,7 @@ import { AddRoute } from "../NavigationPanel/CollectionsPanel/AddRoute";
 import { Method } from "../RequestorHistory";
 import { useStudioStore } from "../store";
 import { BACKGROUND_LAYER } from "../styles";
+import { EditCollection } from "./EditCollection";
 
 export function CollectionSection() {
   const collectionId = useActiveCollectionId();
@@ -67,8 +68,15 @@ export function CollectionSection() {
     >
       <div className="p-4 grid gap-6">
         <div className="grid gap-2">
-          <div className="grid grid-cols-[1fr_auto] items-center">
-            <h4>Manage collection</h4>
+          <div className="grid grid-cols-[1fr_auto_auto] gap-4 items-center">
+            <h4 className="flex gap-2">
+              <span>{collection.name}</span>
+
+              <EditCollection
+                name={collection.name}
+                collectionId={collectionId}
+              />
+            </h4>
             <Button
               variant={"destructive"}
               type="button"
