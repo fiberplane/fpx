@@ -297,14 +297,16 @@ export function useUpdateCollectionItem() {
           throw resultToError(result);
         }
 
-        const data = await r.json();
-        return CollectionItemSchema.parse(data);
+        return undefined;
+        // const data = await r.json();
+        // return CollectionItemSchema.parse(data);
       });
     },
     onSuccess: () => {
+      console.log('eh.. invalidate plaease')
       queryClient.invalidateQueries({ queryKey: [COLLECTIONS_KEY] });
     },
-    mutationKey: [COLLECTIONS_KEY],
+    mutationKey: [COLLECTIONS_KEY, "upate-collection-item"],
   });
 
   return mutation;

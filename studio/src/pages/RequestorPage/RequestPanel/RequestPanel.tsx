@@ -304,8 +304,14 @@ export const RequestPanel = memo(function RequestPanel(
           )}
           {body.type === "json" && (
             <CodeMirrorJsonEditor
-              onChange={(bodyValue) =>
-                setBody({ type: "json", value: bodyValue })
+              onChange={(bodyValue) => {
+                const requestBody = { type: "json" as const, value: bodyValue };
+                setBody(requestBody)
+                updateCollectionItem({
+                  requestBody: requestBody,
+                });
+              }
+
               }
               value={body.value}
               maxHeight="800px"
@@ -316,10 +322,14 @@ export const RequestPanel = memo(function RequestPanel(
             <FormDataForm
               keyValueParameters={body.value}
               onChange={(params) => {
-                setBody({
-                  type: "form-data",
+                const requestBody = {
+                  type: "form-data" as const,
                   isMultipart: body.isMultipart,
                   value: params,
+                };
+                setBody(requestBody)
+                updateCollectionItem({
+                  requestBody: requestBody,
                 });
               }}
               onSubmit={onSubmit}
@@ -329,10 +339,15 @@ export const RequestPanel = memo(function RequestPanel(
             <FileUploadForm
               file={body.value}
               onChange={(file) => {
-                setBody({
-                  type: "file",
+                const requestBody = {
+                  type: "file" as const,
                   value: file,
+                };
+                setBody(requestBody)
+                updateCollectionItem({
+                  requestBody: requestBody,
                 });
+
               }}
             />
           )}
