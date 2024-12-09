@@ -57,12 +57,10 @@ export function IncomingRequestContent(props: Props) {
         </SubSection>
       </div>
       {requestBody && (
-        <>
-          <SubSection>
-            <SubSectionHeading>Request Body</SubSectionHeading>
-            <TextOrJsonViewer text={requestBody} textMaxPreviewLines={15} />
-          </SubSection>
-        </>
+        <SubSection>
+          <SubSectionHeading>Request Body</SubSectionHeading>
+          <TextOrJsonViewer text={requestBody} textMaxPreviewLines={15} />
+        </SubSection>
       )}
       <div>
         <SubSectionHeading>Response</SubSectionHeading>

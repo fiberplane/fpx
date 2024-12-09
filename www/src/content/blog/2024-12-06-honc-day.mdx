@@ -1,0 +1,102 @@
+---
+title: "HONC Day 2k24"
+description: "A bunch of new HONC-related features"
+slug: honc-day-2024
+date: 2024-12-06
+author: Fiberplane Team
+tags:
+  - launch week
+  - Hono
+  - HONC
+---
+
+import { Image } from "astro:assets";
+import { LinkCard } from "@astrojs/starlight/components";
+import hatchExample from "@/assets/blog/2024-12-06-hatch-example.png";
+
+It's HONC Day 2k24! 
+
+Today we're excited to announce several new features and tools that make building with HONC even better.
+Let's take a gander at what's new.
+
+## Introducing Hatch: AI-Powered HONC App Generation
+
+If you're feeling adventurous, you can now let AI generate a HONC app for you, according to a short description.
+
+Just add the `--hatch` flag to the `create-honc-app` command:
+
+```shell
+npm create honc-app@latest -- --hatch
+```
+
+And you'll be prompted to describe what you want to build:
+
+<Image
+  width={400}
+  src={hatchExample}
+  alt="Create honc app with a 'hatch' prompt"
+  style="border-radius: 10px;"
+/>
+
+After that, you go through the normal `create-honc-app` flow, 
+and your template files will be modified to scaffold an api according to your description.
+
+## Adding Client-Side Interactivity to Your HONC Apps
+
+Fiberplane's Oscar van Zijverden put together a guide on client-side hydration for Hono apps, which shows how to add components that go beyond the basic SSR functionality of `hono/jsx`.
+
+This one's worthy of its own separate post on the blog! Check it out here:
+
+<LinkCard
+  title="Step-by-step guide: Adding client-side logic to your Hono app"
+  description="A minimal setup for client-side hydration in Hono apps."
+  href="/blog/client-side-guide"
+/>
+
+
+## Placegoose: A Goosier Take on JSON Placeholder
+
+Sometimes **you just need some honkin' data**, and that's where [placegoose](https://placegoose.fp.dev/) comes in. It's like JSON Placeholder, but with geese.
+
+The code is open source, and it demonstrates some advanced patterns for building an api with Hono/HONC.
+Placegoose is a great reference for modeling more complex data relationships with Drizzle, separating out resources into different routers, and 
+implementing request validation with centralized error handling.
+
+<LinkCard
+  title="Check out the Placegoose Code"
+  description="Placegoose is a good reference app for more advanced patterns in Hono."
+  href="https://github.com/fiberplane/create-honc-app/tree/9b14422df4907acc2b7a90171f38f122ff58d113/examples/placegoose"
+/>
+
+## Drizzle Seed Support in create-honc-app
+
+A few short weeks ago, [Drizzle announced support](https://x.com/DrizzleORM/status/1859932421514576210) for seeding databases with fake data. 
+Today, we've integrated that support into `create-honc-app`.
+
+Say goodbye to our hackadoo seed scripts that always yielded the same 3 elements in your database in the HONC templates, and hello to the power of Drizzle's `seed` command. It uses a pseudorandom number generator and their dataset to use consistent but diverse fake data, which is a fancy word for "same same but different" - you can read more about `drizzle-seed` [in their documentation](https://orm.drizzle.team/docs/seed-overview#drizzle-seed).
+
+
+## What's Next?
+
+You tell us! Did anything from this barrage of new HONC launches catch your eye?
+
+Hop in our [Discord](https://discord.gg/cqdY6SpfVR) and let us know what you want to see next.
+
+A few things on our radar:
+
+- SSR components for `hono/jsx` ([already in the works](https://github.com/fiberplane/create-honc-app/tree/9b14422df4907acc2b7a90171f38f122ff58d113/ascuii))
+- A Web UI to generate new HONC apps with AI
+- Guides to writing external APIs with Hono/HONC
+
+
+## That's a wrap
+
+HONC Day 2k24 is in the books! This is our capstone for Mega Launch Week.
+
+If you missed any of our other launches this week, check them out here:
+
+<LinkCard
+  title="🚀 Mega Launch Week"
+  description="Check out all the new features and updates from Fiberplane's mega launch week"
+  href="/blog/mega-launch-week-2024"
+/>

@@ -98,7 +98,6 @@ export const NavItem = memo(
                   },
                 )}
                 tabIndex={0}
-                role="button"
               >
                 <Method
                   method={route.method}

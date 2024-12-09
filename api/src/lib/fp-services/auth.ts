@@ -24,7 +24,10 @@ export async function getUser(token: string) {
     }
 
     if (response.status === 401) {
-      const errorData = await response.json();
+      const errorData = (await response.json()) as {
+        errorType: string;
+        message: string;
+      };
       switch (errorData?.errorType) {
         case ERROR_TYPE_UNAUTHORIZED:
           throw new UnauthorizedError();
@@ -77,7 +80,10 @@ export async function verifyToken(token: string): Promise<unknown> {
     });
 
     if (response.status === 401) {
-      const errorData = await response.json();
+      const errorData = (await response.json()) as {
+        errorType: string;
+        message: string;
+      };
       switch (errorData?.errorType) {
         case ERROR_TYPE_UNAUTHORIZED:
           throw new UnauthorizedError();

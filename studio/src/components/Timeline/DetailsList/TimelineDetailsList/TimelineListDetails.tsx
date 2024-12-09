@@ -37,9 +37,13 @@ function TimelineListDetailsComponent({
   return (
     <div className="grid gap-1 min-h-0 mt-0">
       <div className="flex gap-12 border-b pb-2">
-        <label className="flex items-center space-x-2 cursor-pointer">
+        <label
+          className="flex items-center space-x-2 cursor-pointer"
+          htmlFor="tree-view-switch"
+        >
           <span className="text-xs text-muted-foreground ">Tree view</span>
           <Switch
+            id="tree-view-switch"
             checked={asTree}
             onCheckedChange={() => {
               setAsTree();
@@ -47,9 +51,13 @@ function TimelineListDetailsComponent({
           />
         </label>
 
-        <label className="flex items-center space-x-2 cursor-pointer">
+        <label
+          className="flex items-center space-x-2 cursor-pointer"
+          htmlFor="logs-switch"
+        >
           <span className="text-xs text-muted-foreground ">Logs</span>
           <Switch
+            id="logs-switch"
             checked={withLogs}
             onCheckedChange={() => {
               setWithLogs();

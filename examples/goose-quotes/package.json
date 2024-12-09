@@ -8,16 +8,16 @@
   },
   "dependencies": {
     "@fiberplane/hono-otel": "workspace:*",
-    "@neondatabase/serverless": "^0.10.1",
+    "@neondatabase/serverless": "^0.10.4",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.35.3",
-    "hono": "^4.6.5",
-    "openai": "^4.53.0"
+    "hono": "^4.6.12",
+    "openai": "^4.73.1"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20241022.0",
+    "@cloudflare/workers-types": "^4.20241112.0",
     "drizzle-kit": "^0.26.2",
-    "wrangler": "^3.83.0"
+    "wrangler": "^3.91.0"
   },
   "homepage": "https://github.com/fiberplane/fpx/examples/goose-quotes#readme"
 }

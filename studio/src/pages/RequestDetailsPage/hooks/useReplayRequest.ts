@@ -25,7 +25,7 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
   const replayPath = url.pathname;
 
   const requestHeaders = useMemo<Record<string, string>>(() => {
-    return span ? getRequestHeaders(span) ?? {} : {};
+    return span ? (getRequestHeaders(span) ?? {}) : {};
   }, [span]);
 
   const filterReplayHeaders = useCallback(

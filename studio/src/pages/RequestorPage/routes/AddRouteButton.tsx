@@ -16,7 +16,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { PlusIcon } from "@radix-ui/react-icons";
-import type { OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from "@scalar/openapi-parser";
+import type { OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from "@scalar/openapi-types";
 import { useState } from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useHotkeys } from "react-hotkeys-hook";

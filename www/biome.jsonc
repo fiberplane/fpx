@@ -1,7 +1,13 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
-  "extends": ["../biome.jsonc"],
+  "$schema": "node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": [
+    "../biome.jsonc"
+  ],
   "files": {
-    "ignore": ["dist", "node_modules", "src/*.ts.example"]
+    "ignore": [
+      "dist",
+      "node_modules",
+      "src/*.ts.example"
+    ]
   }
 }

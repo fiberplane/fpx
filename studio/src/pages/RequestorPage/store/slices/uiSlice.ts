@@ -3,13 +3,16 @@ import type { StateCreator } from "zustand";
 import type { NavigationRoutesView } from "../types";
 import {
   type BottomPanelName,
+  type StudioState,
   type UISlice,
   validBottomPanelNames,
 } from "./types";
 
 export const uiSlice: StateCreator<
-  UISlice,
-  [["zustand/immer", never], ["zustand/devtools", never]]
+  StudioState,
+  [["zustand/immer", never], ["zustand/devtools", never]],
+  [],
+  UISlice
 > = (set) => {
   return {
     navigationPanelRoutesView: "list",
