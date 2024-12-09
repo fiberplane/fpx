@@ -1,5 +1,5 @@
 ---
-title: "Handling Asynchronous Tasks in Cloudflare Workers – Part 2: Decomposing into multiple Workers"
+title: "Handling Asynchronous Tasks in Cloudflare Workers – Part 2: Decomposing tasks into multiple Workers"
 description: Explore techniques for handling asynchronous tasks in Cloudflare Workers to ensure quick responses and seamless user experiences.
 slug: asynchronous-tasks-in-cloudflare-part2
 date: 2024-12-03
@@ -77,14 +77,13 @@ If you start both workers locally independly you also see if your binding is wor
 
 TODO IMAGE OF LOCAL BINDING
 
+
 Now that the serives are binded we can either use rpc to call a function directly in the other worker or use fetch to call an endpoint. 
 
-```typescript
-// logic goes here
-```
+
 #### Excursion: Ensure Type Safety
 
-When using TypeScript, it is crucial to ensure type conformity to use the RPC or fetch function effectively. 
+When using TypeScript, it is crucial to ensure type conformity to use the RPC or fetch function effectively.
 This requires defining an interface for the service you want to bind. 
 However, this can introduce multiple challenges, as discussed in the [Cloudflare forum](https://community.cloudflare.com/t/binding-service-rpc-using-typescript/652041/6). 
 
@@ -98,7 +97,7 @@ export interface WorkerEmail {
   }
 
 ```
-The sign up Worker can call The meail Worker using the shared WorkerEmail interface, ensuring type safety and preventing runtime errors caused by mismatched method signatures:
+The sign up Worker can call The mail Worker using the shared WorkerEmail interface, ensuring type safety and preventing runtime errors caused by mismatched method signatures:
 ```typescript title="worker_sign_up/index.ts"
 import type { WorkerEmail } from '../../worker-email-types';
 
@@ -108,6 +107,8 @@ type Bindings = {
 
 ```
 If you are not working in a monorepo and your workers are independent, they cannot directly share the same type definition file. 
+Kent C. Dotts wrote about [fully typed web apps](https://www.epicweb.dev/fully-typed-web-apps) discussing the end-to end type safety from a Database to a WebUI. 
+He talks about boundaries and how to address them. If our workers are not in the same repo we have another boundary that we need to address.
 In this scenario, things become a bit more challenging. You have two options:
 
 * Define the Interface Separately in Both Workers
@@ -121,9 +122,9 @@ In this scenario, things become a bit more challenging. You have two options:
 ### Execution patterns
 Since the calls remain within the same thread, it’s not surprising that we handle the invocation to different workers similarly to how we handle asynchronous tasks within a single worker.
 
-This means we should handle them as asynchronous tasks and use the `await` keyword to ensure that the worker completes its operation before the current thread terminates.
+This means when using seperate Cloudflare Workers tasks become asynchronous. The `await` keyword ensures that the worker completes its operation before the current thread terminates.
 
-Additionally, we can invoke the services using sequential logic. 
+We can invoke the services using sequential logic. 
 
 ```typescript
 app.post("/api/marathon-sequential", async (c) => {
@@ -179,16 +180,114 @@ Remember how we couldn’t implement a reliable way to achieve fire and forget e
 This is due to the fact that in both ways (single worker/ multiple workers) the asynchronous tasks are sharing the same thread.
 To address this, let’s further decouple the Marathon Registration API and the Email Worker. 
 Both should operate independently, without sharing the same thread, ensuring they are decoupled and do not rely on each other during an invocation.
-The solution to decouple the workers and address this issue is to use Cloudflare Queues.
+The solution to decouple the workers and address this issue is to use [Cloudflare Queues](https://developers.cloudflare.com/queues/reference/how-queues-works/).
 
 ![Example Queue and Workers architecture](@/assets/blog/2024-12-03-queue-architecture.png)
 
 
 ### SetUp Cloudflare Queues
+Cloudflare queues integrate with Cloudflare Workers and work as a message broker. Workers can produce messasges to a queue and consume messages from the queue.
+This way the workers are decoupled and can operate independently. Further queues allow to define batch and buffer strategies for handling data. 
+Under the hood a [Cloudflare Queue leverage Durable Objects](https://blog.cloudflare.com/how-we-built-cloudflare-queues/). 
 
-### retries and error handling
+### Message sending (Producer)
+In the Worker that sends the message you can add a binding to the `wrangler.toml` file. 
+
+```toml, title="worker_sign_up/wrangler.toml"
+[[queues.producers]]
+ queue = "registration-queue"
+ binding = "REGISTRATION_QUEUE"
+``` 
+Once the binding is set up it is easy to send messages to the queue. 
+
+```typescript
+  await c.env.REGISTRATION_QUEUE.send(messagePayload);
+
+```
+
+Besides messages can be send by external applications to the Cloudflare queue like in [this example using DAPR](https://github.com/diagrid-labs/dapr-cloudflare-queues).
+
+### Message handeling (Consumer)
+Consuming messages from a queue can be done in two ways. The default way is that the queue pushes the messages to a consumer worker.
+This works well for a serverless approach and ensures the worker is only invoked when there is a message in the queue. 
+But Queues also support polling. This can be handy if you want to integrate with Services that are outside of the Cloudflare eco system.
+
+To set up a consumer worker you have to define the binding in the `wrangler.toml` file.
+
+```toml, title="worker_email/wrangler.toml" 
+[[queues.consumers]]
+ queue = "registration-queue"
+ max_batch_size = 10 # optional: defaults to 10
+ max_batch_timeout = 60 # optional: defaults to 5 seconds
+
+```
+
+When setting up the consumer there are multiple ways to configure the message handling. Besides defining the queue in the example above a batching strategy is defined.
+`max_batch_size` and `max_batch_timeout` are racing conditions. The batch is sent when one of the conditions is met.
+In the example the message batch is either sent when 10 messages are in the queue or after 60 seconds. 
+Nothing will be pushed if the queue is empty. 
+
+Batching can be handy to reduce the time a worker is invoked. 
+
+The consumer worker needs to implement the `queue` method in order to handle the incoming messages from the Queue.
+
+```typescript 
+// Queue consumer
+  async queue(batch: MessageBatch): Promise<void> {
+    for (const msg of batch.messages) {
+      console.log("Received", msg.body);
+      const { email, firstName } = JSON.parse(msg.body as string);
+      await this.send(email, firstName);
+    }
+  }
+```
+
+Multiple workers can consume from the same queue. Messages are not tight to a specific worker. 
+If there is more load Cloudflare will automatically scale the workers to consume from the queue. 
+However you can define a max in the `wrangler.toml` of your consumer and tell it to only run one worker:
+```toml, title="worker_email/wrangler.toml" 
+[[queues.consumers]]
+  max_concurrency = 1
+```
+
+### Retries and error handling
+On a default behaviour the Cloudflare queue tries to deliver the message 3 times. If the message is not delivered after 3 times it is marked as failing. 
+You can change that behaviour in the consumer where you can also define the max number of retry and a dead letter queue for all the failing messages.
+
+```toml 
+  max_retries = 10
+  dead_letter_queue = "failed-registration-message-queue"
+```
+
+When working with messages in a batch you can still handle the messages individually. 
+If you don't define individual acknoledgement the whole batch is acknoledged or failing (even if only one message is failing).
+So depending on your data you might want to handle the messages individually.
+
+```typescript 
+msg.ack();
+```
+
+Because we have decoupled the workers and they invokation doesn't happen in the same thread a failing message doesn't affect the sign up (producer) Worker.
+Retries are handled by the queue and the consumer worker. Instead of acknoledging the message you can retry a message. Retry is the way to nack a message and put it back in the queue. 
+The queue handles it if there is a number of retries left and if not sends it to the dead-letter-queue instead. Each mesage has an `attempt` property. 
+
+```typescript
+
+This allows you to define task specific retry strategies. 
+For example when working with external APIs that charge per call, you might want to reduce the number of retries before failing.
+Or if an API signals that it gets to many request you can define a delay time before retrying.
+
+```typescript
+msg.retry({ delaySeconds: 1000 });
+```
+Having the `attempt` property and the possibility to define delay seconds in the retry method, you can also define a [backoff strategy](https://developers.cloudflare.com/queues/configuration/batching-retries/#apply-a-backoff-algorithm). 
+
+
 
 ### Current limitations when developing locally 
+When developing and testing locally you can run two inpendent workers and connect them to the same queue. It is also not possible to run the queue remotely and connect your local workers to it.
+The only possible way at the moment is to run the Producer worker and include the consumer's worker into it, spin it up locally to test the queue.
+The other option of course if to test the workers and the queue in the Cloudflare network. 
 
 ## Conclusion
 
