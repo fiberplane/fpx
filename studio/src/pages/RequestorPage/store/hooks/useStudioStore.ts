@@ -40,6 +40,9 @@ export const useStudioStoreRaw = create<StudioStore>()(
       ...uiSlice(...a),
       ...aiSlice(...a),
     })),
-    { name: "RequestorStore" },
+    { name: "StudioStore" },
   ),
 );
+
+// Provide a way to get the store state outside of a component
+export const getStudioStoreState = useStudioStoreRaw.getState;

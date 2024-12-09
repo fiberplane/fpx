@@ -192,17 +192,12 @@ app.get(
 app.put(
   "/v0/collections/:id",
   zValidator("param", z.object({ id: z.number() })),
+  zValidator("json", z.object({ name: z.string() })),
   async (ctx) => {
     const { id } = ctx.req.valid("param");
     const db = ctx.get("db");
 
-    const updateCollectionSchema = z.object({
-      name: z.string().optional(),
-    });
-
-    const updatedCollection = updateCollectionSchema.parse(
-      await ctx.req.json(),
-    );
+    const updatedCollection = ctx.req.valid("json");
     try {
       await db
         .update(collections)
@@ -270,6 +265,61 @@ app.delete(
         );
       return ctx.json({ message: "Collection deleted" });
     } catch (error) {
+      return ctx.json(
+        error instanceof Error ? error.message : "Unexpected error",
+        500,
+      );
+    }
+  },
+);
+
+// Updating a collection item by ID
+app.put(
+  "/v0/collections/:id/items/:itemId",
+  zValidator(
+    "param",
+    z.object({
+      id: z.number({ coerce: true }),
+      itemId: z.number({ coerce: true }),
+    }),
+  ),
+  zValidator("json", ExtraRequestParamsSchema),
+  async (ctx) => {
+    const { id, itemId } = ctx.req.valid("param");
+    const db = ctx.get("db");
+
+    try {
+      await db.transaction(async (db) => {
+        const item = await db.query.collectionItems.findFirst({
+          where: and(
+            eq(collectionItems.collectionId, id),
+            eq(collectionItems.id, itemId),
+          ),
+        });
+
+        if (!item) {
+          throw new HTTPException(404, {
+            message: "Collection item not found",
+          });
+        }
+
+        await db
+          .update(collectionItems)
+          .set(ctx.req.valid("json"))
+          .where(
+            and(
+              eq(collectionItems.collectionId, id),
+              eq(collectionItems.id, itemId),
+            ),
+          );
+      });
+      // TODO return updated item
+      return ctx.body(null);
+    } catch (error) {
+      if (error instanceof HTTPException) {
+        return ctx.json(error.message, error.status);
+      }
+
       return ctx.json(
         error instanceof Error ? error.message : "Unexpected error",
         500,

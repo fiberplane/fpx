@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { cn } from "@/utils";
+import { cn, createObjectFromKeyValueParameters } from "@/utils";
 import { EraserIcon, InfoCircledIcon } from "@radix-ui/react-icons";
 import { type Dispatch, type SetStateAction, memo, useMemo } from "react";
 import { FormDataForm } from "../FormDataForm";
@@ -20,6 +20,11 @@ import {
   CodeMirrorJsonEditor,
   CodeMirrorTextEditor,
 } from "@/components/CodeMirrorEditor";
+import { useActiveCollectionEntryId, useActiveCollectionId } from "@/hooks";
+import {
+  type NullableExtraRequestParams,
+  useUpdateCollectionItem,
+} from "@/queries/collections";
 import { useStudioStore } from "../store";
 import { RouteDocumentation } from "./RouteDocumentation/RouteDocumentation";
 import { isOpenApiOperation } from "./RouteDocumentation/openapi";
@@ -111,6 +116,24 @@ export const RequestPanel = memo(function RequestPanel(
   }, [activeRoute?.openApiSpec]);
   const shouldShowDocs = isOpenApiOperation(openApiSpec);
 
+  const collectionId = useActiveCollectionId() ?? null;
+  const collectionItemId = useActiveCollectionEntryId() ?? null;
+
+  const { mutate } = useUpdateCollectionItem();
+  const updateCollectionItem = (
+    nullableExtraParams: NullableExtraRequestParams,
+  ) => {
+    if (collectionId === null || collectionItemId === null) {
+      return;
+    }
+
+    return mutate({
+      collectionId,
+      itemId: collectionItemId,
+      nullableExtraParams,
+    });
+  };
+
   return (
     <Tabs
       value={activeRequestsPanelTab}
@@ -185,6 +208,9 @@ export const RequestPanel = memo(function RequestPanel(
           title="Query"
           handleClearData={() => {
             setQueryParams([]);
+            updateCollectionItem({
+              requestQueryParams: createObjectFromKeyValueParameters([]),
+            });
           }}
         />
         <KeyValueForm
@@ -192,6 +218,9 @@ export const RequestPanel = memo(function RequestPanel(
           keyValueParameters={queryParams}
           onChange={(params) => {
             setQueryParams(params);
+            updateCollectionItem({
+              requestQueryParams: createObjectFromKeyValueParameters(params),
+            });
           }}
           onSubmit={onSubmit}
         />
@@ -207,6 +236,9 @@ export const RequestPanel = memo(function RequestPanel(
               keyValueParameters={pathParams}
               onChange={(params) => {
                 setPathParams(params);
+                updateCollectionItem({
+                  requestPathParams: createObjectFromKeyValueParameters(params),
+                });
               }}
               onSubmit={onSubmit}
             />
@@ -223,13 +255,19 @@ export const RequestPanel = memo(function RequestPanel(
           title="Request Headers"
           handleClearData={() => {
             setRequestHeaders([]);
+            updateCollectionItem({
+              requestHeaders: createObjectFromKeyValueParameters([]),
+            });
           }}
         />
         <KeyValueForm
           keyPlaceholder="header-name"
           keyValueParameters={requestHeaders}
           onChange={(headers) => {
-            setRequestHeaders(headers);
+            // setRequestHeaders(headers);
+            updateCollectionItem({
+              requestHeaders: createObjectFromKeyValueParameters(headers),
+            });
           }}
           onSubmit={onSubmit}
           keyInputType="header-key"

@@ -1,4 +1,6 @@
 import { useStudioStore } from "@/pages/RequestorPage/store";
+import { getStudioStoreState } from "@/pages/RequestorPage/store/hooks/useStudioStore";
+// import { getStudioStoreState } from "@/pages/RequestorPage/store/hooks/useStudioStore";
 import {
   CollectionSchema,
   type ExtraRequestParams,
@@ -7,6 +9,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import type { Simplify } from "type-fest";
 import { z } from "zod";
 
 export const COLLECTIONS_KEY = "collections";
@@ -215,6 +218,93 @@ export function useDeleteCollection(collectionId: string) {
       queryClient.invalidateQueries({ queryKey: [COLLECTIONS_KEY] });
     },
     mutationKey: [collectionId, COLLECTIONS_KEY],
+  });
+
+  return mutation;
+}
+
+type Nullable<T> = {
+  [P in keyof T]: T[P] | null;
+};
+
+/**
+ * Extra request params that can be null
+ *
+ * If set to null the value that is stored in the store will be used
+ */
+export type NullableExtraRequestParams = Simplify<
+  Nullable<
+    Pick<
+      ExtraRequestParams,
+      | "requestBody"
+      | "requestHeaders"
+      | "requestQueryParams"
+      | "requestPathParams"
+    >
+  >
+>;
+
+export function useUpdateCollectionItem() {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: ({
+      collectionId,
+      itemId,
+      nullableExtraParams,
+    }: {
+      collectionId: string;
+      itemId: string;
+      nullableExtraParams: NullableExtraRequestParams;
+    }) => {
+      // const entries = Object.entries(nullableExtraParams) as [keyof NullableExtraRequestParams, NullableExtraRequestParams[keyof NullableExtraRequestParams]][];
+      const overrideValues = Object.fromEntries(
+        Object.entries(nullableExtraParams).filter(
+          ([_, value]) => value !== null,
+        ),
+      ) as ExtraRequestParams;
+
+      const state = getStudioStoreState();
+      const collection = state.collections.find(
+        (c) => c.id.toString() === collectionId,
+      );
+      const collectionItem = collection?.collectionItems.find(
+        (i) => i.id.toString() === itemId,
+      );
+      const extraParams: ExtraRequestParams = {
+        name: collectionItem?.name ?? undefined,
+        requestBody: collectionItem?.requestBody ?? undefined,
+        requestHeaders: collectionItem?.requestHeaders ?? undefined,
+        requestQueryParams: collectionItem?.requestQueryParams ?? undefined,
+        requestPathParams: collectionItem?.requestPathParams ?? undefined,
+        requestMethod: collectionItem?.requestMethod ?? undefined,
+        requestRoute: collectionItem?.requestRoute ?? undefined,
+        ...overrideValues,
+      };
+      return fetch(`/v0/collections/${collectionId}/items/${itemId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(extraParams),
+      }).then(async (r) => {
+        if (!r.ok) {
+          const result = await (r.headers
+            .get("Content-Type")
+            ?.startsWith("application/json")
+            ? r.json()
+            : r.text());
+
+          throw resultToError(result);
+        }
+
+        const data = await r.json();
+        return CollectionItemSchema.parse(data);
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [COLLECTIONS_KEY] });
+    },
+    mutationKey: [COLLECTIONS_KEY],
   });
 
   return mutation;

@@ -43,9 +43,9 @@ export const ExtraRequestParamsSchema = z.object({
   requestUrl: z.string().optional(),
   requestMethod: z.string().optional(),
   requestRoute: z.string().optional(),
-  requestHeaders: z.record(z.string()).nullable().optional(),
-  requestQueryParams: z.record(z.string()).nullable().optional(),
-  requestPathParams: z.record(z.string()).nullable().optional(),
+  requestHeaders: z.record(z.string()).optional(),
+  requestQueryParams: z.record(z.string()).optional(),
+  requestPathParams: z.record(z.string()).optional(),
   requestBody: JsonSchema.optional(), // Assuming JsonSchemaType can be any type
 });
 

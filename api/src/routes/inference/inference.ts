@@ -49,26 +49,26 @@ app.post(
       // HACK - Ditch the expand handler for ollama for now, it overwhelms llama 3.1-8b
       provider !== "ollama"
         ? await getResult()
-          .then(async (routesResult) => {
-            const url = new URL("http://localhost");
-            url.pathname = path;
-            const request = new Request(url, { method });
-            routesResult.resetHistory();
-            const response = await routesResult.currentApp.fetch(request);
-            const responseText = await response.text();
-            if (responseText !== "Ok") {
-              logger.warn(
-                "Failed to fetch route for context expansion",
-                responseText,
-              );
+            .then(async (routesResult) => {
+              const url = new URL("http://localhost");
+              url.pathname = path;
+              const request = new Request(url, { method });
+              routesResult.resetHistory();
+              const response = await routesResult.currentApp.fetch(request);
+              const responseText = await response.text();
+              if (responseText !== "Ok") {
+                logger.warn(
+                  "Failed to fetch route for context expansion",
+                  responseText,
+                );
+                return [null, null];
+              }
+              return [routesResult.getFilesForHistory(), null];
+            })
+            .catch((error) => {
+              logger.error(`Error expanding handler and middleware: ${error}`);
               return [null, null];
-            }
-            return [routesResult.getFilesForHistory(), null];
-          })
-          .catch((error) => {
-            logger.error(`Error expanding handler and middleware: ${error}`);
-            return [null, null];
-          })
+            })
         : [null, null];
 
     // HACK - Get latest token from db

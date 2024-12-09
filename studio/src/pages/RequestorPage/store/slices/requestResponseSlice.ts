@@ -118,7 +118,6 @@ export const requestResponseSlice: StateCreator<
         }
         return accPath;
       }, state.activeRoute?.path ?? state.path);
-      console.log("nextPath", nextPath);
       state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
       state.pathParams = pathParams;
     }),

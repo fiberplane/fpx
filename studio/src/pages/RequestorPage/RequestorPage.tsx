@@ -37,20 +37,12 @@ function getMainSectionWidth() {
 
 export const RequestorPage = () => {
   const { requestType } = useParams();
+
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes();
 
   const { sidePanel } = useStudioStore("sidePanel");
 
-  // NOTE - Uncomment this to test overflow of requests panel
-  // const { setQueryParams } = useRequestorStore("setQueryParams");
-  // useEffect(() => {
-  //   setQueryParams(
-  //     createKeyValueParameters(
-  //       Array.from({ length: 30 }).map(() => ({ key: "a", value: "" })),
-  //     ),
-  //   );
-  // }, [setQueryParams]);
   const id = useActiveTraceId();
   const { history, isLoading, loadHistoricalRequest } = useRequestorHistory();
   // console.log('id', id);
