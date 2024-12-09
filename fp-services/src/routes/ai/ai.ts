@@ -36,7 +36,9 @@ app.post(
       console.error("Error processing request generation call", error);
       return c.json(
         {
-          message: "Unknown error",
+          error: {
+            message: "Unknown error",
+          },
         },
         500,
       );

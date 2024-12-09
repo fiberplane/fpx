@@ -29,7 +29,7 @@ app.get("/v1/traces", async (ctx) => {
   if (fpxWorker?.enabled && fpxWorker.baseUrl) {
     const response = await fetch(`${fpxWorker.baseUrl}/v1/traces`);
     const json = await response.json();
-    return ctx.json(json);
+    return ctx.json(json as JSON);
   }
 
   const spans = await db.query.otelSpans.findMany({
@@ -80,7 +80,7 @@ app.get("/v1/traces/:traceId/spans", async (ctx) => {
       `${fpxWorker.baseUrl}/v1/traces/${traceId}/spans`,
     );
     const json = await response.json();
-    return ctx.json(json);
+    return ctx.json(json as JSON);
   }
 
   const traces = await db
@@ -123,7 +123,7 @@ app.post("/v1/traces", async (ctx) => {
       body: JSON.stringify(body),
     });
     const json = await response.json();
-    return ctx.json(json);
+    return ctx.json(json as JSON);
   }
 
   try {

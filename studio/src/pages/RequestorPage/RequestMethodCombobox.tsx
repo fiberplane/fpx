@@ -92,7 +92,6 @@ export const RequestMethodCombobox = forwardRef<
         <Button
           ref={ref}
           variant="ghost"
-          role="combobox"
           aria-expanded={open}
           className={cn(
             "text-left",

@@ -1,10 +1,12 @@
 import type { StateCreator } from "zustand";
 import type { RequestsPanelTab, ResponsePanelTab } from "..";
-import type { TabsSlice } from "./types";
+import type { Store, TabsSlice } from "./types";
 
 export const tabsSlice: StateCreator<
-  TabsSlice,
-  [["zustand/immer", never], ["zustand/devtools", never]]
+  Store,
+  [["zustand/immer", never], ["zustand/devtools", never]],
+  [],
+  TabsSlice
 > = (set) => ({
   activeRequestsPanelTab: "params",
   visibleRequestsPanelTabs: ["params", "headers"],
