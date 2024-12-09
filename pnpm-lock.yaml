@@ -227,6 +227,40 @@ importers:
         specifier: ^4.19.2
         version: 4.19.2
 
+  examples/openapi-zod:
+    dependencies:
+      '@fiberplane/hono-otel':
+        specifier: workspace:*
+        version: link:../../packages/client-library-otel
+      '@hono/zod-openapi':
+        specifier: ^0.18.0
+        version: 0.18.3(hono@4.6.12)(zod@3.23.8)
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
+      drizzle-orm:
+        specifier: ^0.35.3
+        version: 0.35.3(@cloudflare/workers-types@4.20241112.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.12)(react@18.3.1)
+      drizzle-zod:
+        specifier: ^0.5.1
+        version: 0.5.1(drizzle-orm@0.35.3(@cloudflare/workers-types@4.20241112.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.12)(react@18.3.1))(zod@3.23.8)
+      hono:
+        specifier: ^4.6.5
+        version: 4.6.12
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20241112.0
+        version: 4.20241112.0
+      drizzle-kit:
+        specifier: ^0.26.2
+        version: 0.26.2
+      wrangler:
+        specifier: ^3.87.0
+        version: 3.91.0(@cloudflare/workers-types@4.20241112.0)
+
   examples/server-side-events:
     dependencies:
       '@fiberplane/hono-otel':
@@ -244,6 +278,47 @@ importers:
         version: 4.20241112.0
       wrangler:
         specifier: ^3.91.0
+        version: 3.91.0(@cloudflare/workers-types@4.20241112.0)
+
+  examples/service-bindings/meow:
+    dependencies:
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
+      drizzle-orm:
+        specifier: ^0.36.0
+        version: 0.36.4(@cloudflare/workers-types@4.20241112.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.12)(react@18.3.1)
+      hono:
+        specifier: ^4.6.7
+        version: 4.6.12
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20241106.0
+        version: 4.20241112.0
+      '@fiberplane/hono-otel':
+        specifier: workspace:*
+        version: link:../../../packages/client-library-otel
+      tsx:
+        specifier: ^4.19.2
+        version: 4.19.2
+      wrangler:
+        specifier: ^3.87.0
+        version: 3.91.0(@cloudflare/workers-types@4.20241112.0)
+
+  examples/service-bindings/woof:
+    dependencies:
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
+      drizzle-orm:
+        specifier: ^0.36.0
+        version: 0.36.4(@cloudflare/workers-types@4.20241112.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.12)(react@18.3.1)
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20241106.0
+        version: 4.20241112.0
+      wrangler:
+        specifier: ^3.87.0
         version: 3.91.0(@cloudflare/workers-types@4.20241112.0)
 
   examples/test-static-analysis:
@@ -505,6 +580,9 @@ importers:
       '@fiberplane/hono-otel':
         specifier: ^0.3.1
         version: 0.3.1
+      '@hono/zod-openapi':
+        specifier: ^0.18.0
+        version: 0.18.3(hono@4.6.12)(zod@3.23.8)
       '@types/node':
         specifier: ^22.10.0
         version: 22.10.0
@@ -996,6 +1074,11 @@ packages:
 
   '@anthropic-ai/sdk@0.29.2':
     resolution: {integrity: sha512-5dwiOPO/AZvhY4bJIG9vjFKU9Kza3hA6VEsbIQg6L9vny2RQIpCFhV50nB9IrG2edZaHZb4HuQ9Wmsn5zgWyZg==}
+
+  '@asteasolutions/zod-to-openapi@7.3.0':
+    resolution: {integrity: sha512-7tE/r1gXwMIvGnXVUdIqUhCU1RevEFC4Jk6Bussa0fk1ecbnnINkZzj1EOAJyE/M3AI25DnHT/zKQL1/FPFi8Q==}
+    peerDependencies:
+      zod: ^3.20.2
 
   '@astrojs/check@0.9.4':
     resolution: {integrity: sha512-IOheHwCtpUfvogHHsvu0AbeRZEnjJg3MopdLddkJE70mULItS/Vh37BHcI00mcOJcH1vhD3odbpvWokpxam7xA==}
@@ -2528,6 +2611,13 @@ packages:
     engines: {node: '>=18.4.0'}
     peerDependencies:
       hono: '>=3.*'
+
+  '@hono/zod-openapi@0.18.3':
+    resolution: {integrity: sha512-bNlRDODnp7P9Fs13ZPajEOt13G0XwXKfKRHMEFCphQsFiD1Y+twzHaglpNAhNcflzR1DQwHY92ZS06b4LTPbIQ==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      hono: '>=4.3.6'
+      zod: 3.*
 
   '@hono/zod-validator@0.2.2':
     resolution: {integrity: sha512-dSDxaPV70Py8wuIU2QNpoVEIOSzSXZ/6/B/h4xA7eOMz7+AarKTSGV8E6QwrdcCbBLkpqfJ4Q2TmBO0eP1tCBQ==}
@@ -7836,6 +7926,9 @@ packages:
       zod:
         optional: true
 
+  openapi3-ts@4.4.0:
+    resolution: {integrity: sha512-9asTNB9IkKEzWMcHmVZE7Ts3kC9G7AFHfs8i7caD8HbI76gEjdkId4z/AkP83xdZsH7PLAnnbl47qZkXuxpArw==}
+
   option@0.2.4:
     resolution: {integrity: sha512-pkEqbDyl8ou5cpq+VsnQbe/WlEy5qS7xPzMS1U55OCG9KPvwFD46zDbxQIj3egJSFc3D+XhYOPUzz49zQAVy7A==}
 
@@ -10197,6 +10290,11 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
+  '@asteasolutions/zod-to-openapi@7.3.0(zod@3.23.8)':
+    dependencies:
+      openapi3-ts: 4.4.0
+      zod: 3.23.8
+
   '@astrojs/check@0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.4.1)(typescript@5.7.2)':
     dependencies:
       '@astrojs/language-server': 2.15.4(prettier-plugin-astro@0.14.1)(prettier@3.4.1)(typescript@5.7.2)
@@ -11878,6 +11976,13 @@ snapshots:
   '@hono/oauth-providers@0.6.2(hono@4.6.12)':
     dependencies:
       hono: 4.6.12
+
+  '@hono/zod-openapi@0.18.3(hono@4.6.12)(zod@3.23.8)':
+    dependencies:
+      '@asteasolutions/zod-to-openapi': 7.3.0(zod@3.23.8)
+      '@hono/zod-validator': 0.4.1(hono@4.6.12)(zod@3.23.8)
+      hono: 4.6.12
+      zod: 3.23.8
 
   '@hono/zod-validator@0.2.2(hono@4.6.12)(zod@3.23.8)':
     dependencies:
@@ -15478,6 +15583,11 @@ snapshots:
       drizzle-orm: 0.33.0(@cloudflare/workers-types@4.20241112.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.12)(react@18.3.1)
       zod: 3.23.8
 
+  drizzle-zod@0.5.1(drizzle-orm@0.35.3(@cloudflare/workers-types@4.20241112.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.12)(react@18.3.1))(zod@3.23.8):
+    dependencies:
+      drizzle-orm: 0.35.3(@cloudflare/workers-types@4.20241112.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.12)(react@18.3.1)
+      zod: 3.23.8
+
   drizzle-zod@0.5.1(drizzle-orm@0.36.4(@cloudflare/workers-types@4.20241112.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.12)(react@18.3.1))(zod@3.23.8):
     dependencies:
       drizzle-orm: 0.36.4(@cloudflare/workers-types@4.20241112.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.12)(react@18.3.1)
@@ -18005,6 +18115,10 @@ snapshots:
       zod: 3.23.8
     transitivePeerDependencies:
       - encoding
+
+  openapi3-ts@4.4.0:
+    dependencies:
+      yaml: 2.6.1
 
   option@0.2.4: {}
 
