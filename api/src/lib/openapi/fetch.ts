@@ -52,7 +52,7 @@ async function cachedSpecFetch(
 
     // Update cache
     specResponseCache.set(url, {
-      data,
+      data: data as OpenApiSpec,
       timestamp: Date.now(),
     });
 
