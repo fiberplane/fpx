@@ -173,5 +173,5 @@ export type NewToken = typeof tokens.$inferInsert;
 export const aiRequestLogs = sqliteTable("ai_request_logs", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   log: text("log", { mode: "json" }).notNull(),
-  createdAt: timestamps.createdAt
+  createdAt: timestamps.createdAt,
 });
