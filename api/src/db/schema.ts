@@ -148,8 +148,12 @@ export const settings = sqliteTable("settings", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   key: text("key").notNull().unique(),
   value: text("value").notNull().default(""),
-  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
 });
 
 export type Setting = typeof settings.$inferSelect;
@@ -160,8 +164,12 @@ export const tokens = sqliteTable("tokens", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   value: text("value").notNull().unique(),
   expiresAt: text("expires_at"),
-  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
 });
 
 export type Token = typeof tokens.$inferSelect;
@@ -171,5 +179,7 @@ export type NewToken = typeof tokens.$inferInsert;
 export const aiRequestLogs = sqliteTable("ai_request_logs", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   log: text("log", { mode: "json" }).notNull(),
-  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
 });
