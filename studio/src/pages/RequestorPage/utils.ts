@@ -16,21 +16,26 @@ export function sortProxiedRequestResponsesDescending(
   a: ProxiedRequestResponse,
   b: ProxiedRequestResponse,
 ) {
-  const aLatestTimestamp = a.app_requests?.updatedAt;
-  const bLatestTimestamp = b.app_requests?.updatedAt;
+  try {
+    const aLatestTimestamp = a.app_requests?.updatedAt;
+    const bLatestTimestamp = b.app_requests?.updatedAt;
 
-  // Handle potential null/undefined values
-  if (!aLatestTimestamp) {
-    return 1;
+    // Handle potential null/undefined values
+    if (!aLatestTimestamp) {
+      return 1;
+    }
+    if (!bLatestTimestamp) {
+      return -1;
+    }
+
+    const aDate = new Date(normalizeTimestamp(aLatestTimestamp));
+    const bDate = new Date(normalizeTimestamp(bLatestTimestamp));
+
+    return bDate.getTime() - aDate.getTime();
+  } catch (e) {
+    console.error("Error sorting ProxiedRequestResponses", e);
+    return 0;
   }
-  if (!bLatestTimestamp) {
-    return -1;
-  }
-
-  const aDate = new Date(normalizeTimestamp(aLatestTimestamp));
-  const bDate = new Date(normalizeTimestamp(bLatestTimestamp));
-
-  return bDate.getTime() - aDate.getTime();
 }
 
 /**
