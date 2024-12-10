@@ -40,17 +40,12 @@ export function AddRouteForm(props: Props) {
   const onInvalid: SubmitErrorHandler<AddRouteFormData> = useHandler(
     (errors) => {
       console.log("errors", errors);
-      // const value = errors.root?.message ? [errors.root?.message] : errors.routes?.message ? [errors.routes.message] : [];
       setRoutesErrors(["Select at least one route."]);
-      // console.log('errors', errors)
     },
   );
 
   const [routesErrors, setRoutesErrors] = useState<Array<string>>([]);
-  // console.log("routes", routes, isLoading);
   const onSubmit: SubmitHandler<AddRouteFormData> = async (formData) => {
-    // if (formData.routes.length) {
-    console.log(formData.routes);
     await Promise.all(
       formData.routes.map((id) =>
         addAppRoute({
@@ -116,5 +111,3 @@ export function AddRouteForm(props: Props) {
     </div>
   );
 }
-
-// function AddRouteItem(props: Route)

@@ -142,28 +142,6 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     overrideTraceId ??
     mostRecentProxiedRequestResponseForRoute?.app_responses?.traceId;
 
-  // const { setActiveHistoryResponseTraceId, activeHistoryResponseTraceId } =
-  //   useRequestorStore(
-  //     // "setActiveHistoryResponseTraceId",
-  //     // "activeHistoryResponseTraceId",
-  //   );
-  // const navigate = useNavigate();
-
-  // useEffect(() => {
-  //   if (traceId
-  //     // && traceId !== activeHistoryResponseTraceId
-  //     ) {
-  //     // setActiveHistoryResponseTraceId(traceId);
-  //     navigate(generateNavigation(traceId), { replace: true });
-  //   }
-  // }, [
-  //   traceId,
-  //   activeHistoryResponseTraceId,
-  //   generateNavigation,
-  //   navigate,
-  //   setActiveHistoryResponseTraceId,
-  // ]);
-
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
     useMakeProxiedRequest();
 

@@ -1,14 +1,14 @@
 import { cn } from "@/utils";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { VariantProps } from "class-variance-authority";
-import { useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { Button, type buttonVariants } from "./button";
 import { DialogContent, DialogTitle } from "./dialog";
 
 type ConfirmationDialogProps = {
-  title: string;
+  title: ReactNode;
   className?: string;
-  description: string;
+  description: ReactNode;
   confirmText?: string;
   cancelText?: string;
   onConfirm: () => void;

@@ -42,7 +42,6 @@ export function useRequestorSubmitHandler({
   );
 
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();
-  // const { activeHistoryResponseTraceId } = useRequestorStore();
   const activeHistoryResponseTraceId = useActiveTraceId();
   // NOTE - We make the submit handler optional to make it easier to call this as a standalone function
   return useHandler((e?: React.FormEvent<HTMLFormElement>) => {
@@ -55,19 +54,19 @@ export function useRequestorSubmitHandler({
     const modifiedHeaders = [
       contentTypeHeader
         ? {
-            key: "Content-Type",
-            value: contentTypeHeader,
-            enabled: true,
-            id: "fpx-content-type",
-          }
+          key: "Content-Type",
+          value: contentTypeHeader,
+          enabled: true,
+          id: "fpx-content-type",
+        }
         : null,
       contentLength !== null
         ? {
-            key: "Content-Length",
-            value: contentLength,
-            enabled: true,
-            id: "fpx-content-length",
-          }
+          key: "Content-Length",
+          value: contentLength,
+          enabled: true,
+          id: "fpx-content-length",
+        }
         : null,
       ...requestHeaders,
     ].filter(

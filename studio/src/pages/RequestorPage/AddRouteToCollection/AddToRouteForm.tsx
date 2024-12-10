@@ -3,7 +3,6 @@ import { useStudioStore } from "../store";
 import { AddToRouteFormItem } from "./AddToRouteFormItem";
 
 type Props = {
-  // collectionId: string;
   onSuccess: () => void;
 };
 

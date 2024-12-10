@@ -15,7 +15,6 @@ import { type NameFormData, NamingRouteForm } from "../NamingRouteForm";
 import { useStudioStore } from "../store";
 
 export function AddToRouteFormItem(props: {
-  // collection: Collection;
   collectionId: number;
   name: string;
   onSuccess: () => void;

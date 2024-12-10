@@ -17,12 +17,10 @@ export function useMostRecentProxiedRequestResponse(
   const {
     path,
     method,
-    //  activeHistoryResponseTraceId,
     sessionHistory,
   } = useStudioStore(
     "path",
     "method",
-    // "activeHistoryResponseTraceId",
     "sessionHistory",
   );
 

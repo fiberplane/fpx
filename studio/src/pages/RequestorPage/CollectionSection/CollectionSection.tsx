@@ -16,8 +16,8 @@ import { AddRoute } from "../AddRoute";
 import { useStudioStore } from "../store";
 import { BACKGROUND_LAYER } from "../styles";
 import { CollectionItemListItem } from "./CollectionItemListItem";
-import { EditCollection } from "./EditCollection";
 import { EmptyCollectionItemsList } from "./EmptyCollectionItemsList";
+import { ManageCollection } from "./ManageCollection";
 
 export function CollectionSection() {
   const collectionId = useActiveCollectionId();
@@ -67,8 +67,7 @@ export function CollectionSection() {
           <div className="grid grid-cols-[1fr_auto] pe-2 gap-4 items-center">
             <h4 className="flex gap-2">
               <span>{collection.name}</span>
-
-              <EditCollection
+              <ManageCollection
                 name={collection.name}
                 collectionId={collectionId}
               />

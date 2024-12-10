@@ -24,16 +24,8 @@ import {
   type CollectionFormData,
 } from "../../../CollectionForm";
 
-// type Props = {
-//   // selectCollection: (group: Collection) => void;
-// };
-
 export function CreateCollection(
-  // props: Props
 ) {
-  // const {
-  //   //  selectCollection
-  // } = props;
   useHotkeys("c", (e) => {
     e.preventDefault();
     setOpen(true);
@@ -44,7 +36,6 @@ export function CreateCollection(
   const [searchParams] = useSearchParams();
   const handleSuccess = useHandler((collection: Collection) => {
     setOpen(false);
-    // selectCollection(collection);
     navigate({
       pathname: generatePath(COLLECTION_ROUTE, {
         collectionId: collection.id.toString(),

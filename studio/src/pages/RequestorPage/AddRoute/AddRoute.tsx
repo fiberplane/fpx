@@ -16,14 +16,9 @@ export function AddRoute(props: Props) {
   const { collectionId } = props;
 
   const [open, setOpen] = useState(false);
-  const handleSuccess = useHandler(
-    (
-      // collection: Group
-    ) => {
-      setOpen(false);
-      // selectGroup(collection);
-    },
-  );
+  const handleSuccess = useHandler(() => {
+    setOpen(false);
+  });
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

@@ -58,7 +58,13 @@ export function CollectionItemListItem({
       </Link>
       <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <ConfirmationDialog
-          title={`Delete "${name}?" from collection?`}
+          title={
+            <>
+              Delete{" "}
+              <span className="text-muted-foreground">{name || "no name"}</span>{" "}
+              from collection?
+            </>
+          }
           description="This action cannot be undone."
           confirmText="Delete"
           onConfirm={() => {
