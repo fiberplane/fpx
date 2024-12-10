@@ -3,13 +3,7 @@
   "description": "a telegram bot",
   "scripts": {
     "dev": "wrangler dev src/index.ts",
-    "deploy": "wrangler deploy --minify src/index.ts",
-    "db:touch": "wrangler d1 execute honc-telegram-bot --local --command='SELECT 1'",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "wrangler d1 migrations apply honc-telegram-bot --local",
-    "db:migrate:prod": "ENVIROMENT=production drizzle-kit migrate",
-    "db:setup": "npm run db:touch && npm run db:generate && npm run db:migrate",
-    "db:studio": "drizzle-kit studio"
+    "deploy": "wrangler deploy --minify src/index.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.36.4",
