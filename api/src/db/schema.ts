@@ -4,6 +4,15 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
+const timestamps = {
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+};
+
 export const appRoutes = sqliteTable("app_routes", {
   id: integer("id", { mode: "number" }).primaryKey(),
   path: text("path", { mode: "text" }),
@@ -63,12 +72,7 @@ export const appRequests = sqliteTable("app_requests", {
   requestBody: text("request_body", { mode: "json" }),
   // The hono route corresponding to this request
   requestRoute: text("request_route"),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
-  updatedAt: text("updated_at")
-    .notNull()
-    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  ...timestamps,
   // responseId: integer("response_id").references(() => appResponses.id),
 });
 
@@ -86,13 +90,8 @@ export const appResponses = sqliteTable("app_responses", {
     [key: string]: string;
   }>(),
   isFailure: integer("is_failure", { mode: "boolean" }).default(false),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
-  updatedAt: text("updated_at")
-    .notNull()
-    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
   requestId: integer("request_id").references(() => appRequests.id),
+  ...timestamps,
 });
 
 export const appResponseRelations = relations(appResponses, ({ one }) => ({
@@ -164,12 +163,7 @@ export const tokens = sqliteTable("tokens", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   value: text("value").notNull().unique(),
   expiresAt: text("expires_at"),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
-  updatedAt: text("updated_at")
-    .notNull()
-    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  ...timestamps,
 });
 
 export type Token = typeof tokens.$inferSelect;
@@ -179,7 +173,5 @@ export type NewToken = typeof tokens.$inferInsert;
 export const aiRequestLogs = sqliteTable("ai_request_logs", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   log: text("log", { mode: "json" }).notNull(),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  createdAt: timestamps.createdAt
 });
