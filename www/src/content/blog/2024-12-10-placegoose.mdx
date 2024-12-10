@@ -1,0 +1,89 @@
+---
+title: "Placegoose: Building Data APIs with HONC"
+description: "Exploring the HONC stack for building lightweight data APIs."
+slug: placegoose-guide
+date: 2024-12-10
+author: Fiberplane Team
+tags:
+  - hono
+  - drizzle
+  - zod
+  - honc
+---
+
+import { LinkCard } from "@astrojs/starlight/components";
+
+Building data APIs can be a daunting task, especially when you're just getting started with a new framework. Enter HONC, a stack designed for lightweight data APIs on the edge. HONC stands for Hono, Drizzle ORM, Neon DB, and Cloudflare, and it offers a robust foundation for developing moderately complex backends.
+
+## Why HONC?
+
+Hono is a fast and flexible framework that simplifies API development. It integrates seamlessly with Drizzle ORM for type-safe database management, making it easier to handle migrations and schema definitions. The HONC stack is particularly well-suited for projects that require performance and type safety.
+
+## Getting Started with HONC
+
+To kickstart your project, you can use the `create-honc-app` CLI to set up a new project with a Neon, D1, or Supabase database. Drizzle ORM plays a crucial role in managing database interactions, ensuring that your type definitions are consistent across the stack.
+
+```sh
+npm create honc-app@latest
+npm i
+```
+
+## Defining Your Database Schema
+
+Drizzle ORM allows you to define your database schema in a type-safe manner. Here's an example of how you can define tables and types for a mock-data API:
+
+```typescript
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+const metadata = {
+  id: integer({ mode: "number" }).primaryKey(),
+};
+
+export const gaggles = sqliteTable("gaggles", {
+  ...metadata,
+});
+
+export const geese = sqliteTable("geese", {
+  ...metadata,
+  gaggleId: integer({ mode: "number" }).references(() => gaggles.id),
+});
+```
+
+## Validating and Handling Requests
+
+Hono's modular routing and middleware support make it easy to define and validate API endpoints. You can use Zod schemas to ensure that incoming requests meet your application's requirements.
+
+```typescript
+import { Hono, type Context } from "hono";
+import { cors } from "hono/cors";
+
+const app = new Hono();
+app.use("*", cors());
+
+app.get("/gaggles/:id", (c: Context) => {
+  return c.text("Not yet implemented", 418);
+});
+```
+
+## Error Handling and Rate Limiting
+
+Error handling is crucial for any API. Hono provides a simple way to define global error handlers, ensuring that your application responds gracefully to unexpected issues.
+
+```typescript
+app.onError((error, c) => {
+  console.error(error);
+  return c.text("Something went wrong!", 500);
+});
+```
+
+Rate limiting is another important aspect of API security. With Cloudflare's rate limiting bindings, you can easily control access to your API and prevent abuse.
+
+## Conclusion
+
+The HONC stack offers a powerful yet flexible framework for building data APIs. Its type-safe approach and seamless integration with modern tools make it an excellent choice for developers looking to build performant and maintainable applications.
+
+<LinkCard
+  title="Explore More with HONC"
+  description="Learn more about building data APIs with the HONC stack."
+  href="https://dev.to/fiberplane/placegoose-building-data-apis-with-honc-id8"
+/> 
