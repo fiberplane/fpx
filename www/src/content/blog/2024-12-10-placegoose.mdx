@@ -3,34 +3,75 @@ title: "Placegoose: Building Data APIs with HONC"
 description: "Exploring the HONC stack for building lightweight data APIs."
 slug: placegoose-guide
 date: 2024-12-10
-author: Fiberplane Team
+author: Aristo Spanos
 tags:
   - hono
   - drizzle
-  - zod
+  - api
   - honc
 ---
 
 import { LinkCard } from "@astrojs/starlight/components";
 
-Building data APIs can be a daunting task, especially when you're just getting started with a new framework. Enter HONC, a stack designed for lightweight data APIs on the edge. HONC stands for Hono, Drizzle ORM, Neon DB, and Cloudflare, and it offers a robust foundation for developing moderately complex backends.
+I was really excited when I came across Hono. I think the API is elegant in its simplicity, and I’ve found it—in my admittedly limited experience—to be a sturdy foundation for moderately complicated backends.
 
-## Why HONC?
+In short, Hono is fast, flexible, and honestly fun to work with. Templates will get you started in a dozen different runtimes and frameworks, and there are a multitude of plugins and middleware to facilitate integration with third-party tools.
 
-Hono is a fast and flexible framework that simplifies API development. It integrates seamlessly with Drizzle ORM for type-safe database management, making it easier to handle migrations and schema definitions. The HONC stack is particularly well-suited for projects that require performance and type safety.
+## How do all of these pieces fit together?
 
-## Getting Started with HONC
+While project constraints and implementation details will vary, most data APIs need to satisfy three key requirements:
 
-To kickstart your project, you can use the `create-honc-app` CLI to set up a new project with a Neon, D1, or Supabase database. Drizzle ORM plays a crucial role in managing database interactions, ensuring that your type definitions are consistent across the stack.
+- A way to persist queryable data, typically a database,
+- To define and regulate how data moves between application layers,
+- And to safeguard against malicious activity and user error.
+
+When you’re just getting started with a framework, ostensibly simple steps like configuring the database or spinning up a validation layer can become grueling hurdles to adoption. Enter HONC, a stack made for lightweight data APIs on the edge.
+
+HONC stands for Hono, Drizzle ORM, Neon DB, and Cloud(flare). It’s a collection of technologies dedicated to performance and type-safety, developed by Fiberplane as a template for non-trivial Hono APIs.
+
+## 0 to 60 with the HONC app
+
+HONC is more of a design philosophy than a rigid doctrine. You can use the `create-honc-app` CLI to download a project with either a Neon, D1, or Supabase DB. Drizzle plays a pivotal role by managing seeding and migrations, and decoupling the stack from the database. As the source of truth for (DB) type definitions, it can also be the foundation of your type system and runtime validation.
+
+This gets us from 0 to 60, but what about the 80/20, or at least 70/30? Implementation details like validation layers and rate limiting are too contingent on business requirements to usefully include in a template, but when you pick up a library for the first time, having robust examples is a game-changer.
+
+## Mocking a (moderately) advanced data API
+
+To simulate what happens when a design philosophy collides with project constraints, Fiberplane asked me to build a simple mock-data API called Placegoose (think JSONPlaceholder) using the HONC stack.
+
+Fiberplane is an API testing and debugging tool—like the Inspector panel in your browser—that we’ll be using to inspect requests, logs, and database calls.
+
+A mock-data API’s functional requirements are robust enough to involve all key aspects of API development, but not so complicated as to be distracting. At a bare minimum, they serve relational data via multiple application layers, but they can be usefully enhanced with features like validation and rate limiting.
+
+To give ourselves some concrete parameters, we settled on a handful of features that most production-ready data APIs must implement:
+
+- A database with an ORM or custom adapter layer
+- Validation and business logic
+- Error handling and rate limiting
+- A lightweight markdown-based frontend for docs
+
+This is the first article in a series that will cover 1) building the app, 2) deploying to production, and 3) rendering a front end. We hope the series has something to offer more- and less-experienced devs alike, but we’ll be focused on patterns, helpers, and gotchas, so we won’t be explaining basic data API or TypeScript patterns.
+
+## Getting up and running with HONC
+
+To get started, we’ll download the HONC D1 template and install dependencies. The project doesn’t need any additional configuration to run locally.
 
 ```sh
 npm create honc-app@latest
 npm i
 ```
 
-## Defining Your Database Schema
+In order to connect to a remote DB, you’ll need to update the D1 section in your `wrangler.toml` (the Cloudflare Worker config file). We’ll cover this in detail in the next article. For now, take a moment to get acquainted with the config, and update the database name and ID to match your project.
 
-Drizzle ORM allows you to define your database schema in a type-safe manner. Here's an example of how you can define tables and types for a mock-data API:
+```toml
+[[d1_databases]]
+binding = "DB"
+database_name = "placegoose-d1"
+# Can be anything for local development
+# Must be updated when connecting to a remote DB
+database_id = "local-placegoose-d1"
+migrations_dir = "drizzle/migrations"
+```
 
 ```typescript
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
