@@ -6,62 +6,37 @@ import { DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useShake } from "@/hooks";
-import { useAddItemToCollection } from "@/queries";
 import { cn } from "@/utils";
-import {
-  type ExtraRequestParams,
-  ExtraRequestParamsSchema,
-} from "@fiberplane/fpx-types";
+import { ExtraRequestParamsSchema } from "@fiberplane/fpx-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DialogDescription } from "@radix-ui/react-dialog";
+import { useEffect } from "react";
 
 type Props = {
-  collectionId: string;
-  routeId: number;
-  extraParams: ExtraRequestParams;
-  onSuccess: (id: number) => void;
+  initialData?: Partial<NameFormData>;
+  isPending: boolean;
+  error: Error | null;
+  onSubmit: SubmitHandler<NameFormData>;
 };
 
-const NameSchema = ExtraRequestParamsSchema.pick({ name: true });
-type NameFormData = z.infer<typeof NameSchema>;
+export const NameSchema = ExtraRequestParamsSchema.pick({ name: true });
+export type NameFormData = z.infer<typeof NameSchema>;
 
 export function NamingRouteForm(props: Props) {
-  const { onSuccess, collectionId: id, extraParams, routeId } = props;
-  const {
-    mutate: addToCollection,
-    failureReason: error,
-    isPending,
-  } = useAddItemToCollection(id);
-
-  // const {
-  // mutate: addCollection,
-  // failureReason: error,
-  // isPending,
-  // } = useAddCollection();
-  const onSubmit: SubmitHandler<NameFormData> = ({ name }) => {
-    addToCollection(
-      {
-        routeId,
-        extraParams: {
-          ...extraParams,
-          name,
-        },
-      },
-      {
-        onSuccess: (data) => {
-          onSuccess(data.id);
-        },
-        onError: () => {
-          triggerShake();
-        },
-      },
-    );
-  };
-
+  const { isPending, error, onSubmit } = props;
   const { register, handleSubmit } = useForm<NameFormData>({
     resolver: zodResolver(NameSchema),
+    defaultValues: props.initialData,
   });
   const { shakeClassName, triggerShake } = useShake();
+
+  useEffect(() => {
+    if (isPending || !error) {
+      return;
+    }
+
+    triggerShake();
+  }, [error, triggerShake, isPending]);
 
   return (
     <form className="grid gap-4" onSubmit={handleSubmit(onSubmit)}>
@@ -71,7 +46,7 @@ export function NamingRouteForm(props: Props) {
         </DialogTitle>
         <DialogDescription>
           You can (optionally) customize the name this specific combination of
-          route &amp; parameters;
+          route and parameters;
         </DialogDescription>
         {error && (
           <p className="text-sm text-destructive-foreground">{error.message}</p>

@@ -91,6 +91,7 @@ export const RequestorPage = () => {
         "lg:gap-4",
       )}
     >
+      <MainTopSection />
       <ResizablePanelGroup
         direction="horizontal"
         id="main-layout"
@@ -117,7 +118,6 @@ export const RequestorPage = () => {
         )}
         <ResizablePanel id="main" order={1}>
           <div className="h-full flex flex-col min-h-0">
-            <MainTopSection />
             <Routes>
               <Route path={COLLECTION_ROUTE} element={<CollectionSection />} />
               <Route

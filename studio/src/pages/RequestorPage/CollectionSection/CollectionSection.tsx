@@ -1,26 +1,21 @@
 import { Button } from "@/components/ui/button";
-import { COLLECTION_WITH_ROUTE_ID, ROOT_ROUTE } from "@/constants";
+import { ROOT_ROUTE } from "@/constants";
 import { useActiveCollectionId } from "@/hooks/useActiveCollectionId";
 import { useCollections } from "@/queries";
-import {
-  useDeleteCollection,
-  useDeleteItemFromCollection,
-} from "@/queries/collections";
+import { useDeleteCollection } from "@/queries/collections";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
 import {
-  Link,
   type To,
   generatePath,
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
 import { AddRoute } from "../AddRoute";
-import { Method } from "../RequestorHistory";
 import { useStudioStore } from "../store";
 import { BACKGROUND_LAYER } from "../styles";
-import type { ProbedRoute } from "../types";
+import { CollectionItemListItem } from "./CollectionItemListItem";
 import { EditCollection } from "./EditCollection";
 import { EmptyCollectionItemsList } from "./EmptyCollectionItemsList";
 
@@ -69,7 +64,7 @@ export function CollectionSection() {
     >
       <div className="p-4 grid gap-6">
         <div className="grid gap-2">
-          <div className="grid grid-cols-[1fr_auto_auto] gap-4 items-center">
+          <div className="grid grid-cols-[1fr_auto] pe-2 gap-4 items-center">
             <h4 className="flex gap-2">
               <span>{collection.name}</span>
 
@@ -80,7 +75,6 @@ export function CollectionSection() {
             </h4>
             <Button
               variant={"destructive"}
-              type="button"
               size="icon-xs"
               onClick={() =>
                 deleteCollection(undefined, {
@@ -97,7 +91,7 @@ export function CollectionSection() {
         </div>
         <div className="border rounded border-muted grid gap-2 p-2">
           <div className="grid grid-cols-[1fr_auto] border-b mb-2 pb-2">
-            <h5 className="text-muted-foreground">Current items:</h5>
+            <h5 className="text-muted-foreground">Items:</h5>
             <AddRoute collectionId={collectionId} />
           </div>
           {collection.collectionItems.length === 0 ? (
@@ -118,7 +112,6 @@ export function CollectionSection() {
                       name={item.name ?? undefined}
                       collectionId={collectionId}
                       route={route}
-                      searchParams={searchParams}
                     />
                   </li>
                 );
@@ -127,50 +120,6 @@ export function CollectionSection() {
           )}
         </div>
       </div>
-    </div>
-  );
-}
-function CollectionItemListItem({
-  itemId,
-  name,
-  collectionId,
-  route,
-  searchParams,
-}: {
-  itemId: number;
-  name: string | undefined;
-  route: ProbedRoute;
-  collectionId: string;
-  searchParams: URLSearchParams;
-}) {
-  const { mutate: deleteItem } = useDeleteItemFromCollection(collectionId);
-
-  return (
-    <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
-      <Link
-        to={{
-          pathname: generatePath(COLLECTION_WITH_ROUTE_ID, {
-            collectionId: collectionId,
-            entryId: itemId.toString(),
-          }),
-          search: searchParams.toString(),
-        }}
-        className="grid gap-2 px-2 rounded-md grid-cols-[4rem_1fr_1fr] hover:bg-muted"
-      >
-        <Method method={route.method} />
-        <span>{route.path}</span>
-        <span>{name}</span>
-      </Link>
-      <Button
-        variant={"destructive"}
-        type="button"
-        size="icon-xs"
-        onClick={() => {
-          deleteItem({ itemId });
-        }}
-      >
-        <Icon icon="lucide:trash-2" className="h-3 w-3" />
-      </Button>
     </div>
   );
 }

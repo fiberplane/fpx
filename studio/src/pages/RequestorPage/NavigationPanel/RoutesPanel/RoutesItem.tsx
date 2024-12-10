@@ -1,6 +1,8 @@
+import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog";
+import { Dialog } from "@/components/ui/dialog";
 import { cn, getHttpMethodTextColor } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useDeleteRoute } from "../../queries";
 import { type ProbedRoute, isWsRequest } from "../../types";
 
@@ -44,6 +46,8 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
     }
   }, [isSelected]);
 
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   return (
     <button
       ref={buttonRef}
@@ -86,10 +90,25 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
             className="w-3.5 h-3.5 cursor-pointer pointer-events-none group-hover:pointer-events-auto invisible group-hover:visible"
             onClick={(e) => {
               e.stopPropagation();
-              deleteRoute({ path: route.path, method: route.method });
+              setConfirmDelete(true);
+              // deleteRoute({ path: route.path, method: route.method });
             }}
           />
         </div>
+      )}
+      {canDeleteRoute && (
+        <Dialog onOpenChange={setConfirmDelete} open={confirmDelete}>
+          <ConfirmationDialog
+            title="Delete custom route?"
+            description="This action cannot be undone."
+            confirmText="Delete"
+            onConfirm={() => {
+              deleteRoute({ path: route.path, method: route.method });
+            }}
+            onCancel={() => setConfirmDelete(false)}
+            confirmButtonVariant={"destructive"}
+          />
+        </Dialog>
       )}
     </button>
   );

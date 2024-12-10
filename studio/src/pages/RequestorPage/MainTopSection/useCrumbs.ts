@@ -63,16 +63,14 @@ export function useCrumbs(): Crumb[] {
     }
   }
 
-  if (traceId) {
-    crumbs.push({ label: "Route" });
-  } else if (entryId && collectionId) {
+  if (entryId && collectionId) {
     const collection = collections?.find((item) => item.id === collectionId);
     const collectionItem = collection?.collectionItems.find(
       (item) => item.id.toString() === entryId,
     );
     const label = collectionItem?.name || "Route";
     crumbs.push({ label });
-  } else if (activeRoute) {
+  } else if ((activeRoute && !collectionId) || traceId) {
     crumbs.push({ label: "Route" });
   }
 

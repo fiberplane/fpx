@@ -269,6 +269,7 @@ export type NullableExtraRequestParams = Simplify<
   Nullable<
     Pick<
       ExtraRequestParams,
+      | "name"
       | "requestBody"
       | "requestHeaders"
       | "requestQueryParams"
