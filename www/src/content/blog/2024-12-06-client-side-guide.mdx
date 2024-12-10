@@ -34,13 +34,12 @@ in your browser — that's because we're not shipping any JavaScript to the
 browser!
 
 <Aside>
-We'll achieve this with client-side hydration. The app gets rendered server-side
-first, and then the client-side script takes over. The
-[React docs](https://react.dev/reference/react-dom/client/hydrateRoot#hydrating-server-rendered-html)
-describe it well:
-> [It] will “attach” your components’ logic to the initial generated HTML from the
-> server. Hydration turns the initial HTML snapshot from the server into a fully
-> interactive app that runs in the browser.
+  We'll achieve this with client-side hydration. The app gets rendered
+  server-side first, and then the client-side script takes over. The [React
+  docs](https://react.dev/reference/react-dom/client/hydrateRoot#hydrating-server-rendered-html)
+  describe it well: > [It] will “attach” your components’ logic to the initial
+  generated HTML from the > server. Hydration turns the initial HTML snapshot
+  from the server into a fully > interactive app that runs in the browser.
 </Aside>
 
 In this guide we'll go over how to build an Hono app with client-side logic,
@@ -77,6 +76,7 @@ client-side logic and one for the server-side logic.
       <a href="https://github.com/fiberplane/fpx/issues/new">opening an issue
       </a> on GitHub!
     </p>
+
   </video>
 
   <figcaption>
@@ -186,8 +186,8 @@ hydrateRoot(
 <Aside>
   We're _hydrating_ the app client-side as opposed to _rendering_ it; the static
   HTML is rendered server-side by Hono. If you're interested in client-side
-  rendering only, check out the
-  [example on GitHub](https://github.com/oscarvz/cf-workers-hono-client-side).
+  rendering only, check out the [example on
+  GitHub](https://github.com/oscarvz/cf-workers-hono-client-side).
 </Aside>
 
 Your code editor might give you a hint that `document` is not defined. Given we
@@ -198,10 +198,7 @@ browser environment:
 {
   "compilerOptions": {
     //...
-    "lib": [
-      "ESNext",
-      "DOM"
-    ],
+    "lib": ["ESNext", "DOM"]
     // ...
   }
 }
@@ -266,19 +263,19 @@ npm install -D @hono/vite-build @hono/vite-dev-server
 
 <TabItem label="yarn">
 
-  ```sh
-  yarn add vite
-  yarn add -D @hono/vite-build @hono/vite-dev-server
-  ```
+```sh
+yarn add vite
+yarn add -D @hono/vite-build @hono/vite-dev-server
+```
 
 </TabItem>
 
 <TabItem label="pnpm">
 
-  ```sh
-  pnpm add vite
-  pnpm add -D @hono/vite-build @hono/vite-dev-server
-  ```
+```sh
+pnpm add vite
+pnpm add -D @hono/vite-build @hono/vite-dev-server
+```
 
 </TabItem>
 
@@ -308,8 +305,8 @@ export default defineConfig(({ mode }) => {
         rollupOptions: {
           input: "./src/client/index.tsx",
           output: {
-            entryFileNames: "assets/[name].js",
-          },
+            entryFileNames: "assets/[name].js"
+          }
         },
         outDir: "./public"
       }
@@ -328,8 +325,8 @@ export default defineConfig(({ mode }) => {
 ```
 
 <Aside>
-For the client build, the `outDir` is set to `./public`. This is the directory
-where the Worker will find the client-side script.
+  For the client build, the `outDir` is set to `./public`. This is the directory
+  where the Worker will find the client-side script.
 </Aside>
 
 Now we need to adjust the `package.json` scripts to facilitate the new build
@@ -355,6 +352,7 @@ steps. Additionally, we set the type to `module` to allow for ESM imports:
 </Aside>
 
 #### Running the app
+
 If you run the app now with the `dev` script, you'll see the counter component
 rendered server-side. The client-side script hasn't been loaded yet, so the
 counter component won't work.
@@ -380,7 +378,7 @@ yarn dev
 
 ```sh
 pnpm dev
-``` 
+```
 
 </TabItem>
 
@@ -411,6 +409,7 @@ bun dev
     Alternatively, let us know by
     <a href="https://github.com/fiberplane/fpx/issues/new">opening an issue
     </a> on GitHub!
+
   </p>
 </video>
 
@@ -533,6 +532,7 @@ bun dev
     Alternatively, let us know by
     <a href="https://github.com/fiberplane/fpx/issues/new">opening an issue
     </a> on GitHub!
+
   </p>
 </video>
 
@@ -565,9 +565,9 @@ assets = { directory = "./public/" }
 ```
 
 <Aside>
-Note that the `wrangler deploy` has the `--no-bundle` flag. The build is taken
-care of by the Vite build step. Wrangler's task is merely to deploy it to the
-Cloudflare Workers platform.
+  Note that the `wrangler deploy` has the `--no-bundle` flag. The build is taken
+  care of by the Vite build step. Wrangler's task is merely to deploy it to the
+  Cloudflare Workers platform.
 </Aside>
 
 ### Deploy your app
@@ -615,7 +615,8 @@ extend your app with more complex client-side features, such as fetching data
 from an API route, adding a form to your project, or even building a full SPA.
 
 <Card title="GitHub repo" icon="github">
-Check out the [GitHub example repo](https://github.com/oscarvz/cf-workers-hono-client-side)
-if you'd like to see the full application code. It has a few additional
-features, like a simple Hono RPC implementation, and a SPA example.
+  Check out the [GitHub example
+  repo](https://github.com/oscarvz/cf-workers-hono-client-side) if you'd like to
+  see the full application code. It has a few additional features, like a simple
+  Hono RPC implementation, and a SPA example.
 </Card>

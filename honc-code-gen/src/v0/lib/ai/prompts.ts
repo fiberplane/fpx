@@ -66,6 +66,8 @@ Here is the current seed file:
 {seedFile}
 </file>
 
+Make sure to use the existing seed package drizzle-seed to seed the database. It is important: it generates deterministic but varied data
+
 For the seed data file, a few tips:
 
 - Import the schema like this: \`import * as schema from "./src/db/schema"\`.
@@ -73,6 +75,8 @@ For the seed data file, a few tips:
 - If you need to load the database url from an env variable, use \`process.env.DATABASE_URL\`
 - Preserve comments when possible
 - Add your own comments to explain your thought process and choices to future developers
+
+Most important: do NOT make up fields or properties that don't exist in the schema.
 
 ===
 
@@ -162,7 +166,7 @@ This is the description of the app I want to build:
 
 Please adapt the files I provided to help me build the app I described.
 
-This is imporant to my career.
+This is important to my career.
 
 `.trim(),
 );
