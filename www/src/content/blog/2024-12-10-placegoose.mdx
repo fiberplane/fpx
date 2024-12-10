@@ -126,7 +126,7 @@ export const geese = sqliteTable("geese", {
 });
 ```
 
-Tables also directly expose Insert and Select types inferred from the rules you’ve set for columns and keys. 
+Tables also directly expose Insert and Select types inferred from the rules you’ve set for columns and keys.
 _Note that the SQL methods and features available (like enums) are syntax-specific._
 
 ```typescript title="src/db/schema.ts"
@@ -317,7 +317,7 @@ I chose to export all the Zod schemas from a single file in the `db` directory, 
 
 Since the app is meant to serve mock data, a more defined database validation layer wasn't necessary, but we do want to validate incoming payloads.
 
-The Insert schemas we generated from our tables are fine for the DB, but we don't want to allow users to specify ID values themselves, as this can quickly get messy. We also want to prevent users from updating which goose honked a honk, because what kind of world would that be! 
+The Insert schemas we generated from our tables are fine for the DB, but we don't want to allow users to specify ID values themselves, as this can quickly get messy. We also want to prevent users from updating which goose honked a honk, because what kind of world would that be!
 To deal with this, we can create an additional validation layer for request payloads in a new `dtos` directory. DTOs (Data Transfer Objects) are just logic that regulates how data moves across layers.
 
 ```typescript title="src/dtos/index.ts"
@@ -395,11 +395,12 @@ export function makeBodyValidator<T extends Zod.AnyZodObject>(schema: T) {
 ```
 
 I also wrote a simple function to [format Zod error data](https://zod.dev/?id=error-handling) so that it would be more useful for consumers. In retrospect, I should have called this in the body validator factory, and included the results in a [custom error response](https://hono.dev/docs/api/exception#throw-httpexception).
-I didn't realize you could inject responses like this at the time though, and I chose not to extend Hono's HTTPException in the interest of simplicity. Instead, I threw to the global error handler we'll set up next.
+I didn't realize you could inject responses like this at the time though, and I chose not to extend Hono's `HTTPException` in the interest of simplicity. Instead, I threw to the global error handler we'll set up next.
 
 ## Handling the sad path
 
-Securing vulnerabilities and handling errors are critical components of API development, and we've already taken a few important steps: Drizzle lets us keep our type system slim, maintainable, and in sync with runtime validation, preventing typing bugs at compile-time. We then use Hono's validator middleware to enforce these data contracts at run-time, ensuring our handlers are working with valid data.
+Securing vulnerabilities and handling errors are critical components of API development, and we've already taken a few important steps: Drizzle lets us keep our type system slim, maintainable, and in sync with runtime validation, preventing typing bugs at compile-time.
+We then use Hono's `validator` middleware to enforce these data contracts at run-time, ensuring our handlers are working with valid data.
 
 ### Responding to errors gracefully
 
@@ -463,7 +464,7 @@ After configuring it, we would call the binding's limit method from a custom mid
 const { success } = await env.MY_RATE_LIMITER.limit({ key: "USER_ID" });
 ```
 
-In order to conform to the HTTP spec, rejected responses must include data (like the retry-after) header. Rather than implement the spec ourselves, we can lean on the rich ecosystem of third-party solutions that is beginning to emerge around Hono.
+In order to conform to the HTTP spec, rejected responses must include data related to the rate limit (like the `retry-after` header). Rather than implement the spec ourselves, we can lean on the rich ecosystem of third-party solutions that is beginning to emerge around Hono.
 
 We'll be using `hono-rate-limiter`, which is also compatible with other storage solutions (like Cloudflare KV and Redis). It manages all the rate limiting logic and storage for us, and formats responses to rejected requests appropriately. After installing, we only need to configure access to the binding and a key generation method.
 
