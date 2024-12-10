@@ -8,7 +8,6 @@ export function EmptyCollectionItemsList(props: { collectionId: string }) {
       <h4 className="flex items-center gap-3 justify-center text-base">
         <Icon icon="lucide:folder" />
         Empty collection
-        <Icon icon="lucide:folder" />
       </h4>
       <div className="flex max-w-64 flex-col gap-2 text-left">
         <p className="text-muted-foreground">Awesome, you can now:</p>

@@ -1,7 +1,8 @@
 import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog";
+import { buttonVariants } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { cn, getHttpMethodTextColor } from "@/utils";
-import { TrashIcon } from "@radix-ui/react-icons";
+import { Icon } from "@iconify/react";
 import { memo, useEffect, useRef, useState } from "react";
 import { useDeleteRoute } from "../../queries";
 import { type ProbedRoute, isWsRequest } from "../../types";
@@ -85,30 +86,35 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
         {route.path}
       </span>
       {canDeleteRoute && (
-        <div className="ml-auto flex items-center group">
-          <TrashIcon
-            className="w-3.5 h-3.5 cursor-pointer pointer-events-none group-hover:pointer-events-auto invisible group-hover:visible"
-            onClick={(e) => {
-              e.stopPropagation();
-              setConfirmDelete(true);
-              // deleteRoute({ path: route.path, method: route.method });
-            }}
-          />
-        </div>
-      )}
-      {canDeleteRoute && (
-        <Dialog onOpenChange={setConfirmDelete} open={confirmDelete}>
-          <ConfirmationDialog
-            title="Delete custom route?"
-            description="This action cannot be undone."
-            confirmText="Delete"
-            onConfirm={() => {
-              deleteRoute({ path: route.path, method: route.method });
-            }}
-            onCancel={() => setConfirmDelete(false)}
-            confirmButtonVariant={"destructive"}
-          />
-        </Dialog>
+        <>
+          <div className="ml-auto flex items-center group">
+            <Icon
+              icon="lucide:trash-2"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "icon-xs" }),
+                "w-3.5 h-3.5 cursor-pointer pointer-events-none group-hover:pointer-events-auto invisible group-hover:visible",
+              )}
+              onClick={(e) => {
+                e.stopPropagation();
+                setConfirmDelete(true);
+                // deleteRoute({ path: route.path, method: route.method });
+              }}
+            />
+          </div>
+          <Dialog onOpenChange={setConfirmDelete} open={confirmDelete}>
+            <ConfirmationDialog
+              className="max-w-screen-sm w-96"
+              title="Delete custom route?"
+              description="This action cannot be undone."
+              confirmText="Delete"
+              onConfirm={() => {
+                deleteRoute({ path: route.path, method: route.method });
+              }}
+              onCancel={() => setConfirmDelete(false)}
+              confirmButtonVariant={"destructive"}
+            />
+          </Dialog>
+        </>
       )}
     </button>
   );
