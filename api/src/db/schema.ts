@@ -86,8 +86,12 @@ export const appResponses = sqliteTable("app_responses", {
     [key: string]: string;
   }>(),
   isFailure: integer("is_failure", { mode: "boolean" }).default(false),
-  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
   requestId: integer("request_id").references(() => appRequests.id),
 });
 
@@ -134,45 +138,11 @@ export const appResponseInsertSchema = createInsertSchema(appResponses);
 export type AppResponse = z.infer<typeof appResponseSelectSchema>;
 export type NewAppResponse = z.infer<typeof appResponseInsertSchema>;
 
-// HELPFUL: https://orm.drizzle.team/docs/column-types/sqlite
-export const mizuLogs = sqliteTable("mizu_logs", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  level: text("level", { enum: ["error", "warning", "info", "debug"] }),
-  timestamp: text("timestamp"),
-  traceId: text("trace_id"),
-  service: text("service"),
-  message: text("message", { mode: "json" }),
-  ignored: integer("ignored", { mode: "boolean" }).default(false),
-  args: text("args", { mode: "json" }), // NOTE - Should only be present iff message is a string
-  callerLocation: text("caller_location", { mode: "json" }).$type<
-    z.infer<typeof CallerLocationSchema>
-  >(),
-  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-  matchingIssues: text("matching_issues", { mode: "json" }).$type<
-    number[] | null
-  >(),
-});
-
-const CallerLocationSchema = z.object({
-  file: z.string(),
-  line: z.string(),
-  column: z.string(),
-});
-
 export const otelSpans = sqliteTable("otel_spans", {
   inner: text("inner", { mode: "json" }).$type<OtelSpan>().notNull(),
   spanId: text("span_id").notNull(),
   traceId: text("trace_id").notNull(),
 });
-
-export const newMizuLogSchema = createInsertSchema(mizuLogs);
-export const mizuLogSchema = createSelectSchema(mizuLogs);
-
-// When you select a record
-export type MizuLog = typeof mizuLogs.$inferSelect; // return type when queried
-// When you create a record
-export type NewMizuLog = typeof mizuLogs.$inferInsert; // insert type
 
 export const settings = sqliteTable("settings", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
