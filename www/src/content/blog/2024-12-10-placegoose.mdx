@@ -77,16 +77,16 @@ migrations_dir = "drizzle/migrations"
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 const metadata = {
-  id: integer({ mode: "number" }).primaryKey(),
+  id: integer({ mode: "number" }).primaryKey()
 };
 
 export const gaggles = sqliteTable("gaggles", {
-  ...metadata,
+  ...metadata
 });
 
 export const geese = sqliteTable("geese", {
   ...metadata,
-  gaggleId: integer({ mode: "number" }).references(() => gaggles.id),
+  gaggleId: integer({ mode: "number" }).references(() => gaggles.id)
 });
 ```
 
@@ -127,4 +127,4 @@ The HONC stack offers a powerful yet flexible framework for building data APIs. 
   title="Explore More with HONC"
   description="Learn more about building data APIs with the HONC stack."
   href="https://dev.to/fiberplane/placegoose-building-data-apis-with-honc-id8"
-/> 
+/>{" "}
