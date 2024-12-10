@@ -6,9 +6,9 @@ import {
   useDeleteCollection,
   useDeleteItemFromCollection,
 } from "@/queries/collections";
-import { cn, generatePathWithSearchParams } from "@/utils";
+import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import {
   Link,
   type To,
@@ -16,11 +16,13 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
-import { AddRoute } from "../NavigationPanel/CollectionsPanel/AddRoute";
+import { AddRoute } from "../AddRoute";
 import { Method } from "../RequestorHistory";
 import { useStudioStore } from "../store";
 import { BACKGROUND_LAYER } from "../styles";
+import type { ProbedRoute } from "../types";
 import { EditCollection } from "./EditCollection";
+import { EmptyCollectionItemsList } from "./EmptyCollectionItemsList";
 
 export function CollectionSection() {
   const collectionId = useActiveCollectionId();
@@ -31,7 +33,6 @@ export function CollectionSection() {
 
   const { data: collections, error, isLoading } = useCollections();
   const { appRoutes: routes } = useStudioStore("appRoutes");
-  const { mutate: deleteItem } = useDeleteItemFromCollection(collectionId);
   const { mutate: deleteCollection } = useDeleteCollection(collectionId);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -100,29 +101,7 @@ export function CollectionSection() {
             <AddRoute collectionId={collectionId} />
           </div>
           {collection.collectionItems.length === 0 ? (
-            <div className="text-sm text-muted-foreground py-2 px-3 my-2 flex gap-4 items-center flex-col">
-              <h4 className="flex items-center gap-3 justify-center text-base">
-                <Icon icon="lucide:info" className="text-green-500" />
-                Empty collection
-              </h4>
-              <div className="flex max-w-64 flex-col gap-1 text-left">
-                <p className="text-muted-foreground">Awesome, you can now:</p>
-                <ul className="ml-1.5 pl-2 list-disc my-2 gap-2 grid">
-                  <li>
-                    navigate to any route and use the&nbsp;&nbsp;
-                    <Icon
-                      icon="lucide:folder"
-                      className="text-foreground inline-block"
-                    />{" "}
-                    to add it the collection
-                  </li>
-                  <li>
-                    or add a route using the following button
-                    <AddRoute collectionId={collectionId} />
-                  </li>
-                </ul>
-              </div>
-            </div>
+            <EmptyCollectionItemsList collectionId={collectionId} />
           ) : (
             <ul className="grid gap-2 pb-2">
               {collection.collectionItems.map((item) => {
@@ -132,35 +111,15 @@ export function CollectionSection() {
                 }
 
                 return (
-                  <li
-                    key={item.id}
-                    className="grid grid-cols-[1fr_auto] gap-2 items-center"
-                  >
-                    <Link
-                      to={generatePathWithSearchParams(
-                        COLLECTION_WITH_ROUTE_ID,
-                        {
-                          collectionId: collectionId,
-                          entryId: item.id.toString(),
-                        },
-                        searchParams,
-                      )}
-                      className="grid gap-2 px-2 rounded-md grid-cols-[4rem_1fr_1fr] hover:bg-muted"
-                    >
-                      <Method method={route.method} />
-                      <span>{route.path}</span>
-                      <span>{item.name}</span>
-                    </Link>
-                    <Button
-                      variant={"destructive"}
-                      type="button"
-                      size="icon-xs"
-                      onClick={() => {
-                        deleteItem({ itemId: item.id });
-                      }}
-                    >
-                      <Icon icon="lucide:trash-2" className="h-3 w-3" />
-                    </Button>
+                  <li key={item.id}>
+                    <CollectionItemListItem
+                      key={item.id}
+                      itemId={item.id}
+                      name={item.name ?? undefined}
+                      collectionId={collectionId}
+                      route={route}
+                      searchParams={searchParams}
+                    />
                   </li>
                 );
               })}
@@ -168,6 +127,50 @@ export function CollectionSection() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+function CollectionItemListItem({
+  itemId,
+  name,
+  collectionId,
+  route,
+  searchParams,
+}: {
+  itemId: number;
+  name: string | undefined;
+  route: ProbedRoute;
+  collectionId: string;
+  searchParams: URLSearchParams;
+}) {
+  const { mutate: deleteItem } = useDeleteItemFromCollection(collectionId);
+
+  return (
+    <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
+      <Link
+        to={{
+          pathname: generatePath(COLLECTION_WITH_ROUTE_ID, {
+            collectionId: collectionId,
+            entryId: itemId.toString(),
+          }),
+          search: searchParams.toString(),
+        }}
+        className="grid gap-2 px-2 rounded-md grid-cols-[4rem_1fr_1fr] hover:bg-muted"
+      >
+        <Method method={route.method} />
+        <span>{route.path}</span>
+        <span>{name}</span>
+      </Link>
+      <Button
+        variant={"destructive"}
+        type="button"
+        size="icon-xs"
+        onClick={() => {
+          deleteItem({ itemId });
+        }}
+      >
+        <Icon icon="lucide:trash-2" className="h-3 w-3" />
+      </Button>
     </div>
   );
 }

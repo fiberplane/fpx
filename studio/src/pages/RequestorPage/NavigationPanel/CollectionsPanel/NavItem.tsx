@@ -1,7 +1,7 @@
 import { COLLECTION_ROUTE, COLLECTION_WITH_ROUTE_ID } from "@/constants";
 import { useActiveCollectionEntryId } from "@/hooks";
 import { cn, generatePathWithSearchParams } from "@/utils";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import { memo, useEffect, useRef } from "react";
 import { Link, generatePath, useSearchParams } from "react-router-dom";
 import { Method } from "../../RequestorHistory";

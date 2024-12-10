@@ -10,7 +10,7 @@ import {
   generatePathWithSearchParams,
 } from "@/utils";
 import type { Collection, ExtraRequestParams } from "@fiberplane/fpx-types";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import { Dialog } from "@radix-ui/react-dialog";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";

@@ -5,7 +5,7 @@ import { useProxyRequestsEnabled } from "@/hooks/useProxyRequestsEnabled";
 import { useStudioStore } from "@/pages/RequestorPage/store";
 import { useStudioStoreRaw } from "@/pages/RequestorPage/store/hooks";
 import { cn } from "@/utils";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import {
   Tooltip,
   TooltipContent,

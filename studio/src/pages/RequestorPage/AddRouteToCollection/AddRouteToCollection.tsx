@@ -5,7 +5,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useHandler } from "@fiberplane/hooks";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import { useState } from "react";
 import { AddToRouteForm } from "./AddToRouteForm";
 

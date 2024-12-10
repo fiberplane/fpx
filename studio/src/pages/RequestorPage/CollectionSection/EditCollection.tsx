@@ -1,3 +1,4 @@
+import { buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -5,7 +6,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useUpdateCollection } from "@/queries/collections";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import { useState } from "react";
 import { CollectionForm } from "../CollectionForm";
 
@@ -16,7 +17,15 @@ export function EditCollection(props: { name: string; collectionId: string }) {
   const { mutate, error, isPending } = useUpdateCollection();
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-2 py-1 rounded-lg hover:bg-muted cursor-pointer text-left">
+      {/* <DialogTrigger className="grid items-center gap-4 rounded-lg hover:bg-muted cursor-pointer text-left"> */}
+      <DialogTrigger
+        className={buttonVariants({
+          size: "icon-xs",
+          // className: "p-0.5 w-6 h-6",
+          variant: "secondary",
+          // variant: "default",
+        })}
+      >
         <Icon icon="lucide:pencil" className="h-3 w-3" />
       </DialogTrigger>
       <DialogPortal>

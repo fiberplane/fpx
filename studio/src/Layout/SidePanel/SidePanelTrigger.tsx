@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useStudioStore } from "@/pages/RequestorPage/store";
 import { isMac } from "@/utils";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 export function SidePanelTrigger() {

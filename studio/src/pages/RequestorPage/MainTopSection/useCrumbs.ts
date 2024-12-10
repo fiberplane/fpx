@@ -5,7 +5,7 @@ import {
   useActiveTraceId,
 } from "@/hooks";
 import { useCollections } from "@/queries";
-import type { IconProps } from "@iconify/react/dist/iconify.js";
+import type { IconProps } from "@iconify/react";
 import { generatePath, useSearchParams } from "react-router-dom";
 import { useStudioStore } from "../store";
 

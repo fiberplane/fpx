@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { COLLECTION_ROUTE } from "@/constants";
 import { noop } from "@/utils";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import { Fragment } from "react";
 import { Link, Route, Routes } from "react-router-dom";
 import { AddRouteToCollection } from "../AddRouteToCollection";

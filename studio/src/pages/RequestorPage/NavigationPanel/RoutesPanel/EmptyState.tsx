@@ -1,4 +1,4 @@
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import { RefreshRoutesButton } from "./RefreshRoutesButton";
 
 export function EmptyState() {
