@@ -22,22 +22,22 @@ app.post("/webhook", async (c) => {
   const { message } = await c.req.json();
   console.log(message);
 
-  // if (message?.text) {
-  //   const chatId = message.chat.id;
-  //   const text = message.text;
+  if (message?.text) {
+    const chatId = message.chat.id;
+    const text = message.text;
 
-  //   // Respond to the message using fetch instead of axios
-  //   await fetch(`${TELEGRAM_API}/sendMessage`, {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({
-  //       chat_id: chatId,
-  //       text: `You said: ${text}`,
-  //     }),
-  //   });
-  // }
+    // Respond to the message using fetch
+    await fetch(`${TELEGRAM_API}/sendMessage`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: `You said: ${text}`,
+      }),
+    });
+  }
 
   return c.text("OK", 200);
 });

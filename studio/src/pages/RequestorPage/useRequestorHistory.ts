@@ -63,6 +63,7 @@ export function useRequestorHistory() {
     }
 
     items.sort(sortProxiedRequestResponsesDescending);
+    console.log("[useRequestorHistory] items", items);
 
     return items;
   }, [allRequests, traces]);
