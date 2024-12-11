@@ -69,10 +69,6 @@ export const requestResponseSlice: StateCreator<
       state.path = path;
       state.activeRoute = nextActiveRoute;
       state.pathParams = nextPathParams;
-      // state.activeHistoryResponseTraceId =
-      // state.activeRoute === nextActiveRoute
-      //   ? state.activeHistoryResponseTraceId
-      //   : null;
     }),
 
   updateMethod: (methodInputValue) =>
@@ -305,16 +301,5 @@ export const requestResponseSlice: StateCreator<
           ),
       ),
     );
-  },
-  setResponseParams(responseParams) {
-    console.log(responseParams);
-    // const { responseBody, responseHeaders, responseStatusCode, traceId } =
-    //   responseParams;
-    // get().setActiveResponse({
-    //   responseBody,
-    //   responseHeaders,
-    //   responseStatusCode,
-    //   traceId,
-    // });
   },
 });

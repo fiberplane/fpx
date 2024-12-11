@@ -264,7 +264,6 @@ export const RequestPanel = memo(function RequestPanel(
           keyPlaceholder="header-name"
           keyValueParameters={requestHeaders}
           onChange={(headers) => {
-            // setRequestHeaders(headers);
             updateCollectionItem({
               requestHeaders: createObjectFromKeyValueParameters(headers),
             });

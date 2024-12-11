@@ -59,7 +59,12 @@ export function useCrumbs(): Crumb[] {
         href: collectionLink,
       });
     } else {
-      crumbs.push({ label: "Collection", href: collectionLink });
+      crumbs.push({
+        label: {
+          icon: "lucide:folder",
+          text: "Not found",
+        },
+      });
     }
   }
 

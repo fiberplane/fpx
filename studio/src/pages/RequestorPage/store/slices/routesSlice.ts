@@ -18,7 +18,6 @@ import {
   removeBaseUrl,
 } from "../utils";
 import {
-  // extractJsonBodyFromOpenApiDefinition,
   extractQueryParamsFromOpenApiDefinition,
   filterDisabledEmptyQueryParams,
 } from "../utils-openapi";

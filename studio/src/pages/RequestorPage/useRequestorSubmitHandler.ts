@@ -54,19 +54,19 @@ export function useRequestorSubmitHandler({
     const modifiedHeaders = [
       contentTypeHeader
         ? {
-          key: "Content-Type",
-          value: contentTypeHeader,
-          enabled: true,
-          id: "fpx-content-type",
-        }
+            key: "Content-Type",
+            value: contentTypeHeader,
+            enabled: true,
+            id: "fpx-content-type",
+          }
         : null,
       contentLength !== null
         ? {
-          key: "Content-Length",
-          value: contentLength,
-          enabled: true,
-          id: "fpx-content-length",
-        }
+            key: "Content-Length",
+            value: contentLength,
+            enabled: true,
+            id: "fpx-content-length",
+          }
         : null,
       ...requestHeaders,
     ].filter(

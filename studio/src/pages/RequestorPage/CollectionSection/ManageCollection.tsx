@@ -1,3 +1,4 @@
+import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
@@ -5,10 +6,15 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { useUpdateCollection } from "@/queries/collections";
+import { ROOT_ROUTE } from "@/constants";
+import {
+  useDeleteCollection,
+  useUpdateCollection,
+} from "@/queries/collections";
 import { Icon } from "@iconify/react";
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { useState } from "react";
+import { generatePath, useNavigate, useSearchParams } from "react-router-dom";
 import { CollectionForm } from "../CollectionForm";
 
 export function ManageCollection(props: {
@@ -21,7 +27,9 @@ export function ManageCollection(props: {
   const [triggerRename, setRenameOpen] = useState(false);
 
   const { mutate, error, isPending } = useUpdateCollection();
-
+  const { mutate: deleteCollection } = useDeleteCollection(collectionId);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   return (
     <>
       <DropdownMenu onOpenChange={setOpen} open={open}>
@@ -61,24 +69,26 @@ export function ManageCollection(props: {
         </DialogContent>
       </Dialog>
       <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-        <DialogContent className="w-80 max-w-screen-sm">
-          <CollectionForm
-            onSubmit={(data) => {
-              mutate({
-                collectionId,
-                params: data,
-              });
-              console.log("close");
-              setConfirmDelete(false);
-              setOpen(false);
-            }}
-            isPending={isPending}
-            error={error}
-            initialData={{
-              name,
-            }}
-          />
-        </DialogContent>
+        <ConfirmationDialog
+          title={
+            <>
+              Delete{" "}
+              <span className="text-muted-foreground">{name || "no name"}</span>{" "}
+              from collection?
+            </>
+          }
+          description="This action cannot be undone."
+          confirmText="Delete"
+          onConfirm={() => {
+            deleteCollection();
+            setConfirmDelete(false);
+            navigate({
+              pathname: generatePath(ROOT_ROUTE, {}),
+              search: searchParams.toString(),
+            });
+          }}
+          onCancel={() => setConfirmDelete(false)}
+        />
       </Dialog>
     </>
   );

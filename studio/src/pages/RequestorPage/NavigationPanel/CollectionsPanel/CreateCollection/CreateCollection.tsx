@@ -24,8 +24,7 @@ import {
   type CollectionFormData,
 } from "../../../CollectionForm";
 
-export function CreateCollection(
-) {
+export function CreateCollection() {
   useHotkeys("c", (e) => {
     e.preventDefault();
     setOpen(true);
@@ -57,9 +56,6 @@ export function CreateCollection(
       {
         onSuccess: (data) => {
           handleSuccess(data);
-        },
-        onError: () => {
-          // triggerShake();
         },
       },
     );

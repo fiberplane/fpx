@@ -27,7 +27,6 @@ const ValidationSchema = z.object({
 type AddRouteFormData = z.infer<typeof ValidationSchema>;
 
 export function AddRouteForm(props: Props) {
-  // console.log(props);
   const { collectionId, onSuccess } = props;
   const { mutate: addAppRoute } = useAddItemToCollection(collectionId);
 

@@ -1,4 +1,9 @@
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  DialogClose,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useShake } from "@/hooks";
@@ -17,33 +22,46 @@ type Props = {
   onSubmit: SubmitHandler<CollectionFormData>;
   isPending?: boolean;
   error: Error | null;
+  /**
+   * Whether the form is rendered inside a dialog.
+   */
+  inDialog?: boolean;
 };
 
 const CreateCollectionSchema = CollectionSchema.pick({ name: true });
 
 export function CollectionForm(props: Props) {
-  const { onSubmit, isPending, error, initialData } = props;
-  const { register, handleSubmit } = useForm<CollectionFormData>({
+  const { onSubmit, isPending, error, initialData, inDialog = false } = props;
+  const { register, handleSubmit, formState } = useForm<CollectionFormData>({
     resolver: zodResolver(CreateCollectionSchema),
     defaultValues: initialData || {},
   });
+  const { errors, isValidating, isValid, isSubmitting } = formState;
   const { shakeClassName, triggerShake } = useShake();
+  const shouldShake = !isValid && isSubmitting && !isValidating;
+
   useEffect(() => {
-    if (isPending) {
+    if (!shouldShake) {
       return;
     }
 
-    if (error) {
-      triggerShake();
-    }
-  }, [error, triggerShake, isPending]);
+    triggerShake();
+  }, [shouldShake, triggerShake]);
+
+  const Title = inDialog ? DialogTitle : "h4";
+  const Description = inDialog ? DialogDescription : "p";
 
   return (
     <form className="grid gap-4" onSubmit={handleSubmit(onSubmit)}>
-      <div className="space-y-2">
-        <h4 className="text-md text-muted-foreground text-center">
+      <div className="space-y-2 grid gap-2">
+        <Title className="text-md text-center">
           {initialData ? "Edit" : "New"} collection
-        </h4>
+        </Title>
+        <Description className="text-sm text-muted-foreground">
+          {initialData
+            ? "Change the name of the collection"
+            : "Create a new collection"}
+        </Description>
         {error && (
           <p className="text-sm text-destructive-foreground">{error.message}</p>
         )}
@@ -56,14 +74,32 @@ export function CollectionForm(props: Props) {
           {...register("name")}
           id="name"
           type="text"
-          className="col-span-2 h-8 font-mono"
+          className={cn("col-span-2 h-8 font-mono", {
+            "border-destructive": errors.name,
+          })}
           autoFocus
           autoComplete="off"
           data-1p-ignore
           data-lpignore="true"
         />
+        {errors.name && (
+          <p className="text-sm text-red-600">{errors.name.message}</p>
+        )}
       </div>
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-4">
+        {inDialog && (
+          <DialogClose
+            className={cn(
+              buttonVariants({
+                variant: "secondary",
+                size: "sm",
+              }),
+              "h-7",
+            )}
+          >
+            Cancel
+          </DialogClose>
+        )}
         <Button
           size="sm"
           disabled={isPending}

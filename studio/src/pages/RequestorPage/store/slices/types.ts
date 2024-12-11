@@ -45,8 +45,6 @@ export interface RequestResponseSlice {
     isMultipart?: boolean,
   ) => void;
   /** Response related state */
-  // activeHistoryResponseTraceId: string | null;
-  // setActiveHistoryResponseTraceId: (traceId: string | null) => void;
 
   activeResponse: RequestorActiveResponse | null;
   /** A banner that tells the user they can view logs for a request */
@@ -70,12 +68,6 @@ export interface RequestResponseSlice {
       | "requestQueryParams"
       | "requestRoute"
       | "requestUrl"
-    >,
-  ) => void;
-  setResponseParams: (
-    responseParams: Pick<
-      ProxiedRequestResponse["app_responses"],
-      "responseBody" | "responseHeaders" | "responseStatusCode"
     >,
   ) => void;
 }

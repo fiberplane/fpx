@@ -97,7 +97,6 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
               onClick={(e) => {
                 e.stopPropagation();
                 setConfirmDelete(true);
-                // deleteRoute({ path: route.path, method: route.method });
               }}
             />
           </div>

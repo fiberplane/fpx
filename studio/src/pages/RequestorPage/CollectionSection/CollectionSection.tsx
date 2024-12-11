@@ -1,17 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { ROOT_ROUTE } from "@/constants";
 import { useActiveCollectionId } from "@/hooks/useActiveCollectionId";
 import { useCollections } from "@/queries";
-import { useDeleteCollection } from "@/queries/collections";
 import { cn } from "@/utils";
-import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
-import {
-  type To,
-  generatePath,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
 import { AddRoute } from "../AddRoute";
 import { useStudioStore } from "../store";
 import { BACKGROUND_LAYER } from "../styles";
@@ -28,16 +18,6 @@ export function CollectionSection() {
 
   const { data: collections, error, isLoading } = useCollections();
   const { appRoutes: routes } = useStudioStore("appRoutes");
-  const { mutate: deleteCollection } = useDeleteCollection(collectionId);
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const navigateHome = useHandler(() => {
-    const to: To = {
-      pathname: generatePath(ROOT_ROUTE, {}),
-      search: searchParams.toString(),
-    };
-    navigate(to);
-  });
 
   if (error) {
     return <div>{error.message}</div>;
@@ -51,7 +31,21 @@ export function CollectionSection() {
     (c) => c.id === Number.parseInt(collectionId),
   );
   if (!collection) {
-    return <div>Collection not found</div>;
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-sm text-muted-foreground py-4 px-3 my-2 flex gap-4 items-center flex-col border rounded-lg p-4 bg-background">
+          <h4 className="flex items-center gap-3 justify-center text-base">
+            <Icon icon="lucide:folder" />
+            Collection not found
+          </h4>
+          <div className="flex max-w-64 flex-col gap-2 text-left">
+            <p className="text-muted-foreground">
+              Seems like this collection does not exist.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -67,22 +61,11 @@ export function CollectionSection() {
           <div className="grid grid-cols-[1fr_auto] pe-2 gap-4 items-center">
             <h4 className="flex gap-2">
               <span>{collection.name}</span>
-              <ManageCollection
-                name={collection.name}
-                collectionId={collectionId}
-              />
             </h4>
-            <Button
-              variant={"destructive"}
-              size="icon-xs"
-              onClick={() =>
-                deleteCollection(undefined, {
-                  onSuccess: navigateHome,
-                })
-              }
-            >
-              <Icon icon="lucide:trash-2" className="h-3 w-3" />
-            </Button>
+            <ManageCollection
+              name={collection.name}
+              collectionId={collectionId}
+            />
           </div>
           <p className="text-sm text-muted-foreground">
             On this page you can manage your collection

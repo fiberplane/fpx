@@ -1,9 +1,9 @@
 import { type CollectionWithItemsList, useCollections } from "@/queries";
 import { cn, noop } from "@/utils";
-import { Icon } from "@iconify/react";
 import { useMemo, useRef, useState } from "react";
 import { Search } from "../Search";
 import { CreateCollection } from "./CreateCollection";
+import { EmptyCollectionPanel } from "./EmptyCollectionPanel";
 import { NavItem } from "./NavItem";
 
 export type CollectionWithItems = CollectionWithItemsList[0];
@@ -56,28 +56,12 @@ export function CollectionsPanel() {
         </div>
       </div>
       <div className="overflow-y-auto h-full relative">
-        {filteredItems.length === 0 && <EmptyState />}
+        {filteredItems.length === 0 && <EmptyCollectionPanel />}
         <div className="grid gap-2">
           {filteredItems.map((collection) => (
             <NavItem key={collection.id} collection={collection} />
           ))}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center text-gray-300 h-full">
-      <div className="py-8 px-2 rounded-lg flex flex-col items-center text-center">
-        <div className="rounded-lg p-2 bg-muted mb-2">
-          <Icon
-            icon="lucide:folder"
-            className="w-12 h-12 text-gray-400 stroke-1"
-          />
-        </div>
-        <h2 className="text-lg font-normal mb-4">No collections found</h2>
       </div>
     </div>
   );

@@ -1,5 +1,4 @@
 import { useActiveTraceId } from "@/hooks";
-// import { useOtelTraces } from "@/queries";
 import { useMemo } from "react";
 import type { ProxiedRequestResponse } from "../queries";
 import { useActiveRoute, useStudioStore } from "../store";
@@ -14,11 +13,7 @@ export function useMostRecentProxiedRequestResponse(
   overrideTraceId: string | null = null,
 ) {
   const { path: routePath } = useActiveRoute();
-  const {
-    path,
-    method,
-    sessionHistory,
-  } = useStudioStore(
+  const { path, method, sessionHistory } = useStudioStore(
     "path",
     "method",
     "sessionHistory",

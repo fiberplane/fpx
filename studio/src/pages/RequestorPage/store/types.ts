@@ -125,12 +125,6 @@ export const RequestorStateSchema = z.object({
     .array(ResponsePanelTabSchema)
     .describe("The tabs to show in the response panel"),
 
-  // // HACK - This is used to force us to show a response body for a request loaded from history
-  // activeHistoryResponseTraceId: z
-  //   .string()
-  //   .nullable()
-  //   .describe("The trace id to show in the response panel"),
-
   // NOTE - This is used to force us to show a response body for a request that was most recently made
   activeResponse: RequestorActiveResponseSchema.nullable().describe(
     "The response to show in the response panel",

@@ -14,13 +14,7 @@ export type MakeProxiedRequestQueryFn = ReturnType<
 >["mutate"];
 
 export function useMakeProxiedRequest() {
-  const {
-    // clearResponseBodyFromHistory,
-    setActiveResponse,
-  } = useStudioStore(
-    // "clearResponseBodyFromHistory",
-    "setActiveResponse",
-  );
+  const { setActiveResponse } = useStudioStore("setActiveResponse");
 
   const queryClient = useQueryClient();
   const mutation = useMutation({
