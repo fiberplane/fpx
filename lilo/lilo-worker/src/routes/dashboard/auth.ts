@@ -5,12 +5,12 @@ import { Hono } from "hono";
 import { setSignedCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
 import * as schema from "../../db/schema";
-import { SESSION_COOKIE_NAME } from "../../lib/session-auth";
+import { SESSION_COOKIE_NAME, createSession } from "../../lib/session-auth";
 import type { AppType } from "../../types";
 
 const router = new Hono<AppType>();
 
-// NOTE - Never serve the dashboard if SESSION_SECRET is not set
+// NOTE - Never serve the auth routes if SESSION_SECRET is not set
 router.use("/auth", async (c, next) => {
   if (!c.env.SESSION_SECRET) {
     return c.json({ error: "Internal server error" }, 500);
@@ -46,6 +46,7 @@ router.get("/github", async (c) => {
 
   const user = c.get("user-github");
 
+  // TODO - Show an HTML page with a message to the user
   if (!user?.login || !user?.email) {
     return c.json({ error: "No user information available" }, 401);
   }
@@ -65,24 +66,11 @@ router.get("/github", async (c) => {
     })
     .returning();
 
-  // Generate a session
-  const sessionToken = randomUUID();
-  await db.insert(schema.sessions).values({
-    userId: userRecord.id,
-    id: sessionToken,
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-  });
+  // Generate a session and attach to cookie (stored in the database)
+  await createSession(c, db, userRecord.id);
 
-  // Set session cookie with the session token
-  setSignedCookie(c, SESSION_COOKIE_NAME, sessionToken, c.env.SESSION_SECRET, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "Lax",
-    path: "/",
-    maxAge: 7 * 24 * 60 * 60, // 7 days
-  });
-
-  return c.json({ success: true });
+  // TODO - Redirect to the dashboard
+  return c.redirect("/dashboard");
 });
 
 export { router as dashboardAuthRouter };

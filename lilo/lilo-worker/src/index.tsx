@@ -14,6 +14,7 @@ import { apiReference } from "@scalar/hono-api-reference";
 import {
   addCurrentUserToContext,
   dashboardAuthentication,
+  deleteSession,
   requireSessionSecret,
 } from "./lib/session-auth";
 // External routes
@@ -42,6 +43,12 @@ app.get("/", requireSessionSecret, addCurrentUserToContext, (c) => {
     </div>,
   );
 });
+
+app.get("/logout", async (c) => {
+  await deleteSession(c, c.get("db"));
+  return c.redirect("/");
+});
+
 app.route("/internal/auth", dashboardAuthRouter);
 app.route("/dashboard", dashboardRouter);
 app.route("/api-keys", apiKeysRouter);

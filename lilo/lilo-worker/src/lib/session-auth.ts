@@ -9,6 +9,7 @@ import type { AppContext, DatabaseType } from "../types";
 // Cookie config
 const EXPIRATION_TIME_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const COOKIE_MAX_AGE = Math.floor(EXPIRATION_TIME_MS / 1000);
+
 export const SESSION_COOKIE_NAME = "sid";
 
 export const requireSessionSecret = (c: AppContext, next: Next) => {
@@ -42,10 +43,30 @@ export const createSession = async (
     secure: true,
     sameSite: "Lax",
     path: "/",
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge: COOKIE_MAX_AGE,
   });
 };
 
+export const deleteSession = async (c: AppContext, db: DatabaseType) => {
+  const sessionId = await getSignedCookie(
+    c,
+    c.env.SESSION_SECRET,
+    SESSION_COOKIE_NAME,
+  );
+
+  if (!sessionId) {
+    return;
+  }
+
+  await db.delete(schema.sessions).where(eq(schema.sessions.id, sessionId));
+};
+
+/**
+ * Middleware to add the current user to the context
+ * - If no session cookie is found, sets `currentUser` to null
+ * - If session cookie is found, but user is not found, sets `currentUser` to null
+ * - If session cookie is found, and user is found, sets `currentUser` on context
+ */
 export const addCurrentUserToContext = async (c: AppContext, next: Next) => {
   const db = c.get("db");
 

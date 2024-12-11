@@ -80,6 +80,7 @@ export const apiKeys = sqliteTable("api_keys", {
   userId: text("user_id")
     .notNull()
     .references(() => users.id),
+  name: text("name"),
   key: text("key").notNull(),
   ...timestamps,
 });

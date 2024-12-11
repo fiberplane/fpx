@@ -10,9 +10,12 @@ export type Variables = Record<string, never>;
 
 export type Bindings = {
   DB: D1Database;
+  // GitHub OAuth app credentials
   GITHUB_ID: string;
   GITHUB_SECRET: string;
-  // PRIVATE_KEY: string;
+  // Private key for signing JWT tokens
+  PRIVATE_KEY: string;
+  // Session secret for signing cookies
   SESSION_SECRET: string;
 };
 
@@ -21,13 +24,6 @@ export type AppType = {
   Variables: {
     db: DatabaseType;
     currentUser: User | null;
-    // token?: string;
-    // "refresh-token"?: string;
-    // "user-github"?: {
-    //   login: string;
-    //   email: string;
-    //   [key: string]: unknown;
-    // };
   };
 };
 

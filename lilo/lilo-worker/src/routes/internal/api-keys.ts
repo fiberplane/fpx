@@ -1,49 +1,71 @@
-import { drizzle } from "drizzle-orm/d1";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { jwt } from "hono/jwt";
-import type { JwtVariables } from "hono/jwt";
+import * as jose from "jose";
 import * as schema from "../../db/schema";
+import { importKey } from "../../lib/crypto";
+import { createJwtPayload } from "../../lib/jwt";
 import { dashboardAuthentication } from "../../lib/session-auth";
 import type { AppType } from "../../types";
 
-// TODO: Define the JWT secret key
-const secretKey = "your-secret-key"; // Use a secure key from your environment
-
-const router = new Hono<AppType & { Variables: JwtVariables }>();
+const router = new Hono<AppType>();
 
 type CreateApiKeyBody = {
   name: string;
+  projectId: string;
 };
 
+// Middleware to ensure the user is authenticated
 router.use(dashboardAuthentication);
 
+/**
+ * Create a new API key for a user
+ *
+ * @TODO - Add validation for the request body
+ */
 router.post("/", async (c) => {
   const db = c.get("db");
-  const { name } = await c.req.json<CreateApiKeyBody>();
+  const { name, projectId } = await c.req.json<CreateApiKeyBody>();
 
-  // Define the payload with user information
-  const payload = {
+  // Get the authenticated user's information
+  const user = c.get("currentUser");
+
+  if (!user) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  // We are going to sign the JWT using the private key from environment variables
+  const privateKey = await importKey("private", c.env.PRIVATE_KEY);
+
+  // Create a JWT payload
+  const payload = createJwtPayload(user?.id, projectId);
+
+  // Generate a JWT token bound to the user
+  const token = await new jose.SignJWT(payload)
+    .setProtectedHeader({ alg: "PS256" })
+    .sign(privateKey);
+
+  // Store the API key in the database
+  // TODO - Only store truncated token in the database?
+  await db.insert(schema.apiKeys).values({
+    key: token,
+    userId: user.id,
     name,
-    createdBy: "user@example.com", // Get from auth context
-    createdAt: new Date().toISOString(),
-  };
-
-  // Generate a JWT - TODO
-  const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
+  });
 
   return c.json(
-    { token, name, createdAt: payload.createdAt, createdBy: payload.createdBy },
+    {
+      token,
+      name,
+      // createdAt: payload.createdAt,
+      createdBy: user.email,
+    },
     201,
   );
 });
 
-// Middleware to protect routes
-router.use("/protected/*", jwt({ secret: secretKey }));
-
-router.get("/protected/data", (c) => {
-  const payload = c.get("jwtPayload");
-  return c.json(payload);
-});
+const maskToken = (token: string) => {
+  return `${token.slice(0, 4)}...${token.slice(-4)}`;
+};
 
 router.get("/", async (c) => {
   const db = c.get("db");
@@ -51,8 +73,8 @@ router.get("/", async (c) => {
 
   // Transform the DB results to match the expected response format
   const formattedKeys = apiKeys.map((key) => ({
-    token: key.key,
-    name: key.id, // You might want to add a name field to your schema
+    token: maskToken(key.key),
+    name: key.name,
     createdAt: key.createdAt,
     createdBy: key.userId,
   }));
@@ -60,11 +82,14 @@ router.get("/", async (c) => {
   return c.json(formattedKeys);
 });
 
-router.delete("/:token", async (c) => {
-  const db = drizzle(c.env.DB);
-  const token = c.req.param("token");
+router.delete("/:id", async (c) => {
+  const db = c.get("db");
+  const id = c.req.param("id");
 
-  // TODO: Implement API key revocation logic
+  // Delete the API key from the database to revoke it
+  // TODO - Mark the key as revoked
+  await db.delete(schema.apiKeys).where(eq(schema.apiKeys.id, id));
+
   return c.body(null, 204);
 });
 
