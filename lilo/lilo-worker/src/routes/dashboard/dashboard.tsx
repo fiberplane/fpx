@@ -29,7 +29,7 @@ router.get("/", async (c) => {
     <div>
       <nav>
         logged in as {c.get("currentUser")?.githubUsername} |{" "}
-        <a href="/logout">Logout</a>
+        <a href="/reference">API Reference</a> | <a href="/logout">Logout</a>
       </nav>
       <h1>Lilo</h1>
       <main>
