@@ -6,13 +6,14 @@ export type DatabaseType = DrizzleD1Database<Record<string, never>> & {
   $client: D1Database;
 };
 
-export type Variables = Record<string, never>;
-
 export type Bindings = {
+  // D1 database (added as binding in wrangler.toml)
   DB: D1Database;
   // GitHub OAuth app credentials
   GITHUB_ID: string;
   GITHUB_SECRET: string;
+  // Public key for signing JWT tokens
+  PUBLIC_KEY: string;
   // Private key for signing JWT tokens
   PRIVATE_KEY: string;
   // Session secret for signing cookies

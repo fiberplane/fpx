@@ -30,34 +30,12 @@ const CreateProjectSchema = z
       example: "My API Project",
       description: "Name for the new project",
     }),
-    userId: z.string().openapi({
-      example: "user_123",
-      description: "Owner's user ID",
-    }),
-  })
-  .openapi("CreateProject");
-
-const ApiSpecSchema = z
-  .object({
-    content: z.string().openapi({
+    spec: z.string().openapi({
       example: "openapi: 3.0.0\ninfo:\n  title: API",
       description: "OpenAPI specification content",
     }),
   })
-  .openapi("ApiSpec");
-
-const DocumentationSchema = z
-  .object({
-    content: z.string().openapi({
-      example: "# API Documentation",
-      description: "Documentation content",
-    }),
-    type: z.enum(["markdown", "html"]).openapi({
-      example: "markdown",
-      description: "Documentation format",
-    }),
-  })
-  .openapi("Documentation");
+  .openapi("CreateProject");
 
 // Define routes
 const createProjectRoute = createRoute({
@@ -116,11 +94,12 @@ const updateProjectRoute = createRoute({
 // Implement handlers
 router.openapi(createProjectRoute, async (c) => {
   const db = drizzle(c.env.DB);
-  const { name, userId } = c.req.valid("json");
-
+  const { name, spec } = c.req.valid("json");
+  const userId = c.get("currentUser")?.id ?? "";
+  console.log(userId);
   const [newProject] = await db
     .insert(schema.projects)
-    .values({ name, userId })
+    .values({ name, spec, userId })
     .returning();
 
   return c.json(newProject, 201);

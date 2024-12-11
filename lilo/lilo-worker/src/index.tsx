@@ -50,8 +50,8 @@ app.get("/logout", async (c) => {
 });
 
 app.route("/internal/auth", dashboardAuthRouter);
+app.route("/internal/api-keys", apiKeysRouter);
 app.route("/dashboard", dashboardRouter);
-app.route("/api-keys", apiKeysRouter);
 
 // Mount external api
 app.route("/api", externalApiRouter);
