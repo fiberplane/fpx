@@ -1,0 +1,1 @@
+ALTER TABLE `projects` ADD `spec` text NOT NULL;

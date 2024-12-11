@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1733927676047,
+      "tag": "0000_absent_true_believers",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1733927776719,
+      "tag": "0001_ordinary_stryfe",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1733944106885,
+      "tag": "0002_whole_gambit",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1733946568794,
+      "tag": "0003_reflective_maelstrom",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1733946638883,
+      "tag": "0004_medical_sway",
+      "breakpoints": true
+    }
+  ]
+}

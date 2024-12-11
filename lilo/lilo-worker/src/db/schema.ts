@@ -45,20 +45,10 @@ export const projects = sqliteTable("projects", {
     .primaryKey()
     .$defaultFn(() => randomUUID()),
   name: text("name").notNull(),
+  spec: text("spec"),
   userId: text("user_id")
     .notNull()
     .references(() => users.id),
-  ...timestamps,
-});
-
-export const openAPISpecs = sqliteTable("open_api_specs", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => randomUUID()),
-  projectId: text("project_id")
-    .notNull()
-    .references(() => projects.id),
-  spec: text("spec").notNull(),
   ...timestamps,
 });
 
@@ -106,14 +96,6 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   user: one(users, {
     fields: [projects.userId],
     references: [users.id],
-  }),
-  openAPISpecs: many(openAPISpecs),
-}));
-
-export const openAPISpecsRelations = relations(openAPISpecs, ({ one }) => ({
-  project: one(projects, {
-    fields: [openAPISpecs.projectId],
-    references: [projects.id],
   }),
 }));
 
