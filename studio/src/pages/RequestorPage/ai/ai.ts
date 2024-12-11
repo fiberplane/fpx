@@ -2,6 +2,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
 import {
   createKeyValueParametersFromValues,
+  createObjectFromKeyValueParameters,
   errorHasMessage,
   isJson,
 } from "@/utils";
@@ -15,6 +16,9 @@ import { useServiceBaseUrl } from "../store";
 import { useStudioStore } from "../store";
 import { isRequestorBodyType } from "../store/request-body";
 import { useAiRequestData } from "./generate-request-data";
+import { useActiveCollectionEntryId, useActiveCollectionId } from "@/hooks";
+import { useUpdateCollectionItem } from "@/queries/collections";
+import { CollectionItemParams } from "@fiberplane/fpx-types";
 
 export const FRIENDLY = "Friendly" as const;
 export const HOSTILE = "QA" as const;
@@ -74,6 +78,22 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
       currentAiPrompt,
     );
 
+  const collectionId = useActiveCollectionId() ?? null;
+  const collectionItemId = useActiveCollectionEntryId() ?? null;
+
+  const { mutate } = useUpdateCollectionItem();
+  const updateCollectionItem = (nullableExtraParams: CollectionItemParams) => {
+    if (collectionId === null || collectionItemId === null) {
+      return;
+    }
+
+    return mutate({
+      collectionId,
+      itemId: collectionItemId,
+      extraParams: nullableExtraParams,
+    });
+  };
+
   const fillInRequest = useHandler(() => {
     generateRequestData().then(({ data, isError, error }) => {
       if (isError) {
@@ -83,7 +103,6 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
           description: errorHasMessage(error)
             ? error?.message
             : "There was a problem with your request.",
-          // action: <ToastAction altText="Try again"> Try again</ ToastAction >,
         });
         return;
       }
@@ -142,12 +161,18 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
         }
 
         setBody(nextBody);
+        updateCollectionItem({
+          requestBody: nextBody,
+        });
       }
 
       // NOTE - We need to be clear on the types here, otherwise this could wreak havoc on our form data
       if (validateKeyValueParamsFromResponse(queryParams)) {
         const newParameters = createKeyValueParametersFromValues(queryParams);
         setQueryParams(newParameters);
+        updateCollectionItem({
+          requestQueryParams: createObjectFromKeyValueParameters(newParameters),
+        });
       } else {
         // TODO - Should we clear the query params if they are not present in the response?
       }
@@ -164,6 +189,9 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
       // TODO - Validate path params
       if (pathParams) {
         updatePathParamValues(pathParams);
+        updateCollectionItem({
+          requestPathParams: createObjectFromKeyValueParameters(pathParams),
+        });
       } else {
         // TODO - Clear path params if they are not present in the response
       }
@@ -171,6 +199,9 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
       if (validateKeyValueParamsFromResponse(headers)) {
         const newHeaders = createKeyValueParametersFromValues(headers);
         setRequestHeaders(newHeaders);
+        updateCollectionItem({
+          requestHeaders: createObjectFromKeyValueParameters(newHeaders),
+        });
       } else {
         // TODO - Clear headers if they are not present in the response?
       }

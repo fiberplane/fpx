@@ -22,12 +22,12 @@ import {
 } from "@/components/CodeMirrorEditor";
 import { useActiveCollectionEntryId, useActiveCollectionId } from "@/hooks";
 import {
-  type CollectionItemExtraParams,
   useUpdateCollectionItem,
 } from "@/queries/collections";
 import { useStudioStore } from "../store";
 import { RouteDocumentation } from "./RouteDocumentation/RouteDocumentation";
 import { isOpenApiOperation } from "./RouteDocumentation/openapi";
+import { CollectionItemParams } from "@fiberplane/fpx-types";
 
 type RequestPanelProps = {
   aiEnabled: boolean;
@@ -121,7 +121,7 @@ export const RequestPanel = memo(function RequestPanel(
 
   const { mutate } = useUpdateCollectionItem();
   const updateCollectionItem = (
-    nullableExtraParams: CollectionItemExtraParams,
+    nullableExtraParams: CollectionItemParams,
   ) => {
     if (collectionId === null || collectionItemId === null) {
       return;
