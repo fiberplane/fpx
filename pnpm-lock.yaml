@@ -512,9 +512,6 @@ importers:
       jose:
         specifier: ^5.9.6
         version: 5.9.6
-      vite:
-        specifier: ^6.0.1
-        version: 6.0.1(@types/node@22.10.1)(jiti@1.21.6)(lightningcss@1.28.1)(tsx@4.19.2)(yaml@2.6.1)
       zod:
         specifier: ^3.23.8
         version: 3.24.0
@@ -528,12 +525,6 @@ importers:
       '@fiberplane/hono-otel':
         specifier: workspace:*
         version: link:../../packages/client-library-otel
-      '@hono/vite-build':
-        specifier: ^1.1.1
-        version: 1.1.1(hono@4.6.13)
-      '@hono/vite-dev-server':
-        specifier: ^0.17.0
-        version: 0.17.0(hono@4.6.13)(miniflare@3.20241205.0)(wrangler@3.92.0(@cloudflare/workers-types@4.20241205.0))
       '@libsql/client':
         specifier: ^0.14.0
         version: 0.14.0
@@ -2755,25 +2746,6 @@ packages:
     engines: {node: '>=18.4.0'}
     peerDependencies:
       hono: '>=3.*'
-
-  '@hono/vite-build@1.1.1':
-    resolution: {integrity: sha512-yEkJDPEm4u7MILQI6Gd69lPYlA0CZ3kLbGH3Skswgzu352Hpg6MrNUVMW2qX9nYhMhzPCsTLHtCnoUx6LZpQmg==}
-    engines: {node: '>=18.14.1'}
-    peerDependencies:
-      hono: '*'
-
-  '@hono/vite-dev-server@0.17.0':
-    resolution: {integrity: sha512-EvGOIj1MoY9uV94onXXz88yWaTxzUK+Mv8LiIEsR/9eSFoVUnHVR0B7l7iNIsxfHYRN7tbPDMWBSnD2RQun3yw==}
-    engines: {node: '>=18.14.1'}
-    peerDependencies:
-      hono: '*'
-      miniflare: '*'
-      wrangler: '*'
-    peerDependenciesMeta:
-      miniflare:
-        optional: true
-      wrangler:
-        optional: true
 
   '@hono/zod-openapi@0.18.3':
     resolution: {integrity: sha512-bNlRDODnp7P9Fs13ZPajEOt13G0XwXKfKRHMEFCphQsFiD1Y+twzHaglpNAhNcflzR1DQwHY92ZS06b4LTPbIQ==}
@@ -12521,10 +12493,6 @@ snapshots:
     dependencies:
       hono: 4.6.12
 
-  '@hono/node-server@1.13.7(hono@4.6.13)':
-    dependencies:
-      hono: 4.6.13
-
   '@hono/oauth-providers@0.6.2(hono@4.6.12)':
     dependencies:
       hono: 4.6.12
@@ -12532,19 +12500,6 @@ snapshots:
   '@hono/oauth-providers@0.6.2(hono@4.6.13)':
     dependencies:
       hono: 4.6.13
-
-  '@hono/vite-build@1.1.1(hono@4.6.13)':
-    dependencies:
-      hono: 4.6.13
-
-  '@hono/vite-dev-server@0.17.0(hono@4.6.13)(miniflare@3.20241205.0)(wrangler@3.92.0(@cloudflare/workers-types@4.20241205.0))':
-    dependencies:
-      '@hono/node-server': 1.13.7(hono@4.6.13)
-      hono: 4.6.13
-      minimatch: 9.0.5
-    optionalDependencies:
-      miniflare: 3.20241205.0
-      wrangler: 3.92.0(@cloudflare/workers-types@4.20241205.0)
 
   '@hono/zod-openapi@0.18.3(hono@4.6.12)(zod@3.23.8)':
     dependencies:

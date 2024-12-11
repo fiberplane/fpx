@@ -1,7 +1,6 @@
 import { instrument } from "@fiberplane/hono-otel";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
-import { jsxRenderer } from "hono/jsx-renderer";
 import { logger } from "hono/logger";
 
 import * as schema from "./db/schema";
@@ -22,7 +21,6 @@ import {
 } from "./lib/session-auth";
 // External routes
 import { externalApiRouter } from "./routes/external";
-import { Counter } from "./client/Counter";
 
 const app = new OpenAPIHono<AppType>();
 
@@ -31,34 +29,6 @@ app.use(logger());
 
 // Set drizzle database on context
 app.use(dbMiddleware);
-
-app.use(
-  jsxRenderer(
-    ({ children }) => (
-      <html lang="en">
-        <head>
-          <meta charSet="utf-8" />
-          <meta content="width=device-width, initial-scale=1" name="viewport" />
-          <title>hono-client</title>
-          <script
-            type="module"
-            src={
-              import.meta.env.PROD
-                ? "/assets/index.js"
-                : "/src/client/index.tsx"
-            }
-          />
-        </head>
-        <div id="root">{children}</div>
-      </html>
-    ),
-    { docType: true }
-  )
-);
-
-app.get("/counter", (c) => {
-  return c.render(<Counter />);
-});
 
 // Mount internal routes
 app.get("/", requireSessionSecret, addCurrentUserToContext, (c) => {
