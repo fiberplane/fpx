@@ -6,10 +6,23 @@ This is a proof of concept model context protocol server for querying Fiberplane
 
 If you have Claude Desktop installed, update the configuration to use the local MCP server.
 
+```json
+{
+  "mcpServers": {
+    "fiberplane": {
+      "command": "npx",
+      "args": [
+        "@fiberplane/mcp-server-fiberplane"
+      ]
+    }
+  }
+}
+```
+
 > **Note**
 > If you're using NVM or FNM or any other Node version manager, Claude Desktop will not be able to find the `node` command. Use the following snippet as reference. Issue tracked [here](https://github.com/modelcontextprotocol/servers/issues/64)
 >
-> ```
+> ```json
 > {
 >   "mcpServers": {
 >     "fiberplane": {
