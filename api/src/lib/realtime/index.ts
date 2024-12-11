@@ -21,9 +21,25 @@ export function setupRealtimeService({
     );
     wsConnections.add(ws);
 
-    ws.on("ping", () => {
-      logger.debug("ping");
-      ws.send("pong");
+    // NOTE - The `react-use-websocket` library's ping message was not getting picked up as an actual ping frame here,
+    //        so below, we use `ws.on("message", (data) => { ... })` to detect the ping message and send a pong back instead.
+    //
+    //        I've kept the old code commented out so no one falls into the trap of refactoring this to use `ws.on("ping", () => { ... })`
+    //
+    // /** OLD CODE - DO NOT USE */
+    // ws.on("ping", () => {
+    //   logger.debug("ping");
+    //   // ws.send("pong");
+    //   ws.pong();
+    // });
+    // /** / OLD CODE - DO NOT USE */
+    //
+    ws.on("message", (data) => {
+      const message = data.toString();
+      if (message === "ping") {
+        logger.debug("Received ping from websocket client");
+        ws.send("pong");
+      }
     });
 
     ws.on("error", (err) => {

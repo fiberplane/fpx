@@ -1,18 +1,18 @@
 {
-  "name": "meow",
+  "name": "honc-telegram-bot",
+  "description": "a telegram bot",
   "scripts": {
     "dev": "wrangler dev src/index.ts",
     "deploy": "wrangler deploy --minify src/index.ts"
   },
   "dependencies": {
-    "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.36.0",
+    "drizzle-orm": "^0.36.4",
     "hono": "^4.6.7"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241106.0",
     "@fiberplane/hono-otel": "workspace:*",
-    "tsx": "^4.19.2",
+    "drizzle-kit": "^0.28.1",
     "wrangler": "^3.91.0"
   }
 }
