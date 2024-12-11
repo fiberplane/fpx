@@ -427,7 +427,7 @@ function isCloudflareKVBinding(o: unknown) {
  * ```
  */
 function getConstructorName(o: unknown) {
-  return Object.getPrototypeOf(o).constructor.name;
+  return Object.getPrototypeOf(o)?.constructor?.name;
 }
 
 /**
