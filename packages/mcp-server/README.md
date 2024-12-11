@@ -28,7 +28,7 @@ If you have Claude Desktop installed, update the configuration to use the local 
 >     "fiberplane": {
 >       "command": "<path_to_node>",
 >       "args": [
->         "<path_to_globally_installed_npm_packages_>/@fiberplane/mcp-server-fiberplane/dist/src/index.js"
+>         "<path_to_globally_installed_npm_packages_>/@fiberplane/mcp-server-fiberplane/dist/index.js"
 >       ]
 >     }
 >   }

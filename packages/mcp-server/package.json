@@ -1,7 +1,7 @@
 {
   "name": "@fiberplane/mcp-server-fiberplane",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "access": "public",
   "description": "MCP server for Fiberplane Studio",
   "main": "dist/index.js",
