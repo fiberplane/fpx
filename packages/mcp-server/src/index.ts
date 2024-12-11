@@ -12,6 +12,8 @@ import {
   listTracesTool,
 } from "./tools.js";
 
+const DEFAULT_FIBERPLANE_STUDIO_URL = "http://localhost:8788";
+
 async function main() {
   console.log("Starting Fiberplane MCP Server ...");
 
@@ -39,7 +41,8 @@ async function main() {
         }
 
         const tool = request.params.name;
-        const baseUrl = process.env.FIBERPLANE_STUDIO_URL || "http://localhost:8788";
+        const baseUrl =
+          process.env.FIBERPLANE_STUDIO_URL || DEFAULT_FIBERPLANE_STUDIO_URL;
 
         switch (tool) {
           case "fiberplane_list_traces": {
@@ -47,10 +50,12 @@ async function main() {
             const traces = await response.json();
             console.log("traces", traces);
             return {
-              content: [{
-                type: "text",
-                text: JSON.stringify(traces)
-              }]
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(traces),
+                },
+              ],
             };
           }
 
@@ -65,10 +70,12 @@ async function main() {
             const spans = await response.json();
             console.log("spans", spans);
             return {
-              content: [{
-                type: "text",
-                text: JSON.stringify(spans)
-              }]
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(spans),
+                },
+              ],
             };
           }
 
@@ -77,10 +84,12 @@ async function main() {
             const routes = await response.json();
             console.log("routes", routes);
             return {
-              content: [{
-                type: "text",
-                text: JSON.stringify(routes)
-              }]
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(routes),
+                },
+              ],
             };
           }
 
@@ -89,10 +98,12 @@ async function main() {
             const requests = await response.json();
             console.log("requests", requests);
             return {
-              content: [{
-                type: "text",
-                text: JSON.stringify(requests)
-              }]
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(requests),
+                },
+              ],
             };
           }
 
