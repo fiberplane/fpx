@@ -11,5 +11,5 @@ export function DashboardPage() {
         <ProjectList />
       </div>
     </div>
-  )
+  );
 }

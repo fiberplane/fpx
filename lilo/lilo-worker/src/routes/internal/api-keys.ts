@@ -5,24 +5,29 @@ import * as schema from "../../db/schema";
 import { importKey } from "../../lib/crypto";
 import { createJwtPayload } from "../../lib/jwt";
 import { dashboardAuthentication } from "../../lib/session-auth";
-import type { AppType } from "../../types";
-
-const router = new Hono<AppType>();
+import type { AppContext, AppType } from "../../types";
 
 type CreateApiKeyBody = {
   name: string;
   projectId: string;
 };
 
-// Middleware to ensure the user is authenticated
-router.use(dashboardAuthentication);
+export type ApiKeysClient = typeof apiKeysRouter;
+
+const apiKeysRouter = new Hono<AppType>()
+  // Middleware to ensure the user is authenticated
+  .use(dashboardAuthentication)
+  .post("/", createApiKey)
+  .get("/", getApiKeys)
+  // NOTE - `index[":id"]` did not work on the Hono RPC client, so I added
+  .delete("/keys/:id", deleteApiKey);
 
 /**
  * Create a new API key for a user
  *
  * @TODO - Add validation for the request body
  */
-router.post("/", async (c) => {
+async function createApiKey(c: AppContext) {
   const db = c.get("db");
   const { name, projectId } = await c.req.json<CreateApiKeyBody>();
 
@@ -61,13 +66,9 @@ router.post("/", async (c) => {
     },
     201,
   );
-});
+}
 
-const maskToken = (token: string) => {
-  return `${token.slice(0, 4)}...${token.slice(-4)}`;
-};
-
-router.get("/", async (c) => {
+async function getApiKeys(c: AppContext) {
   const db = c.get("db");
   const apiKeys = await db.select().from(schema.apiKeys);
 
@@ -80,17 +81,27 @@ router.get("/", async (c) => {
   }));
 
   return c.json(formattedKeys);
-});
+}
 
-router.delete("/:id", async (c) => {
+/**
+ * Delete an API key for a user
+ */
+async function deleteApiKey(c: AppContext) {
   const db = c.get("db");
   const id = c.req.param("id");
 
   // Delete the API key from the database to revoke it
-  // TODO - Mark the key as revoked
+  // TODO - Mark the key as revoked instead of fully deleting the record
   await db.delete(schema.apiKeys).where(eq(schema.apiKeys.id, id));
 
   return c.body(null, 204);
-});
+}
 
-export { router as apiKeysRouter };
+/**
+ * Mask the token to only show the first and last 4 characters
+ */
+const maskToken = (token: string) => {
+  return `${token.slice(0, 4)}...${token.slice(-4)}`;
+};
+
+export { apiKeysRouter };

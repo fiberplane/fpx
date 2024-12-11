@@ -1,4 +1,4 @@
-import { UserNav } from "./user-nav"
+import { UserNav } from "./user-nav";
 
 export function DashboardHeader() {
   return (
@@ -6,6 +6,5 @@ export function DashboardHeader() {
       <h1 className="text-3xl font-bold">Lilo Dashboard</h1>
       <UserNav />
     </header>
-  )
+  );
 }
-

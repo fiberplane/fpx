@@ -17,6 +17,7 @@
   "dependencies": {
     "@hono/oauth-providers": "^0.6.2",
     "@hono/zod-openapi": "^0.18.0",
+    "@hono/zod-validator": "^0.4.1",
     "@scalar/hono-api-reference": "^0.5.163",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.36.4",

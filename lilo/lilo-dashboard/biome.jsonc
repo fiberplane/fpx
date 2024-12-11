@@ -1,0 +1,27 @@
+{
+  "$schema": "../../node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["../../biome.jsonc"],
+  "files": {
+    "ignore": [
+      "dist",
+      "node_modules",
+      "tsconfig.node.json",
+      "tsconfig.app.json"
+    ]
+  },
+  "overrides": [
+    {
+      "include": ["src"],
+      "linter": {
+        "enabled": true,
+        "rules": {
+          "suspicious": {
+            "noArrayIndexKey": {
+              "level": "off"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,16 +1,20 @@
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query"
-import { Toaster } from "./components/ui/toaster"
-import { Layout } from "./Layout"
-import { DashboardPage } from "./pages/DashboardPage"
-import { useSession } from "./hooks/use-session"
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from "@tanstack/react-query";
+import { Layout } from "./Layout";
+import { Toaster } from "./components/ui/toaster";
+import { useSession } from "./hooks/use-session";
+import { DashboardPage } from "./pages/DashboardPage";
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient();
 
 type User = {
-  id: string
-  email: string
-  githubUsername: string
-}
+  id: string;
+  email: string;
+  githubUsername: string;
+};
 
 function AuthContent() {
   const { data: user, isLoading } = useSession();
@@ -20,7 +24,7 @@ function AuthContent() {
       <div className="flex h-screen items-center justify-center">
         <div className="text-lg">Loading...</div>
       </div>
-    )
+    );
   }
 
   if (!user) {
@@ -34,7 +38,7 @@ function AuthContent() {
           Login with GitHub
         </a>
       </div>
-    )
+    );
   }
 
   return (
@@ -42,7 +46,7 @@ function AuthContent() {
       <DashboardPage />
       <Toaster />
     </Layout>
-  )
+  );
 }
 
 function App() {
@@ -50,7 +54,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthContent />
     </QueryClientProvider>
-  )
+  );
 }
 
-export default App
+export default App;

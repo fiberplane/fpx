@@ -1,6 +1,5 @@
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -8,20 +7,34 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { useToast } from "@/hooks/use-toast"
+} from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { hc } from "hono/client";
+import { useState } from "react";
+import type { ApiKeysClient } from "../../../../lilo-worker/src/routes/internal/api-keys";
 
 type ApiKey = {
-  id: string
-  name: string
-  key: string
-  createdAt: string
-}
+  id: string;
+  name: string;
+  key: string;
+  createdAt: string;
+};
+
+const apiKeysClient = hc<ApiKeysClient>("/internal/api-keys");
 
 export function ApiKeyList() {
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([])
-  const [newKeyName, setNewKeyName] = useState("")
-  const { toast } = useToast()
+  const [newKeyName, setNewKeyName] = useState("");
+  const { toast } = useToast();
+
+  const {
+    data: apiKeys,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["api-keys"],
+    queryFn: () => apiKeysClient.index.$get(),
+  });
 
   const generateApiKey = () => {
     if (!newKeyName) {
@@ -29,8 +42,8 @@ export function ApiKeyList() {
         title: "Error",
         description: "Please enter a name for the API key",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     const newKey: ApiKey = {
@@ -38,23 +51,31 @@ export function ApiKeyList() {
       name: newKeyName,
       key: `lilo_${Math.random().toString(36).substr(2, 32)}`,
       createdAt: new Date().toISOString(),
-    }
+    };
 
-    setApiKeys([...apiKeys, newKey])
-    setNewKeyName("")
+    // setApiKeys([...apiKeys, newKey])
+    setNewKeyName("");
     toast({
       title: "API Key Generated",
       description: "Your new API key has been created successfully.",
-    })
-  }
+    });
+  };
 
   const revokeApiKey = (id: string) => {
-    setApiKeys(apiKeys.filter((key) => key.id !== id))
+    // setApiKeys(apiKeys.filter((key) => key.id !== id))
+
+    // NOTE - `index[":id"]` did not work...
+    apiKeysClient.keys[":id"].$delete({
+      param: {
+        id,
+      },
+    });
+
     toast({
       title: "API Key Revoked",
       description: "The API key has been revoked successfully.",
-    })
-  }
+    });
+  };
 
   return (
     <div>
@@ -83,7 +104,10 @@ export function ApiKeyList() {
               <TableCell>{key.key}</TableCell>
               <TableCell>{new Date(key.createdAt).toLocaleString()}</TableCell>
               <TableCell>
-                <Button variant="destructive" onClick={() => revokeApiKey(key.id)}>
+                <Button
+                  variant="destructive"
+                  onClick={() => revokeApiKey(key.id)}
+                >
                   Revoke
                 </Button>
               </TableCell>
@@ -92,6 +116,5 @@ export function ApiKeyList() {
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
-

@@ -142,9 +142,5 @@ export const getUserBySessionId = async (
 };
 
 export const getSessionId = async (c: AppContext) => {
-  return await getSignedCookie(
-    c,
-    c.env.SESSION_SECRET,
-    SESSION_COOKIE_NAME,
-  );
+  return await getSignedCookie(c, c.env.SESSION_SECRET, SESSION_COOKIE_NAME);
 };
