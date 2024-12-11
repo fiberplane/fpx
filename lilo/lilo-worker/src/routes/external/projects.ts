@@ -37,6 +37,21 @@ const CreateProjectSchema = z
   })
   .openapi("CreateProject");
 
+const listProjectsRoute = createRoute({
+  method: "get",
+  path: "/",
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.array(ProjectSchema),
+        },
+      },
+      description: "List of projects",
+    },
+  },
+});
+
 // Define routes
 const createProjectRoute = createRoute({
   method: "post",
@@ -117,6 +132,18 @@ router.openapi(updateProjectRoute, async (c) => {
     .returning();
 
   return c.json(updatedProject);
+});
+
+router.openapi(listProjectsRoute, async (c) => {
+  const db = drizzle(c.env.DB);
+  const userId = c.get("currentUser")?.id ?? "";
+
+  const projects = await db
+    .select()
+    .from(schema.projects)
+    .where(eq(schema.projects.userId, userId));
+
+  return c.json(projects);
 });
 
 // Add other project routes (API specs, documentation) following similar pattern...

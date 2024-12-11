@@ -1,7 +1,9 @@
 import { instrument } from "@fiberplane/hono-otel";
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { eq } from "drizzle-orm";
 import { logger } from "hono/logger";
 
+import * as schema from "./db/schema";
 import { dbMiddleware } from "./lib/db";
 import type { AppType } from "./types";
 
@@ -57,25 +59,58 @@ app.route("/dashboard", dashboardRouter);
 app.route("/api", externalApiRouter);
 
 // Mount OpenAPI documentation
-app.doc("/doc", {
+app.doc("/doc", (c) => ({
   openapi: "3.0.0",
   info: {
     title: "Lilo API",
     version: "1.0.0",
     description: "API documentation for Lilo",
   },
-});
+  servers: [
+    {
+      url: new URL(c.req.url).origin,
+      description: "Current environment",
+    },
+  ],
+}));
 
-app.get(
-  "/reference",
-  apiReference({
+app.get("/reference", addCurrentUserToContext, async (c, next) => {
+  let apiKey = "";
+  const db = c.get("db");
+  const currentUser = c.get("currentUser");
+  if (currentUser) {
+    apiKey =
+      (await db
+        .select()
+        .from(schema.apiKeys)
+        .where(eq(schema.apiKeys.userId, currentUser.id))
+        .then((res) => res[0]?.key)) ?? "";
+  }
+
+  const reference = apiReference({
     spec: {
       url: "/doc", // URL to your OpenAPI specification
     },
-    theme: "purple", // Optional: choose a theme like 'default', 'moon', 'purple', etc.
-    pageTitle: "Hono API Reference", // Optional: set a custom page title
-  }),
-);
+    // Optional: choose a theme like 'default', 'moon', 'purple', etc.
+    theme: "purple",
+    pageTitle: "Lilo API Reference",
+    authentication: {
+      http: {
+        // NOTE - Need to specify basic, even though we don't use it
+        basic: {
+          username: "",
+          password: "",
+        },
+        bearer: {
+          token: apiKey,
+        },
+      },
+    },
+  });
+
+  // @ts-expect-error - TODO: fix this to incorporate the variables set by the scalar middleware
+  return reference(c, next);
+});
 
 // Health check route
 app.get("/health", (c) => c.json({ status: "ok" }));
