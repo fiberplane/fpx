@@ -88,7 +88,7 @@ export function CollectionItemListItem({
               renameItem({
                 itemId: itemId.toString(),
                 collectionId,
-                nullableExtraParams: data,
+                extraParams: data,
               });
               setRenameOpen(false);
             }}

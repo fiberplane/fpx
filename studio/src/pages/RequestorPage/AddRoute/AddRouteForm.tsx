@@ -28,7 +28,15 @@ type AddRouteFormData = z.infer<typeof ValidationSchema>;
 
 export function AddRouteForm(props: Props) {
   const { collectionId, onSuccess } = props;
-  const { mutate: addAppRoute } = useAddItemToCollection(collectionId);
+  const {
+    mutate: addAppRoute,
+    error,
+    data,
+  } = useAddItemToCollection(collectionId);
+  console.log({
+    error,
+    data,
+  });
 
   const { isLoading } = useRoutes();
   const { appRoutes: routes } = useStudioStore("appRoutes");
@@ -49,11 +57,16 @@ export function AddRouteForm(props: Props) {
       formData.routes.map((id) =>
         addAppRoute({
           routeId: id,
-          extraParams: {},
+          extraParams: {
+            name: undefined,
+            requestHeaders: {},
+            requestPathParams: {},
+            requestQueryParams: {},
+            requestBody: null,
+          },
         }),
       ),
     );
-    console.log("all good?!?");
     onSuccess();
   };
 
@@ -75,11 +88,11 @@ export function AddRouteForm(props: Props) {
         className="grid min-h-0 gap-2"
       >
         <div className="grid gap-2 overflow-auto">
-          {routes.map((route, index) => {
+          {routes.map((route) => {
             const id = `route-${route.id.toString()}`;
             return (
               <div
-                key={index}
+                key={route.id}
                 className="grid grid-cols-[1rem_auto] items-center gap-2"
               >
                 <Input
@@ -101,8 +114,8 @@ export function AddRouteForm(props: Props) {
           })}
         </div>
         <div>
-          {routesErrors.map((route, index) => {
-            return <div key={index}>{route}</div>;
+          {routesErrors.map((route) => {
+            return <div key={route}>{route}</div>;
           })}
         </div>
         <Button type="submit">Add</Button>

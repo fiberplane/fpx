@@ -52,6 +52,7 @@ export function ManageCollection(props: {
       <Dialog open={triggerRename} onOpenChange={setRenameOpen}>
         <DialogContent className="max-w-screen-sm w-96">
           <CollectionForm
+            inDialog
             onSubmit={(data) => {
               mutate({
                 collectionId,

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useShake } from "@/hooks";
 import { cn } from "@/utils";
-import { ExtraRequestParamsSchema } from "@fiberplane/fpx-types";
+import { CollectionItemParamsSchema } from "@fiberplane/fpx-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { useEffect } from "react";
@@ -19,7 +19,7 @@ type Props = {
   onSubmit: SubmitHandler<NameFormData>;
 };
 
-export const NameSchema = ExtraRequestParamsSchema.pick({ name: true });
+export const NameSchema = CollectionItemParamsSchema.pick({ name: true });
 export type NameFormData = z.infer<typeof NameSchema>;
 
 export function NamingRouteForm(props: Props) {

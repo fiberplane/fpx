@@ -6,7 +6,7 @@ import {
 } from "@/constants";
 import { useAddItemToCollection } from "@/queries";
 import { createObjectFromKeyValueParameters } from "@/utils";
-import type { ExtraRequestParams } from "@fiberplane/fpx-types";
+import type { CollectionItemParams } from "@fiberplane/fpx-types";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
@@ -33,7 +33,7 @@ export function AddToRouteFormItem(props: {
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
-  const extraParams: ExtraRequestParams = {
+  const extraParams: CollectionItemParams = {
     requestQueryParams: createObjectFromKeyValueParameters(queryParams),
     requestPathParams: createObjectFromKeyValueParameters(pathParams),
     requestHeaders: createObjectFromKeyValueParameters(requestHeaders),

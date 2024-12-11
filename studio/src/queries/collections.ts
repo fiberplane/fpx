@@ -2,9 +2,9 @@ import { useStudioStore } from "@/pages/RequestorPage/store";
 import { getStudioStoreState } from "@/pages/RequestorPage/store/hooks/useStudioStore";
 // import { getStudioStoreState } from "@/pages/RequestorPage/store/hooks/useStudioStore";
 import {
+  type CollectionItemParams,
+  CollectionItemParamsSchema,
   CollectionSchema,
-  type ExtraRequestParams,
-  ExtraRequestParamsSchema,
 } from "@fiberplane/fpx-types";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,7 +14,7 @@ import { z } from "zod";
 
 export const COLLECTIONS_KEY = "collections";
 
-export const CollectionItemSchema = ExtraRequestParamsSchema.extend({
+export const CollectionItemSchema = CollectionItemParamsSchema.extend({
   id: z.number(),
   name: z.string().nullable(),
   appRouteId: z.number(),
@@ -22,11 +22,10 @@ export const CollectionItemSchema = ExtraRequestParamsSchema.extend({
 
 export type CollectionItem = z.infer<typeof CollectionItemSchema>;
 
-const CollectionWithItemsListSchema = z.array(
-  CollectionSchema.extend({
-    collectionItems: z.array(CollectionItemSchema),
-  }),
-);
+const CollectionWithItemsSchema = CollectionSchema.extend({
+  collectionItems: z.array(CollectionItemSchema),
+});
+const CollectionWithItemsListSchema = z.array(CollectionWithItemsSchema);
 
 export type CollectionWithItemsList = z.infer<
   typeof CollectionWithItemsListSchema
@@ -130,7 +129,7 @@ export function useUpdateCollection() {
 async function addItemToCollection(
   collectionId: string,
   routeId: number,
-  extraParams: ExtraRequestParams,
+  extraParams: CollectionItemParams,
 ) {
   return fetch(`/v0/collections/${collectionId}/items`, {
     method: "POST",
@@ -189,7 +188,7 @@ export function useAddItemToCollection(collectionId: string) {
     mutationFn: ({
       routeId,
       extraParams,
-    }: { routeId: number; extraParams: ExtraRequestParams }) =>
+    }: { routeId: number; extraParams: CollectionItemExtraParams }) =>
       addItemToCollection(collectionId, routeId, extraParams),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [COLLECTIONS_KEY] });
@@ -256,46 +255,21 @@ export function useDeleteCollection(collectionId: string) {
   return mutation;
 }
 
-type Nullable<T> = {
-  [P in keyof T]: T[P] | null;
-};
-
-/**
- * Extra request params that can be null
- *
- * If set to null the value that is stored in the store will be used
- */
-export type NullableExtraRequestParams = Simplify<
-  Nullable<
-    Pick<
-      ExtraRequestParams,
-      | "name"
-      | "requestBody"
-      | "requestHeaders"
-      | "requestQueryParams"
-      | "requestPathParams"
-    >
-  >
->;
-
 export function useUpdateCollectionItem() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: ({
       collectionId,
       itemId,
-      nullableExtraParams,
+      extraParams,
     }: {
       collectionId: string;
       itemId: string;
-      nullableExtraParams: NullableExtraRequestParams;
+      extraParams: CollectionItemParams;
     }) => {
-      // const entries = Object.entries(nullableExtraParams) as [keyof NullableExtraRequestParams, NullableExtraRequestParams[keyof NullableExtraRequestParams]][];
       const overrideValues = Object.fromEntries(
-        Object.entries(nullableExtraParams).filter(
-          ([_, value]) => value !== null,
-        ),
-      ) as ExtraRequestParams;
+        Object.entries(extraParams).filter(([_, value]) => value !== null),
+      ) as CollectionItemParams;
 
       const state = getStudioStoreState();
       const collection = state.collections.find(
@@ -304,14 +278,12 @@ export function useUpdateCollectionItem() {
       const collectionItem = collection?.collectionItems.find(
         (i) => i.id.toString() === itemId,
       );
-      const extraParams: ExtraRequestParams = {
+      const params: CollectionItemParams = {
         name: collectionItem?.name ?? undefined,
         requestBody: collectionItem?.requestBody ?? undefined,
         requestHeaders: collectionItem?.requestHeaders ?? undefined,
         requestQueryParams: collectionItem?.requestQueryParams ?? undefined,
         requestPathParams: collectionItem?.requestPathParams ?? undefined,
-        requestMethod: collectionItem?.requestMethod ?? undefined,
-        requestRoute: collectionItem?.requestRoute ?? undefined,
         ...overrideValues,
       };
       return fetch(`/v0/collections/${collectionId}/items/${itemId}`, {
@@ -319,7 +291,7 @@ export function useUpdateCollectionItem() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(extraParams),
+        body: JSON.stringify(params),
       }).then(async (r) => {
         if (!r.ok) {
           const result = await (r.headers

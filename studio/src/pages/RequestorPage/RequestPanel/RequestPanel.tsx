@@ -22,7 +22,7 @@ import {
 } from "@/components/CodeMirrorEditor";
 import { useActiveCollectionEntryId, useActiveCollectionId } from "@/hooks";
 import {
-  type NullableExtraRequestParams,
+  type CollectionItemExtraParams,
   useUpdateCollectionItem,
 } from "@/queries/collections";
 import { useStudioStore } from "../store";
@@ -121,7 +121,7 @@ export const RequestPanel = memo(function RequestPanel(
 
   const { mutate } = useUpdateCollectionItem();
   const updateCollectionItem = (
-    nullableExtraParams: NullableExtraRequestParams,
+    nullableExtraParams: CollectionItemExtraParams,
   ) => {
     if (collectionId === null || collectionItemId === null) {
       return;
@@ -130,7 +130,7 @@ export const RequestPanel = memo(function RequestPanel(
     return mutate({
       collectionId,
       itemId: collectionItemId,
-      nullableExtraParams,
+      extraParams: nullableExtraParams,
     });
   };
 

@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 
-import { ExtraRequestParamsSchema } from "@fiberplane/fpx-types";
+import { CollectionItemParamsSchema } from "@fiberplane/fpx-types";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
 import {
@@ -64,7 +64,7 @@ app.post("/v0/collections", async (ctx) => {
 app.post(
   "/v0/collections/:collectionId/items",
   zValidator("param", z.object({ collectionId: z.number({ coerce: true }) })),
-  zValidator("json", ExtraRequestParamsSchema.extend({ id: z.number() })),
+  zValidator("json", CollectionItemParamsSchema.extend({ id: z.number() })),
   async (ctx) => {
     const db = ctx.get("db");
 
@@ -283,7 +283,7 @@ app.put(
       itemId: z.number({ coerce: true }),
     }),
   ),
-  zValidator("json", ExtraRequestParamsSchema),
+  zValidator("json", CollectionItemParamsSchema),
   async (ctx) => {
     const { id, itemId } = ctx.req.valid("param");
     const db = ctx.get("db");

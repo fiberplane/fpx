@@ -38,15 +38,12 @@ export const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
 
 export type JsonSchemaType = z.infer<typeof JsonSchema>;
 
-export const ExtraRequestParamsSchema = z.object({
+export const CollectionItemParamsSchema = z.object({
   name: z.string().optional(),
-  requestUrl: z.string().optional(),
-  requestMethod: z.string().optional(),
-  requestRoute: z.string().optional(),
-  requestHeaders: z.record(z.string()).optional(),
-  requestQueryParams: z.record(z.string()).optional(),
-  requestPathParams: z.record(z.string()).optional(),
-  requestBody: JsonSchema.optional(), // Assuming JsonSchemaType can be any type
+  requestHeaders: z.record(z.string()).optional().nullable(),
+  requestQueryParams: z.record(z.string()).optional().nullable(),
+  requestPathParams: z.record(z.string()).optional().nullable(),
+  requestBody: JsonSchema.optional().nullable(), // Assuming JsonSchemaType can be any type
 });
 
-export type ExtraRequestParams = z.infer<typeof ExtraRequestParamsSchema>;
+export type CollectionItemParams = z.infer<typeof CollectionItemParamsSchema>;
