@@ -23,9 +23,6 @@ export const users = sqliteTable("users", {
     .$defaultFn(() => randomUUID()),
   email: text("email").notNull().unique(),
   githubUsername: text("github_username").notNull(),
-  token: text("token"),
-  refreshToken: text("refresh_token"),
-  sessionToken: text("session_token"),
   ...timestamps,
 });
 

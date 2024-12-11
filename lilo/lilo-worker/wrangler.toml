@@ -2,6 +2,9 @@ name = "lilo-worker"
 compatibility_date = "2024-11-11"
 compatibility_flags = [ "nodejs_compat" ]
 
+[dev]
+port = 6246
+
 [[d1_databases]]
 binding = "DB"
 database_name = "honc-d1-database"

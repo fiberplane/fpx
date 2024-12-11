@@ -1,27 +1,25 @@
 import { instrument } from "@fiberplane/hono-otel";
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { cors } from 'hono/cors'
 import { eq } from "drizzle-orm";
 import { logger } from "hono/logger";
+import { apiReference } from "@scalar/hono-api-reference";
 
 import * as schema from "./db/schema";
 import { dbMiddleware } from "./lib/db";
-import type { AppType } from "./types";
-
-import { dashboardAuthRouter } from "./routes/dashboard/auth";
-// Internal routes
-import { dashboardRouter } from "./routes/dashboard/dashboard";
-import { apiKeysRouter } from "./routes/internal/api-keys";
-
-import { apiReference } from "@scalar/hono-api-reference";
 import {
   addCurrentUserToContext,
-  dashboardAuthentication,
   deleteSession,
   requireSessionSecret,
 } from "./lib/session-auth";
+import type { AppType } from "./types";
+
+// Internal routes
+import { dashboardAuthRouter } from "./routes/dashboard/auth";
+import { dashboardRouter } from "./routes/dashboard/dashboard";
+import { apiKeysRouter } from "./routes/internal/api-keys";
 // External routes
 import { externalApiRouter } from "./routes/external";
-
 const app = new OpenAPIHono<AppType>();
 
 // Add basic request logging
@@ -51,6 +49,10 @@ app.get("/logout", async (c) => {
   return c.redirect("/");
 });
 
+app.use("/internal/*", cors({
+  origin: "http://localhost:YOUR_FRONTEND_PORT",
+  credentials: true // Important! for use with frontend
+}))
 app.route("/internal/auth", dashboardAuthRouter);
 app.route("/internal/api-keys", apiKeysRouter);
 app.route("/dashboard", dashboardRouter);

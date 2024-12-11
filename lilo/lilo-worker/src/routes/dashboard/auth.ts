@@ -5,13 +5,17 @@ import { Hono } from "hono";
 import { setSignedCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
 import * as schema from "../../db/schema";
-import { SESSION_COOKIE_NAME, createSession } from "../../lib/session-auth";
+import { SESSION_COOKIE_NAME, createSession, deleteSession, getSessionId } from "../../lib/session-auth";
 import type { AppType } from "../../types";
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { getCookie } from "hono/cookie";
+import { eq } from "drizzle-orm";
+import { cors } from "hono/cors";
 
-const router = new Hono<AppType>();
+export const dashboardAuthRouter = new OpenAPIHono<AppType>();
 
 // NOTE - Never serve the auth routes if SESSION_SECRET is not set
-router.use("/auth", async (c, next) => {
+dashboardAuthRouter.use("/auth", async (c, next) => {
   if (!c.env.SESSION_SECRET) {
     return c.json({ error: "Internal server error" }, 500);
   }
@@ -19,7 +23,7 @@ router.use("/auth", async (c, next) => {
 });
 
 // Handle errors from GitHub OAuth
-router.onError((err, c) => {
+dashboardAuthRouter.onError((err, c) => {
   if (err instanceof HTTPException) {
     if (err.status === 401) {
       return c.json({ error: "Authentication failed" }, 401);
@@ -30,7 +34,7 @@ router.onError((err, c) => {
 });
 
 // Set up GitHub OAuth middleware
-router.use("/github", async (c, next) => {
+dashboardAuthRouter.use("/github", async (c, next) => {
   const handler = githubAuth({
     client_id: c.env.GITHUB_ID,
     client_secret: c.env.GITHUB_SECRET,
@@ -41,7 +45,7 @@ router.use("/github", async (c, next) => {
 });
 
 // GitHub OAuth callback handler
-router.get("/github", async (c) => {
+dashboardAuthRouter.get("/github", async (c) => {
   const db = drizzle(c.env.DB);
 
   const user = c.get("user-github");
@@ -68,9 +72,39 @@ router.get("/github", async (c) => {
 
   // Generate a session and attach to cookie (stored in the database)
   await createSession(c, db, userRecord.id);
-
+  console.log('created session')
+  console.log("redirecting to", "http://localhost:3005/");
   // TODO - Redirect to the dashboard
-  return c.redirect("/dashboard");
+  return c.redirect("http://localhost:3005/");
 });
 
-export { router as dashboardAuthRouter };
+// Add session endpoint
+dashboardAuthRouter.get("/session", cors({
+  // FIXME - remove this when in prod
+  origin: "http://localhost:3005",
+  credentials: true,
+}), async (c) => {
+  const sessionId = await getSessionId(c);
+  if (!sessionId) {
+    return c.json({ message: "No session found" }, 401);
+  }
+
+  const db = c.get("db");
+  const [result] = await db.select()
+    .from(schema.sessions)
+    .where(eq(schema.sessions.id, sessionId))
+    .innerJoin(schema.users, eq(schema.sessions.userId, schema.users.id));
+
+  if (!result) {
+    return c.json({ message: "Session not found" }, 401);
+  }
+
+  const session = result.sessions
+  if (!session || new Date(session.expiresAt) < new Date()) {
+    // Session expired or not found
+    await deleteSession(c, db);
+    return c.json({ message: "Session expired" }, 401);
+  }
+
+  return c.json(result.users);
+});

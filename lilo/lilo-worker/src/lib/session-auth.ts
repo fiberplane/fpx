@@ -41,18 +41,17 @@ export const createSession = async (
   setSignedCookie(c, SESSION_COOKIE_NAME, sessionToken, c.env.SESSION_SECRET, {
     httpOnly: true,
     secure: true,
-    sameSite: "Lax",
+    // TODO: change to none if possible in dev mode to support cross-origin auth with spa
+    sameSite: "none",
     path: "/",
+    // TODO: change to lilo.fp.dev when in prod
+    // domain: "localhost",
     maxAge: COOKIE_MAX_AGE,
   });
 };
 
 export const deleteSession = async (c: AppContext, db: DatabaseType) => {
-  const sessionId = await getSignedCookie(
-    c,
-    c.env.SESSION_SECRET,
-    SESSION_COOKIE_NAME,
-  );
+  const sessionId = await getSessionId(c);
 
   if (!sessionId) {
     return;
@@ -102,11 +101,7 @@ export const addCurrentUserToContext = async (c: AppContext, next: Next) => {
 export const dashboardAuthentication = async (c: AppContext, next: Next) => {
   const db = c.get("db");
 
-  const sessionId = await getSignedCookie(
-    c,
-    c.env.SESSION_SECRET,
-    SESSION_COOKIE_NAME,
-  );
+  const sessionId = await getSessionId(c);
 
   if (!sessionId) {
     return c.json({ message: "Unauthorized" }, 401);
@@ -144,4 +139,12 @@ export const getUserBySessionId = async (
     .where(eq(schema.users.id, session.userId));
 
   return user ?? null;
+};
+
+export const getSessionId = async (c: AppContext) => {
+  return await getSignedCookie(
+    c,
+    c.env.SESSION_SECRET,
+    SESSION_COOKIE_NAME,
+  );
 };
