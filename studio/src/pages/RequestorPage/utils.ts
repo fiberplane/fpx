@@ -62,6 +62,10 @@ const normalizeTimestamp = (timestamp: string): string => {
   }
 
   // Return original timestamp if format is unknown
+  console.warn(
+    "[normalizeTimestamp] Warning: Unrecognized timestamp format",
+    timestamp,
+  );
   return timestamp;
 };
 
