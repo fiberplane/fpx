@@ -4,6 +4,15 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
+const timestamps = {
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+};
+
 export const appRoutes = sqliteTable("app_routes", {
   id: integer("id", { mode: "number" }).primaryKey(),
   path: text("path", { mode: "text" }),
@@ -63,8 +72,7 @@ export const appRequests = sqliteTable("app_requests", {
   requestBody: text("request_body", { mode: "json" }),
   // The hono route corresponding to this request
   requestRoute: text("request_route"),
-  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  ...timestamps,
   // responseId: integer("response_id").references(() => appResponses.id),
 });
 
@@ -82,9 +90,8 @@ export const appResponses = sqliteTable("app_responses", {
     [key: string]: string;
   }>(),
   isFailure: integer("is_failure", { mode: "boolean" }).default(false),
-  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   requestId: integer("request_id").references(() => appRequests.id),
+  ...timestamps,
 });
 
 export const appResponseRelations = relations(appResponses, ({ one }) => ({
@@ -130,52 +137,22 @@ export const appResponseInsertSchema = createInsertSchema(appResponses);
 export type AppResponse = z.infer<typeof appResponseSelectSchema>;
 export type NewAppResponse = z.infer<typeof appResponseInsertSchema>;
 
-// HELPFUL: https://orm.drizzle.team/docs/column-types/sqlite
-export const mizuLogs = sqliteTable("mizu_logs", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  level: text("level", { enum: ["error", "warning", "info", "debug"] }),
-  timestamp: text("timestamp"),
-  traceId: text("trace_id"),
-  service: text("service"),
-  message: text("message", { mode: "json" }),
-  ignored: integer("ignored", { mode: "boolean" }).default(false),
-  args: text("args", { mode: "json" }), // NOTE - Should only be present iff message is a string
-  callerLocation: text("caller_location", { mode: "json" }).$type<
-    z.infer<typeof CallerLocationSchema>
-  >(),
-  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-  matchingIssues: text("matching_issues", { mode: "json" }).$type<
-    number[] | null
-  >(),
-});
-
-const CallerLocationSchema = z.object({
-  file: z.string(),
-  line: z.string(),
-  column: z.string(),
-});
-
 export const otelSpans = sqliteTable("otel_spans", {
   inner: text("inner", { mode: "json" }).$type<OtelSpan>().notNull(),
   spanId: text("span_id").notNull(),
   traceId: text("trace_id").notNull(),
 });
 
-export const newMizuLogSchema = createInsertSchema(mizuLogs);
-export const mizuLogSchema = createSelectSchema(mizuLogs);
-
-// When you select a record
-export type MizuLog = typeof mizuLogs.$inferSelect; // return type when queried
-// When you create a record
-export type NewMizuLog = typeof mizuLogs.$inferInsert; // insert type
-
 export const settings = sqliteTable("settings", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   key: text("key").notNull().unique(),
   value: text("value").notNull().default(""),
-  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
 });
 
 export type Setting = typeof settings.$inferSelect;
@@ -186,8 +163,7 @@ export const tokens = sqliteTable("tokens", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   value: text("value").notNull().unique(),
   expiresAt: text("expires_at"),
-  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  ...timestamps,
 });
 
 export type Token = typeof tokens.$inferSelect;
@@ -197,7 +173,7 @@ export type NewToken = typeof tokens.$inferInsert;
 export const aiRequestLogs = sqliteTable("ai_request_logs", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   log: text("log", { mode: "json" }).notNull(),
-  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  createdAt: timestamps.createdAt,
 });
 
 export const collections = sqliteTable("collections", {

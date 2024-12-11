@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "526903b8-9982-4e6c-b60d-f8e4736c8127",
-  "prevId": "c3ab23ee-d285-4ddc-89da-ba6475fe9c2b",
+  "id": "e1c6675a-d6eb-4b22-bf65-78d0f199a3ad",
+  "prevId": "526903b8-9982-4e6c-b60d-f8e4736c8127",
   "tables": {
     "ai_request_logs": {
       "name": "ai_request_logs",
@@ -191,7 +191,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
         },
         "updated_at": {
           "name": "updated_at",
@@ -199,7 +199,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
         },
         "request_id": {
           "name": "request_id",
@@ -305,103 +305,6 @@
           "notNull": false,
           "autoincrement": false,
           "default": "'http'"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "mizu_logs": {
-      "name": "mizu_logs",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "level": {
-          "name": "level",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "trace_id": {
-          "name": "trace_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "service": {
-          "name": "service",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "message": {
-          "name": "message",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "ignored": {
-          "name": "ignored",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": false
-        },
-        "args": {
-          "name": "args",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "caller_location": {
-          "name": "caller_location",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        },
-        "matching_issues": {
-          "name": "matching_issues",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
         }
       },
       "indexes": {},

@@ -208,6 +208,28 @@ importers:
         specifier: ^3.91.0
         version: 3.91.0(@cloudflare/workers-types@4.20241112.0)
 
+  examples/honc-telegram-bot:
+    dependencies:
+      drizzle-orm:
+        specifier: ^0.36.4
+        version: 0.36.4(@cloudflare/workers-types@4.20241112.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.12)(react@18.3.1)
+      hono:
+        specifier: ^4.6.7
+        version: 4.6.12
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20241106.0
+        version: 4.20241112.0
+      '@fiberplane/hono-otel':
+        specifier: workspace:*
+        version: link:../../packages/client-library-otel
+      drizzle-kit:
+        specifier: ^0.28.1
+        version: 0.28.1
+      wrangler:
+        specifier: ^3.91.0
+        version: 3.91.0(@cloudflare/workers-types@4.20241112.0)
+
   examples/node-api:
     dependencies:
       '@fiberplane/hono-otel':
@@ -302,7 +324,7 @@ importers:
         specifier: ^4.19.2
         version: 4.19.2
       wrangler:
-        specifier: ^3.87.0
+        specifier: ^3.91.0
         version: 3.91.0(@cloudflare/workers-types@4.20241112.0)
 
   examples/service-bindings/woof:
@@ -318,7 +340,7 @@ importers:
         specifier: ^4.20241106.0
         version: 4.20241112.0
       wrangler:
-        specifier: ^3.87.0
+        specifier: ^3.91.0
         version: 3.91.0(@cloudflare/workers-types@4.20241112.0)
 
   examples/test-static-analysis:
@@ -455,6 +477,9 @@ importers:
         specifier: ^3.24.0
         version: 3.24.0
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.9.4
+        version: 1.9.4
       '@types/node':
         specifier: ^22.10.1
         version: 22.10.1
@@ -7320,7 +7345,6 @@ packages:
 
   libsql@0.4.7:
     resolution: {integrity: sha512-T9eIRCs6b0J1SHKYIvD8+KCJMcWZ900iZyxdnSCdqxN12Z1ijzT+jY5nrk72Jw4B0HGzms2NgpryArlJqvc3Lw==}
-    cpu: [x64, arm64, wasm32]
     os: [darwin, linux, win32]
 
   lie@3.3.0:

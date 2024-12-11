@@ -196,6 +196,19 @@ export function useRequestorHistory() {
             })),
           ),
         );
+
+        // NOTE - We set the body to be undefined or a (json serialized) string for now,
+        //        since that helps us render it in the UI (specifically in CodeMirror editors)
+        const body = match.app_requests.requestBody;
+        if (body === undefined || body === null) {
+          setBody(undefined);
+        } else {
+          const safeBody =
+            typeof body !== "string" ? JSON.stringify(body) : body;
+          const bodyType = determineBodyType(headers);
+          const transformedBody = transformBodyValue(bodyType, safeBody);
+          setBody(transformedBody);
+        }
       }
     }
   });
