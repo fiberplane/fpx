@@ -44,6 +44,7 @@ export const CollectionItemParamsSchema = z.object({
   requestQueryParams: z.record(z.string()).optional().nullable(),
   requestPathParams: z.record(z.string()).optional().nullable(),
   requestBody: JsonSchema.optional().nullable(), // Assuming JsonSchemaType can be any type
+  position: z.number().int().optional(),
 });
 
 export type CollectionItemParams = z.infer<typeof CollectionItemParamsSchema>;

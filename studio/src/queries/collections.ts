@@ -1,6 +1,5 @@
 import { useStudioStore } from "@/pages/RequestorPage/store";
 import { getStudioStoreState } from "@/pages/RequestorPage/store/hooks/useStudioStore";
-// import { getStudioStoreState } from "@/pages/RequestorPage/store/hooks/useStudioStore";
 import {
   type CollectionItemParams,
   CollectionItemParamsSchema,
@@ -9,7 +8,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import type { Simplify } from "type-fest";
 import { z } from "zod";
 
 export const COLLECTIONS_KEY = "collections";
@@ -18,6 +16,7 @@ export const CollectionItemSchema = CollectionItemParamsSchema.extend({
   id: z.number(),
   name: z.string().nullable(),
   appRouteId: z.number(),
+  position: z.number().int(),
 });
 
 export type CollectionItem = z.infer<typeof CollectionItemSchema>;
@@ -137,7 +136,7 @@ async function addItemToCollection(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      id: routeId,
+      appRouteId: routeId,
       ...extraParams,
     }),
   }).then(async (r) => {
@@ -188,7 +187,7 @@ export function useAddItemToCollection(collectionId: string) {
     mutationFn: ({
       routeId,
       extraParams,
-    }: { routeId: number; extraParams: CollectionItemExtraParams }) =>
+    }: { routeId: number; extraParams: CollectionItemParams }) =>
       addItemToCollection(collectionId, routeId, extraParams),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [COLLECTIONS_KEY] });

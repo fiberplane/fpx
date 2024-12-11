@@ -209,6 +209,7 @@ export const collectionItems = sqliteTable("collection_items", {
   requestPathParams: text("request_path_params", { mode: "json" }),
   requestBody: text("request_body", { mode: "json" }),
   name: text("name"),
+  position: integer("position").notNull(),
 });
 
 export const appRoutesRelations = relations(appRoutes, ({ many }) => ({

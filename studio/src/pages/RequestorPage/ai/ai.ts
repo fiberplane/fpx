@@ -1,11 +1,14 @@
 import { useToast } from "@/components/ui/use-toast";
+import { useActiveCollectionEntryId, useActiveCollectionId } from "@/hooks";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
+import { useUpdateCollectionItem } from "@/queries/collections";
 import {
   createKeyValueParametersFromValues,
   createObjectFromKeyValueParameters,
   errorHasMessage,
   isJson,
 } from "@/utils";
+import type { CollectionItemParams } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
@@ -16,9 +19,6 @@ import { useServiceBaseUrl } from "../store";
 import { useStudioStore } from "../store";
 import { isRequestorBodyType } from "../store/request-body";
 import { useAiRequestData } from "./generate-request-data";
-import { useActiveCollectionEntryId, useActiveCollectionId } from "@/hooks";
-import { useUpdateCollectionItem } from "@/queries/collections";
-import { CollectionItemParams } from "@fiberplane/fpx-types";
 
 export const FRIENDLY = "Friendly" as const;
 export const HOSTILE = "QA" as const;

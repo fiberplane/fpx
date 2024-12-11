@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { CollectionItemParamsSchema } from "@fiberplane/fpx-types";
 import { zValidator } from "@hono/zod-validator";
-import { and, eq } from "drizzle-orm";
+import { and, eq, gt, gte, lt, lte, sql } from "drizzle-orm";
 import {
   type NewCollection,
   appRoutes,
@@ -63,13 +63,21 @@ app.post("/v0/collections", async (ctx) => {
 
 app.post(
   "/v0/collections/:collectionId/items",
-  zValidator("param", z.object({ collectionId: z.number({ coerce: true }) })),
-  zValidator("json", CollectionItemParamsSchema.extend({ id: z.number() })),
+  zValidator(
+    "param",
+    z.object({ collectionId: z.number({ coerce: true }).int() }),
+  ),
+  zValidator(
+    "json",
+    CollectionItemParamsSchema.extend({
+      appRouteId: z.number().int(),
+    }),
+  ),
   async (ctx) => {
     const db = ctx.get("db");
 
     const { collectionId } = ctx.req.valid("param");
-    const { id: appRouteId, ...extraParams } = ctx.req.valid("json");
+    const { appRouteId, ...extraParams } = ctx.req.valid("json");
 
     try {
       const insertedItem = await db.transaction(async (db) => {
@@ -91,10 +99,16 @@ app.post(
           });
         }
 
+        const count = await db.$count(
+          collectionItems,
+          eq(collectionItems.collectionId, collectionId),
+        );
+
         const result = await db.insert(collectionItems).values({
           collectionId,
           appRouteId,
           ...extraParams,
+          position: count,
         });
 
         if (result.lastInsertRowid === undefined) {
@@ -135,7 +149,8 @@ app.get("/v0/collections", async (ctx) => {
         const items = await db
           .select()
           .from(collectionItems)
-          .where(eq(collectionItems.collectionId, collection.id));
+          .where(eq(collectionItems.collectionId, collection.id))
+          .orderBy(collectionItems.position);
         return {
           ...collection,
           collectionItems: items.map(({ collectionId: _, ...item }) => item),
@@ -191,7 +206,7 @@ app.get(
 // Update a collection by ID
 app.put(
   "/v0/collections/:id",
-  zValidator("param", z.object({ id: z.number({ coerce: true }) })),
+  zValidator("param", z.object({ id: z.number({ coerce: true }).int() })),
   zValidator("json", z.object({ name: z.string() })),
   async (ctx) => {
     const { id } = ctx.req.valid("param");
@@ -216,7 +231,7 @@ app.put(
 // Delete a collection by ID
 app.delete(
   "/v0/collections/:id",
-  zValidator("param", z.object({ id: z.number({ coerce: true }) })),
+  zValidator("param", z.object({ id: z.number({ coerce: true }).int() })),
   async (ctx) => {
     const { id } = ctx.req.valid("param");
     const db = ctx.get("db");
@@ -242,8 +257,8 @@ app.delete(
   zValidator(
     "param",
     z.object({
-      id: z.number({ coerce: true }),
-      itemId: z.number({ coerce: true }),
+      id: z.number({ coerce: true }).int(),
+      itemId: z.number({ coerce: true }).int(),
     }),
   ),
   async (ctx) => {
@@ -279,15 +294,15 @@ app.put(
   zValidator(
     "param",
     z.object({
-      id: z.number({ coerce: true }),
-      itemId: z.number({ coerce: true }),
+      id: z.number({ coerce: true }).int(),
+      itemId: z.number({ coerce: true }).int(),
     }),
   ),
   zValidator("json", CollectionItemParamsSchema),
   async (ctx) => {
     const { id, itemId } = ctx.req.valid("param");
     const db = ctx.get("db");
-
+    const { position, ...extraParams } = ctx.req.valid("json");
     try {
       await db.transaction(async (db) => {
         const item = await db.query.collectionItems.findFirst({
@@ -305,7 +320,7 @@ app.put(
 
         await db
           .update(collectionItems)
-          .set(ctx.req.valid("json"))
+          .set(extraParams)
           .where(
             and(
               eq(collectionItems.collectionId, id),
@@ -313,6 +328,9 @@ app.put(
             ),
           );
       });
+      if (position !== undefined) {
+        await updateCollectionItemOrder(db, id, itemId, position);
+      }
       // TODO return updated item
       return ctx.body(null);
     } catch (error) {
@@ -327,5 +345,64 @@ app.put(
     }
   },
 );
+
+async function updateCollectionItemOrder(
+  db: Variables["db"],
+  collectionId: number,
+  itemId: number,
+  newPosition: number,
+) {
+  // Get the current position of the item
+  await db.transaction(async (db) => {
+    const currentItem = await db.query.collectionItems.findFirst({
+      where: eq(collectionItems.id, itemId),
+    });
+
+    if (!currentItem) {
+      throw new HTTPException(404, {
+        message: "Collection item not found",
+      });
+    }
+
+    const currentPosition = currentItem.position;
+    const totalItems = await db.$count(
+      collectionItems,
+      eq(collectionItems.collectionId, collectionId),
+    );
+
+    const position = newPosition < totalItems ? newPosition : totalItems - 1;
+
+    // Update positions of other items
+    if (position > currentPosition) {
+      await db
+        .update(collectionItems)
+        .set({ position: sql`position - 1` })
+        .where(
+          and(
+            eq(collectionItems.collectionId, collectionId),
+            gt(collectionItems.position, currentPosition),
+            lte(collectionItems.position, position),
+          ),
+        );
+    } else if (position < currentPosition) {
+      await db
+        .update(collectionItems)
+        .set({ position: sql`position + 1` })
+        .where(
+          and(
+            eq(collectionItems.collectionId, collectionId),
+            gte(collectionItems.position, newPosition),
+            lt(collectionItems.position, currentPosition),
+          ),
+        );
+    }
+
+    // Update the position of the item
+    await db
+      .update(collectionItems)
+      .set({ position: newPosition })
+      .where(eq(collectionItems.id, itemId));
+  });
+}
 
 export default app;

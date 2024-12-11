@@ -32,6 +32,7 @@ export function CollectionItemListItem({
   collectionId: string;
 }) {
   const { mutate: deleteItem } = useDeleteItemFromCollection(collectionId);
+  const { mutate: updateItem } = useUpdateCollectionItem();
   const {
     mutate: renameItem,
     error: renameError,
@@ -109,6 +110,34 @@ export function CollectionItemListItem({
           <CustomDropdownItem onSelect={() => setConfirmDelete(true)}>
             <span>Delete</span>
             <Icon icon="lucide:trash-2" className="h-4 w-4" />
+          </CustomDropdownItem>
+          <CustomDropdownItem
+            onSelect={() => {
+              updateItem({
+                collectionId,
+                itemId: itemId.toString(),
+                extraParams: {
+                  position: 0,
+                },
+              });
+            }}
+          >
+            <span>Move to top</span>
+            <Icon icon="lucide:arrow-up-to-line" className="h-4 w-4" />
+          </CustomDropdownItem>
+          <CustomDropdownItem
+            onSelect={() => {
+              updateItem({
+                collectionId,
+                itemId: itemId.toString(),
+                extraParams: {
+                  position: Number.MAX_SAFE_INTEGER,
+                },
+              });
+            }}
+          >
+            <span>Move to bottom</span>
+            <Icon icon="lucide:arrow-down-to-line" className="h-4 w-4" />
           </CustomDropdownItem>
         </DropdownMenuContent>
       </DropdownMenu>
