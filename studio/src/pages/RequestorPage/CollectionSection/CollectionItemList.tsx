@@ -28,12 +28,12 @@ export function CollectionItemList({
 }) {
   const { mutate: syncCollectionItem } = useUpdateCollectionItem();
 
-  const [list, setList] = useState<string[]>(() =>
-    collection.collectionItems.map((item) => item.id.toString()),
+  const [list, setList] = useState<Array<number>>(() =>
+    collection.collectionItems.map((item) => item.id),
   );
 
   useEffect(() => {
-    setList(collection.collectionItems.map((item) => item.id.toString()));
+    setList(collection.collectionItems.map((item) => item.id));
   }, [collection.collectionItems]);
 
   const onDragEnd = (event: DragEndEvent) => {
@@ -50,14 +50,14 @@ export function CollectionItemList({
 
     // move active item to new location
     const newList = [...list];
-    const activeIndex = newList.indexOf(activeItem.id.toString());
-    const overIndex = newList.indexOf(overItem.id.toString());
+    const activeIndex = newList.indexOf(activeItem.id);
+    const overIndex = newList.indexOf(overItem.id);
     newList.splice(activeIndex, 1);
-    newList.splice(overIndex, 0, activeItem.id.toString());
+    newList.splice(overIndex, 0, activeItem.id);
     setList(newList);
     syncCollectionItem({
       collectionId,
-      itemId: activeItem.id.toString(),
+      itemId: activeItem.id,
       extraParams: {
         position: overIndex,
       },
@@ -70,7 +70,7 @@ export function CollectionItemList({
         <SortableContext items={list} strategy={verticalListSortingStrategy}>
           {list.map((listItem) => {
             const item = collection.collectionItems.find(
-              (item) => item.id.toString() === listItem,
+              (item) => item.id === listItem,
             );
             if (!item) {
               return null;

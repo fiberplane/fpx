@@ -87,7 +87,7 @@ export function CollectionItemListItem({
             }}
             onSubmit={(data) => {
               renameItem({
-                itemId: itemId.toString(),
+                itemId,
                 collectionId,
                 extraParams: data,
               });
@@ -115,7 +115,7 @@ export function CollectionItemListItem({
             onSelect={() => {
               updateItem({
                 collectionId,
-                itemId: itemId.toString(),
+                itemId,
                 extraParams: {
                   position: 0,
                 },
@@ -129,7 +129,7 @@ export function CollectionItemListItem({
             onSelect={() => {
               updateItem({
                 collectionId,
-                itemId: itemId.toString(),
+                itemId,
                 extraParams: {
                   position: Number.MAX_SAFE_INTEGER,
                 },

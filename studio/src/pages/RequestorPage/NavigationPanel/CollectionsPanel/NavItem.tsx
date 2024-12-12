@@ -18,7 +18,7 @@ export const NavItem = memo(({ collection }: NavItemProps) => {
   const [params] = useSearchParams();
   const itemId = useActiveCollectionItemId();
   const [searchParams] = useSearchParams();
-  const isSelected = itemId === collection.id.toString();
+  const isSelected = itemId === collection.id;
   useEffect(() => {
     if (isSelected && itemRef.current) {
       itemRef.current.focus();
@@ -84,7 +84,7 @@ export const NavItem = memo(({ collection }: NavItemProps) => {
                 "grid gap-2 grid-cols-[auto_1fr] ml-6 mr-1 hover:bg-muted px-2 py-1 rounded cursor-pointer",
                 "font-mono text-sm",
                 {
-                  "bg-muted": itemId === item.id.toString(),
+                  "bg-muted": itemId === item.id,
                 },
               )}
               tabIndex={0}

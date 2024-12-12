@@ -4,6 +4,7 @@ import { matchRoutes, useLocation } from "react-router-dom";
 import { z } from "zod";
 
 const idSchema = z.number().int();
+
 export function useActiveCollectionId() {
   const ROUTES = useMemo(
     () =>

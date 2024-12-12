@@ -98,12 +98,12 @@ export function CollectionItemCrumb({
   collectionId,
   itemId,
   hideLoading,
-}: { collectionId: number; itemId: string; hideLoading: boolean }) {
+}: { collectionId: number; itemId: number; hideLoading: boolean }) {
   const { data: collections, isRefetching } = useCollections();
 
   const collection = collections?.find((item) => item.id === collectionId);
   const collectionItem = collection?.collectionItems.find(
-    (item) => item.id.toString() === itemId,
+    (item) => item.id === itemId,
   );
 
   const text = collectionItem?.name || "Route";

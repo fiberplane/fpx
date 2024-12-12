@@ -46,20 +46,20 @@ type RequestorPageContentProps = {
  * Gets the collection item for the current route (if applicable)
  */
 function useCollectionItem():
-  | { itemId: string; collectionItem: CollectionItem; appRoute: ProbedRoute }
+  | { collectionItem: CollectionItem; appRoute: ProbedRoute }
   | undefined {
   const collectionId = useActiveCollectionId();
   const itemId = useActiveCollectionItemId();
 
   const { collections, appRoutes } = useStudioStore("collections", "appRoutes");
 
-  if (!itemId || !collectionId) {
+  if (itemId === null || collectionId === null) {
     return;
   }
 
   const collection = collections.find((item) => item.id === collectionId);
   const collectionItem = collection?.collectionItems.find(
-    (element) => element.id.toString() === itemId,
+    (element) => element.id === itemId,
   );
   const appRoute = appRoutes.find(
     (route) => route.id === collectionItem?.appRouteId,
@@ -70,7 +70,6 @@ function useCollectionItem():
   }
 
   return {
-    itemId,
     collectionItem,
     appRoute,
   };
@@ -99,14 +98,15 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     "updateMethod",
   );
 
-  const { itemId, collectionItem, appRoute } = useCollectionItem() ?? {};
+  const { collectionItem, appRoute } = useCollectionItem() ?? {};
+  const itemId = collectionItem?.id;
   const collectionItemRef = useLatest<CollectionItem | undefined>(
     collectionItem,
   );
   const appRouteRef = useLatest<ProbedRoute | undefined>(appRoute);
 
   useEffect(() => {
-    if (!itemId || !collectionItemRef.current || !appRouteRef.current) {
+    if (itemId === null || !collectionItemRef.current || !appRouteRef.current) {
       return;
     }
     const { id, appRouteId, ...extraParams } = collectionItemRef.current;

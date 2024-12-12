@@ -1,5 +1,8 @@
 import { COLLECTION_WITH_ITEM_ID } from "@/constants";
 import { matchRoutes, useLocation } from "react-router-dom";
+import { z } from "zod";
+
+const idSchema = z.number().int();
 
 export function useActiveCollectionItemId() {
   const location = useLocation();
@@ -12,7 +15,8 @@ export function useActiveCollectionItemId() {
     location.pathname,
   );
   if (match && match.length > 0) {
-    return match[0].params.itemId ?? null;
+    const { data = null } = idSchema.safeParse(match[0].params.itemId);
+    return data;
   }
 
   return null;

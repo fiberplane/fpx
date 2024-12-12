@@ -263,7 +263,7 @@ export function useUpdateCollectionItem() {
       extraParams,
     }: {
       collectionId: number;
-      itemId: string;
+      itemId: number;
       extraParams: CollectionItemParams;
     }) => {
       const overrideValues = Object.fromEntries(
@@ -273,7 +273,7 @@ export function useUpdateCollectionItem() {
       const state = getStudioStoreState();
       const collection = state.collections.find((c) => c.id === collectionId);
       const collectionItem = collection?.collectionItems.find(
-        (i) => i.id.toString() === itemId,
+        (i) => i.id === itemId,
       );
       const params: CollectionItemParams = {
         name: collectionItem?.name ?? undefined,

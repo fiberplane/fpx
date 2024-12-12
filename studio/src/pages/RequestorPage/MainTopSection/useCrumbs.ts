@@ -81,7 +81,7 @@ export function useCrumbs(): Array<Crumb> {
   }
 
   if (itemId && collectionId) {
-    const props = { collectionId: collectionId, itemId: itemId };
+    const props = { collectionId: collectionId, itemId };
     const label: LabelComponent<typeof props> = {
       type: "component",
       Component: CollectionItemCrumb,
