@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "../../db/schema";
 import type { AppType } from "../../types";
+import { createProject, listProjects } from "../../queries/projects";
 
 const router = new OpenAPIHono<AppType>();
 
@@ -10,15 +11,15 @@ const router = new OpenAPIHono<AppType>();
 const ProjectSchema = z
   .object({
     id: z.string().openapi({
-      example: "proj_123",
+      example: "123e4567-e89b-12d3-a456-426614174000",
       description: "Project ID",
     }),
     name: z.string().openapi({
-      example: "My API Project",
+      example: "My External API",
       description: "Project name",
     }),
     userId: z.string().openapi({
-      example: "user_123",
+      example: "123e4567-e89b-12d3-a456-426614174000",
       description: "Owner's user ID",
     }),
   })
@@ -106,16 +107,21 @@ const updateProjectRoute = createRoute({
   },
 });
 
-// Implement handlers
+router.openapi(listProjectsRoute, async (c) => {
+  const db = c.get("db");
+  const userId = c.get("currentUser")?.id ?? "";
+
+  const projects = await listProjects(db, userId);
+
+  return c.json(projects);
+});
+
 router.openapi(createProjectRoute, async (c) => {
-  const db = drizzle(c.env.DB);
+  const db = c.get("db");
   const { name, spec } = c.req.valid("json");
   const userId = c.get("currentUser")?.id ?? "";
-  console.log(userId);
-  const [newProject] = await db
-    .insert(schema.projects)
-    .values({ name, spec, userId })
-    .returning();
+
+  const [newProject] = await createProject(db, { name, spec, userId });
 
   return c.json(newProject, 201);
 });
@@ -133,19 +139,5 @@ router.openapi(updateProjectRoute, async (c) => {
 
   return c.json(updatedProject);
 });
-
-router.openapi(listProjectsRoute, async (c) => {
-  const db = drizzle(c.env.DB);
-  const userId = c.get("currentUser")?.id ?? "";
-
-  const projects = await db
-    .select()
-    .from(schema.projects)
-    .where(eq(schema.projects.userId, userId));
-
-  return c.json(projects);
-});
-
-// Add other project routes (API specs, documentation) following similar pattern...
 
 export { router as projectsRouter };
