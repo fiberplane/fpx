@@ -1,6 +1,6 @@
 import type React from "react";
 import { cn } from "../lib/utils";
-import { UserNav } from "./user-nav";
+import { UserNav } from "./UserNav";
 
 export function Layout({ children }: { children?: React.ReactNode }) {
   return (
@@ -9,7 +9,12 @@ export function Layout({ children }: { children?: React.ReactNode }) {
         <div className="">
           <h1 className="text-xl font-bold">Lilo</h1>
         </div>
-        <UserNav />
+        <div className="flex items-center gap-6">
+          <a href="/reference">API Reference</a>
+          <div className="border-l pl-6 flex items-center">
+            <UserNav />
+          </div>
+        </div>
       </nav>
       <main className={cn("flex-grow w-full px-4 py-6")}>{children}</main>
       <footer className="bg-gray-100 py-4">

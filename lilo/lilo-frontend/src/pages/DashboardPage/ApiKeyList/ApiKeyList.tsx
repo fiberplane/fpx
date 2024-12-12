@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { TrashIcon } from "lucide-react";
 import { useState } from "react";
 import { useCreateApiKey, useDeleteApiKey, useGetApiKeys } from "./queries";
 
@@ -43,7 +44,7 @@ export function ApiKeyList() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">API Keys</h2>
+      <h2 className="text-xl font-semibold mb-4">API Keys</h2>
       <div className="flex space-x-4 mb-4">
         <Input
           placeholder="Enter API key name"
@@ -58,7 +59,7 @@ export function ApiKeyList() {
             <TableHead>Name</TableHead>
             <TableHead>Key</TableHead>
             <TableHead>Created At</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="w-20">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -69,10 +70,11 @@ export function ApiKeyList() {
               <TableCell>{new Date(key.createdAt).toLocaleString()}</TableCell>
               <TableCell>
                 <Button
-                  variant="destructive"
+                  variant="outline"
+                  size="icon"
                   onClick={() => revokeApiKey(key.id)}
                 >
-                  Revoke
+                  <TrashIcon className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </TableCell>
             </TableRow>

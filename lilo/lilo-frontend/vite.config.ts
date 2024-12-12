@@ -16,6 +16,8 @@ export default defineConfig({
       "/api": "http://localhost:6246",
       "/internal": "http://localhost:6246",
       "/auth": "http://localhost:6246",
+      "/reference": "http://localhost:6246",
+      "/doc": "http://localhost:6246",
     },
   },
 });

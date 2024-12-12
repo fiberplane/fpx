@@ -2,6 +2,12 @@
   "$schema": "../../node_modules/@biomejs/biome/configuration_schema.json",
   "extends": ["../../biome.jsonc"],
   "files": {
-    "ignore": ["public", "node_modules", ".wrangler", "tsconfig.json", "drizzle"]
+    "ignore": [
+      "public",
+      "node_modules",
+      ".wrangler",
+      "tsconfig.json",
+      "drizzle"
+    ]
   }
 }
