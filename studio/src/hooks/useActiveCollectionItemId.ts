@@ -2,7 +2,7 @@ import { COLLECTION_WITH_ITEM_ID } from "@/constants";
 import { matchRoutes, useLocation } from "react-router-dom";
 import { z } from "zod";
 
-const idSchema = z.number().int();
+const idSchema = z.number({ coerce: true }).int();
 
 export function useActiveCollectionItemId() {
   const location = useLocation();

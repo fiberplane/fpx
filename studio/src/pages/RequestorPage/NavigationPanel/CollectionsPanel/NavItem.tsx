@@ -1,5 +1,5 @@
 import { COLLECTION_ROUTE, COLLECTION_WITH_ITEM_ID } from "@/constants";
-import { useActiveCollectionItemId } from "@/hooks";
+import { useActiveCollectionId, useActiveCollectionItemId } from "@/hooks";
 import { cn, generatePathWithSearchParams } from "@/utils";
 import { Icon } from "@iconify/react";
 import { memo, useEffect, useRef } from "react";
@@ -16,16 +16,18 @@ export const NavItem = memo(({ collection }: NavItemProps) => {
   const { appRoutes: routes } = useStudioStore("appRoutes");
 
   const [params] = useSearchParams();
+  const collectionId = useActiveCollectionId();
   const itemId = useActiveCollectionItemId();
-  const [searchParams] = useSearchParams();
-  const isSelected = itemId === collection.id;
+  const isSelected = collectionId === collection.id;
   useEffect(() => {
     if (isSelected && itemRef.current) {
       itemRef.current.focus();
     }
   }, [isSelected]);
 
-  const matchesId = isSelected;
+  // Create a map of routes for better performance
+  const routesMap = new Map(routes.map((route) => [route.id, route]));
+
   return (
     <div>
       <Link
@@ -35,25 +37,18 @@ export const NavItem = memo(({ collection }: NavItemProps) => {
           {
             collectionId: collection.id.toString(),
           },
-          searchParams,
+          params,
         )}
         className={cn(
           "flex gap-2 hover:bg-muted px-2 py-1 rounded cursor-pointer items-center",
           "focus:outline-none",
           {
-            "bg-muted": matchesId,
-            "hover:bg-muted": !matchesId,
-            "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-25 focus:ring-inset":
-              !matchesId && isSelected,
+            "bg-muted": isSelected,
+            "hover:bg-muted": !isSelected,
+            "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-25":
+              isSelected,
           },
         )}
-        onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            e.currentTarget.click();
-          }
-        }}
-        data-state-active={matchesId}
         data-state-selected={isSelected}
         id={`item-${collection.id.toString()}`}
       >
@@ -65,7 +60,7 @@ export const NavItem = memo(({ collection }: NavItemProps) => {
       <div className="grid gap-1 my-2">
         {collection.collectionItems.map((item) => {
           const { id, appRouteId } = item;
-          const route = routes.find((r) => r.id === appRouteId);
+          const route = routesMap.get(appRouteId);
           if (!route) {
             return null;
           }
@@ -87,7 +82,6 @@ export const NavItem = memo(({ collection }: NavItemProps) => {
                   "bg-muted": itemId === item.id,
                 },
               )}
-              tabIndex={0}
             >
               <Method
                 method={route.method}

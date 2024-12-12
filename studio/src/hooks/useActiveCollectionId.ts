@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { matchRoutes, useLocation } from "react-router-dom";
 import { z } from "zod";
 
-const idSchema = z.number().int();
+const idSchema = z.number({ coerce: true }).int();
 
 export function useActiveCollectionId() {
   const ROUTES = useMemo(
@@ -17,7 +17,6 @@ export function useActiveCollectionId() {
   const location = useLocation();
   const match = matchRoutes(ROUTES, location.pathname);
   if (match && match.length > 0) {
-    // return
     const text = match[0].params.collectionId;
     const { data = null } = idSchema.safeParse(text);
     return data;

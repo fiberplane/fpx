@@ -12,7 +12,7 @@ import { ManageCollection } from "./ManageCollection";
 export function CollectionSection() {
   const collectionId = useActiveCollectionId();
 
-  if (!collectionId) {
+  if (collectionId === null) {
     return null;
   }
 

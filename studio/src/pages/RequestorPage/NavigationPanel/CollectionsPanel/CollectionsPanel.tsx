@@ -9,23 +9,23 @@ import { NavItem } from "./NavItem";
 export type CollectionWithItems = CollectionWithItemsList[0];
 
 export function CollectionsPanel() {
-  const { data: items, error: collectionsError } = useCollections();
+  const { data: collections, error: collectionsError } = useCollections();
   const [filterValue, setFilterValue] = useState("");
   const hasDataRef = useRef(false);
-  const hadData = hasDataRef.current;
+  const previouslyHadData = hasDataRef.current;
 
-  if (hasDataRef.current === false && items) {
+  if (!hasDataRef.current && collections) {
     hasDataRef.current = true;
   }
   const filteredItems = useMemo(() => {
-    if (!items) {
+    if (!collections) {
       return [];
     }
 
-    return items.filter((item) => {
-      return item.name.toLowerCase().includes(filterValue.toLowerCase());
-    });
-  }, [items, filterValue]);
+    return collections.filter((item) =>
+      item.name.toLowerCase().includes(filterValue.toLowerCase()),
+    );
+  }, [collections, filterValue]);
 
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -35,9 +35,9 @@ export function CollectionsPanel() {
 
   return (
     <div
-      className={cn("h-full", "flex", "flex-col", {
-        hadData,
-      })}
+      className={cn(
+        `h-full flex flex-col ${previouslyHadData ? "previouslyHadData" : ""}`,
+      )}
     >
       <div>
         <div className="flex items-center space-x-2 pb-3">
@@ -45,10 +45,7 @@ export function CollectionsPanel() {
             ref={searchRef}
             value={filterValue}
             onChange={setFilterValue}
-            onFocus={() => {
-              // setSelectedItemId(null);
-            }}
-            placeholder="collections"
+            onFocus={noop}
             onItemSelect={noop}
             itemCount={filteredItems.length}
           />

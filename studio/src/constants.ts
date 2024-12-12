@@ -73,7 +73,7 @@ export const INTERNAL_AI_LOGS_WITH_ID_ROUTE = `${INTERNAL_AI_LOGS_ROUTE}/:traceI
 export const COLLECTION_ROUTE = "/collections/:collectionId";
 export const REQUESTOR_HISTORY_ROUTE = "/history/:traceId";
 export const REQUESTOR_TRACE_ROUTE = "/requests/:traceId";
-export const COLLECTION_WITH_ITEM_ID = `${COLLECTION_ROUTE}/:itemId`;
+export const COLLECTION_WITH_ITEM_ID = `${COLLECTION_ROUTE}/item/:itemId`;
 
 export const NAVIGATION_PANEL_KEY = "filter-tab";
 export const NAVIGATION_PANEL_ROUTES = "routes" as const;
