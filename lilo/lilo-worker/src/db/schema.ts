@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { relations } from "drizzle-orm";
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 const timestamps = {
   createdAt: text()
@@ -18,7 +18,13 @@ export const users = sqliteTable("users", {
     .$defaultFn(() => randomUUID()),
   email: text("email").notNull().unique(),
   githubUsername: text("github_username").notNull(),
+  allowed: integer("allowed", { mode: "boolean" }).notNull().default(false),
   avatarUrl: text("avatar_url"),
+  ...timestamps,
+});
+
+export const allowedUsers = sqliteTable("allowed_users", {
+  githubUsername: text("github_username").primaryKey(),
   ...timestamps,
 });
 

@@ -118,6 +118,10 @@ export const dashboardAuthentication = async (c: AppContext, next: Next) => {
     return c.json({ message: "Unauthorized" }, 401);
   }
 
+  if (!user.allowed) {
+    return c.json({ message: "Unauthorized" }, 401);
+  }
+
   c.set("currentUser", user);
 
   await next();

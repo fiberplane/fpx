@@ -70,12 +70,21 @@ dashboardAuthRouter.get("/github", async (c) => {
     return c.json({ error: "No user information available" }, 401);
   }
 
+  const [allowedUser] = await db
+    .select()
+    .from(schema.allowedUsers)
+    .where(eq(schema.allowedUsers.githubUsername, user.login))
+    .limit(1);
+
+  const allowed = !!allowedUser;
+
   // Upsert the user in the database
   const [userRecord] = await db
     .insert(schema.users)
     .values({
       email: user.email,
       githubUsername: user.login,
+      allowed,
       avatarUrl: user.avatar_url,
     })
     .onConflictDoUpdate({
@@ -83,6 +92,7 @@ dashboardAuthRouter.get("/github", async (c) => {
       set: {
         githubUsername: user.login,
         avatarUrl: user.avatar_url,
+        allowed,
       },
     })
     .returning();
