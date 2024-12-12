@@ -2,24 +2,18 @@ import { instrument } from "@fiberplane/hono-otel";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { apiReference } from "@scalar/hono-api-reference";
 import { eq } from "drizzle-orm";
-import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-
 import * as schema from "./db/schema";
 import { dbMiddleware } from "./lib/db";
 import {
   addCurrentUserToContext,
-  deleteSession,
   requireSessionSecret,
 } from "./lib/session-auth";
-import type { AppType } from "./types";
-
-// Internal routes
-import { dashboardAuthRouter } from "./routes/dashboard/auth";
-import { dashboardRouter } from "./routes/dashboard/dashboard";
-// External routes
 import { externalApiRouter } from "./routes/external";
-import { apiKeysRouter } from "./routes/internal/api-keys";
+import { internalApiRouter } from "./routes/internal/api";
+import { dashboardAuthRouter } from "./routes/internal/auth";
+import { dashboardRouter } from "./routes/ssr-dashboard/dashboard";
+import type { AppType } from "./types";
 
 const app = new OpenAPIHono<AppType>();
 
@@ -29,7 +23,17 @@ app.use(logger());
 // Set drizzle database on context
 app.use(dbMiddleware);
 
-// Mount internal routes
+// Authentication
+app.route("/auth", dashboardAuthRouter);
+
+// Internal api
+app.route("/internal", internalApiRouter);
+
+// External api
+app.route("/api", externalApiRouter);
+
+// NOTE - This is logic for an SSR dashboard from when I was prototyping, not meant for prod use
+// TODO - Delete this code
 app.get("/", requireSessionSecret, addCurrentUserToContext, (c) => {
   const currentUser = c.get("currentUser");
 
@@ -40,30 +44,11 @@ app.get("/", requireSessionSecret, addCurrentUserToContext, (c) => {
   return c.html(
     <div>
       Hello, want to log in?
-      <a href="/internal/auth/github">Login</a>
+      <a href="/auth/github">Login</a>
     </div>,
   );
 });
-
-app.get("/logout", async (c) => {
-  await deleteSession(c, c.get("db"));
-  return c.redirect("/");
-});
-
-app.use(
-  "/internal/*",
-  cors({
-    origin: "http://localhost:YOUR_FRONTEND_PORT",
-    credentials: true, // Important! for use with frontend
-  }),
-);
-app.route("/internal/auth", dashboardAuthRouter);
-
-app.route("/internal/api-keys", apiKeysRouter);
 app.route("/dashboard", dashboardRouter);
-
-// Mount external api
-app.route("/api", externalApiRouter);
 
 // Mount OpenAPI documentation
 app.doc("/doc", (c) => ({

@@ -2,9 +2,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { hc } from "hono/client";
-import type { ApiKeysClient } from "../../../../../lilo-worker/src/routes/internal/api-keys";
+import type { ApiKeysRouter } from "../../../../../lilo-worker/src/routes/internal";
 
-const apiKeysClient = hc<ApiKeysClient>("/internal/api-keys");
+const apiKeysClient = hc<ApiKeysRouter>("/internal/api-keys");
 
 const QUERY_KEY = "api-keys";
 

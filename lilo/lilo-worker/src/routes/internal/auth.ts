@@ -102,6 +102,12 @@ dashboardAuthRouter.get("/github", async (c) => {
   return c.redirect("http://localhost:3005/");
 });
 
+// Logout handler
+dashboardAuthRouter.get("/logout", async (c) => {
+  await deleteSession(c, c.get("db"));
+  return c.redirect("/");
+});
+
 // Handle errors from GitHub OAuth
 dashboardAuthRouter.onError((err, c) => {
   if (err instanceof HTTPException) {

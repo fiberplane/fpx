@@ -8,14 +8,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LOGIN_PATH, LOGOUT_PATH } from "@/constants";
 import { useSession } from "@/hooks/use-session";
 
 function signIn() {
-  window.location.href = "/internal/auth/login";
+  window.location.href = LOGIN_PATH;
 }
 
 function signOut() {
-  window.location.href = "/logout";
+  window.location.href = LOGOUT_PATH;
 }
 
 export function UserNav() {

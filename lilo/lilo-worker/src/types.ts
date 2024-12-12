@@ -1,8 +1,9 @@
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type { Context } from "hono";
+import type * as schema from "./db/schema";
 import type { User } from "./db/schema";
 
-export type DatabaseType = DrizzleD1Database<Record<string, never>> & {
+export type DatabaseType = DrizzleD1Database<typeof schema> & {
   $client: D1Database;
 };
 

@@ -10,7 +10,7 @@ import type { AppContext, DatabaseType } from "../types";
  * Middleware to add the database to the context
  */
 export const dbMiddleware = async (c: AppContext, next: Next) => {
-  const db = drizzle(c.env.DB);
+  const db = drizzle<typeof schema>(c.env.DB);
   c.set("db", db);
   await next();
 };

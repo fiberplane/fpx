@@ -1,21 +1,19 @@
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
-import { Handler, Hono } from "hono";
+import { Hono } from "hono";
 import * as jose from "jose";
 import { z } from "zod";
-import * as schema from "../../db/schema";
-import { importKey } from "../../lib/crypto";
-import { createJwtPayload } from "../../lib/jwt";
-import { dashboardAuthentication } from "../../lib/session-auth";
-import type { AppContext, AppType } from "../../types";
+import * as schema from "../../../db/schema";
+import { importKey } from "../../../lib/crypto";
+import { createJwtPayload } from "../../../lib/jwt";
+import { dashboardAuthentication } from "../../../lib/session-auth";
+import type { AppContext, AppType } from "../../../types";
 
 const createApiKeyBodySchema = z.object({
   name: z.string(),
 });
 
-// type CreateApiKeyBody = z.infer<typeof createApiKeyBodySchema>;
-
-export type ApiKeysClient = typeof apiKeysRouter;
+export type ApiKeysRouter = typeof apiKeysRouter;
 
 const apiKeysRouter = new Hono<AppType>()
   // Middleware to ensure the user is authenticated
