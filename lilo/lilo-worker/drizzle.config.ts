@@ -4,7 +4,8 @@ import { config } from "dotenv";
 import { defineConfig } from "drizzle-kit";
 
 let dbConfig: ReturnType<typeof defineConfig>;
-if (process.env.ENVIROMENT === "production") {
+if (process.env.ENVIRONMENT === "production") {
+  console.log("Using production database");
   config({ path: "./.prod.vars" });
   dbConfig = defineConfig({
     schema: "./src/db/schema.ts",
@@ -18,6 +19,7 @@ if (process.env.ENVIROMENT === "production") {
     },
   });
 } else {
+  console.log("Using local database");
   config({ path: "./.dev.vars" });
   const localD1DB = getLocalD1DB();
   if (!localD1DB) {

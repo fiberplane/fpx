@@ -4,15 +4,18 @@
   "scripts": {
     "dev": "wrangler dev src/index.tsx",
     "deploy": "wrangler deploy --minify src/index.tsx",
-    "db:touch": "wrangler d1 execute honc-d1-database --local --command='SELECT 1'",
+    "db:touch": "wrangler d1 execute lilo-d1-database --local --command='SELECT 1'",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "wrangler d1 migrations apply honc-d1-database --local",
-    "db:migrate:prod": "ENVIROMENT=production drizzle-kit migrate",
+    "db:migrate": "wrangler d1 migrations apply lilo-d1-database --local",
+    "db:migrate:prod": "ENVIRONMENT=production drizzle-kit migrate",
     "db:seed": "tsx seed.ts",
     "db:setup": "npm run db:touch && npm run db:generate && npm run db:migrate && npm run db:seed",
     "db:studio": "drizzle-kit studio",
+    "db:studio:prod": "ENVIRONMENT=production drizzle-kit studio",
     "format": "biome check . --write",
-    "keypair:generate": "tsx keypair-generate.ts"
+    "keypair:generate": "tsx keypair-generate.ts",
+    "keypair:generate:prod": "ENVIRONMENT=production tsx keypair-generate.ts",
+    "session:generate": "tsx session-secret-generate.ts"
   },
   "dependencies": {
     "@hono/oauth-providers": "^0.6.2",

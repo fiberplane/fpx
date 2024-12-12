@@ -1,13 +1,24 @@
-## 🪿 HONC
-
-This is a project created with the `create-honc-app` template. 
-
-Learn more about the HONC stack on the [website](https://honc.dev) or the main [repo](https://github.com/fiberplane/create-honc-app).
+## Lilo
 
 ### Getting started
-[D1](https://developers.cloudflare.com/d1/) is Cloudflare's serverless SQL database. Running HONC with a D1 database involves two key steps: first, setting up the project locally, and second, deploying it in production. You can spin up your D1 database locally using Wrangler. If you're planning to deploy your application for production use, ensure that you have created a D1 instance in your Cloudflare account.
 
-### Project structure
+Copy the `.dev.vars.example` file to `.dev.vars` and fill in the values:
+
+```sh
+cp .dev.vars.example .dev.vars
+```
+
+You'll need GitHub OAuth app credentials for the dashboard. You can create your own or ask for Brett's.
+
+You'll want to initialize the D1 database for your project.
+
+```sh
+pnpm db:touch
+pnpm db:generate
+pnpm db:migrate
+```
+
+### (TODO) Project structure
 
 ```#
 ├── src
@@ -25,76 +36,69 @@ Learn more about the HONC stack on the [website](https://honc.dev) or the main [
 
 ### Commands for local development
 
-Run the migrations and (optionally) seed the database:
-
-```sh
-# this is a convenience script that runs db:touch, db:generate, db:migrate, and db:seed
-npm run db:setup
-```
-
 Run the development server:
 
 ```sh
-npm run dev
+pnpm dev
 ```
 
 As you iterate on the database schema, you'll need to generate a new migration file and apply it like so:
 
 ```sh
-npm run db:generate
-npm run db:migrate
+pnpm db:generate
+pnpm db:migrate
 ```
 
 ### Commands for deployment
 
-Before deploying your worker to Cloudflare, ensure that you have a running D1 instance on Cloudflare to connect your worker to.
+Lilo is already attached to a D1 database. You can find the database id in the `wrangler.toml` file.
 
-You can create a D1 instance by navigating to the `Workers & Pages` section and selecting `D1 SQL Database.`
-
-Alternatively, you can create a D1 instance using the CLI:
+If you need to run migrations on the production database, you need to set the following information in a `.prod.vars` file:
 
 ```sh
-npx wrangler d1 create <database-name>
-```
-
-After creating the database, update the `wrangler.toml` file with the database id.
-
-```toml
-[[d1_databases]]
-binding = "DB"
-database_name = "honc-d1-database"
-database_id = "<database-id-you-just-created>"
-migrations_dir = "drizzle/migrations"
-```
-
-Include the following information in a `.prod.vars` file:
-
-```sh
-CLOUDFLARE_D1_TOKEN="" # An API token with D1 edit permissions. You can create API tokens from your Cloudflare profile
-CLOUDFLARE_ACCOUNT_ID="" # Find your Account id on the Workers & Pages overview (upper right)
-CLOUDFLARE_DATABASE_ID="" # Find the database ID under workers & pages under D1 SQL Database and by selecting the created database
+CLOUDFLARE_D1_TOKEN=""
+CLOUDFLARE_ACCOUNT_ID=""
+CLOUDFLARE_DATABASE_ID=""
 ```
 
 If you haven’t generated the latest migration files yet, run:
 ```shell
-npm run db:generate
+pnpm db:generate
 ```
 
 Afterwards, run the migration script for production:
 ```shell
-npm run db:migrate:prod
+pnpm db:migrate:prod
 ```
 
-Change the name of the project in `wrangler.toml` to something appropriate for your project:
 
-```toml
-name = "my-d1-project"
-```
-
-Finally, deploy your worker
+Finally, deploy 
 
 ```shell 
-npm run deploy
+pnpm run deploy
 ```
+
+#### Setting secrets
+
+Set GitHub OAuth credentials
+
+```sh
+pnpx wrangler secret put GITHUB_ID
+pnpx wrangler secret put GITHUB_SECRET
+```
+
+Set secrets for external api auth
+
+```sh
+pnpm keypair:generate:prod
+# I prefer to upload the keys as secrets in the wrangler dashboard, since they have newlines
+```
+
+Create a session secret
+
+```sh
+pnpm session:generate
+```
+
 
 

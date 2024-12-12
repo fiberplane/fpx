@@ -21,7 +21,7 @@ app.use(dbMiddleware);
 app.route("/auth", dashboardAuthRouter);
 
 // Internal api
-app.use("/internal", requireSessionSecret);
+app.use("/internal/*", requireSessionSecret);
 app.route("/internal", internalApiRouter);
 
 // External api

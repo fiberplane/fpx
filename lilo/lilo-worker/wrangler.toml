@@ -7,8 +7,8 @@ port = 6246
 
 [[d1_databases]]
 binding = "DB"
-database_name = "honc-d1-database"
-database_id = "local-honc-d1-database"
+database_name = "lilo-d1-database"
+database_id = "4c6ea673-563f-477a-80d5-319ddaa54189"
 migrations_dir = "drizzle/migrations"
 
 # [vars]

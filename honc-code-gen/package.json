@@ -54,7 +54,7 @@
     "@langchain/langgraph": "^0.2.28",
     "ai": "^3.4.33",
     "dotenv": "^16.4.7",
-    "drizzle-kit": "^0.24.2",
+    "drizzle-kit": "^0.30.0",
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",
     "hono": "^4.6.13",

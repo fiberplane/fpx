@@ -2,8 +2,6 @@ import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { relations } from "drizzle-orm";
 import {
-  integer,
-  primaryKey,
   sqliteTable,
   text,
 } from "drizzle-orm/sqlite-core";
@@ -29,6 +27,7 @@ export const users = sqliteTable("users", {
 
 export type User = typeof users.$inferSelect;
 
+// For session based auth
 export const sessions = sqliteTable("sessions", {
   id: text("id").primaryKey(),
   userId: text("user_id")
@@ -70,18 +69,6 @@ export const apiKeys = sqliteTable("api_keys", {
     .references(() => users.id),
   name: text("name"),
   key: text("key").notNull(),
-  ...timestamps,
-});
-
-export const documentation = sqliteTable("documentation", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => randomUUID()),
-  projectId: integer("project_id")
-    .notNull()
-    .references(() => projects.id),
-  content: text("content").notNull(),
-  type: text("type").notNull(),
   ...timestamps,
 });
 
