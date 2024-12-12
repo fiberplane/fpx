@@ -19,4 +19,3 @@ export function useStickyLoading(loading: boolean, duration = 300) {
 
   return sticky;
 }
-export { useFeature } from "./useFeature.ts";

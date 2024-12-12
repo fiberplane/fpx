@@ -19,7 +19,7 @@ import { CollectionForm } from "../CollectionForm";
 
 export function ManageCollection(props: {
   name: string;
-  collectionId: string;
+  collectionId: number;
 }) {
   const { name, collectionId } = props;
   const [open, setOpen] = useState(false);

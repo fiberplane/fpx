@@ -20,7 +20,7 @@ import {
   CodeMirrorJsonEditor,
   CodeMirrorTextEditor,
 } from "@/components/CodeMirrorEditor";
-import { useActiveCollectionEntryId, useActiveCollectionId } from "@/hooks";
+import { useActiveCollectionId, useActiveCollectionItemId } from "@/hooks";
 import { useUpdateCollectionItem } from "@/queries/collections";
 import type { CollectionItemParams } from "@fiberplane/fpx-types";
 import { useStudioStore } from "../store";
@@ -115,7 +115,7 @@ export const RequestPanel = memo(function RequestPanel(
   const shouldShowDocs = isOpenApiOperation(openApiSpec);
 
   const collectionId = useActiveCollectionId() ?? null;
-  const collectionItemId = useActiveCollectionEntryId() ?? null;
+  const collectionItemId = useActiveCollectionItemId() ?? null;
 
   const { mutate: syncCollectionItem } = useUpdateCollectionItem();
   const updateCollectionItem = (nullableExtraParams: CollectionItemParams) => {

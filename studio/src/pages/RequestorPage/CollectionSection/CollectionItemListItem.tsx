@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { COLLECTION_WITH_ROUTE_ID } from "@/constants";
+import { COLLECTION_WITH_ITEM_ID } from "@/constants";
 import {
   useDeleteItemFromCollection,
   useUpdateCollectionItem,
@@ -29,7 +29,7 @@ export function CollectionItemListItem({
   itemId: number;
   name: string | undefined;
   route: ProbedRoute;
-  collectionId: string;
+  collectionId: number;
 }) {
   const { mutate: deleteItem } = useDeleteItemFromCollection(collectionId);
   const { mutate: updateItem } = useUpdateCollectionItem();
@@ -45,9 +45,9 @@ export function CollectionItemListItem({
     <div className="grid grid-cols-[1fr_auto_auto] gap-4 items-center">
       <Link
         to={{
-          pathname: generatePath(COLLECTION_WITH_ROUTE_ID, {
-            collectionId: collectionId,
-            entryId: itemId.toString(),
+          pathname: generatePath(COLLECTION_WITH_ITEM_ID, {
+            collectionId: collectionId.toString(),
+            itemId: itemId.toString(),
           }),
           search: searchParams.toString(),
         }}

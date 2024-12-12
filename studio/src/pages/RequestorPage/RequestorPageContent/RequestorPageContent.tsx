@@ -6,8 +6,8 @@ import {
 } from "@/components/ui/resizable";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  useActiveCollectionEntryId,
   useActiveCollectionId,
+  useActiveCollectionItemId,
   useActiveTraceId,
   useIsLgScreen,
   useKeySequence,
@@ -46,22 +46,20 @@ type RequestorPageContentProps = {
  * Gets the collection item for the current route (if applicable)
  */
 function useCollectionItem():
-  | { entryId: string; collectionItem: CollectionItem; appRoute: ProbedRoute }
+  | { itemId: string; collectionItem: CollectionItem; appRoute: ProbedRoute }
   | undefined {
   const collectionId = useActiveCollectionId();
-  const entryId = useActiveCollectionEntryId();
+  const itemId = useActiveCollectionItemId();
 
   const { collections, appRoutes } = useStudioStore("collections", "appRoutes");
 
-  if (!entryId || !collectionId) {
+  if (!itemId || !collectionId) {
     return;
   }
 
-  const collection = collections.find(
-    (item) => item.id.toString() === collectionId,
-  );
+  const collection = collections.find((item) => item.id === collectionId);
   const collectionItem = collection?.collectionItems.find(
-    (element) => element.id.toString() === entryId,
+    (element) => element.id.toString() === itemId,
   );
   const appRoute = appRoutes.find(
     (route) => route.id === collectionItem?.appRouteId,
@@ -72,7 +70,7 @@ function useCollectionItem():
   }
 
   return {
-    entryId,
+    itemId,
     collectionItem,
     appRoute,
   };
@@ -101,14 +99,14 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     "updateMethod",
   );
 
-  const { entryId, collectionItem, appRoute } = useCollectionItem() ?? {};
+  const { itemId, collectionItem, appRoute } = useCollectionItem() ?? {};
   const collectionItemRef = useLatest<CollectionItem | undefined>(
     collectionItem,
   );
   const appRouteRef = useLatest<ProbedRoute | undefined>(appRoute);
 
   useEffect(() => {
-    if (!entryId || !collectionItemRef.current || !appRouteRef.current) {
+    if (!itemId || !collectionItemRef.current || !appRouteRef.current) {
       return;
     }
     const { id, appRouteId, ...extraParams } = collectionItemRef.current;
@@ -121,7 +119,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
       requestRoute: appRouteId.toString(),
     });
     updateMethod(appRouteRef.current.method);
-  }, [entryId, collectionItemRef, appRouteRef, setRequestParams, updateMethod]);
+  }, [itemId, collectionItemRef, appRouteRef, setRequestParams, updateMethod]);
 
   useEffect(() => {
     if (!item) {

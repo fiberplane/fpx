@@ -24,9 +24,9 @@ export function CollectionItemList({
 }: {
   collection: CollectionWithItems;
   routes: ProbedRoute[];
-  collectionId: string;
+  collectionId: number;
 }) {
-  const { mutate } = useUpdateCollectionItem();
+  const { mutate: syncCollectionItem } = useUpdateCollectionItem();
 
   const [list, setList] = useState<string[]>(() =>
     collection.collectionItems.map((item) => item.id.toString()),
@@ -55,7 +55,7 @@ export function CollectionItemList({
     newList.splice(activeIndex, 1);
     newList.splice(overIndex, 0, activeItem.id.toString());
     setList(newList);
-    mutate({
+    syncCollectionItem({
       collectionId,
       itemId: activeItem.id.toString(),
       extraParams: {
@@ -97,7 +97,7 @@ export function CollectionItemList({
 export function Item(props: {
   route: ProbedRoute;
   item: CollectionItem;
-  collectionId: string;
+  collectionId: number;
 }) {
   const { collectionId, item, route } = props;
   const {

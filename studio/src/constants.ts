@@ -73,7 +73,7 @@ export const INTERNAL_AI_LOGS_WITH_ID_ROUTE = `${INTERNAL_AI_LOGS_ROUTE}/:traceI
 export const COLLECTION_ROUTE = "/collections/:collectionId";
 export const REQUESTOR_HISTORY_ROUTE = "/history/:traceId";
 export const REQUESTOR_TRACE_ROUTE = "/requests/:traceId";
-export const COLLECTION_WITH_ROUTE_ID = `${COLLECTION_ROUTE}/:entryId`;
+export const COLLECTION_WITH_ITEM_ID = `${COLLECTION_ROUTE}/:itemId`;
 
 export const NAVIGATION_PANEL_KEY = "filter-tab";
 export const NAVIGATION_PANEL_ROUTES = "routes" as const;
@@ -88,10 +88,7 @@ export type NavigationTab = (typeof TAB_KEYS)[number];
 
 export const TRACE_ID_ROUTES = [REQUESTOR_TRACE_ROUTE];
 
-export const COLLECTION_ID_ROUTES = [
-  COLLECTION_ROUTE,
-  COLLECTION_WITH_ROUTE_ID,
-];
+export const COLLECTION_ID_ROUTES = [COLLECTION_ROUTE, COLLECTION_WITH_ITEM_ID];
 
 export const REQUEST_HEADERS = [
   {

@@ -1,13 +1,10 @@
 import { COLLECTION_ID_ROUTES } from "@/constants";
 import { useMemo } from "react";
 import { matchRoutes, useLocation } from "react-router-dom";
+import { z } from "zod";
 
+const idSchema = z.number().int();
 export function useActiveCollectionId() {
-  const collectionId = useCollectionIdFromRoute();
-  return collectionId;
-}
-
-function useCollectionIdFromRoute() {
   const ROUTES = useMemo(
     () =>
       COLLECTION_ID_ROUTES.map((route) => ({
@@ -19,7 +16,10 @@ function useCollectionIdFromRoute() {
   const location = useLocation();
   const match = matchRoutes(ROUTES, location.pathname);
   if (match && match.length > 0) {
-    return match[0].params.collectionId;
+    // return
+    const text = match[0].params.collectionId;
+    const { data = null } = idSchema.safeParse(text);
+    return data;
   }
 
   return null;

@@ -16,7 +16,7 @@ import {
 import { z } from "zod";
 
 type Props = {
-  collectionId: string;
+  collectionId: number;
   onSuccess: () => void;
 };
 
@@ -44,12 +44,9 @@ export function AddRouteForm(props: Props) {
     resolver: zodResolver(ValidationSchema),
   });
 
-  const onInvalid: SubmitErrorHandler<AddRouteFormData> = useHandler(
-    (errors) => {
-      console.log("errors", errors);
-      setRoutesErrors(["Select at least one route."]);
-    },
-  );
+  const onInvalid: SubmitErrorHandler<AddRouteFormData> = useHandler(() => {
+    setRoutesErrors(["Select at least one route."]);
+  });
 
   const [routesErrors, setRoutesErrors] = useState<Array<string>>([]);
   const onSubmit: SubmitHandler<AddRouteFormData> = async (formData) => {

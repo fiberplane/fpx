@@ -1,7 +1,7 @@
 import { COLLECTION_ROUTE } from "@/constants";
 import {
-  useActiveCollectionEntryId,
   useActiveCollectionId,
+  useActiveCollectionItemId,
   useActiveTraceId,
 } from "@/hooks";
 import type { IconProps } from "@iconify/react";
@@ -33,9 +33,9 @@ export type Crumb = {
 };
 
 export function useCrumbs(): Array<Crumb> {
-  const collectionIdText = useActiveCollectionId();
+  const collectionId = useActiveCollectionId();
   const traceId = useActiveTraceId();
-  const entryId = useActiveCollectionEntryId();
+  const itemId = useActiveCollectionItemId();
   const { activeRoute, updatePath, updateMethod } = useStudioStore(
     "activeRoute",
     "updatePath",
@@ -59,15 +59,15 @@ export function useCrumbs(): Array<Crumb> {
     },
   ];
 
-  if (collectionIdText) {
+  if (collectionId !== null) {
     const collectionLink: To = {
       pathname: generatePath(COLLECTION_ROUTE, {
-        collectionId: collectionIdText,
+        collectionId: collectionId.toString(),
       }),
       search: flattenedParams ? `?${flattenedParams}` : "",
     };
 
-    const props = { collectionId: collectionIdText, silly: true };
+    const props = { collectionId };
     const label: LabelComponent<typeof props> = {
       type: "component",
       Component: CollectionCrumb,
@@ -76,12 +76,12 @@ export function useCrumbs(): Array<Crumb> {
 
     crumbs.push({
       label,
-      to: !entryId ? collectionLink : undefined,
+      to: !itemId ? collectionLink : undefined,
     });
   }
 
-  if (entryId && collectionIdText) {
-    const props = { collectionId: collectionIdText, itemId: entryId };
+  if (itemId && collectionId) {
+    const props = { collectionId: collectionId, itemId: itemId };
     const label: LabelComponent<typeof props> = {
       type: "component",
       Component: CollectionItemCrumb,
@@ -90,7 +90,7 @@ export function useCrumbs(): Array<Crumb> {
     crumbs.push({
       label,
     });
-  } else if ((activeRoute && !collectionIdText) || traceId) {
+  } else if ((activeRoute && !collectionId) || traceId) {
     crumbs.push({
       label: {
         type: "text",

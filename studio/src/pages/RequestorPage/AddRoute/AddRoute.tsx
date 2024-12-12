@@ -9,7 +9,7 @@ import { useState } from "react";
 import { AddRouteForm } from "./AddRouteForm";
 
 type Props = {
-  collectionId: string;
+  collectionId: number;
 };
 
 export function AddRoute(props: Props) {

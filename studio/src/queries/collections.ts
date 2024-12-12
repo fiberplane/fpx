@@ -95,7 +95,7 @@ export function useAddCollection() {
 export function useUpdateCollection() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (data: { collectionId: string; params: { name: string } }) =>
+    mutationFn: (data: { collectionId: number; params: { name: string } }) =>
       fetch(`/v0/collections/${data.collectionId}`, {
         method: "PUT",
         headers: {
@@ -126,11 +126,11 @@ export function useUpdateCollection() {
 }
 
 async function addItemToCollection(
-  collectionId: string,
+  collectionId: number,
   routeId: number,
   extraParams: CollectionItemParams,
 ) {
-  return fetch(`/v0/collections/${collectionId}/items`, {
+  return fetch(`/v0/collections/${collectionId.toString()}/items`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -181,7 +181,7 @@ function resultToError(error: unknown): Error {
   return new Error(getErrorMessage(error));
 }
 
-export function useAddItemToCollection(collectionId: string) {
+export function useAddItemToCollection(collectionId: number) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: ({
@@ -198,7 +198,7 @@ export function useAddItemToCollection(collectionId: string) {
   return mutation;
 }
 
-export function useDeleteItemFromCollection(collectionId: string) {
+export function useDeleteItemFromCollection(collectionId: number) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: ({ itemId }: { itemId: number }) =>
@@ -226,11 +226,11 @@ export function useDeleteItemFromCollection(collectionId: string) {
   return mutation;
 }
 
-export function useDeleteCollection(collectionId: string) {
+export function useDeleteCollection(collectionId: number) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: () =>
-      fetch(`/v0/collections/${collectionId}`, {
+      fetch(`/v0/collections/${collectionId.toString()}`, {
         method: "DELETE",
       }).then(async (r) => {
         if (!r.ok) {
@@ -262,7 +262,7 @@ export function useUpdateCollectionItem() {
       itemId,
       extraParams,
     }: {
-      collectionId: string;
+      collectionId: number;
       itemId: string;
       extraParams: CollectionItemParams;
     }) => {
@@ -271,9 +271,7 @@ export function useUpdateCollectionItem() {
       ) as CollectionItemParams;
 
       const state = getStudioStoreState();
-      const collection = state.collections.find(
-        (c) => c.id.toString() === collectionId,
-      );
+      const collection = state.collections.find((c) => c.id === collectionId);
       const collectionItem = collection?.collectionItems.find(
         (i) => i.id.toString() === itemId,
       );
@@ -285,13 +283,16 @@ export function useUpdateCollectionItem() {
         requestPathParams: collectionItem?.requestPathParams ?? undefined,
         ...overrideValues,
       };
-      return fetch(`/v0/collections/${collectionId}/items/${itemId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      return fetch(
+        `/v0/collections/${collectionId.toString()}/items/${itemId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(params),
         },
-        body: JSON.stringify(params),
-      }).then(async (r) => {
+      ).then(async (r) => {
         if (!r.ok) {
           const result = await (r.headers
             .get("Content-Type")

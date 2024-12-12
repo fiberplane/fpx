@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import {
-  COLLECTION_WITH_ROUTE_ID,
+  COLLECTION_WITH_ITEM_ID,
   NAVIGATION_PANEL_COLLECTIONS,
   NAVIGATION_PANEL_KEY,
 } from "@/constants";
@@ -43,7 +43,7 @@ export function AddToRouteFormItem(props: {
     mutate: addToCollection,
     failureReason: error,
     isPending,
-  } = useAddItemToCollection(collectionId.toString());
+  } = useAddItemToCollection(collectionId);
 
   const onSubmit: SubmitHandler<NameFormData> = ({ name }) => {
     if (!activeRoute) {
@@ -67,9 +67,9 @@ export function AddToRouteFormItem(props: {
             NAVIGATION_PANEL_COLLECTIONS,
           );
           navigate({
-            pathname: generatePath(COLLECTION_WITH_ROUTE_ID, {
+            pathname: generatePath(COLLECTION_WITH_ITEM_ID, {
               collectionId: collectionId.toString(),
-              entryId: data.id.toString(),
+              itemId: data.id.toString(),
             }),
             search: newSearchParams.toString(),
           });

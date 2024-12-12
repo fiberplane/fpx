@@ -27,9 +27,7 @@ export function CollectionSection() {
     return <div>Loading...</div>;
   }
 
-  const collection = collections?.find(
-    (c) => c.id === Number.parseInt(collectionId),
-  );
+  const collection = collections?.find((c) => c.id === collectionId);
   if (!collection) {
     return (
       <div className="h-full flex items-center justify-center">

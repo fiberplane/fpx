@@ -1,5 +1,5 @@
-import { COLLECTION_ROUTE, COLLECTION_WITH_ROUTE_ID } from "@/constants";
-import { useActiveCollectionEntryId } from "@/hooks";
+import { COLLECTION_ROUTE, COLLECTION_WITH_ITEM_ID } from "@/constants";
+import { useActiveCollectionItemId } from "@/hooks";
 import { cn, generatePathWithSearchParams } from "@/utils";
 import { Icon } from "@iconify/react";
 import { memo, useEffect, useRef } from "react";
@@ -16,9 +16,9 @@ export const NavItem = memo(({ collection }: NavItemProps) => {
   const { appRoutes: routes } = useStudioStore("appRoutes");
 
   const [params] = useSearchParams();
-  const entryId = useActiveCollectionEntryId();
+  const itemId = useActiveCollectionItemId();
   const [searchParams] = useSearchParams();
-  const isSelected = entryId === collection.id.toString();
+  const isSelected = itemId === collection.id.toString();
   useEffect(() => {
     if (isSelected && itemRef.current) {
       itemRef.current.focus();
@@ -73,9 +73,9 @@ export const NavItem = memo(({ collection }: NavItemProps) => {
           return (
             <Link
               to={{
-                pathname: generatePath(COLLECTION_WITH_ROUTE_ID, {
+                pathname: generatePath(COLLECTION_WITH_ITEM_ID, {
                   collectionId: collection.id.toString(),
-                  entryId: id.toString(),
+                  itemId: id.toString(),
                 }),
                 search: params.toString(),
               }}
@@ -84,7 +84,7 @@ export const NavItem = memo(({ collection }: NavItemProps) => {
                 "grid gap-2 grid-cols-[auto_1fr] ml-6 mr-1 hover:bg-muted px-2 py-1 rounded cursor-pointer",
                 "font-mono text-sm",
                 {
-                  "bg-muted": entryId === item.id.toString(),
+                  "bg-muted": itemId === item.id.toString(),
                 },
               )}
               tabIndex={0}

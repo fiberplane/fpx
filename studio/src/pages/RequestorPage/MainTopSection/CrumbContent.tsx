@@ -52,11 +52,10 @@ function LabelContent({
 }
 
 export function CollectionCrumb({
-  collectionId: collectionIdText,
+  collectionId,
   hideLoading = false,
-}: { collectionId: string; hideLoading: boolean }) {
+}: { collectionId: number; hideLoading: boolean }) {
   const { data: collections, isRefetching } = useCollections();
-  const collectionId = Number.parseInt(collectionIdText ?? "");
 
   if (!Number.isNaN(collectionId)) {
     const collection = collections?.find((c) => c.id === collectionId);
@@ -99,12 +98,10 @@ export function CollectionItemCrumb({
   collectionId,
   itemId,
   hideLoading,
-}: { collectionId: string; itemId: string; hideLoading: boolean }) {
+}: { collectionId: number; itemId: string; hideLoading: boolean }) {
   const { data: collections, isRefetching } = useCollections();
 
-  const collection = collections?.find(
-    (item) => item.id.toString() === collectionId,
-  );
+  const collection = collections?.find((item) => item.id === collectionId);
   const collectionItem = collection?.collectionItems.find(
     (item) => item.id.toString() === itemId,
   );

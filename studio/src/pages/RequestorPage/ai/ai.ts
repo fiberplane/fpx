@@ -1,5 +1,5 @@
 import { useToast } from "@/components/ui/use-toast";
-import { useActiveCollectionEntryId, useActiveCollectionId } from "@/hooks";
+import { useActiveCollectionId, useActiveCollectionItemId } from "@/hooks";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { useUpdateCollectionItem } from "@/queries/collections";
 import {
@@ -79,15 +79,15 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
     );
 
   const collectionId = useActiveCollectionId() ?? null;
-  const collectionItemId = useActiveCollectionEntryId() ?? null;
+  const collectionItemId = useActiveCollectionItemId() ?? null;
 
-  const { mutate } = useUpdateCollectionItem();
+  const { mutate: syncCollectionItem } = useUpdateCollectionItem();
   const updateCollectionItem = (nullableExtraParams: CollectionItemParams) => {
     if (collectionId === null || collectionItemId === null) {
       return;
     }
 
-    return mutate({
+    return syncCollectionItem({
       collectionId,
       itemId: collectionItemId,
       extraParams: nullableExtraParams,

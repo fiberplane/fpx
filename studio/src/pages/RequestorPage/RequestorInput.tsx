@@ -50,12 +50,11 @@ export function RequestorInput({
   const isInDraftMode = useStudioStoreRaw(
     useShallow(({ activeRoute }) => !activeRoute),
   );
+  const canSaveDraftRoute = !!path && isInDraftMode;
 
   const isWsConnected = websocketState.isConnected;
 
   const { mutate: addRoutes } = useAddRoutes();
-
-  const canSaveDraftRoute = !!path && isInDraftMode;
 
   const handleAddRoute = useHandler(() => {
     if (canSaveDraftRoute) {

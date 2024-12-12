@@ -1,7 +1,7 @@
 import { Icon } from "@iconify/react";
 import { AddRoute } from "../AddRoute";
 
-export function EmptyCollectionItemsList(props: { collectionId: string }) {
+export function EmptyCollectionItemsList(props: { collectionId: number }) {
   const { collectionId } = props;
   return (
     <div className="text-sm text-muted-foreground py-4 px-3 my-2 flex gap-4 items-center flex-col">
