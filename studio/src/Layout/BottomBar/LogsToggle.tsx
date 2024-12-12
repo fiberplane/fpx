@@ -2,10 +2,7 @@ import IconWithNotification from "@/components/IconWithNotification";
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
 import { useActiveTraceId, useOrphanLogs } from "@/hooks";
-import {
-  useRequestorStore,
-  useRequestorStoreRaw,
-} from "@/pages/RequestorPage/store";
+import { useStudioStore, useStudioStoreRaw } from "@/pages/RequestorPage/store";
 import { useOtelTrace } from "@/queries";
 import { cn } from "@/utils";
 import {
@@ -51,7 +48,7 @@ function LogsToggleContent({
   errorCount = 0,
   warningCount = 0,
 }: { errorCount?: number; warningCount?: number }) {
-  const { togglePanel } = useRequestorStore("togglePanel");
+  const { togglePanel } = useStudioStore("togglePanel");
   const logsPanelVisible = useLogsPanelVisible();
   const notificationColor =
     errorCount > 0
@@ -98,7 +95,7 @@ function LogsToggleContent({
 }
 
 function useLogsPanelVisible() {
-  return useRequestorStoreRaw(
+  return useStudioStoreRaw(
     useShallow((state) => {
       return (
         state.bottomPanelIndex !== undefined &&

@@ -41,6 +41,7 @@ export const isWsRequest = (requestType: RequestType) =>
   WEBSOCKETS_ENABLED && requestType === "websocket";
 
 export const ProbedRouteSchema = z.object({
+  id: z.number(),
   path: z.string(),
   method: RequestMethodSchema,
   handler: z.string(),

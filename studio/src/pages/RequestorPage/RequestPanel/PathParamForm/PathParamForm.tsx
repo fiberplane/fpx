@@ -1,9 +1,7 @@
 import { KeyValueRow } from "../../KeyValueForm";
 import { createChangeEnabled } from "../../KeyValueForm/data";
-import type {
-  ChangeKeyValueParametersHandler,
-  KeyValueParameter,
-} from "../../KeyValueForm/types";
+import type { ChangeKeyValueParametersHandler } from "../../KeyValueForm/types";
+import type { KeyValueParameter } from "../../store";
 import { createChangePathParamValue } from "./data";
 
 type Props = {

@@ -1,4 +1,4 @@
-import { useRequestorStore } from "@/pages/RequestorPage/store";
+import { useStudioStore } from "@/pages/RequestorPage/store";
 import { ProbedRouteSchema } from "@/pages/RequestorPage/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -88,7 +88,7 @@ export function useFetchFileTreeRoutes() {
     throwOnError: true,
   });
 
-  const { updateTreeResult } = useRequestorStore("updateTreeResult");
+  const { updateTreeResult } = useStudioStore("updateTreeResult");
   const { data } = result;
   useEffect(() => {
     if (data) {

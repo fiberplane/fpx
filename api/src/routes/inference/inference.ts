@@ -71,7 +71,6 @@ app.post(
             })
         : [null, null];
 
-    logger.debug("handlerContextPerformant", handlerContextPerformant);
     // HACK - Get latest token from db
     const [token] = await db
       .select()

@@ -1,8 +1,8 @@
 import type { StateCreator } from "zustand";
-import type { Store, WebsocketSlice } from "./types";
+import type { StudioState, WebsocketSlice } from "./types";
 
 export const websocketSlice: StateCreator<
-  Store,
+  StudioState,
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   WebsocketSlice

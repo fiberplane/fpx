@@ -1,3 +1,4 @@
+import type { CollectionWithItemsList } from "@/queries";
 import type { TreeNode } from "@/queries/app-routes";
 import type { StateCreator } from "zustand";
 import { findAllSmartRouterMatches, findMatchedRoute } from "../../routes";
@@ -17,19 +18,18 @@ import {
   removeBaseUrl,
 } from "../utils";
 import {
-  // extractJsonBodyFromOpenApiDefinition,
   extractQueryParamsFromOpenApiDefinition,
   filterDisabledEmptyQueryParams,
 } from "../utils-openapi";
-import type { RoutesSlice, Store } from "./types";
+import type { RoutesSlice, StudioState } from "./types";
 
 export const routesSlice: StateCreator<
-  Store,
+  StudioState,
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   RoutesSlice
 > = (set, get) => ({
-  routes: [],
+  appRoutes: [],
   activeRoute: null,
 
   setRoutes: (routes) =>
@@ -45,7 +45,7 @@ export const routesSlice: StateCreator<
         ? extractMatchedPathParams(matchedRoute)
         : extractPathParams(state.path).map(mapPathParamKey);
 
-      state.routes = routes;
+      state.appRoutes = routes;
       state.activeRoute = nextSelectedRoute;
       state.pathParams = nextPathParams;
     }),
@@ -62,7 +62,6 @@ export const routesSlice: StateCreator<
       state.method = nextMethod;
       state.requestType = nextRequestType;
       state.pathParams = extractPathParams(route.path).map(mapPathParamKey);
-      state.activeHistoryResponseTraceId = null;
       state.activeResponse = null;
       // Filter out disabled and empty query params
       // TODO - Only do this if the route has an open api definition?
@@ -191,7 +190,7 @@ export const routesSlice: StateCreator<
       method,
       requestType,
       serviceBaseUrl,
-      routes,
+      appRoutes: routes,
       routesAndMiddleware,
     } = state;
 
@@ -249,6 +248,12 @@ export const routesSlice: StateCreator<
     }
     return middleware;
   },
+
+  collections: [],
+  setCollections: (collections: CollectionWithItemsList) =>
+    set((state) => {
+      state.collections = collections;
+    }),
 });
 
 const SUPPORTED_METHODS: Array<RequestMethod> = [

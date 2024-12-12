@@ -1,17 +1,4 @@
-import { z } from "zod";
-
-export const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
-  z.union([
-    z.string(),
-    z.number(),
-    z.boolean(),
-    z.null(),
-    z.array(JsonSchema),
-    z.record(JsonSchema),
-  ]),
-);
-
-export type JsonSchemaType = z.infer<typeof JsonSchema>;
+import type { JsonSchemaType } from "@fiberplane/fpx-types";
 
 // TODO - Use validation schema
 export type ProxiedRequestResponse = {

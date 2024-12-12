@@ -14,7 +14,7 @@ export function RequestDetailsPage() {
   }
 
   const generateLinkToTrace = useHandler((traceId: string) => {
-    return `/requests/otel/${traceId}`;
+    return `/requests/${traceId}`;
   });
 
   return (

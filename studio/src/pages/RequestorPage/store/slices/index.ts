@@ -2,6 +2,7 @@ export { aiSlice } from "./aiSlice";
 export { requestResponseSlice } from "./requestResponseSlice";
 export { routesSlice } from "./routesSlice";
 export { tabsSlice } from "./tabsSlice";
-export type { Store } from "./types";
+export type { StudioState as StudioStore } from "./types";
 export { uiSlice } from "./uiSlice";
 export { websocketSlice } from "./websocketSlice";
+export type { BottomPanelName } from "./types";
