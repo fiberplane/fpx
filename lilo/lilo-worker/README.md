@@ -8,6 +8,8 @@ Copy the `.dev.vars.example` file to `.dev.vars` and fill in the values:
 cp .dev.vars.example .dev.vars
 ```
 
+> NOTE: If you're using the local dev mode, you'll need to make sure `LILO_ENV=local` in your `.dev.vars` file, so that the session cookie's `sameSite` is set to `none` and the SPA can use it.
+
 You'll need GitHub OAuth app credentials for the dashboard. You can create your own or ask for Brett's.
 
 You'll want to initialize the D1 database for your project.

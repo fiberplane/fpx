@@ -40,15 +40,15 @@ export const createSession = async (
     expiresAt: new Date(Date.now() + EXPIRATION_TIME_MS).toISOString(),
   });
 
+  // NOTE: We use "none" in local mode to support cross-origin auth with the spa
+  const sameSite = c.env.LILO_ENV === "local" ? "none" : "Strict";
+
   // Set session cookie with the session token
   setSignedCookie(c, SESSION_COOKIE_NAME, sessionToken, c.env.SESSION_SECRET, {
     httpOnly: true,
     secure: true,
-    // TODO: change to none if possible in dev mode to support cross-origin auth with spa
-    sameSite: "none",
+    sameSite,
     path: "/",
-    // TODO: change to lilo.fp.dev when in prod
-    // domain: "localhost",
     maxAge: COOKIE_MAX_AGE,
   });
 };
