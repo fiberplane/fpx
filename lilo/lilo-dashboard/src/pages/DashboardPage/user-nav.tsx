@@ -30,7 +30,7 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={session.user.image} alt={session.user.name} />
+            <AvatarImage src={session.user.avatarUrl} alt={session.user.name} />
             <AvatarFallback>{session.user.githubUsername}</AvatarFallback>
           </Avatar>
         </Button>

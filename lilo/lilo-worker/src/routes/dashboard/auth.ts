@@ -17,6 +17,7 @@ export type DashboardAuthClient = typeof dashboardAuthRouter;
 export const dashboardAuthRouter = new Hono<AppType>().get(
   "/session",
   cors({
+    // FIXME
     origin: "http://localhost:3005",
     credentials: true,
   }),
@@ -83,11 +84,13 @@ dashboardAuthRouter.get("/github", async (c) => {
     .values({
       email: user.email,
       githubUsername: user.login,
+      avatarUrl: user.avatar_url,
     })
     .onConflictDoUpdate({
       target: schema.users.email,
       set: {
         githubUsername: user.login,
+        avatarUrl: user.avatar_url,
       },
     })
     .returning();

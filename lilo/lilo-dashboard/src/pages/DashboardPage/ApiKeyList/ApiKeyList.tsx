@@ -9,32 +9,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
-import { hc } from "hono/client";
 import { useState } from "react";
-import type { ApiKeysClient } from "../../../../lilo-worker/src/routes/internal/api-keys";
-
-type ApiKey = {
-  id: string;
-  name: string;
-  key: string;
-  createdAt: string;
-};
-
-const apiKeysClient = hc<ApiKeysClient>("/internal/api-keys");
+import { useCreateApiKey, useDeleteApiKey, useGetApiKeys } from "./queries";
 
 export function ApiKeyList() {
   const [newKeyName, setNewKeyName] = useState("");
   const { toast } = useToast();
 
-  const {
-    data: apiKeys,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["api-keys"],
-    queryFn: () => apiKeysClient.index.$get(),
-  });
+  const { data: apiKeysResponse, isLoading } = useGetApiKeys();
+
+  const { mutate: createApiKey } = useCreateApiKey();
+  const { mutate: revokeApiKey } = useDeleteApiKey();
 
   const generateApiKey = () => {
     if (!newKeyName) {
@@ -46,36 +31,15 @@ export function ApiKeyList() {
       return;
     }
 
-    const newKey: ApiKey = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: newKeyName,
-      key: `lilo_${Math.random().toString(36).substr(2, 32)}`,
-      createdAt: new Date().toISOString(),
-    };
-
-    // setApiKeys([...apiKeys, newKey])
+    createApiKey({ name: newKeyName });
     setNewKeyName("");
-    toast({
-      title: "API Key Generated",
-      description: "Your new API key has been created successfully.",
-    });
   };
 
-  const revokeApiKey = (id: string) => {
-    // setApiKeys(apiKeys.filter((key) => key.id !== id))
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
-    // NOTE - `index[":id"]` did not work...
-    apiKeysClient.keys[":id"].$delete({
-      param: {
-        id,
-      },
-    });
-
-    toast({
-      title: "API Key Revoked",
-      description: "The API key has been revoked successfully.",
-    });
-  };
+  const apiKeys = apiKeysResponse;
 
   return (
     <div>
@@ -98,10 +62,10 @@ export function ApiKeyList() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {apiKeys.map((key) => (
+          {apiKeys?.map((key) => (
             <TableRow key={key.id}>
               <TableCell>{key.name}</TableCell>
-              <TableCell>{key.key}</TableCell>
+              <TableCell>{key.token}</TableCell>
               <TableCell>{new Date(key.createdAt).toLocaleString()}</TableCell>
               <TableCell>
                 <Button

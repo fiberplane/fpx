@@ -17,14 +17,15 @@ const LiloJWTPayloadSchema = z.object({
 
 export const createJwtPayload = (
   userId: string,
-  projectId: string,
+  projectId?: string,
 ): JwtPayload => {
   return {
     sub: userId,
     iat: Math.floor(Date.now() / 1000),
     nbf: Math.floor(Date.now() / 1000),
 
-    // Custom claims
+    // === Custom claims === //
+    // NOTE - projectId is optional because we haven't built support for project scoped keys yet
     lilo_project_id: projectId,
   };
 };

@@ -1,72 +1,69 @@
+import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
-import { Hono } from "hono";
+import { Handler, Hono } from "hono";
 import * as jose from "jose";
+import { z } from "zod";
 import * as schema from "../../db/schema";
 import { importKey } from "../../lib/crypto";
 import { createJwtPayload } from "../../lib/jwt";
 import { dashboardAuthentication } from "../../lib/session-auth";
 import type { AppContext, AppType } from "../../types";
 
-type CreateApiKeyBody = {
-  name: string;
-  projectId: string;
-};
+const createApiKeyBodySchema = z.object({
+  name: z.string(),
+});
+
+// type CreateApiKeyBody = z.infer<typeof createApiKeyBodySchema>;
 
 export type ApiKeysClient = typeof apiKeysRouter;
 
 const apiKeysRouter = new Hono<AppType>()
   // Middleware to ensure the user is authenticated
   .use(dashboardAuthentication)
-  .post("/", createApiKey)
   .get("/", getApiKeys)
-  // NOTE - `index[":id"]` did not work on the Hono RPC client, so I added
-  .delete("/keys/:id", deleteApiKey);
+  // NOTE - `client.index[":id"].$delete` did not work on the Hono RPC client, so I added the "/keys" prefix
+  .delete("/keys/:id", deleteApiKey)
+  // NOTE - We need to write this handler inline so that type inference works with zValidator and the `valid` property
+  .post("/", zValidator("json", createApiKeyBodySchema), async (c) => {
+    const db = c.get("db");
+    const { name } = c.req.valid("json");
 
-/**
- * Create a new API key for a user
- *
- * @TODO - Add validation for the request body
- */
-async function createApiKey(c: AppContext) {
-  const db = c.get("db");
-  const { name, projectId } = await c.req.json<CreateApiKeyBody>();
+    // Get the authenticated user's information
+    const user = c.get("currentUser");
 
-  // Get the authenticated user's information
-  const user = c.get("currentUser");
+    if (!user) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
 
-  if (!user) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
+    // We are going to sign the JWT using the private key from environment variables
+    const privateKey = await importKey("private", c.env.PRIVATE_KEY);
 
-  // We are going to sign the JWT using the private key from environment variables
-  const privateKey = await importKey("private", c.env.PRIVATE_KEY);
+    // Create a JWT payload
+    const payload = createJwtPayload(user?.id);
 
-  // Create a JWT payload
-  const payload = createJwtPayload(user?.id, projectId);
+    // Generate a JWT token bound to the user
+    const token = await new jose.SignJWT(payload)
+      .setProtectedHeader({ alg: "PS256" })
+      .sign(privateKey);
 
-  // Generate a JWT token bound to the user
-  const token = await new jose.SignJWT(payload)
-    .setProtectedHeader({ alg: "PS256" })
-    .sign(privateKey);
-
-  // Store the API key in the database
-  // TODO - Only store truncated token in the database?
-  await db.insert(schema.apiKeys).values({
-    key: token,
-    userId: user.id,
-    name,
-  });
-
-  return c.json(
-    {
-      token,
+    // Store the API key in the database
+    // TODO - Only store truncated token in the database?
+    await db.insert(schema.apiKeys).values({
+      key: token,
+      userId: user.id,
       name,
-      // createdAt: payload.createdAt,
-      createdBy: user.email,
-    },
-    201,
-  );
-}
+    });
+
+    return c.json(
+      {
+        token,
+        name,
+        // createdAt: payload.createdAt,
+        createdBy: user.email,
+      },
+      201,
+    );
+  });
 
 async function getApiKeys(c: AppContext) {
   const db = c.get("db");
@@ -74,13 +71,14 @@ async function getApiKeys(c: AppContext) {
 
   // Transform the DB results to match the expected response format
   const formattedKeys = apiKeys.map((key) => ({
+    id: key.id,
     token: maskToken(key.key),
     name: key.name,
     createdAt: key.createdAt,
     createdBy: key.userId,
   }));
 
-  return c.json(formattedKeys);
+  return c.json(formattedKeys, 200);
 }
 
 /**

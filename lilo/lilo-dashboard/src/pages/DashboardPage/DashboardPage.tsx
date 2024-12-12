@@ -1,4 +1,4 @@
-import { ApiKeyList } from "./api-key-list";
+import { ApiKeyList } from "./ApiKeyList";
 import { DashboardHeader } from "./dashboard-header";
 import { ProjectList } from "./project-list";
 
