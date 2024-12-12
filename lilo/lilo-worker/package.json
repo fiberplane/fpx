@@ -18,10 +18,13 @@
     "session:generate": "tsx session-secret-generate.ts"
   },
   "dependencies": {
+    "@ai-sdk/google": "^1.0.9",
+    "@ai-sdk/openai": "^1.0.8",
     "@hono/oauth-providers": "^0.6.2",
     "@hono/zod-openapi": "^0.18.0",
     "@hono/zod-validator": "^0.4.1",
     "@scalar/hono-api-reference": "^0.5.163",
+    "ai": "^4.0.16",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.36.4",
     "hono": "^4.6.7",
