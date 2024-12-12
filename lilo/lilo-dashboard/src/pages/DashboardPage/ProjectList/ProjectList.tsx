@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -23,25 +24,24 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { useCreateProject, useDeleteProject, useGetProjects } from "./queries";
 
 type Project = {
   id: string;
   name: string;
   apiSpec: string;
-  additionalDocs: string;
-  externalDocs: string;
 };
 
 export function ProjectList() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const { data: projects, isLoading, error } = useGetProjects();
   const [newProject, setNewProject] = useState<Project>({
     id: "",
     name: "",
     apiSpec: "",
-    additionalDocs: "",
-    externalDocs: "",
   });
   const { toast } = useToast();
+  const createProjectMutation = useCreateProject();
+  const deleteProjectMutation = useDeleteProject();
 
   const createProject = () => {
     if (!newProject.name || !newProject.apiSpec) {
@@ -54,31 +54,25 @@ export function ProjectList() {
       return;
     }
 
-    const projectWithId = {
-      ...newProject,
-      id: Math.random().toString(36).substr(2, 9),
-    };
-
-    setProjects([...projects, projectWithId]);
-    setNewProject({
-      id: "",
-      name: "",
-      apiSpec: "",
-      additionalDocs: "",
-      externalDocs: "",
-    });
-    toast({
-      title: "Project Created",
-      description: "Your new project has been created successfully.",
-    });
+    createProjectMutation.mutate(
+      {
+        name: newProject.name,
+        spec: newProject.apiSpec,
+      },
+      {
+        onSuccess: () => {
+          setNewProject({
+            id: "",
+            name: "",
+            apiSpec: "",
+          });
+        },
+      },
+    );
   };
 
   const deleteProject = (id: string) => {
-    setProjects(projects.filter((project) => project.id !== id));
-    toast({
-      title: "Project Deleted",
-      description: "The project has been deleted successfully.",
-    });
+    deleteProjectMutation.mutate(id);
   };
 
   return (
@@ -122,35 +116,6 @@ export function ProjectList() {
                 className="col-span-3"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="additionalDocs" className="text-right">
-                Additional Docs
-              </Label>
-              <Textarea
-                id="additionalDocs"
-                value={newProject.additionalDocs}
-                onChange={(e) =>
-                  setNewProject({
-                    ...newProject,
-                    additionalDocs: e.target.value,
-                  })
-                }
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="externalDocs" className="text-right">
-                External Docs
-              </Label>
-              <Input
-                id="externalDocs"
-                value={newProject.externalDocs}
-                onChange={(e) =>
-                  setNewProject({ ...newProject, externalDocs: e.target.value })
-                }
-                className="col-span-3"
-              />
-            </div>
           </div>
           <DialogFooter>
             <Button onClick={createProject}>Create Project</Button>
@@ -162,20 +127,14 @@ export function ProjectList() {
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>API Spec</TableHead>
-            <TableHead>Additional Docs</TableHead>
-            <TableHead>External Docs</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {projects.map((project) => (
+          {projects?.map((project) => (
             <TableRow key={project.id}>
               <TableCell>{project.name}</TableCell>
-              <TableCell>{project.apiSpec.substring(0, 50)}...</TableCell>
-              <TableCell>
-                {project.additionalDocs.substring(0, 50)}...
-              </TableCell>
-              <TableCell>{project.externalDocs}</TableCell>
+              <TableCell>{project.spec?.substring(0, 50)}...</TableCell>
               <TableCell>
                 <Button
                   variant="destructive"

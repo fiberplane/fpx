@@ -1,70 +1,71 @@
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { hc } from "hono/client";
-import type { ApiKeysRouter } from "../../../../../lilo-worker/src/routes/internal";
+import type { ProjectsRouter } from "../../../../../lilo-worker/src/routes/internal";
 
-const apiKeysClient = hc<ApiKeysRouter>("/internal/api-keys");
+const projectsClient = hc<ProjectsRouter>("/internal/projects");
 
-const QUERY_KEY = "api-keys";
+const QUERY_KEY = "user-projects";
 
-export function useGetApiKeys() {
+export function useGetProjects() {
   return useQuery({
     queryKey: [QUERY_KEY],
     // TODO - Add error handling
-    queryFn: () => apiKeysClient.index.$get().then((res) => res.json()),
+    queryFn: () => projectsClient.index.$get().then((res) => res.json()),
   });
 }
 
-export function useDeleteApiKey() {
+export function useDeleteProject() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (id: string) =>
-      apiKeysClient[":id"].$delete({
+      projectsClient[":id"].$delete({
         param: { id },
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast({
-        title: "API Key Revoked",
-        description: "The API key has been revoked successfully.",
+        title: "Project Deleted",
+        description: "The project has been deleted successfully.",
       });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to revoke API key",
+        description: "Failed to delete project",
         variant: "destructive",
       });
     },
   });
 }
 
-type CreateApiKeyPayload = {
+type CreateProjectPayload = {
   name: string;
+  spec: string;
 };
 
-export function useCreateApiKey() {
+export function useCreateProject() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CreateApiKeyPayload) =>
-      apiKeysClient.index.$post({
+    mutationFn: (payload: CreateProjectPayload) =>
+      projectsClient.index.$post({
         json: payload,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast({
-        title: "API Key Created",
-        description: "Your new API key has been created successfully.",
+        title: "Project Created",
+        description: "Your new project has been created successfully.",
       });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to create API key",
+        description: "Failed to create project",
         variant: "destructive",
       });
     },

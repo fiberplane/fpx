@@ -2,12 +2,11 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "../../db/schema";
-import type { AppType } from "../../types";
 import { createProject, listProjects } from "../../queries/projects";
+import type { AppType } from "../../types";
 
 const router = new OpenAPIHono<AppType>();
 
-// Define schemas
 const ProjectSchema = z
   .object({
     id: z.string().openapi({

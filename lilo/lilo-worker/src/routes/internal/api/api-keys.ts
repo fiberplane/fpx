@@ -6,7 +6,6 @@ import { z } from "zod";
 import * as schema from "../../../db/schema";
 import { importKey } from "../../../lib/crypto";
 import { createJwtPayload } from "../../../lib/jwt";
-import { dashboardAuthentication } from "../../../lib/session-auth";
 import type { AppContext, AppType } from "../../../types";
 
 const createApiKeyBodySchema = z.object({
@@ -16,11 +15,9 @@ const createApiKeyBodySchema = z.object({
 export type ApiKeysRouter = typeof apiKeysRouter;
 
 const apiKeysRouter = new Hono<AppType>()
-  // Middleware to ensure the user is authenticated
-  .use(dashboardAuthentication)
   .get("/", getApiKeys)
   // NOTE - `client.index[":id"].$delete` did not work on the Hono RPC client, so I added the "/keys" prefix
-  .delete("/keys/:id", deleteApiKey)
+  .delete("/:id", deleteApiKey)
   // NOTE - We need to write this handler inline so that type inference works with zValidator and the `valid` property
   .post("/", zValidator("json", createApiKeyBodySchema), async (c) => {
     const db = c.get("db");

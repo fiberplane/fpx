@@ -1,6 +1,7 @@
-import type { DatabaseType } from "../types";
-import * as schema from "../db/schema";
 import { eq } from "drizzle-orm";
+import * as schema from "../db/schema";
+import type { User } from "../db/schema";
+import type { DatabaseType } from "../types";
 
 /**
  * List all projects for a user
@@ -19,14 +20,8 @@ type UpdateProject = Partial<NewProject>;
 /**
  * Create a new project
  */
-export const createProject = async (
-  db: DatabaseType,
-  project: NewProject,
-) => {
-  return db
-    .insert(schema.projects)
-    .values(project)
-    .returning();
+export const createProject = async (db: DatabaseType, project: NewProject) => {
+  return db.insert(schema.projects).values(project).returning();
 };
 
 export const updateProject = async (
@@ -39,4 +34,8 @@ export const updateProject = async (
     .set(project)
     .where(eq(schema.projects.id, projectId))
     .returning();
+};
+
+export const deleteProject = async (db: DatabaseType, projectId: string) => {
+  return db.delete(schema.projects).where(eq(schema.projects.id, projectId));
 };
