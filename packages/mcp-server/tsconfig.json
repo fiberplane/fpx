@@ -1,9 +1,6 @@
 {
 	"compilerOptions": {
-		"target": "esnext",
-		"lib": [
-			"esnext"
-		],
+		"target": "ESNext",
 		"module": "NodeNext",
 		"types": [
 			"node"
@@ -15,7 +12,7 @@
 		"skipLibCheck": true
 	},
 	"include": [
-		"index.ts",
+		"*.ts",
 	],
 	"exclude": [
 		"node_modules",
