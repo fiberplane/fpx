@@ -51,7 +51,7 @@ export function CollectionItemListItem({
           }),
           search: searchParams.toString(),
         }}
-        className="grid gap-2 px-2 rounded-md grid-cols-[4rem_1fr_1fr] hover:bg-muted"
+        className="grid gap-2 px-2 grid-cols-[4rem_1fr_1fr] rounded-md  hover:bg-muted"
       >
         <Method method={route.method} />
         <span>{route.path}</span>

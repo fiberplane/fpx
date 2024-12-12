@@ -117,13 +117,13 @@ export const RequestPanel = memo(function RequestPanel(
   const collectionId = useActiveCollectionId() ?? null;
   const collectionItemId = useActiveCollectionEntryId() ?? null;
 
-  const { mutate } = useUpdateCollectionItem();
+  const { mutate: syncCollectionItem } = useUpdateCollectionItem();
   const updateCollectionItem = (nullableExtraParams: CollectionItemParams) => {
     if (collectionId === null || collectionItemId === null) {
       return;
     }
 
-    return mutate({
+    return syncCollectionItem({
       collectionId,
       itemId: collectionItemId,
       extraParams: nullableExtraParams,

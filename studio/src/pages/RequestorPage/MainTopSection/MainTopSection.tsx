@@ -20,7 +20,7 @@ export function MainTopSection() {
               {index > 0 && (
                 <BreadcrumbSeparator className="flex items-center mt-[3px]" />
               )}
-              <CrumbContent {...crumb} />
+              <CrumbContent {...crumb} last={index === crumbs.length - 1} />
             </Fragment>
           );
         })}

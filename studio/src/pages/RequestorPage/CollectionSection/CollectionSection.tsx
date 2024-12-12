@@ -116,6 +116,7 @@ function CollectionItemList({
   collectionId: string;
 }) {
   const { mutate } = useUpdateCollectionItem();
+
   const [list, setList] = useState<string[]>(() =>
     collection.collectionItems.map((item) => item.id.toString()),
   );
@@ -123,19 +124,13 @@ function CollectionItemList({
   useEffect(() => {
     setList(collection.collectionItems.map((item) => item.id.toString()));
   }, [collection.collectionItems]);
-  // const list = useMemo(() => {
-  //   return collection.collectionItems.map((item) => item.id.toString());
-  // }, [collection.collectionItems]);
-  console.log("list", list);
+
   return (
-    <ul className="grid gap-2 pb-2">
+    <ul className="grid gap-1 pb-2">
       <DndContext
         collisionDetection={closestCenter}
-        onDragStart={(event) => {
-          console.log("Drag start", event);
-        }}
         onDragEnd={(event) => {
-          console.log("Drag end", event);
+          // Handle drag end event
           const activeItem = collection.collectionItems.find(
             (item) => item.id.toString() === event.active.id,
           );
@@ -195,17 +190,37 @@ function Item(props: {
   collectionId: string;
 }) {
   const { collectionId, item, route } = props;
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: item.id.toString() });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: item.id.toString(),
+    transition: {
+      duration: 150, // milliseconds
+      easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+    },
+  });
   const itemStyle = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
 
-  // console.log("Item", item.id, itemStyle, listeners);
   return (
-    <li key={item.id} style={itemStyle} ref={setNodeRef}>
-      <div className="grid grid-cols-[auto_1fr] gap-2 items-center">
+    <li style={itemStyle} ref={setNodeRef}>
+      <div
+        className={cn(
+          "grid grid-cols-[auto_1fr] gap-2 items-center py-1",
+          "transition-shadow duration-150",
+          "rounded-md hover:bg-muted shadow-none",
+          {
+            "shadow-lg": isDragging,
+          },
+        )}
+      >
         <Button
           type="button"
           variant="secondary"

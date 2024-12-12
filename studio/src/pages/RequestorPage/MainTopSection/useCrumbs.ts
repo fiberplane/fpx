@@ -4,22 +4,35 @@ import {
   useActiveCollectionId,
   useActiveTraceId,
 } from "@/hooks";
-import { useCollections } from "@/queries";
 import type { IconProps } from "@iconify/react";
-import { generatePath, useSearchParams } from "react-router-dom";
+import type { ComponentType } from "react";
+import { type To, generatePath, useSearchParams } from "react-router-dom";
 import { useStudioStore } from "../store";
+import { CollectionCrumb, CollectionItemCrumb } from "./CrumbContent";
+
+type LabelTextWithIcon = {
+  type: "text";
+  icon?: IconProps["icon"];
+  text: string;
+};
+
+type HideLoadingProps = { hideLoading: boolean };
+
+// biome-ignore lint/suspicious/noExplicitAny: hack: this was the only way to get this to work
+type LabelComponent<P = any> = {
+  type: "component";
+  Component: ComponentType<Omit<P, "hideLoading"> & HideLoadingProps>;
+  props: Omit<P, "hideLoading">;
+};
+type Label = LabelTextWithIcon | LabelComponent;
 
 export type Crumb = {
-  label:
-    | string
-    | {
-        icon: IconProps["icon"];
-        text: string;
-      };
-  href?: string;
+  label: Label;
+  to?: To;
   onActivate?: () => void;
 };
-export function useCrumbs(): Crumb[] {
+
+export function useCrumbs(): Array<Crumb> {
   const collectionIdText = useActiveCollectionId();
   const traceId = useActiveTraceId();
   const entryId = useActiveCollectionEntryId();
@@ -32,12 +45,13 @@ export function useCrumbs(): Crumb[] {
   const [searchParams] = useSearchParams();
   const flattenedParams = searchParams.toString();
 
-  const { data: collections } = useCollections();
-  const collectionId = Number.parseInt(collectionIdText ?? "");
-  const crumbs: Crumb[] = [
+  const crumbs: Array<Crumb> = [
     {
-      label: "Home",
-      href: "/",
+      label: {
+        type: "text",
+        text: "Home",
+      },
+      to: { pathname: "/" },
       onActivate: () => {
         updatePath("/");
         updateMethod("GET");
@@ -45,38 +59,44 @@ export function useCrumbs(): Crumb[] {
     },
   ];
 
-  if (!Number.isNaN(collectionId)) {
-    const collectionLink = `${generatePath(COLLECTION_ROUTE, {
-      collectionId: collectionId.toString(),
-    })}${flattenedParams ? `?${flattenedParams}` : ""}`;
-    const collection = collections?.find((c) => c.id === collectionId);
-    if (collection) {
-      crumbs.push({
-        label: {
-          icon: "lucide:folder",
-          text: collection.name,
-        },
-        href: collectionLink,
-      });
-    } else {
-      crumbs.push({
-        label: {
-          icon: "lucide:folder",
-          text: "Not found",
-        },
-      });
-    }
+  if (collectionIdText) {
+    const collectionLink: To = {
+      pathname: generatePath(COLLECTION_ROUTE, {
+        collectionId: collectionIdText,
+      }),
+      search: flattenedParams ? `?${flattenedParams}` : "",
+    };
+
+    const props = { collectionId: collectionIdText, silly: true };
+    const label: LabelComponent<typeof props> = {
+      type: "component",
+      Component: CollectionCrumb,
+      props,
+    };
+
+    crumbs.push({
+      label,
+      to: !entryId ? collectionLink : undefined,
+    });
   }
 
-  if (entryId && collectionId) {
-    const collection = collections?.find((item) => item.id === collectionId);
-    const collectionItem = collection?.collectionItems.find(
-      (item) => item.id.toString() === entryId,
-    );
-    const label = collectionItem?.name || "Route";
-    crumbs.push({ label });
-  } else if ((activeRoute && !collectionId) || traceId) {
-    crumbs.push({ label: "Route" });
+  if (entryId && collectionIdText) {
+    const props = { collectionId: collectionIdText, itemId: entryId };
+    const label: LabelComponent<typeof props> = {
+      type: "component",
+      Component: CollectionItemCrumb,
+      props,
+    };
+    crumbs.push({
+      label,
+    });
+  } else if ((activeRoute && !collectionIdText) || traceId) {
+    crumbs.push({
+      label: {
+        type: "text",
+        text: "Route",
+      },
+    });
   }
 
   return crumbs;

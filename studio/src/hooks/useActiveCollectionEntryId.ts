@@ -12,7 +12,7 @@ export function useActiveCollectionEntryId() {
     location.pathname,
   );
   if (match && match.length > 0) {
-    return match[0].params.entryId;
+    return match[0].params.entryId ?? null;
   }
 
   return null;

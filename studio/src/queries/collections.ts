@@ -308,7 +308,7 @@ export function useUpdateCollectionItem() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [COLLECTIONS_KEY] });
     },
-    mutationKey: [COLLECTIONS_KEY, "upate-collection-item"],
+    mutationKey: [COLLECTIONS_KEY, "update-collection-item"],
   });
 
   return mutation;
