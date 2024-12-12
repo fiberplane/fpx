@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import type { Next } from "hono";
 import { getSignedCookie, setSignedCookie } from "hono/cookie";
+import { HTTPException } from "hono/http-exception";
 import * as schema from "../db/schema";
 import type { User } from "../db/schema";
 import type { AppContext, DatabaseType } from "../types";
@@ -15,7 +16,9 @@ export const SESSION_COOKIE_NAME = "sid";
 export const requireSessionSecret = (c: AppContext, next: Next) => {
   const sessionSecret = c.env.SESSION_SECRET;
   if (!sessionSecret) {
-    return c.json({ message: "Internal server error (code: OMG_6791)" }, 500);
+    throw new HTTPException(500, {
+      message: "Internal server error (CODE: OMG_001)",
+    });
   }
   return next();
 };
