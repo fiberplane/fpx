@@ -271,7 +271,7 @@ export async function getResponseAttributes(
   response: GlobalResponse | HonoResponse,
 ) {
   const attributes: Attributes = {
-    [EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE]: String(response.status),
+    [EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE]: response.status,
     [SEMATTRS_HTTP_SCHEME]: response.url.split(":")[0],
   };
 
@@ -283,7 +283,14 @@ export async function getResponseAttributes(
 
   const contentLength = response.headers.get("content-length");
   if (contentLength) {
-    attributes[SEMATTRS_HTTP_RESPONSE_CONTENT_LENGTH] = contentLength;
+    try {
+      attributes[SEMATTRS_HTTP_RESPONSE_CONTENT_LENGTH] = Number.parseInt(
+        contentLength,
+        10,
+      );
+    } catch {
+      // ignore errors
+    }
   }
 
   const headers = response.headers;
