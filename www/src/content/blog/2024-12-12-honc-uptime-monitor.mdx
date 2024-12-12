@@ -2,7 +2,7 @@
 title: "Building an uptime monitor using HONC and Cloudflare Workers"
 description: An uptime monitor built with Hono, Durable Objects,D1, and Cloudflare Workers
 slug: honc-up-time-monitor
-date: 2024-12-09
+date: 2024-12-12
 author: Micha "mies" Hernandez van Leuffen
 tags:
   - HONC
@@ -223,6 +223,7 @@ Some potential improvements could include:
 * Creating more detailed reporting and analytics
 * Adding notification systems for downtime alerts
 * Implementing custom check parameters (timeout, expected status codes, etc.)
+* Furthermore a more robust approach might be to use a cron trigger that runs every few seconds, looks for records that haven't had a recent uptime check (according to their interval) and then making the check, such that when the Worker is redeployed, it doesn't miss any existing checks.
 
 <LinkCard
   title="Get the code on GitHub"
