@@ -1,8 +1,6 @@
 import { githubAuth } from "@hono/oauth-providers/github";
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import * as schema from "../../db/schema";
 import {
@@ -16,11 +14,6 @@ export type DashboardAuthClient = typeof dashboardAuthRouter;
 
 export const dashboardAuthRouter = new Hono<AppType>().get(
   "/session",
-  cors({
-    // FIXME
-    origin: "http://localhost:3005",
-    credentials: true,
-  }),
   async (c) => {
     const sessionId = await getSessionId(c);
     if (!sessionId) {
@@ -69,8 +62,7 @@ dashboardAuthRouter.use("/github", async (c, next) => {
 
 // GitHub OAuth callback handler
 dashboardAuthRouter.get("/github", async (c) => {
-  const db = drizzle(c.env.DB);
-
+  const db = c.get("db");
   const user = c.get("user-github");
 
   // TODO - Show an HTML page with a message to the user
@@ -98,8 +90,11 @@ dashboardAuthRouter.get("/github", async (c) => {
   // Generate a session and attach to cookie (stored in the database)
   await createSession(c, db, userRecord.id);
 
-  // TODO - Redirect to the dashboard depending on the environment
-  return c.redirect("http://localhost:3005/");
+  // HACK - Redirect to the local SPA dashboard if we're in local mode
+  if (c.env.LILO_ENV === "local") {
+    return c.redirect("http://localhost:3005/");
+  }
+  return c.redirect("/");
 });
 
 // Logout handler

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import type { Next } from "hono";
-import { getSignedCookie, setSignedCookie } from "hono/cookie";
+import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
 import * as schema from "../db/schema";
 import type { User } from "../db/schema";
@@ -59,6 +59,8 @@ export const deleteSession = async (c: AppContext, db: DatabaseType) => {
   if (!sessionId) {
     return;
   }
+
+  deleteCookie(c, SESSION_COOKIE_NAME);
 
   await db.delete(schema.sessions).where(eq(schema.sessions.id, sessionId));
 };

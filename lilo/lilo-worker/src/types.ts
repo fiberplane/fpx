@@ -19,6 +19,8 @@ export type Bindings = {
   PRIVATE_KEY: string;
   // Session secret for signing cookies
   SESSION_SECRET: string;
+  // Environment
+  LILO_ENV: string;
 };
 
 export type AppType = {
