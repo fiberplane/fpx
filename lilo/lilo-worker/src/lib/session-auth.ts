@@ -81,7 +81,7 @@ export const addCurrentUserToContext = async (c: AppContext, next: Next) => {
       c.env.SESSION_SECRET,
       SESSION_COOKIE_NAME,
     );
-  } catch (e) {
+  } catch (_e) {
     sessionId = undefined;
   }
 

@@ -1,5 +1,4 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { drizzle } from "drizzle-orm/d1";
 import * as schema from "../../db/schema";
 import type { AppType } from "../../types";
 

@@ -43,6 +43,7 @@ export function importKey(
       hash: "SHA-256",
     },
     keyType === "public",
+    // @ts-ignore: TODO - fix this for frontend builds
     keyUsage,
   );
 }

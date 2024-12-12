@@ -1,9 +1,6 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -33,7 +30,11 @@ type Project = {
 };
 
 export function ProjectList() {
-  const { data: projects, isLoading, error } = useGetProjects();
+  const {
+    data: projects,
+    // isLoading,
+    // error,
+  } = useGetProjects();
   const [newProject, setNewProject] = useState<Project>({
     id: "",
     name: "",

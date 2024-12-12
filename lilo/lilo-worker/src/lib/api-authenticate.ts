@@ -1,12 +1,9 @@
-import type { Context, MiddlewareHandler, Next } from "hono";
-import { createFactory } from "hono/factory";
+import type { Context, Next } from "hono";
 import * as jose from "jose";
 
 import type { AppType } from "../types";
 import { importKey } from "./crypto";
 import { getUserById } from "./db";
-
-const factory = createFactory();
 
 /**
  * A piece of middleware that handles JWT parsing and user lookup based off of the `sub` of the JWT.

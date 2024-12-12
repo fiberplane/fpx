@@ -1,6 +1,5 @@
 import { eq } from "drizzle-orm";
 import * as schema from "../db/schema";
-import type { User } from "../db/schema";
 import type { DatabaseType } from "../types";
 
 /**

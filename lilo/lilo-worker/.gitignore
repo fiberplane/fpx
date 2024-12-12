@@ -1,6 +1,6 @@
 # prod
 dist/
-
+public/
 # dev
 .yarn/
 !.yarn/releases

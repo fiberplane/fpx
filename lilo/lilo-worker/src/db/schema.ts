@@ -74,7 +74,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   apiKeys: many(apiKeys),
 }));
 
-export const projectsRelations = relations(projects, ({ one, many }) => ({
+export const projectsRelations = relations(projects, ({ one }) => ({
   user: one(users, {
     fields: [projects.userId],
     references: [users.id],
