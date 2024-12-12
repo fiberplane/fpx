@@ -8,7 +8,8 @@ import type { IconProps } from "@iconify/react";
 import type { ComponentType } from "react";
 import { type To, generatePath, useSearchParams } from "react-router-dom";
 import { useStudioStore } from "../store";
-import { CollectionCrumb, CollectionItemCrumb } from "./CrumbContent";
+import { CollectionCrumb } from "./CollectionCrumb";
+import { CollectionItemCrumb } from "./CollectionItemCrumb";
 
 type LabelTextWithIcon = {
   type: "text";
