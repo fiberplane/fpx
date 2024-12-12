@@ -2,7 +2,6 @@ import { instrument } from "@fiberplane/hono-otel";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { logger } from "hono/logger";
 import { dbMiddleware } from "./lib/db";
-import { requireSessionSecret } from "./lib/session-auth";
 import { externalApiRouter } from "./routes/external";
 import { internalApiRouter } from "./routes/internal/api";
 import { dashboardAuthRouter } from "./routes/internal/auth";
@@ -17,11 +16,10 @@ app.use(logger());
 // Set drizzle database on context
 app.use(dbMiddleware);
 
-// Session authentication for the dashboard
+// Session authentication for the dashboard and internal api(NOT for the external api)
 app.route("/auth", dashboardAuthRouter);
 
 // Internal api
-app.use("/internal/*", requireSessionSecret);
 app.route("/internal", internalApiRouter);
 
 // External api
