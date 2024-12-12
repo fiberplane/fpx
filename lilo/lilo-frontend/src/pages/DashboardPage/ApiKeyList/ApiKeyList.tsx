@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -17,7 +18,7 @@ export function ApiKeyList() {
   const [newKeyName, setNewKeyName] = useState("");
   const { toast } = useToast();
 
-  const { data: apiKeysResponse, isLoading } = useGetApiKeys();
+  const { data: apiKeys, isLoading } = useGetApiKeys();
 
   const { mutate: createApiKey } = useCreateApiKey();
   const { mutate: revokeApiKey } = useDeleteApiKey();
@@ -37,10 +38,8 @@ export function ApiKeyList() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <ApiKeySkeleton />;
   }
-
-  const apiKeys = apiKeysResponse;
 
   return (
     <div>
@@ -72,10 +71,51 @@ export function ApiKeyList() {
                 <Button
                   variant="outline"
                   size="icon"
+                  className="h-6 w-6 p-4"
                   onClick={() => revokeApiKey(key.id)}
                 >
                   <TrashIcon className="h-4 w-4 text-muted-foreground" />
                 </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function ApiKeySkeleton() {
+  return (
+    <div>
+      <h2 className="text-xl font-semibold mb-4">API Keys</h2>
+      <div className="flex space-x-4 mb-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-32" />
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Key</TableHead>
+            <TableHead>Created At</TableHead>
+            <TableHead className="w-20">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {[...Array(3)].map((_, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <Skeleton className="h-6 w-full" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-6 w-full" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-6 w-full" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-6 w-10" />
               </TableCell>
             </TableRow>
           ))}

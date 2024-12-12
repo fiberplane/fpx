@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -32,11 +33,7 @@ type Project = {
 };
 
 export function ProjectList() {
-  const {
-    data: projects,
-    // isLoading,
-    // error,
-  } = useGetProjects();
+  const { data: projects, isLoading } = useGetProjects();
   const [newProject, setNewProject] = useState<Project>({
     id: "",
     name: "",
@@ -45,6 +42,10 @@ export function ProjectList() {
   const { toast } = useToast();
   const createProjectMutation = useCreateProject();
   const deleteProjectMutation = useDeleteProject();
+
+  if (isLoading) {
+    return <ProjectListSkeleton />;
+  }
 
   const createProject = () => {
     if (!newProject.name || !newProject.apiSpec) {
@@ -148,10 +149,47 @@ export function ProjectList() {
                 <Button
                   variant="outline"
                   size="icon"
+                  className="h-6 w-6 p-4"
                   onClick={() => deleteProject(project.id)}
                 >
                   <TrashIcon className="h-4 w-4 text-muted-foreground" />
                 </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function ProjectListSkeleton() {
+  return (
+    <div>
+      <h2 className="text-xl font-semibold mb-4">Projects</h2>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>Created At</TableHead>
+            <TableHead className="w-20">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {[...Array(3)].map((_, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <Skeleton className="h-4 w-full" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-full" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-full" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-10" />
               </TableCell>
             </TableRow>
           ))}
