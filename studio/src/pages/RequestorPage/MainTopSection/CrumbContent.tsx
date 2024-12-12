@@ -1,8 +1,8 @@
 import { BreadcrumbItem, BreadcrumbLink } from "@/components/ui/breadcrumb";
+import { useStickyLoading } from "@/hooks";
 import { useCollections } from "@/queries";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react";
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Crumb } from "./useCrumbs";
 
@@ -79,26 +79,6 @@ export function CollectionCrumb({
       </>
     );
   }
-}
-
-/**
- * Makes the loading state sticky (for a minimum duration)
- */
-function useStickyLoading(loading: boolean, duration = 300) {
-  const [sticky, setSticky] = useState(false);
-
-  useEffect(() => {
-    if (loading) {
-      setSticky(true);
-      return;
-    }
-    const timeout = setTimeout(() => {
-      setSticky(false);
-    }, duration);
-    return () => clearTimeout(timeout);
-  }, [loading, duration]);
-
-  return sticky;
 }
 
 function LoadingSpinner({ loading }: { loading: boolean }) {
