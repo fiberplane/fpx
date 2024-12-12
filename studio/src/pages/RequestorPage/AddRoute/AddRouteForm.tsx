@@ -1,71 +1,24 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { Method } from "@/pages/RequestorPage/RequestorHistory";
 import { useRoutes } from "@/pages/RequestorPage/routes";
 import { useStudioStore } from "@/pages/RequestorPage/store";
 import { useAddItemToCollection } from "@/queries";
-import { useHandler } from "@fiberplane/hooks";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import {
-  type SubmitErrorHandler,
-  type SubmitHandler,
-  useForm,
-} from "react-hook-form";
-import { z } from "zod";
+import type { SubmitHandler } from "react-hook-form";
+import { type NameFormData, NamingRouteForm } from "../NamingRouteForm";
+import type { ProbedRoute } from "../types";
 
 type Props = {
   collectionId: number;
   onSuccess: () => void;
 };
 
-const ValidationSchema = z.object({
-  routes: z.array(z.number({ coerce: true })).nonempty(),
-});
-
-type AddRouteFormData = z.infer<typeof ValidationSchema>;
 
 export function AddRouteForm(props: Props) {
   const { collectionId, onSuccess } = props;
-  const {
-    mutate: addAppRoute,
-    error,
-    data,
-  } = useAddItemToCollection(collectionId);
-  console.log({
-    error,
-    data,
-  });
 
   const { isLoading } = useRoutes();
   const { appRoutes: routes } = useStudioStore("appRoutes");
-  const { handleSubmit, register } = useForm<AddRouteFormData>({
-    resolver: zodResolver(ValidationSchema),
-  });
-
-  const onInvalid: SubmitErrorHandler<AddRouteFormData> = useHandler(() => {
-    setRoutesErrors(["Select at least one route."]);
-  });
-
-  const [routesErrors, setRoutesErrors] = useState<Array<string>>([]);
-  const onSubmit: SubmitHandler<AddRouteFormData> = async (formData) => {
-    await Promise.all(
-      formData.routes.map((id) =>
-        addAppRoute({
-          routeId: id,
-          extraParams: {
-            name: undefined,
-            requestHeaders: {},
-            requestPathParams: {},
-            requestQueryParams: {},
-            requestBody: null,
-          },
-        }),
-      ),
-    );
-    onSuccess();
-  };
 
   if (isLoading || !routes) {
     return <div>Loading...</div>;
@@ -75,48 +28,84 @@ export function AddRouteForm(props: Props) {
     return <div>Empty</div>;
   }
 
-  const routeProps = register("routes");
+  // const routeProps = register("routes");
   return (
     <div className="max-h-60 grid grid-rows-[auto_auto_1fr] gap-2">
       <h4 className="text-lg text-center">Add route</h4>
       <p>Select which routes to add.</p>
-      <form
-        onSubmit={handleSubmit(onSubmit, onInvalid)}
-        className="grid min-h-0 gap-2"
-      >
+      <div className="grid min-h-0 gap-2">
         <div className="grid gap-2 overflow-auto">
           {routes.map((route) => {
-            const id = `route-${route.id.toString()}`;
+            // const id = `route-${route.id.toString()}`;
             return (
-              <div
+              <AddRouteToFormItem
                 key={route.id}
-                className="grid grid-cols-[1rem_auto] items-center gap-2"
-              >
-                <Input
-                  className="cursor-pointer h-6"
-                  type="checkbox"
-                  id={id}
-                  value={route.id}
-                  {...routeProps}
-                />
-                <Label
-                  className="grid grid-cols-[3.5rem_auto] items-center gap-2 cursor-pointer"
-                  htmlFor={id}
-                >
-                  <Method method={route.method} />
-                  <div>{route.path}</div>
-                </Label>
-              </div>
+                route={route}
+                collectionId={collectionId}
+                onSuccess={onSuccess}
+              />
             );
           })}
         </div>
-        <div>
-          {routesErrors.map((route) => {
-            return <div key={route}>{route}</div>;
-          })}
-        </div>
-        <Button type="submit">Add</Button>
-      </form>
+      </div>
     </div>
   );
+}
+
+function AddRouteToFormItem({
+  route,
+  collectionId,
+  onSuccess,
+}: {
+  route: ProbedRoute;
+  collectionId: number;
+  onSuccess: () => void;
+}) {
+  const { mutate: addAppRoute, error, isPending } = useAddItemToCollection(collectionId);
+  const [open, setOpen] = useState(false);
+  const onSubmit: SubmitHandler<NameFormData> = async (formData) => {
+    addAppRoute({
+      routeId: route.id,
+      extraParams: {
+        name: formData.name,
+        requestHeaders: {},
+        requestPathParams: {},
+        requestQueryParams: {},
+        requestBody: null,
+      },
+    });
+    onSuccess();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-2 py-1 rounded-lg hover:bg-muted cursor-pointer text-left">
+        <Method method={route.method} />
+        <div>{route.path}</div>
+        <span>+</span>
+      </DialogTrigger>
+      <DialogContent className="w-96 max-w-screen-sm">
+        <NamingRouteForm onSubmit={onSubmit} isPending={isPending} error={error} />
+      </DialogContent>
+    </Dialog>
+  );
+  // <div
+  //   key={route.id}
+  //   className="grid grid-cols-[1rem_auto] items-center gap-2"
+  // >
+
+  //   <Input
+  //     className="cursor-pointer h-6"
+  //     type="checkbox"
+  //     id={id}
+  //     value={route.id}
+  //     {...routeProps} />
+  //   <Label
+  //     className="grid grid-cols-[3.5rem_auto] items-center gap-2 cursor-pointer"
+  //     htmlFor={id}
+  //   >
+  //     <Method method={route.method} />
+  //     <div>{route.path}</div>
+  //   </Label>
+  // </div>;
 }
