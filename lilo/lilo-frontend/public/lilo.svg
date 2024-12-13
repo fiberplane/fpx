@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Background Circle -->
+  <circle cx="50" cy="50" r="48" fill="none" stroke="#00A3E0" stroke-width="4" />
+  
+  <!-- Yarn Ball Strands -->
+  <path d="M20 40 C30 20, 70 20, 80 40" stroke="#00A3E0" stroke-width="2" fill="none" />
+  <path d="M20 60 C30 80, 70 80, 80 60" stroke="#00A3E0" stroke-width="2" fill="none" />
+  <path d="M30 30 Q50 50, 70 70" stroke="#007ACC" stroke-width="2" fill="none" />
+
+  <!-- Circuit Details -->
+  <circle cx="50" cy="50" r="5" fill="#FFCC00" />
+  <line x1="50" y1="55" x2="50" y2="70" stroke="#FFCC00" stroke-width="2" />
+  <circle cx="50" cy="75" r="2" fill="#FFCC00" />
+  <line x1="55" y1="50" x2="70" y2="50" stroke="#FFCC00" stroke-width="2" />
+  <circle cx="75" cy="50" r="2" fill="#FFCC00" />
+
+  <!-- Outer Circuit Highlights -->
+  <path d="M25 25 L35 35" stroke="#FFCC00" stroke-width="2" />
+  <path d="M65 65 L75 75" stroke="#FFCC00" stroke-width="2" />
+</svg>
