@@ -145,7 +145,7 @@ export function RequestsPanel() {
             setSelectedItemId(null);
           }}
           placeholder="requests"
-          onItemSelect={() => {}}
+          onItemSelect={() => { }}
           itemCount={filteredItems.length}
         />
       </div>
@@ -163,7 +163,9 @@ export function RequestsPanel() {
                 isSelected={getId(item) === selectedItemId}
                 searchParams={searchParams}
                 to={{
-                  pathname: `/request/${getId(item)}`,
+                  pathname: generatePath(REQUESTOR_TRACE_ROUTE, {
+                    traceId: getId(item),
+                  }),
                   search: searchParams.toString(),
                 }}
               />

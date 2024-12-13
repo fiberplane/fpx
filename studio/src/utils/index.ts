@@ -38,7 +38,7 @@ export function objectWithKeyAndValue<T extends string, V>(
   return objectWithKey(value, key) && value[key] === expectedValue;
 }
 
-export function noop() {}
+export function noop() { }
 
 export function isJson(str: string) {
   try {
@@ -244,7 +244,6 @@ export function isSensitiveEnvVar(key: string) {
 
 export function constructRequestorBody(
   bodyValue: string,
-  // headers: Record<string, string>,
 ): RequestorBody {
   try {
     const parsed = JSON.parse(bodyValue);
@@ -252,8 +251,6 @@ export function constructRequestorBody(
     if (result.success) {
       return result.data;
     }
-
-    console.log("fallback", result.error, parsed);
   } catch {
     // swallow error
   }
