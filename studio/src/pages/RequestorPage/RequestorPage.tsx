@@ -45,7 +45,6 @@ export const RequestorPage = () => {
 
   const id = useActiveTraceId();
   const { history, isLoading, loadHistoricalRequest } = useRequestorHistory();
-  // console.log('id', id);
   const hasHistory = history.length > 0;
   useEffect(() => {
     if (id && hasHistory) {

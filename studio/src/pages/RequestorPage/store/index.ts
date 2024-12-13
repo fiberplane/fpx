@@ -6,7 +6,7 @@ export type {
   CollapsableTreeNode,
   KeyValueParameter,
 } from "./types";
-export type { StudioStore as StudioState, BottomPanelName } from "./slices";
+export type { StudioState, BottomPanelName } from "./slices";
 export { KeyValueParameterSchema } from "./types";
 export type { RequestorBodyType } from "./request-body";
 export {

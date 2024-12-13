@@ -179,8 +179,7 @@ export const aiRequestLogs = sqliteTable("ai_request_logs", {
 export const collections = sqliteTable("collections", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   name: text("name").notNull().unique(),
-  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  ...timestamps,
 });
 
 export const newCollectionSchema = createInsertSchema(collections);

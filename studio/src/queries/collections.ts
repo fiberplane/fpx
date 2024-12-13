@@ -1,5 +1,6 @@
 import { useStudioStore } from "@/pages/RequestorPage/store";
 import { getStudioStoreState } from "@/pages/RequestorPage/store/hooks/useStudioStore";
+import { objectWithKey } from "@/utils";
 import {
   type CollectionItemParams,
   CollectionItemParamsSchema,
@@ -113,9 +114,7 @@ export function useUpdateCollection() {
           throw resultToError(result);
         }
 
-        await r.text();
         return undefined;
-        // return CollectionSchema.parse(json);
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [COLLECTIONS_KEY] });
@@ -141,7 +140,6 @@ async function addItemToCollection(
     }),
   }).then(async (r) => {
     if (!r.ok) {
-      console.log("r", Array.from(r.headers.entries()));
       const result = await (r.headers
         .get("Content-Type")
         ?.startsWith("application/json")
@@ -162,9 +160,7 @@ function getErrorMessage(error: unknown): string {
   }
 
   if (
-    error !== null &&
-    typeof error === "object" &&
-    "message" in error &&
+    objectWithKey(error, "message") &&
     typeof error.message === "string"
   ) {
     return error.message;

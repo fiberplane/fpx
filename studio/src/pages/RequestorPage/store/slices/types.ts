@@ -52,7 +52,6 @@ export interface RequestResponseSlice {
   setShowViewLogsBanner: (showViewLogsBanner: boolean) => void;
 
   showResponseBodyFromHistory: (traceId: string) => void;
-  // clearResponseBodyFromHistory: () => void;
   setActiveResponse: (response: RequestorActiveResponse | null) => void;
 
   /** Session history related state */

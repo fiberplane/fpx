@@ -6,7 +6,7 @@ import type { RequestorState } from "./types";
 export const _getActiveRoute = (state: RequestorState): ProbedRoute => {
   return (
     state.activeRoute ?? {
-      id: -1,
+      id: Number.NEGATIVE_INFINITY,
       path: state.path,
       method: state.method,
       requestType: state.requestType,
@@ -136,9 +136,9 @@ export const addBaseUrl = (
     requestType,
     forceChangeHost,
   }: { requestType?: RequestType; forceChangeHost?: boolean } = {
-    requestType: "http",
-    forceChangeHost: false,
-  },
+      requestType: "http",
+      forceChangeHost: false,
+    },
 ) => {
   // NOTE - This is necessary to allow the user to type new base urls... even though we replace the base url whenever they switch routes
   if (pathHasValidBaseUrl(path) && !forceChangeHost) {

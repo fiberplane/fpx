@@ -161,10 +161,10 @@ export const requestResponseSlice: StateCreator<
         state.body =
           state.body.type === "form-data"
             ? {
-                type: "form-data",
-                value: enforceFormDataTerminalDraftParameter([]),
-                isMultipart: state.body.isMultipart,
-              }
+              type: "form-data",
+              value: enforceFormDataTerminalDraftParameter([]),
+              isMultipart: state.body.isMultipart,
+            }
             : state.body.type === "file"
               ? { type: state.body.type, value: undefined }
               : { type: state.body.type, value: "" };
@@ -218,10 +218,6 @@ export const requestResponseSlice: StateCreator<
         state.activeResponse = null;
       }
     }),
-  // clearResponseBodyFromHistory: () =>
-  //   set((state) => {
-  //     state.activeHistoryResponseTraceId = null;
-  //   }),
   setActiveResponse: (response) =>
     set((state) => {
       state.activeResponse = response;

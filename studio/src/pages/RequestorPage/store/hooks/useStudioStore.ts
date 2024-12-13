@@ -3,7 +3,7 @@ import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { useShallow } from "zustand/react/shallow";
 import {
-  type StudioStore,
+  type StudioState,
   aiSlice,
   requestResponseSlice,
   routesSlice,
@@ -13,8 +13,8 @@ import {
 } from "../slices";
 
 export function useStudioStore<
-  T extends StudioStore,
-  K extends keyof StudioStore,
+  T extends StudioState,
+  K extends keyof StudioState,
 >(...items: Array<K>): Pick<T, K> {
   const obj = useStudioStoreRaw(
     useShallow((state) => {
@@ -30,7 +30,7 @@ export function useStudioStore<
   return obj as Pick<T, K>;
 }
 
-export const useStudioStoreRaw = create<StudioStore>()(
+export const useStudioStoreRaw = create<StudioState>()(
   devtools(
     immer((...a) => ({
       ...routesSlice(...a),
