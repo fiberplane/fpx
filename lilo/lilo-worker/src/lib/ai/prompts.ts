@@ -119,7 +119,6 @@ User story: ${userStory}
 Routes: ${routes}
 `.trim();
 
-
 export function cleanPrompt(prompt: string) {
   return prompt
     .trim()
@@ -127,4 +126,3 @@ export function cleanPrompt(prompt: string) {
     .map((l) => l.trim())
     .join("\n");
 }
-
