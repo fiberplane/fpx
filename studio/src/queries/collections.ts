@@ -159,10 +159,7 @@ function getErrorMessage(error: unknown): string {
     return error;
   }
 
-  if (
-    objectWithKey(error, "message") &&
-    typeof error.message === "string"
-  ) {
+  if (objectWithKey(error, "message") && typeof error.message === "string") {
     return error.message;
   }
 

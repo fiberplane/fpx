@@ -145,7 +145,7 @@ export function RequestsPanel() {
             setSelectedItemId(null);
           }}
           placeholder="requests"
-          onItemSelect={() => { }}
+          onItemSelect={() => {}}
           itemCount={filteredItems.length}
         />
       </div>
