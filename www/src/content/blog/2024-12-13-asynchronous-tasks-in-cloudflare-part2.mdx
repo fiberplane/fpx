@@ -15,9 +15,7 @@ import { LinkCard } from "@astrojs/starlight/components";
 import PackageManagers from "@/components/PackageManagers.astro";
 
 
-Here’s a more concise version:
-
-In Part 1, we explored strategies for managing asynchronous tasks within a single Cloudflare Worker, from sequential execution to fire-and-forget and parallel background processing with `waitUntil()`. 
+[In Part 1](https://fiberplane.com/blog/asynchronous-tasks-in-cloudflare-part1/), we explored strategies for managing asynchronous tasks within a single Cloudflare Worker, from sequential execution to fire-and-forget and parallel background processing with `waitUntil()`. 
 While effective for simple cases, complex systems benefit from decomposing tasks into multiple workers for better error handling, retries, and separation of concerns.
 
 In Part 2, we’ll distribute tasks across workers using Service Bindings for direct function calls and Cloudflare Queues for asynchronous processing with enhanced fault tolerance. 
@@ -40,7 +38,7 @@ This means there is no additional latency compared to a single-worker approach, 
 <LinkCard
   title="Follow along on GitHub"
   description="Here is a repo with the code examples for this post"
-  href="https://github.com/Nlea/cloudflare-handling-asynchronous-tasks-"
+  href="https://github.com/Nlea/cloudflare-handling-asynchronous-tasks-/tree/main/seperate-workers"
   icon="external"
   target="_blank"
   rel="noopener noreferrer"
@@ -74,7 +72,7 @@ export class WorkerEmail extends WorkerEntrypoint {
 
 If you start both workers locally independly you also see if your binding is working correctly. 
 
-TODO IMAGE OF LOCAL BINDING
+![Console output for service binding](@/assets/blog/2024-12-13-workers-binding.png)
 
 
 Now that the serives are binded we can either use rpc to call a function directly in the other worker or use fetch to call an endpoint.
@@ -185,7 +183,7 @@ app.post("/api/marathon-wait-until", async (c) => {
 
 Fiberplane studio outlines nicely the invokation of the different workers in both cases. 
 
-TODO: COMBINED IMAGE 
+![Fiberplane studio screenshot: sequential and parallel processing](@/assets/blog/2024-12-13-studio-outline.png)
 
 ## Example: A Marathon Registration API and a Email Worker using Cloudflare Queues
 
