@@ -13,6 +13,7 @@
     "build:api": "pnpm --filter @fiberplane/studio build",
     "build:www": "pnpm --filter www build",
     "build:frontend": "pnpm --filter @fiberplane/studio-frontend build && cp -r studio/dist/* api/dist",
+    "deploy:lilo": "pnpm build:lilo && pnpm --filter lilo-worker run deploy",
     "dev:api": "pnpm --filter @fiberplane/studio dev",
     "dev:www": "pnpm --filter www dev",
     "dev:frontend": "pnpm --filter @fiberplane/studio-frontend dev",
