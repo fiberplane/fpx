@@ -1,4 +1,4 @@
-import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Method } from "@/pages/RequestorPage/RequestorHistory";
 import { useRoutes } from "@/pages/RequestorPage/routes";
 import { useStudioStore } from "@/pages/RequestorPage/store";
@@ -12,7 +12,6 @@ type Props = {
   collectionId: number;
   onSuccess: () => void;
 };
-
 
 export function AddRouteForm(props: Props) {
   const { collectionId, onSuccess } = props;
@@ -28,7 +27,6 @@ export function AddRouteForm(props: Props) {
     return <div>Empty</div>;
   }
 
-  // const routeProps = register("routes");
   return (
     <div className="max-h-60 grid grid-rows-[auto_auto_1fr] gap-2">
       <h4 className="text-lg text-center">Add route</h4>
@@ -36,7 +34,6 @@ export function AddRouteForm(props: Props) {
       <div className="grid min-h-0 gap-2">
         <div className="grid gap-2 overflow-auto">
           {routes.map((route) => {
-            // const id = `route-${route.id.toString()}`;
             return (
               <AddRouteToFormItem
                 key={route.id}
@@ -61,7 +58,11 @@ function AddRouteToFormItem({
   collectionId: number;
   onSuccess: () => void;
 }) {
-  const { mutate: addAppRoute, error, isPending } = useAddItemToCollection(collectionId);
+  const {
+    mutate: addAppRoute,
+    error,
+    isPending,
+  } = useAddItemToCollection(collectionId);
   const [open, setOpen] = useState(false);
   const onSubmit: SubmitHandler<NameFormData> = async (formData) => {
     addAppRoute({
@@ -85,27 +86,12 @@ function AddRouteToFormItem({
         <span>+</span>
       </DialogTrigger>
       <DialogContent className="w-96 max-w-screen-sm">
-        <NamingRouteForm onSubmit={onSubmit} isPending={isPending} error={error} />
+        <NamingRouteForm
+          onSubmit={onSubmit}
+          isPending={isPending}
+          error={error}
+        />
       </DialogContent>
     </Dialog>
   );
-  // <div
-  //   key={route.id}
-  //   className="grid grid-cols-[1rem_auto] items-center gap-2"
-  // >
-
-  //   <Input
-  //     className="cursor-pointer h-6"
-  //     type="checkbox"
-  //     id={id}
-  //     value={route.id}
-  //     {...routeProps} />
-  //   <Label
-  //     className="grid grid-cols-[3.5rem_auto] items-center gap-2 cursor-pointer"
-  //     htmlFor={id}
-  //   >
-  //     <Method method={route.method} />
-  //     <div>{route.path}</div>
-  //   </Label>
-  // </div>;
 }
