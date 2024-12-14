@@ -14,13 +14,20 @@ use worker::send::SendFuture;
 use worker::*;
 use ws::client::WebSocketWorkerClient;
 use ws::handlers::{ws_connect, WorkerApiState};
+use middleware::auth::auth_middleware;
+
 
 mod ws;
-
 mod data;
+mod middleware;
 
 #[event(start)]
 fn start() {
+    // This code runs in the start event handler for the Worker
+    // However, .env files are not supported in Cloudflare Workers
+    // and environment variables should be configured through wrangler.toml
+    // or the Cloudflare dashboard instead
+
     let fmt_layer = tracing_subscriber::fmt::layer()
         .json()
         .with_ansi(false) // Only partially supported across JavaScript runtimes
@@ -53,7 +60,11 @@ async fn fetch(
     let boxed_store = Arc::new(store);
 
     let service = service::Service::new(boxed_store.clone(), boxed_events.clone());
-    let api_router = api::Builder::new().build(service, boxed_store);
+    let api_router = api::Builder::new()
+        .build(service, boxed_store)
+        .route_layer(axum::middleware::from_fn(move |req, next| {
+            auth_middleware(req, env.as_ref().clone(), next)
+        }));
 
     let mut router: axum::Router = axum::Router::new()
         .route("/api/ws", get(ws_connect))
