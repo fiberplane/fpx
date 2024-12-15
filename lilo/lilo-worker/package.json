@@ -15,7 +15,9 @@
     "format": "biome check . --write",
     "keypair:generate": "tsx keypair-generate.ts",
     "keypair:generate:prod": "ENVIRONMENT=production tsx keypair-generate.ts",
-    "session:generate": "tsx session-secret-generate.ts"
+    "session:generate": "tsx session-secret-generate.ts",
+    "add-allowed-user": "tsx add-allowed-user.ts",
+    "add-allowed-user:prod": "ENVIRONMENT=production tsx add-allowed-user.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^1.0.9",
