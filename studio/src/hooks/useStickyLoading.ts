@@ -11,11 +11,12 @@ export function useStickyLoading(loading: boolean, duration = 300) {
       setSticky(true);
       return;
     }
+
     const timeout = setTimeout(() => {
       setSticky(false);
     }, duration);
     return () => clearTimeout(timeout);
   }, [loading, duration]);
 
-  return sticky;
+  return sticky || loading;
 }
