@@ -2,10 +2,7 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { COLLECTION_ROUTE } from "@/constants";
 import { Fragment } from "react";
-import { Route, Routes } from "react-router-dom";
-import { AddRouteToCollection } from "../AddRouteToCollection";
 import { CrumbContent } from "./CrumbContent";
 import { useCrumbs } from "./useCrumbs";
 
@@ -25,10 +22,6 @@ export function MainTopSection() {
           );
         })}
       </BreadcrumbList>
-      <Routes>
-        <Route path={COLLECTION_ROUTE} element={null} />
-        <Route path="*" element={<AddRouteToCollection />} />
-      </Routes>
     </div>
   );
 }

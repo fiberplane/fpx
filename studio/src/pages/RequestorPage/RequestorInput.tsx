@@ -13,6 +13,7 @@ import { Icon } from "@iconify/react";
 import { FilePlusIcon, MixerHorizontalIcon } from "@radix-ui/react-icons";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useShallow } from "zustand/react/shallow";
+import { AddRouteToCollection } from "./AddRouteToCollection";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { useAddRoutes } from "./queries";
 import { useStudioStoreRaw } from "./store";
@@ -98,6 +99,7 @@ export function RequestorInput({
           className="flex-grow text-xs w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
         />
       </div>
+      <AddRouteToCollection />
       <div className="flex items-center space-x-2 px-2 py-0">
         {canSaveDraftRoute && (
           <Tooltip>

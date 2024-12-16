@@ -4,6 +4,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
@@ -18,11 +19,14 @@ export function AddRouteToCollection() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div>
-          <Button size="icon-xs" variant="ghost">
-            <Icon icon="lucide:folder" />
-          </Button>
-        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          type="button"
+          className={cn("p-2 md:px-2.5 py-1 h-auto")}
+        >
+          <Icon icon="lucide:folder" className="w-4 h-4" />
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72 max-w-dvw">
         <AddToRouteForm onSuccess={handleSuccess} />
