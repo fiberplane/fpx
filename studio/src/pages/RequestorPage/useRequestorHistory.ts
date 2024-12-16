@@ -1,5 +1,9 @@
 import { useOtelTraces } from "@/queries";
-import { createKeyValueParametersFromValues, removeQueryParams } from "@/utils";
+import {
+  createKeyValueParametersFromValues,
+  determineBodyType,
+  removeQueryParams,
+} from "@/utils";
 import type { TraceListResponse } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useMemo } from "react";
@@ -89,14 +93,6 @@ export function useRequestorHistory() {
       );
 
       if (matchedRoute) {
-        // const pathParamsObject = match.app_requests.requestPathParams ?? {};
-        // const pathParams = createKeyValueParameters(
-        //   Object.entries(pathParamsObject).map(([key, value]) => ({
-        //     key,
-        //     value,
-        //   })),
-        // );
-
         // TODO - Handle path params
         // NOTE - Helps us set path parameters correctly
         handleSelectRoute(
@@ -147,7 +143,6 @@ export function useRequestorHistory() {
         //        since that helps us render it in the UI (specifically in CodeMirror editors)
         const body = match.app_requests.requestBody;
 
-        // const typeHint = getBodyJsonType(headers);
         if (body === undefined || body === null) {
           setBody(undefined);
         } else {
@@ -206,6 +201,7 @@ export function useRequestorHistory() {
           const safeBody =
             typeof body !== "string" ? JSON.stringify(body) : body;
           const bodyType = determineBodyType(headers);
+
           const transformedBody = transformBodyValue(bodyType, safeBody);
           setBody(transformedBody);
         }
@@ -219,11 +215,6 @@ export function useRequestorHistory() {
     loadHistoricalRequest,
   };
 }
-
-type BodyType = {
-  type: RequestorBodyType;
-  isMultipart?: boolean;
-};
 
 /**
  * Transforms the body value based on the body type into something that can be displayed in the UI
@@ -297,37 +288,6 @@ function transformBodyValue(
     default:
       return { type: "text", value: bodyValue ?? undefined };
   }
-}
-
-function determineBodyType(headers: Record<string, string>): BodyType {
-  const contentType = headers["Content-Type"] || headers["content-type"];
-  if (!contentType) {
-    return { type: "text" };
-  }
-
-  if (contentType.includes("application/json")) {
-    return { type: "json" };
-  }
-  if (
-    contentType.includes("application/xml") ||
-    contentType.includes("text/xml")
-  ) {
-    return { type: "text" };
-  }
-  if (contentType.includes("text/plain")) {
-    return { type: "text" };
-  }
-  if (contentType.includes("application/x-www-form-urlencoded")) {
-    return { type: "form-data", isMultipart: false };
-  }
-  if (contentType.includes("multipart/form-data")) {
-    return { type: "form-data", isMultipart: true };
-  }
-  if (contentType.includes("application/octet-stream")) {
-    return { type: "file" };
-  }
-
-  return { type: "text" };
 }
 
 function parseUrlEncodedFormBody(body: string): KeyValueParameter[] {

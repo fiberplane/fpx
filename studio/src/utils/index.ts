@@ -2,6 +2,7 @@ import { createParameterId } from "@/pages/RequestorPage/KeyValueForm/data";
 import type {
   KeyValueParameter,
   RequestorBody,
+  RequestorBodyType,
 } from "@/pages/RequestorPage/store";
 import { RequestorBodySchema } from "@/pages/RequestorPage/store/request-body";
 import { type ClassValue, clsx } from "clsx";
@@ -242,7 +243,14 @@ export function isSensitiveEnvVar(key: string) {
   );
 }
 
-export function constructRequestorBody(bodyValue: string): RequestorBody {
+/* 
+  @param bodyType: The bodyType parameter hints what the expected body type could be 
+  if bodyValue is a valid bodyValue json blob then that wil take precedence
+*/
+export function constructRequestorBody(
+  bodyValue: string,
+  bodyType: BodyType,
+): RequestorBody {
   try {
     const parsed = JSON.parse(bodyValue);
     const result = RequestorBodySchema.safeParse(parsed);
@@ -251,6 +259,32 @@ export function constructRequestorBody(bodyValue: string): RequestorBody {
     }
   } catch {
     // swallow error
+  }
+
+  switch (bodyType.type) {
+    case "file":
+      return {
+        type: "file",
+        value: undefined,
+      };
+    case "form-data":
+      return {
+        type: "form-data",
+        isMultipart: bodyType.isMultipart || false,
+        value: [],
+      };
+    case "json": {
+      let formatted = bodyValue;
+      try {
+        formatted = JSON.stringify(JSON.parse(bodyValue), null, 2);
+      } catch {
+        // Swallow error if the JSON is invalid
+      }
+      return {
+        type: "json",
+        value: formatted,
+      };
+    }
   }
 
   return {
@@ -299,4 +333,40 @@ export function generatePathWithSearchParams<Path extends string>(
   }
 
   return `${generatedPath}${generatedPath.includes("?") ? "&" : "?"}${searchString}`;
+}
+
+export type BodyType = {
+  type: RequestorBodyType;
+  isMultipart?: boolean;
+};
+
+export function determineBodyType(headers: Record<string, string>): BodyType {
+  const contentType = headers["Content-Type"] || headers["content-type"];
+  if (!contentType) {
+    return { type: "text" };
+  }
+
+  if (contentType.includes("application/json")) {
+    return { type: "json" };
+  }
+  if (
+    contentType.includes("application/xml") ||
+    contentType.includes("text/xml")
+  ) {
+    return { type: "text" };
+  }
+  if (contentType.includes("text/plain")) {
+    return { type: "text" };
+  }
+  if (contentType.includes("application/x-www-form-urlencoded")) {
+    return { type: "form-data", isMultipart: false };
+  }
+  if (contentType.includes("multipart/form-data")) {
+    return { type: "form-data", isMultipart: true };
+  }
+  if (contentType.includes("application/octet-stream")) {
+    return { type: "file" };
+  }
+
+  return { type: "text" };
 }

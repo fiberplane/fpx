@@ -1,6 +1,7 @@
 import {
   constructRequestorBody,
   createKeyValueParametersFromValues,
+  determineBodyType,
 } from "@/utils";
 import type { StateCreator } from "zustand";
 import { enforceFormDataTerminalDraftParameter } from "../../FormDataForm";
@@ -278,13 +279,15 @@ export const requestResponseSlice: StateCreator<
         })),
       ),
     );
+
+    const bodyType = determineBodyType(requestHeaders || {});
     const bodyValue =
       requestBody === undefined || requestBody === null
         ? undefined
         : typeof requestBody !== "string"
           ? JSON.stringify(requestBody)
           : requestBody;
-    get().setBody(bodyValue && constructRequestorBody(bodyValue));
+    get().setBody(bodyValue && constructRequestorBody(bodyValue, bodyType));
 
     get().setRequestHeaders(
       createKeyValueParametersFromValues(
