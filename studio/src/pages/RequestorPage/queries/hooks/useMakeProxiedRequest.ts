@@ -24,7 +24,6 @@ export function useMakeProxiedRequest() {
       queryClient.invalidateQueries({ queryKey: [REQUESTOR_REQUESTS_KEY] });
 
       // Make sure the response panel is cleared of data, then add the new response
-      // clearResponseBodyFromHistory();
       if (data) {
         setActiveResponse(data);
       } else {
@@ -36,7 +35,6 @@ export function useMakeProxiedRequest() {
     },
     onError: () => {
       // Make sure the response panel is cleared of data
-      // clearResponseBodyFromHistory();
       setActiveResponse(null);
     },
   });
