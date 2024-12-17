@@ -211,7 +211,7 @@ app.get('/websites/:id/uptime', async (c) => {
 ## The Web Interface
 
 Finally, we create a simple web interface to view monitored websites and their uptime percentages.
-The frontend of the uptime monitor is built using Hono's JSX rendering capabilities, featuring two main components: a `Layout` component and a `WebsiteList` component.
+The frontend of the uptime monitor is built using Hono's JSX rendering capabilities, featuring two main [components](https://github.com/fiberplane/create-honc-app/tree/main/examples/uptime-monitor/src/components): a `Layout` component and a `WebsiteList` component.
 The `Layout` component serves as a base template, providing a clean, flexible structure with CSS-in-JS styling that ensures full viewport height and proper padding.
 The `WebsiteList` component is where the main UI lives, displaying monitored websites in a responsive grid layout
 
