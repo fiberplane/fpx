@@ -1,11 +1,16 @@
-import { BrowserRouter as Router } from "react-router-dom";
-import { Button } from "./components/ui/button";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { Dashboard } from "./components/dashboard";
+import { Layout } from "./components/layout";
 
 export function App() {
   return (
-    <Router>
-      <Button>I am a Button</Button>
-    </Router>
+    <Layout>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+        </Routes>
+      </Router>
+    </Layout>
   );
 }
 
