@@ -37,9 +37,10 @@ browser!
   We'll achieve this with client-side hydration. The app gets rendered
   server-side first, and then the client-side script takes over. The [React
   docs](https://react.dev/reference/react-dom/client/hydrateRoot#hydrating-server-rendered-html)
-  describe it well: > [It] will “attach” your components’ logic to the initial
-  generated HTML from the > server. Hydration turns the initial HTML snapshot
-  from the server into a fully > interactive app that runs in the browser.
+  describe it well:
+  > [It] will “attach” your components’ logic to the initial generated HTML from
+  > the server. Hydration turns the initial HTML snapshot from the server into a
+  > fully interactive app that runs in the browser.
 </Aside>
 
 In this guide we'll go over how to build an Hono app with client-side logic,
@@ -198,7 +199,10 @@ browser environment:
 {
   "compilerOptions": {
     //...
-    "lib": ["ESNext", "DOM"]
+    "lib": [
+      "ESNext",
+      "DOM"
+    ]
     // ...
   }
 }
