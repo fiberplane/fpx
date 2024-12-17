@@ -67,12 +67,7 @@ async function addCollection(routes: Route | Route[]) {
     body: JSON.stringify(routes),
   }).then(async (r) => {
     if (!r.ok) {
-      const result = await (r.headers
-        .get("Content-Type")
-        ?.startsWith("application/json")
-        ? r.json()
-        : r.text());
-
+      const result = await responseToJsonOrText(r);
       throw resultToError(result);
     }
 
@@ -105,12 +100,7 @@ export function useUpdateCollection() {
         body: JSON.stringify(data.params),
       }).then(async (r) => {
         if (!r.ok) {
-          const result = await (r.headers
-            .get("Content-Type")
-            ?.startsWith("application/json")
-            ? r.json()
-            : r.text());
-
+          const result = await responseToJsonOrText(r);
           throw resultToError(result);
         }
 
@@ -140,12 +130,7 @@ async function addItemToCollection(
     }),
   }).then(async (r) => {
     if (!r.ok) {
-      const result = await (r.headers
-        .get("Content-Type")
-        ?.startsWith("application/json")
-        ? r.json()
-        : r.text());
-
+      const result = await responseToJsonOrText(r);
       throw resultToError(result);
     }
 
@@ -199,12 +184,7 @@ export function useDeleteItemFromCollection(collectionId: number) {
         method: "DELETE",
       }).then(async (r) => {
         if (!r.ok) {
-          const result = await (r.headers
-            .get("Content-Type")
-            ?.startsWith("application/json")
-            ? r.json()
-            : r.text());
-
+          const result = await responseToJsonOrText(r);
           throw resultToError(result);
         }
 
@@ -227,12 +207,7 @@ export function useDeleteCollection(collectionId: number) {
         method: "DELETE",
       }).then(async (r) => {
         if (!r.ok) {
-          const result = await (r.headers
-            .get("Content-Type")
-            ?.startsWith("application/json")
-            ? r.json()
-            : r.text());
-
+          const result = await responseToJsonOrText(r);
           throw resultToError(result);
         }
 
@@ -287,12 +262,7 @@ export function useUpdateCollectionItem() {
         },
       ).then(async (r) => {
         if (!r.ok) {
-          const result = await (r.headers
-            .get("Content-Type")
-            ?.startsWith("application/json")
-            ? r.json()
-            : r.text());
-
+          const result = await responseToJsonOrText(r);
           throw resultToError(result);
         }
 
@@ -306,4 +276,12 @@ export function useUpdateCollectionItem() {
   });
 
   return mutation;
+}
+
+async function responseToJsonOrText(r: Response) {
+  if (r.headers.get("Content-Type")?.startsWith("application/json")) {
+    return r.json();
+  }
+
+  return r.text();
 }
