@@ -1,6 +1,7 @@
 packages:
   - "studio"
   - "api"
+  - "dashboard"
   - "fp-services"
   - "honc-code-gen"
   - "packages/*"
