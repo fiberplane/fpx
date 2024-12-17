@@ -1,0 +1,241 @@
+---
+title: "Building an uptime monitor using HONC and Cloudflare Workers"
+description: An uptime monitor built with Hono, Durable Objects,D1, and Cloudflare Workers
+slug: honc-up-time-monitor
+date: 2024-12-17
+author: Micha "mies" Hernandez van Leuffen
+tags:
+  - HONC
+  - uptimemonitor
+  - Honojs
+---
+
+import { LinkCard } from "@astrojs/starlight/components";
+
+In this tutorial, we'll build a serverless website uptime monitoring application using Cloudflare Workers. Our application will periodically check websites' availability, track response times, and store the results in a serverless database. We'll use the [HONC stack](https://honc.dev/): Hono (a lightweight web framework), OpenTelemetry (for observability), and Cloudflare's suite of serverless products.
+Overview of the Application
+Our uptime monitor will:
+
+* Monitor multiple websites simultaneously
+* Allow configurable check intervals per website
+* Track response times and HTTP status codes
+* Calculate uptime percentages
+* Provide a RESTful API for managing monitored sites
+* Include a simple web interface to view results
+
+## The Technology Stack
+Let's break down the key technologies we're using:
+
+* [Hono](https://hono.dev/): A lightweight web framework specifically designed for edge computing platforms like Cloudflare Workers
+* [D1](https://developers.cloudflare.com/d1/): Cloudflare's serverless SQL database, perfect for storing our monitoring results
+* [Drizzle ORM](https://orm.drizzle.team/): A TypeScript-first ORM that provides type safety and a great developer experience
+* [Durable Objects](https://developers.cloudflare.com/durable-objects/): Cloudflare's solution for maintaining state and coordinating our monitoring schedules
+
+<LinkCard
+  title="Follow along on GitHub"
+  description="Here is a repo with the code examples for this post"
+  href="https://github.com/fiberplane/create-honc-app/tree/main/examples/uptime-monitor"
+  icon="external"
+  target="_blank"
+  rel="noopener noreferrer"
+/>
+
+## Setting Up the Database Schema
+
+First, let's define our database schema using Drizzle ORM. We need two main tables: one for websites and another for uptime checks.
+
+```ts title="schema.tsx"
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const websites = sqliteTable('websites', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  url: text('url').notNull(),
+  name: text('name').notNull(),
+  checkInterval: integer('checkInterval').notNull(),
+  createdAt: text('createdAt').notNull()
+});
+
+export const uptimeChecks = sqliteTable('uptime_checks', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  websiteId: integer('websiteId')
+    .notNull()
+    .references(() => websites.id),
+  timestamp: text('timestamp').notNull(),
+  status: integer('status'),
+  responseTime: integer('responseTime'),
+  isUp: integer('isUp', { mode: 'boolean' }).notNull()
+});
+```
+
+## Building the Monitor Class (Durables Object)
+
+The Monitor class is the core engine of our uptime monitoring system.
+What makes it special is that it's implemented as a Cloudflare Durable Object, which means it maintains its state across multiple executions.
+Each website gets its own Monitor instance that persists in memory, keeping track of its own timer and check schedule.
+The `scheduleChecks` method sets up an interval timer based on the website's configured check frequency, while `performCheck` does the actual work of making HTTP requests to the target site, measuring response times, and storing results.
+This design ensures reliable, consistent monitoring even at scale. If a website is configured to be checked every 60 seconds, the Monitor instance will maintain that schedule without requiring external coordination.
+
+```ts title="monitor.ts"
+export class Monitor {
+  private checkTimer: ReturnType<typeof setInterval> | null = null;
+
+  async scheduleChecks(websiteId: number) {
+    const db = drizzle(this.env.DB);
+    const website = await db.select()
+      .from(schema.websites)
+      .where(eq(schema.websites.id, websiteId))
+      .get();
+
+    this.checkTimer = setInterval(async () => {
+      await this.performCheck(website);
+    }, website.checkInterval * 1000);
+  }
+
+  async performCheck(website) {
+    const startTime = Date.now();
+    let isUp = false;
+    let responseTime = 0;
+    let status = 0;
+
+    try {
+      const response = await fetch(website.url, {
+        method: 'GET',
+        redirect: 'follow',
+        cf: {
+          cacheTTL: 0,
+          cacheEverything: false
+        }
+      });
+
+      responseTime = Date.now() - startTime;
+      status = response.status;
+      isUp = response.status >= 200 && response.status < 400;
+    } catch (error) {
+      responseTime = Date.now() - startTime;
+      isUp = false;
+    }
+
+    // Store results in D1
+    await db.insert(schema.uptimeChecks).values({
+      websiteId: website.id,
+      timestamp: new Date().toISOString(),
+      status,
+      responseTime,
+      isUp
+    });
+  }
+}
+```
+
+## Creating the API Endpoints
+
+We use Hono to create our REST API endpoints.  The interesting part about these endpoints is how they integrate with both D1 (for data persistence) and Durable Objects (for monitoring).
+When you create a new website through the POST endpoint, it doesn't just store the website data - it also creates a new Monitor instance for that site.
+This is done by generating a unique Durable Object ID based on the website's ID, ensuring a 1:1 relationship between websites and their monitors.
+The GET endpoints are designed to be efficient, using Drizzle ORM's type-safe queries to fetch exactly the data needed without overfetching.
+Here are the main routes we'll implement:
+
+```ts title="index.tsx"
+const app = new Hono<{ Bindings: Bindings }>();
+
+// Get all websites
+app.get("/api/websites", async (c) => {
+  const db = drizzle(c.env.DB);
+  const websites = await db.select().from(schema.websites);
+  return c.json({ websites });
+});
+
+// Add a new website
+app.post("/api/website", async (c) => {
+  const db = drizzle(c.env.DB);
+  const data = await c.req.json();
+
+  const [newWebsite] = await db.insert(schema.websites)
+    .values({
+      url: data.url,
+      name: data.name,
+      checkInterval: data.checkInterval,
+      createdAt: new Date().toISOString(),
+    })
+    .returning();
+
+  // Create monitor for the new website
+  const monitor = c.env.SCHEDULED_MONITOR.get(
+    c.env.SCHEDULED_MONITOR.idFromName(newWebsite.id.toString())
+  );
+  await monitor.fetch(new Request('https://monitor/schedule?websiteId=' + newWebsite.id));
+
+  return c.json(newWebsite);
+});
+```
+## Calculating Uptime Percentages
+
+We also implement an endpoint to calculate uptime percentages for any given website.
+The uptime percentage calculation is more sophisticated than it might appear at first glance.
+Rather than just storing a running total, it calculates uptime dynamically based on historical check data.
+This allows for flexible time windows - you can calculate uptime for the last day, week, or month without needing to store separate aggregates.
+The calculation uses SQL's date handling capabilities to filter checks within the specified time period, then simply divides the number of successful checks by total checks.
+What's clever about this approach is that it automatically accounts for varying check intervals - a site checked every minute will have more data points than one checked every hour, but both will give accurate uptime percentages.
+The results are rounded to two decimal places to provide meaningful precision without false accuracy.
+
+```ts title="index.tsx"
+app.get('/websites/:id/uptime', async (c) => {
+  const { id } = c.req.param();
+  const days = c.req.query('days') ?? 7;
+  const db = drizzle(c.env.DB);
+
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+
+  const checks = await db.select()
+    .from(schema.uptimeChecks)
+    .where(
+      and(
+        eq(schema.uptimeChecks.websiteId, id),
+        sql`${schema.uptimeChecks.timestamp} >= ${startDate.toISOString()}`
+      )
+    );
+
+  const upCount = checks.filter(check => check.isUp).length;
+  const uptimePercentage = (upCount / checks.length) * 100;
+
+  return c.json({
+    uptimePercentage: Math.round(uptimePercentage * 100) / 100,
+    period: `${days} days`
+  });
+});
+```
+
+## The Web Interface
+
+Finally, we create a simple web interface to view monitored websites and their uptime percentages.
+The frontend of the uptime monitor is built using Hono's JSX rendering capabilities, featuring two main [components](https://github.com/fiberplane/create-honc-app/tree/main/examples/uptime-monitor/src/components): a `Layout` component and a `WebsiteList` component.
+
+![Uptime Monitor UI](@/assets/blog/2024-12-17-uptime-monitor.png)
+
+The `Layout` component serves as a base template, providing a clean, flexible structure with CSS-in-JS styling that ensures full viewport height and proper padding.
+The `WebsiteList` component is where the main UI lives, displaying monitored websites in a responsive grid layout.
+If you want to read more about how to build a frontend in combination with Hono, check out the [this guide](/blog/client-side-guide/).
+
+## Conclusion
+
+This serverless uptime monitor demonstrates the power of Cloudflare's edge computing platform. By leveraging Durable Objects for state management, D1 for data storage, and Hono for routing, we've created a scalable and efficient monitoring solution.
+Some potential improvements could include:
+
+* Adding authentication for API endpoints
+* Implementing real-time updates using WebSocket connections
+* Creating more detailed reporting and analytics
+* Adding notification systems for downtime alerts
+* Implementing custom check parameters (timeout, expected status codes, etc.)
+* Furthermore a more robust approach might be to use a cron trigger that runs every few seconds, looks for records that haven't had a recent uptime check (according to their interval) and then making the check, such that when the Worker is redeployed, it doesn't miss any existing checks.
+
+<LinkCard
+  title="Get the code on GitHub"
+  description="Here is the repo with the full code for this post"
+  href="https://github.com/fiberplane/create-honc-app/tree/main/examples/uptime-monitor"
+  icon="external"
+  target="_blank"
+  rel="noopener noreferrer"
+/>
+
+The complete source code shows how we can build complex applications using serverless technologies while maintaining good practices like type safety, proper error handling, and clean architecture.
