@@ -76,7 +76,7 @@ Each website gets its own Monitor instance that persists in memory, keeping trac
 The `scheduleChecks` method sets up an interval timer based on the website's configured check frequency, while `performCheck` does the actual work of making HTTP requests to the target site, measuring response times, and storing results.
 This design ensures reliable, consistent monitoring even at scale. If a website is configured to be checked every 60 seconds, the Monitor instance will maintain that schedule without requiring external coordination.
 
-```typescript
+```typescript, titel: monitor.ts
 export class Monitor {
   private checkTimer: ReturnType<typeof setInterval> | null = null;
 
