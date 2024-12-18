@@ -1,0 +1,86 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "service.name",
+            "value": { "stringValue": "test-service" }
+          },
+          {
+            "key": "service.version",
+            "value": { "stringValue": "1.0.0" }
+          },
+          {
+            "key": "deployment.environment",
+            "value": { "stringValue": "production" }
+          }
+        ]
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "test-instrumentation",
+            "version": "1.0.0"
+          },
+          "spans": [
+            {
+              "traceId": "7bba9f33312b3dbb8b2c2c62bb7abe2d",
+              "spanId": "086e83747d0e381e",
+              "parentSpanId": "",
+              "name": "GET /api/users",
+              "kind": 2,
+              "startTimeUnixNano": "1648138140000000000",
+              "endTimeUnixNano": "1648138141000000000",
+              "attributes": [
+                {
+                  "key": "http.method",
+                  "value": { "stringValue": "GET" }
+                },
+                {
+                  "key": "http.url",
+                  "value": { "stringValue": "/api/users" }
+                },
+                {
+                  "key": "http.status_code",
+                  "value": { "intValue": "200" }
+                }
+              ],
+              "status": {
+                "code": 1,
+                "message": "success"
+              }
+            },
+            {
+              "traceId": "7bba9f33312b3dbb8b2c2c62bb7abe2d",
+              "spanId": "1f2d33cabb1e1234",
+              "parentSpanId": "086e83747d0e381e",
+              "name": "database.query",
+              "kind": 3,
+              "startTimeUnixNano": "1648138140200000000",
+              "endTimeUnixNano": "1648138140800000000",
+              "attributes": [
+                {
+                  "key": "db.system",
+                  "value": { "stringValue": "postgresql" }
+                },
+                {
+                  "key": "db.statement",
+                  "value": { "stringValue": "SELECT * FROM users" }
+                },
+                {
+                  "key": "db.rows_affected",
+                  "value": { "intValue": "42" }
+                }
+              ],
+              "status": {
+                "code": 1,
+                "message": "success"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+} 

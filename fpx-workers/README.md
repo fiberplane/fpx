@@ -29,6 +29,15 @@ Now you can simply run the worker using the wrangler CLI:
 npx wrangler dev
 ```
 
+Testing the authenticated `/v1/traces` endpoint:
+
+```bash
+curl -X POST http://localhost:8787/v1/traces \
+  -H "Authorization: Bearer your-secret-token-here" \
+  -H "Content-Type: application/json" \
+  --data-binary @trace.json
+```
+
 The Rust code will be compiled and once that is finished a local server will be
 running on `http://localhost:8787`. You can send traces using any otel exporter
 and inspect the traces using the [`fpx client`](../fpx).
