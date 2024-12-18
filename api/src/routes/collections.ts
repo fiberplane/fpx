@@ -19,7 +19,6 @@ const newCollectionSchema = z.object({
   name: z.string(),
 });
 
-// Create a new collection
 app.post(
   "/v0/collections",
   zValidator("json", newCollectionSchema),
@@ -29,7 +28,7 @@ app.post(
     const newCollection: NewCollection = ctx.req.valid("json");
 
     try {
-      const collection = await db.transaction(async (db) => {
+      const [collection] = await db.transaction(async (db) => {
         const collectionWithName = await db.query.collections.findFirst({
           where: eq(collections.name, newCollection.name),
         });
@@ -48,7 +47,7 @@ app.post(
         });
       });
 
-      return ctx.json(collection[0]);
+      return ctx.json(collection);
     } catch (error) {
       if (error instanceof HTTPException) {
         return ctx.json(error.message, error.status);
@@ -79,92 +78,65 @@ app.post(
 
     const { collectionId } = ctx.req.valid("param");
     const { appRouteId, ...extraParams } = ctx.req.valid("json");
-
-    try {
-      const insertedItem = await db.transaction(async (db) => {
-        const collection = db.query.collections.findFirst({
-          where: eq(collections.id, collectionId),
+    const collectionItem = await db.transaction(async (db) => {
+      const collection = db.query.collections.findFirst({
+        where: eq(collections.id, collectionId),
+      });
+      if (!collection) {
+        throw new HTTPException(404, {
+          message: "Collection not found",
         });
-        if (!collection) {
-          throw new HTTPException(404, {
-            message: "Collection not found",
-          });
-        }
+      }
 
-        const route = db.query.appRoutes.findFirst({
-          where: eq(appRoutes.id, appRouteId),
+      const route = db.query.appRoutes.findFirst({
+        where: eq(appRoutes.id, appRouteId),
+      });
+      if (!route) {
+        throw new HTTPException(404, {
+          message: "Route not found",
         });
-        if (!route) {
-          throw new HTTPException(404, {
-            message: "Route not found",
-          });
-        }
+      }
 
-        const count = await db.$count(
-          collectionItems,
-          eq(collectionItems.collectionId, collectionId),
-        );
+      const count = await db.$count(
+        collectionItems,
+        eq(collectionItems.collectionId, collectionId),
+      );
 
-        const result = await db.insert(collectionItems).values({
+      const [insertedItem] = await db
+        .insert(collectionItems)
+        .values({
           collectionId,
           appRouteId,
           ...extraParams,
           position: count,
-        });
+        })
+        .returning();
 
-        if (result.lastInsertRowid === undefined) {
-          throw new Error(
-            "Unexpected result from database (No id returned after insert)",
-          );
-        }
+      return insertedItem;
+    });
 
-        const insertedItem = await db.query.collectionItems.findFirst({
-          where: eq(collectionItems.id, Number(result.lastInsertRowid)),
-        });
-
-        return insertedItem;
-      });
-
-      return ctx.json(insertedItem);
-    } catch (error) {
-      if (error instanceof HTTPException) {
-        return ctx.json(error.message, error.status);
-      }
-
-      return ctx.json(
-        error instanceof Error ? error.message : "Unexpected error",
-        500,
-      );
-    }
+    return ctx.json(collectionItem);
   },
 );
 
 // Get all collections
 app.get("/v0/collections", async (ctx) => {
   const db = ctx.get("db");
-
-  try {
-    const allCollections = await db.select().from(collections);
-    const collectionWithRoutes = await Promise.all(
-      allCollections.map(async (collection) => {
-        const items = await db
-          .select()
-          .from(collectionItems)
-          .where(eq(collectionItems.collectionId, collection.id))
-          .orderBy(collectionItems.position);
-        return {
-          ...collection,
-          collectionItems: items.map(({ collectionId: _, ...item }) => item),
-        };
-      }),
-    );
-    return ctx.json(collectionWithRoutes);
-  } catch (error) {
-    return ctx.json(
-      error instanceof Error ? error.message : "Unexpected error",
-      500,
-    );
-  }
+  const allCollections = await db.select().from(collections);
+  const collectionWithRoutes = await Promise.all(
+    allCollections.map(async (collection) => {
+      const items = await db
+        .select()
+        .from(collectionItems)
+        .where(eq(collectionItems.collectionId, collection.id))
+        .orderBy(collectionItems.position);
+      return {
+        ...collection,
+        collectionItems: items.map(({ collectionId: _, ...item }) => item),
+      };
+    }),
+  );
+  return ctx.json(collectionWithRoutes);
 });
 
 // Get a single collection by ID
@@ -175,32 +147,21 @@ app.get(
     const { id } = ctx.req.valid("param");
     const db = ctx.get("db");
 
-    try {
-      const collection = await db.query.collections.findFirst({
-        where: eq(collections.id, id),
-        with: {
-          collectionItems: true,
-        },
+    const collection = await db.query.collections.findFirst({
+      where: eq(collections.id, id),
+      with: {
+        collectionItems: true,
+      },
+    });
+    if (!collection) {
+      throw new HTTPException(404, {
+        message: "Collection not found",
       });
-      if (!collection) {
-        throw new HTTPException(404, {
-          message: "Collection not found",
-        });
-      }
-
-      return ctx.json({
-        ...collection,
-      });
-    } catch (error) {
-      if (error instanceof HTTPException) {
-        return ctx.json(error.message, error.status);
-      }
-
-      return ctx.json(
-        error instanceof Error ? error.message : "Unexpected error",
-        500,
-      );
     }
+
+    return ctx.json({
+      ...collection,
+    });
   },
 );
 
@@ -214,18 +175,11 @@ app.put(
     const db = ctx.get("db");
 
     const updatedCollection = ctx.req.valid("json");
-    try {
-      await db
-        .update(collections)
-        .set(updatedCollection)
-        .where(eq(collections.id, id));
-      return ctx.json({ message: "Collection updated" });
-    } catch (error) {
-      return ctx.json(
-        error instanceof Error ? error.message : "Unexpected error",
-        500,
-      );
-    }
+    await db
+      .update(collections)
+      .set(updatedCollection)
+      .where(eq(collections.id, id));
+    return ctx.json({ message: "Collection updated" });
   },
 );
 
@@ -237,18 +191,11 @@ app.delete(
     const { id } = ctx.req.valid("param");
     const db = ctx.get("db");
 
-    try {
-      await db.delete(collections).where(eq(collections.id, id));
-      await db
-        .delete(collectionItems)
-        .where(eq(collectionItems.collectionId, id));
-      return ctx.json({ message: "Collection deleted" });
-    } catch (error) {
-      return ctx.json(
-        error instanceof Error ? error.message : "Unexpected error",
-        500,
-      );
-    }
+    await db.delete(collections).where(eq(collections.id, id));
+    await db
+      .delete(collectionItems)
+      .where(eq(collectionItems.collectionId, id));
+    return ctx.json({ message: "Collection deleted" });
   },
 );
 
@@ -266,26 +213,17 @@ app.delete(
     const { id, itemId } = ctx.req.valid("param");
     const db = ctx.get("db");
 
-    logger.info(`Deleting collection item ${itemId} from collection ${id}`);
-    logger.info(
-      `Deleting collection item ${typeof itemId} from collection ${typeof id}`,
-    );
-    try {
-      await db
-        .delete(collectionItems)
-        .where(
-          and(
-            eq(collectionItems.collectionId, id),
-            eq(collectionItems.id, itemId),
-          ),
-        );
-      return ctx.json({ message: "Collection deleted" });
-    } catch (error) {
-      return ctx.json(
-        error instanceof Error ? error.message : "Unexpected error",
-        500,
+    logger.debug(`Deleting collection item ${itemId} from collection ${id}`);
+
+    await db
+      .delete(collectionItems)
+      .where(
+        and(
+          eq(collectionItems.collectionId, id),
+          eq(collectionItems.id, itemId),
+        ),
       );
-    }
+    return ctx.json({ message: "Collection deleted" });
   },
 );
 
@@ -304,46 +242,36 @@ app.put(
     const { id, itemId } = ctx.req.valid("param");
     const db = ctx.get("db");
     const { position, ...extraParams } = ctx.req.valid("json");
-    try {
-      await db.transaction(async (db) => {
-        const item = await db.query.collectionItems.findFirst({
-          where: and(
+
+    await db.transaction(async (db) => {
+      const item = await db.query.collectionItems.findFirst({
+        where: and(
+          eq(collectionItems.collectionId, id),
+          eq(collectionItems.id, itemId),
+        ),
+      });
+
+      if (!item) {
+        throw new HTTPException(404, {
+          message: "Collection item not found",
+        });
+      }
+
+      await db
+        .update(collectionItems)
+        .set(extraParams)
+        .where(
+          and(
             eq(collectionItems.collectionId, id),
             eq(collectionItems.id, itemId),
           ),
-        });
-
-        if (!item) {
-          throw new HTTPException(404, {
-            message: "Collection item not found",
-          });
-        }
-
-        await db
-          .update(collectionItems)
-          .set(extraParams)
-          .where(
-            and(
-              eq(collectionItems.collectionId, id),
-              eq(collectionItems.id, itemId),
-            ),
-          );
-      });
-      if (position !== undefined) {
-        await updateCollectionItemOrder(db, id, itemId, position);
-      }
-      // TODO return updated item
-      return ctx.body(null);
-    } catch (error) {
-      if (error instanceof HTTPException) {
-        return ctx.json(error.message, error.status);
-      }
-
-      return ctx.json(
-        error instanceof Error ? error.message : "Unexpected error",
-        500,
-      );
+        );
+    });
+    if (position !== undefined) {
+      await updateCollectionItemOrder(db, id, itemId, position);
     }
+    // TODO return updated item
+    return ctx.body(null);
   },
 );
 
