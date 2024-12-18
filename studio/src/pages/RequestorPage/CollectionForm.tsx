@@ -53,8 +53,8 @@ export function CollectionForm(props: Props) {
 
   return (
     <form className="grid gap-4" onSubmit={handleSubmit(onSubmit)}>
-      <div className="space-y-2 grid gap-2">
-        <Title className="text-md text-center">
+      <div className="grid gap-1">
+        <Title className="text-md">
           {initialData ? "Edit" : "New"} collection
         </Title>
         <Description className="text-sm text-muted-foreground">
@@ -63,10 +63,10 @@ export function CollectionForm(props: Props) {
             : "Create a new collection"}
         </Description>
         {error && (
-          <p className="text-sm text-destructive-foreground">{error.message}</p>
+          <p className="text-sm text-red-400 italic">{error.message}</p>
         )}
       </div>
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2">
         <Label className="text-sm text-muted-foreground" htmlFor="name">
           Name
         </Label>
@@ -83,7 +83,7 @@ export function CollectionForm(props: Props) {
           data-lpignore="true"
         />
         {errors.name && (
-          <p className="text-sm text-red-600">{errors.name.message}</p>
+          <p className="text-sm text-red-400 italic">{errors.name.message}</p>
         )}
       </div>
       <div className="flex justify-end gap-4">
