@@ -29,10 +29,10 @@ export function AddRouteForm(props: Props) {
 
   return (
     <div className="max-h-60 grid grid-rows-[auto_auto_1fr] gap-2">
-      <h4 className="text-lg text-center">Add route</h4>
-      <p>Select which routes to add.</p>
+      <h4 className="text-base text-center">Add a Route</h4>
+      <p className="text-sm text-muted-foreground">Select a route to add.</p>
       <div className="grid min-h-0 gap-2">
-        <div className="grid gap-2 overflow-auto">
+        <div className="grid gap-1 max-w-full overflow-auto">
           {routes.map((route) => {
             return (
               <AddRouteToFormItem
@@ -80,10 +80,10 @@ function AddRouteToFormItem({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-2 py-1 rounded-lg hover:bg-muted cursor-pointer text-left">
-        <Method method={route.method} />
-        <div>{route.path}</div>
-        <span>+</span>
+      <DialogTrigger className="w-full grid grid-cols-[auto_1fr_auto] items-center gap-4 px-2 py-0.5 rounded-lg hover:bg-muted cursor-pointer text-left">
+        <Method className="text-xs shrink-0" method={route.method} />
+        <div className="text-xs font-mono truncate">{route.path}</div>
+        <span className="shrink-0">+</span>
       </DialogTrigger>
       <DialogContent className="w-96 max-w-screen-sm">
         <NamingRouteForm
