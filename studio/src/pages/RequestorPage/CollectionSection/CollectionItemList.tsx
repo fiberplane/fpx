@@ -127,7 +127,7 @@ export function Item(props: {
           "transition-shadow duration-150",
           "rounded-md hover:bg-muted shadow-none",
           {
-            "shadow-lg": isDragging,
+            "shadow-2xl": isDragging,
           },
         )}
       >
