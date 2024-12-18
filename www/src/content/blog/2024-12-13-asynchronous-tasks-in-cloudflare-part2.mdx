@@ -14,25 +14,21 @@ tags:
 import { LinkCard } from "@astrojs/starlight/components";
 import PackageManagers from "@/components/PackageManagers.astro";
 
-
-[In Part 1](https://fiberplane.com/blog/asynchronous-tasks-in-cloudflare-part1/), we explored strategies for managing asynchronous tasks within a single Cloudflare Worker, from sequential execution to fire-and-forget and parallel background processing with `waitUntil()`. 
+[In Part 1](https://fiberplane.com/blog/asynchronous-tasks-in-cloudflare-part1/), we explored strategies for managing asynchronous tasks within a single Cloudflare Worker, from sequential execution to fire-and-forget and parallel background processing with `waitUntil()`.
 While effective for simple cases, complex systems benefit from decomposing tasks into multiple workers for better error handling, retries, and separation of concerns.
 
-In Part 2, we’ll distribute tasks across workers using Service Bindings for direct function calls and Cloudflare Queues for asynchronous processing with enhanced fault tolerance. 
+In Part 2, we’ll distribute tasks across workers using Service Bindings for direct function calls and Cloudflare Queues for asynchronous processing with enhanced fault tolerance.
 
 Let’s start by breaking down the Marathon Sign-up Worker from Part 1!
 
 ## Example: A Marathon Registration API and a Email Worker using Cloudflare Service Bindings
 
-In our Marathon Registration API, we have two main tasks: storing the runner's data in a database and sending a confirmation email. 
+In our Marathon Registration API, we have two main tasks: storing the runner's data in a database and sending a confirmation email.
 To decouple these tasks, we can create a separate Email Worker that handles sending emails.
-
 
 ![Example Workers architecture](@/assets/blog/2024-12-03-decomposing-into-two-services-with-direct-binding.png)
 
-
-
-When using Cloudflare’s Service Bindings, workers can call each other within the same thread using fetch or rpc. 
+When using Cloudflare’s Service Bindings, workers can call each other within the same thread using fetch or rpc.
 This means there is no additional latency compared to a single-worker approach, and the performance remains consistent.
 
 <LinkCard
@@ -48,88 +44,86 @@ This means there is no additional latency compared to a single-worker approach, 
 
 Transitioning to a (micro)service architecture with Cloudflare Workers provides several key benefits:
 
-* Independently deployable: Each service can be updated and deployed without affecting others.
-* Shared services: A single worker can serve multiple APIs or applications, enhancing reusability. Imagine we have an additional newsletter subscription service that also requires sending emails.
-* Improved security: Services can operate without a public interface, reducing exposure and potential attack surfaces. The email worker can be now kept private and only accessed within the Cloudflare network.
+- Independently deployable: Each service can be updated and deployed without affecting others.
+- Shared services: A single worker can serve multiple APIs or applications, enhancing reusability. Imagine we have an additional newsletter subscription service that also requires sending emails.
+- Improved security: Services can operate without a public interface, reducing exposure and potential attack surfaces. The email worker can be now kept private and only accessed within the Cloudflare network.
 
 ### SetUp Service Bindings
-Bindings can be setup quiet easily in the `wrangler.toml` file. 
+
+Bindings can be setup quiet easily in the `wrangler.toml` file.
 
 ```toml, title="worker_sign_up/wrangler.toml"
 services = [
   { binding = "WORKER_EMAIL", service = "worker-email" }
 ]
 ```
+
 The only thing you have to ensure is that the service name matches the name of the worker you want to bind to.
-The worker that is being binded to needs to use the `WorkerEntryPoint` class. 
+The worker that is being binded to needs to use the `WorkerEntryPoint` class.
 
 ```typescript title="worker_email/index.ts"
 export class WorkerEmail extends WorkerEntrypoint {
   // Implement worker functions here
-
-  }
+}
 ```
 
-If you start both workers locally independly you also see if your binding is working correctly. 
+If you start both workers locally independly you also see if your binding is working correctly.
 
 ![Console output for service binding](@/assets/blog/2024-12-13-workers-binding.png)
-
 
 Now that the serives are binded we can either use rpc to call a function directly in the other worker or use fetch to call an endpoint.
 
 ```typescript
 //using rpc
-  await c.env.WORKER_EMAIL.send(email, firstName);
+await c.env.WORKER_EMAIL.send(email, firstName);
 
 //using fetch
 
-  await c.env.WORKER_EMAIL.fetch(
-   new Request("https://worker-email/send", {
+await c.env.WORKER_EMAIL.fetch(
+  new Request("https://worker-email/send", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, firstName }),
-   })
-  )
-
+    body: JSON.stringify({ email, firstName })
+  })
+);
 ```
 
 #### Excursion: Ensure Type Safety
 
-When using TypeScript, ensuring type conformity across workers is needed. This involves defining an interface for the service to bind. However, this approach can introduce several challenges, as discussed in the [Cloudflare forum](https://community.cloudflare.com/t/binding-service-rpc-using-typescript/652041/6). 
-
+When using TypeScript, ensuring type conformity across workers is needed. This involves defining an interface for the service to bind. However, this approach can introduce several challenges, as discussed in the [Cloudflare forum](https://community.cloudflare.com/t/binding-service-rpc-using-typescript/652041/6).
 
 If both workers are in a monorepo, they can share the same type definition file, simplifying type management. For example:
 
 ```typescript title="worker-email-types.ts"
 export interface WorkerEmail {
-    fetch(request: Request): Promise<Response>;
-    send(email: string, firstName: string): Promise<Response>;
-  }
-
+  fetch(request: Request): Promise<Response>;
+  send(email: string, firstName: string): Promise<Response>;
+}
 ```
+
 The Sign-up Worker can call the Mail Worker using the shared WorkerEmail interface, ensuring type safety and preventing runtime errors from mismatched method signatures:
 
 ```typescript title="worker_sign_up/index.ts"
-import type { WorkerEmail } from '../../worker-email-types';
+import type { WorkerEmail } from "../../worker-email-types";
 
 type Bindings = {
   WORKER_EMAIL: WorkerEmail;
 };
-
 ```
-If working outside a monorepo where workers are independent, they cannot directly share the same type definition file. Kent C. Dodds wrote about [fully typed web apps](https://www.epicweb.dev/fully-typed-web-apps) discussing the end-to end type safety from a Database to a WebUI. 
+
+If working outside a monorepo where workers are independent, they cannot directly share the same type definition file. Kent C. Dodds wrote about [fully typed web apps](https://www.epicweb.dev/fully-typed-web-apps) discussing the end-to end type safety from a Database to a WebUI.
 He talks about boundaries and how to address them. If our workers are not in the same repo we have another boundary that we need to address.
 In this scenario, things become a bit more challenging. You have two options:
 
-* Define the Interface Separately in Both Workers
+- Define the Interface Separately in Both Workers
   This approach can lead to duplication, as the interface would need to be maintained independently in multiple workers.
 
-* Publish a Shared Type Definition Package
-  A better solution is to publish the type definitions as an NPM package (e.g., worker-email-types) and install it in both projects. 
+- Publish a Shared Type Definition Package
+  A better solution is to publish the type definitions as an NPM package (e.g., worker-email-types) and install it in both projects.
   This approach ensures consistency while keeping the type definitions centralized.
 
-
 ### Execution patterns
+
 Since the calls remain within the same thread, it’s unsurprising that invoking different workers is handled similarly to managing asynchronous tasks within a single worker.
 
 When using separate Cloudflare Workers, tasks become asynchronous. The `await` keyword ensures that the worker completes its operation before the current thread terminates.
@@ -146,7 +140,7 @@ app.post("/api/marathon-sequential", async (c) => {
     email,
     address,
     distance,
-    c.env.DATABASE_URL,
+    c.env.DATABASE_URL
   );
 
   //using rpc
@@ -154,8 +148,6 @@ app.post("/api/marathon-sequential", async (c) => {
 
   return c.text("Thanks for registering for our Marathon", 200);
 });
-
-
 ```
 
 To improve response time, `waitUntil()` can be used to initiate the database insertion and the invocation of the email worker in parallel, similar to the example with a single worker.
@@ -167,21 +159,20 @@ app.post("/api/marathon-wait-until", async (c) => {
   //using rpc
   c.executionCtx.waitUntil(c.env.WORKER_EMAIL.send(email, firstName));
 
-   await insertData(
+  await insertData(
     firstName,
     lastName,
     email,
     address,
     distance,
-    c.env.DATABASE_URL,
+    c.env.DATABASE_URL
   );
 
   return c.text("Thanks for registering for our Marathon", 200);
 });
-
 ```
 
-Fiberplane studio outlines nicely the invokation of the different workers in both cases. 
+Fiberplane studio outlines nicely the invokation of the different workers in both cases.
 
 ![Fiberplane studio screenshot: sequential and parallel processing](@/assets/blog/2024-12-13-studio-outline.png)
 
@@ -195,37 +186,40 @@ The solution to decouple the workers and enable more granular error handling is 
 
 ![Example Queue and Workers architecture](@/assets/blog/2024-12-03-queue-architecture.png)
 
-
 ### SetUp Cloudflare Queues
-Workers can produce messages to a queue and consume messages from it. The producer is unaware of the consumer, which effectively enables a fire-and-forget implementation for the worker. The message broker is responsible for handling and delivering the messages. This way the workers are decoupled and can operate independently. 
+
+Workers can produce messages to a queue and consume messages from it. The producer is unaware of the consumer, which effectively enables a fire-and-forget implementation for the worker. The message broker is responsible for handling and delivering the messages. This way the workers are decoupled and can operate independently.
 
 Queues also allow the definition of batch and buffer strategies for handling data. This can reduce the frequency of consumer worker invocations and manage them more effectively.
-Under the hood a [Cloudflare Queue leverage Durable Objects](https://blog.cloudflare.com/how-we-built-cloudflare-queues/). 
+Under the hood a [Cloudflare Queue leverage Durable Objects](https://blog.cloudflare.com/how-we-built-cloudflare-queues/).
 
 ### Message sending (Producer)
+
 In the worker that sends the message, you can add a binding to the `wrangler.toml` file
+
 ```toml, title="worker_sign_up/wrangler.toml"
 [[queues.producers]]
  queue = "registration-queue"
  binding = "REGISTRATION_QUEUE"
-``` 
+```
+
 Once the binding is set up, sending messages to the queue is straightforward.
 
 ```typescript
-  await c.env.REGISTRATION_QUEUE.send(messagePayload);
-
+await c.env.REGISTRATION_QUEUE.send(messagePayload);
 ```
 
 In addition, messages can be sent by external applications to the Cloudflare queue, as shown in [this example using DAPR](https://github.com/diagrid-labs/dapr-cloudflare-queues). This approach allows workers to remain solely within the internal Cloudflare network while enabling event-driven integration with services outside Cloudflare.
 
 ### Message handeling (Consumer)
+
 Consuming messages from a queue can be done in two ways. The default method is for the queue to push messages to a consumer worker. This works well for a serverless approach and ensures the worker is only invoked when there is a message in the queue.
 
 However, queues also support polling, which can be useful for integrating with services outside the Cloudflare ecosystem.
 
 To set up a consumer worker, the binding must be defined in the `wrangler.toml` file.
 
-```toml, title="worker_email/wrangler.toml" 
+```toml, title="worker_email/wrangler.toml"
 [[queues.consumers]]
  queue = "registration-queue"
  max_batch_size = 10 # optional: defaults to 10
@@ -241,7 +235,7 @@ Batching can be useful for reducing the time a worker is invoked.
 
 The consumer worker must implement the queue method to handle incoming messages from the queue.
 
-```typescript 
+```typescript
 // Queue consumer
   async queue(batch: MessageBatch): Promise<void> {
     for (const msg of batch.messages) {
@@ -256,14 +250,14 @@ Multiple workers can consume messages from the same queue, and messages are not 
 
 To enforce this, you can define a maximum in the `wrangler.toml` file for your consumer and configure it to run only one worker:
 
-```toml, title="worker_email/wrangler.toml" 
+```toml, title="worker_email/wrangler.toml"
 [[queues.consumers]]
   max_concurrency = 1
 ```
 
 By default, the Cloudflare queue tries to deliver a message three times. If the message is not delivered after three attempts, it is marked as failed. You can modify this behavior in the consumer, where you can also define the maximum number of retries and set up a dead-letter queue for all failed messages.
 
-```toml 
+```toml
   max_retries = 10
   dead_letter_queue = "failed-registration-message-queue"
 ```
@@ -272,13 +266,12 @@ When working with messages in a batch, each message can still be handled individ
 
 If the goal is to ensure that only failed messages are retried, individual messages within the batch must be acknowledged. Otherwise, the entire batch will be marked for retry. This approach can help achieve [idempotent consumers](https://microservices.io/patterns/communication-style/idempotent-consumer.html).
 
-```typescript 
+```typescript
 msg.ack();
 ```
 
 Retries are handled by the queue and the consumer worker. Instead of acknowledging the message, it can be retried. Retry is the process of negatively acknowledging (nacking) a message and putting it back in the queue.
-The queue manages the retries, checking if there are attempts remaining. If not, the message is sent to the dead-letter queue. Each message has an `attempt` property. 
-
+The queue manages the retries, checking if there are attempts remaining. If not, the message is sent to the dead-letter queue. Each message has an `attempt` property.
 
 This allows for defining task-specific retry strategies. For example, when working with external APIs that charge per call, you may want to reduce the number of retries before failing.
 Alternatively, if an API signals that it is receiving too many requests, a delay time can be defined before retrying.
@@ -286,10 +279,11 @@ Alternatively, if an API signals that it is receiving too many requests, a delay
 ```typescript
 msg.retry({ delaySeconds: 1000 });
 ```
+
 With the attempt property and the ability to define delay seconds in the retry method, a [backoff strategy](https://developers.cloudflare.com/queues/configuration/batching-retries/#apply-a-backoff-algorithm) can also be defined.
 
+### Current limitations when developing locally
 
-### Current limitations when developing locally 
 When developing and testing locally, you cannot run two independent workers and connect them to the same queue. It is not possible to run the queue remotely and connect local workers to it.
 
 The only option at the moment is to run the producer worker and include the consumer logic within it, spinning it up locally to test the queue.
@@ -310,4 +304,3 @@ However, what if state needs to be maintained across the business process? In a 
 This challenge becomes especially critical when there are not just two workers, but multiple working in tandem.
 
 In Part 3, Cloudflare Workflows will be explored as a solution for state management across distributed Cloudflare services.
-
