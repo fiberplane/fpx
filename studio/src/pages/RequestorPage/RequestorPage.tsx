@@ -87,7 +87,7 @@ export const RequestorPage = () => {
         "flex-col",
         "gap-2",
         "p-2",
-        "lg:gap-4",
+        // "lg:gap-4",
       )}
     >
       <MainTopSection />
