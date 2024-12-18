@@ -238,22 +238,6 @@ export function RoutesPanel() {
         </div>
       </div>
       <div className="overflow-y-auto h-full relative flex flex-col gap-2">
-        {hasAnyUserAddedRoutes && (
-          <RoutesSection title="Custom routes">
-            {userAddedRoutes.map((route, index) => (
-              <RoutesItem
-                key={index}
-                index={index}
-                route={route}
-                activeRoute={activeRoute}
-                selectedRoute={selectedRouteIndex === index ? route : null}
-                handleRouteClick={handleRouteClick}
-                setSelectedRouteIndex={setSelectedRouteIndex}
-              />
-            ))}
-          </RoutesSection>
-        )}
-
         {hasAnyRoutes && (
           <RoutesSection title={<DetectedRoutesTitle />}>
             <TabsContent value="list" className="mt-0">
@@ -316,6 +300,22 @@ export function RoutesPanel() {
                   </div>
                 )}
             </TabsContent>
+          </RoutesSection>
+        )}
+
+        {hasAnyUserAddedRoutes && (
+          <RoutesSection title="Custom routes">
+            {userAddedRoutes.map((route, index) => (
+              <RoutesItem
+                key={index}
+                index={index}
+                route={route}
+                activeRoute={activeRoute}
+                selectedRoute={selectedRouteIndex === index ? route : null}
+                handleRouteClick={handleRouteClick}
+                setSelectedRouteIndex={setSelectedRouteIndex}
+              />
+            ))}
           </RoutesSection>
         )}
 
