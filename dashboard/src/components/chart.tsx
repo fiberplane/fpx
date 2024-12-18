@@ -1,5 +1,3 @@
-"use client";
-
 import { TrendingUp } from "lucide-react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
@@ -17,19 +15,24 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+
 const chartData = [
-  { month: "January", desktop: 186 },
-  { month: "February", desktop: 305 },
-  { month: "March", desktop: 237 },
-  { month: "April", desktop: 73 },
-  { month: "May", desktop: 209 },
-  { month: "June", desktop: 214 },
+  { month: "January", success: 186, failed: 44 },
+  { month: "February", success: 305, failed: 230 },
+  { month: "March", success: 237, failed: 120 },
+  { month: "April", success: 73, failed: 10 },
+  { month: "May", success: 209, failed: 414 },
+  { month: "June", success: 214, failed: 8 },
 ];
 
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "hsl(var(--chart-1))",
+  failed: {
+    label: "Failed",
+    color: "hsl(var(--chart-5))",
+  },
+  success: {
+    label: "Successful",
+    color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig;
 
@@ -63,9 +66,16 @@ export function Chart() {
               content={<ChartTooltipContent hideLabel />}
             />
             <Line
-              dataKey="desktop"
+              dataKey="success"
               type="natural"
-              stroke="var(--color-desktop)"
+              stroke="var(--color-success)"
+              strokeWidth={2}
+              dot={false}
+            />
+            <Line
+              dataKey="failed"
+              type="natural"
+              stroke="var(--color-failed)"
               strokeWidth={2}
               dot={false}
             />

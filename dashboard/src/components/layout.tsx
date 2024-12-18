@@ -1,6 +1,6 @@
-import { Separator } from "@radix-ui/react-separator";
-import { Home } from "lucide-react";
+import { ChartSpline, Home, Key } from "lucide-react";
 import type { PropsWithChildren } from "react";
+import { Route, Routes, useMatch } from "react-router-dom";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,6 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "./ui/breadcrumb";
+import { Separator } from "./ui/separator";
 import {
   Sidebar,
   SidebarContent,
@@ -36,12 +37,22 @@ export function Layout({ children }: PropsWithChildren) {
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="/">
-                      <Home />
-                      <span>Dashboard</span>
-                    </a>
-                  </SidebarMenuButton>
+                  <SidebarNavLink href="/">
+                    <Home />
+                    <span>Dashboard</span>
+                  </SidebarNavLink>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarNavLink href="/insights">
+                    <ChartSpline />
+                    <span>Insights</span>
+                  </SidebarNavLink>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarNavLink href="/tokens">
+                    <Key />
+                    <span>Tokens</span>
+                  </SidebarNavLink>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
@@ -61,14 +72,40 @@ export function Layout({ children }: PropsWithChildren) {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Dashboard</BreadcrumbPage>
+                  <Routes>
+                    <Route
+                      path="/"
+                      element={<BreadcrumbPage>Dashboard</BreadcrumbPage>}
+                    />
+                    <Route
+                      path="tokens"
+                      element={<BreadcrumbPage>Tokens</BreadcrumbPage>}
+                    />
+                    <Route
+                      path="insights"
+                      element={<BreadcrumbPage>Insights</BreadcrumbPage>}
+                    />
+                  </Routes>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
         </header>
-        <main>{children}</main>
+        <main className="m-4">{children}</main>
       </SidebarInset>
     </SidebarProvider>
+  );
+}
+
+function SidebarNavLink({
+  children,
+  href,
+}: PropsWithChildren<{ href: string }>) {
+  const match = useMatch(href);
+
+  return (
+    <SidebarMenuButton asChild isActive={match !== null}>
+      <a href={href}>{children}</a>
+    </SidebarMenuButton>
   );
 }
