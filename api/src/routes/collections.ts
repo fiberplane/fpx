@@ -1,10 +1,9 @@
-import { Hono } from "hono";
-import { HTTPException } from "hono/http-exception";
-import { z } from "zod";
-
 import { CollectionItemParamsSchema } from "@fiberplane/fpx-types";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, gt, gte, lt, lte, sql } from "drizzle-orm";
+import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
+import { z } from "zod";
 import {
   type NewCollection,
   appRoutes,
@@ -21,45 +20,47 @@ const newCollectionSchema = z.object({
 });
 
 // Create a new collection
-app.post("/v0/collections", async (ctx) => {
-  const db = ctx.get("db");
+app.post(
+  "/v0/collections",
+  zValidator("json", newCollectionSchema),
+  async (ctx) => {
+    const db = ctx.get("db");
 
-  const newCollection: NewCollection = newCollectionSchema.parse(
-    await ctx.req.json(),
-  );
+    const newCollection: NewCollection = ctx.req.valid("json");
 
-  try {
-    const collection = await db.transaction(async (db) => {
-      const collectionWithName = await db.query.collections.findFirst({
-        where: eq(collections.name, newCollection.name),
-      });
-      if (collectionWithName) {
-        throw new HTTPException(400, {
-          message: "Collection name is not unique",
-          cause: { name: "Collection name is not unique" },
+    try {
+      const collection = await db.transaction(async (db) => {
+        const collectionWithName = await db.query.collections.findFirst({
+          where: eq(collections.name, newCollection.name),
         });
+        if (collectionWithName) {
+          throw new HTTPException(400, {
+            message: "Collection name is not unique",
+            cause: { name: "Collection name is not unique" },
+          });
+        }
+
+        return await db.insert(collections).values(newCollection).returning({
+          id: collections.id,
+          name: collections.name,
+          createdAt: collections.createdAt,
+          updatedAt: collections.updatedAt,
+        });
+      });
+
+      return ctx.json(collection[0]);
+    } catch (error) {
+      if (error instanceof HTTPException) {
+        return ctx.json(error.message, error.status);
       }
 
-      return await db.insert(collections).values(newCollection).returning({
-        id: collections.id,
-        name: collections.name,
-        createdAt: collections.createdAt,
-        updatedAt: collections.updatedAt,
-      });
-    });
-
-    return ctx.json(collection[0]);
-  } catch (error) {
-    if (error instanceof HTTPException) {
-      return ctx.json(error.message, error.status);
+      return ctx.json(
+        error instanceof Error ? error.message : "Unexpected error",
+        500,
+      );
     }
-
-    return ctx.json(
-      error instanceof Error ? error.message : "Unexpected error",
-      500,
-    );
-  }
-});
+  },
+);
 
 app.post(
   "/v0/collections/:collectionId/items",
@@ -169,7 +170,7 @@ app.get("/v0/collections", async (ctx) => {
 // Get a single collection by ID
 app.get(
   "/v0/collections/:id",
-  zValidator("param", z.object({ id: z.number() })),
+  zValidator("param", z.object({ id: z.number({ coerce: true }).int() })),
   async (ctx) => {
     const { id } = ctx.req.valid("param");
     const db = ctx.get("db");
