@@ -14,7 +14,7 @@ export type TraceDetailSpansResponse = Array<OtelSpan>;
 
 export const CollectionSchema = z.object({
   id: z.number(),
-  name: z.string().trim().min(1, { message: "Is required." }),
+  name: z.string().trim().min(1, { message: "name is required" }),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
