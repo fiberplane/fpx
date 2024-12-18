@@ -42,7 +42,7 @@ export function NamingRouteForm(props: Props) {
     <form className="grid gap-4" onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-2">
         <DialogTitle className="text-md text-muted-foreground">
-          Request Name
+          Add a Name
         </DialogTitle>
         <DialogDescription className="text-sm text-gray-200">
           You can (optionally) customize the name of this specific combination

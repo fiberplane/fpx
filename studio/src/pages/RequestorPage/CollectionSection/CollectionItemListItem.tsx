@@ -51,11 +51,11 @@ export function CollectionItemListItem({
           }),
           search: searchParams.toString(),
         }}
-        className="grid gap-2 px-2 grid-cols-[4rem_1fr_1fr] rounded-md  hover:bg-muted"
+        className="grid gap-2 px-2 grid-cols-[4rem_1fr_1fr] rounded-md items-center hover:bg-muted"
       >
-        <Method method={route.method} />
-        <span>{route.path}</span>
-        <span>{name}</span>
+        <Method className="text-sm" method={route.method} />
+        <span className="text-sm font-mono">{route.path}</span>
+        <span className="text-sm">{name}</span>
       </Link>
       <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <ConfirmationDialog

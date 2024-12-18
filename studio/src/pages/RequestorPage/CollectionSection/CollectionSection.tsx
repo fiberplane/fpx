@@ -70,9 +70,11 @@ export function CollectionSection() {
           </p>
         </div>
         <div className="border rounded border-muted grid gap-2 p-2">
-          <div className="grid grid-cols-[1fr_auto] border-b mb-2 pb-2">
-            <h5 className="text-muted-foreground">Items:</h5>
-            <AddRoute collectionId={collectionId} />
+          <div className="grid border-b mb-2 pb-2">
+            <h5 className="sr-only">Items:</h5>
+            <div className="flex ml-auto">
+              <AddRoute collectionId={collectionId} />
+            </div>
           </div>
           {collection.collectionItems.length === 0 ? (
             <EmptyCollectionItemsList collectionId={collectionId} />

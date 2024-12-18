@@ -1,3 +1,8 @@
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { COLLECTION_ROUTE, COLLECTION_WITH_ITEM_ID } from "@/constants";
 import { useActiveCollectionId, useActiveCollectionItemId } from "@/hooks";
 import { cn, generatePathWithSearchParams } from "@/utils";
@@ -87,7 +92,14 @@ export const NavItem = memo(({ collection }: NavItemProps) => {
                 method={route.method}
                 className="text-xs font-mono min-w-12"
               />
-              <span>{item.name || route.path}</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="truncate">{item.name || route.path}</span>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <span>{item.name || route.path}</span>
+                </TooltipContent>
+              </Tooltip>
             </Link>
           );
         })}
