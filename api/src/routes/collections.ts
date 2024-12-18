@@ -1,9 +1,10 @@
-import { CollectionItemParamsSchema } from "@fiberplane/fpx-types";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, gt, gte, lt, lte, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
+
+import { CollectionItemParamsSchema } from "@fiberplane/fpx-types";
 import {
   type NewCollection,
   appRoutes,
@@ -15,49 +16,34 @@ import logger from "../logger/index.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-const newCollectionSchema = z.object({
-  name: z.string(),
-});
-
 app.post(
   "/v0/collections",
-  zValidator("json", newCollectionSchema),
+  zValidator("json", z.object({ name: z.string() })),
   async (ctx) => {
     const db = ctx.get("db");
 
     const newCollection: NewCollection = ctx.req.valid("json");
 
-    try {
-      const [collection] = await db.transaction(async (db) => {
-        const collectionWithName = await db.query.collections.findFirst({
-          where: eq(collections.name, newCollection.name),
-        });
-        if (collectionWithName) {
-          throw new HTTPException(400, {
-            message: "Collection name is not unique",
-            cause: { name: "Collection name is not unique" },
-          });
-        }
-
-        return await db.insert(collections).values(newCollection).returning({
-          id: collections.id,
-          name: collections.name,
-          createdAt: collections.createdAt,
-          updatedAt: collections.updatedAt,
-        });
+    const [collection] = await db.transaction(async (db) => {
+      const collectionWithName = await db.query.collections.findFirst({
+        where: eq(collections.name, newCollection.name),
       });
-
-      return ctx.json(collection);
-    } catch (error) {
-      if (error instanceof HTTPException) {
-        return ctx.json(error.message, error.status);
+      if (collectionWithName) {
+        throw new HTTPException(400, {
+          message: "Collection name is not unique",
+          cause: { name: "Collection name is not unique" },
+        });
       }
 
-      return ctx.json(
-        error instanceof Error ? error.message : "Unexpected error",
-        500,
-      );
-    }
+      return await db.insert(collections).values(newCollection).returning({
+        id: collections.id,
+        name: collections.name,
+        createdAt: collections.createdAt,
+        updatedAt: collections.updatedAt,
+      });
+    });
+
+    return ctx.json(collection);
   },
 );
 
