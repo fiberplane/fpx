@@ -17,7 +17,7 @@ export function useInputFocusDetection() {
     };
 
     document.addEventListener("focus", handleFocus, { capture: true });
-    document.addEventListener("focus", handleFocus, { capture: true });
+    document.addEventListener("blur", handleBlur, { capture: true });
 
     return () => {
       document.removeEventListener("focus", handleFocus);
