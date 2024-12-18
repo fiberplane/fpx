@@ -277,7 +277,7 @@ export function createObjectFromKeyValueParameters<
 >(parameters: T): Record<T[0]["key"], T[0]["value"]> {
   const result: Record<string, string> = {};
   for (const item of parameters) {
-    if (item.key) {
+    if (item.key && item.enabled) {
       result[item.key] = item.value;
     }
   }
