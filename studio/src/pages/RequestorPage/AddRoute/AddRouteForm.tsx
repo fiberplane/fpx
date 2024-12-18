@@ -3,7 +3,7 @@ import { Method } from "@/pages/RequestorPage/RequestorHistory";
 import { useRoutes } from "@/pages/RequestorPage/routes";
 import { useStudioStore } from "@/pages/RequestorPage/store";
 import { useAddItemToCollection } from "@/queries";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { type NameFormData, NamingRouteForm } from "../NamingRouteForm";
 import type { ProbedRoute } from "../types";
@@ -19,6 +19,14 @@ export function AddRouteForm(props: Props) {
   const { isLoading } = useRoutes();
   const { appRoutes: routes } = useStudioStore("appRoutes");
 
+  const routesToRender = useMemo(() => {
+    if (!routes) {
+      return [];
+    }
+
+    return routes?.filter((route) => route?.currentlyRegistered);
+  }, [routes]);
+
   if (isLoading || !routes) {
     return <div>Loading...</div>;
   }
@@ -33,7 +41,7 @@ export function AddRouteForm(props: Props) {
       <p className="text-sm text-muted-foreground">Select a route to add.</p>
       <div className="grid min-h-0 gap-2">
         <div className="grid gap-1 max-w-full overflow-auto">
-          {routes.map((route) => {
+          {routesToRender.map((route) => {
             return (
               <AddRouteToFormItem
                 key={route.id}
