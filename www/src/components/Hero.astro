@@ -12,7 +12,7 @@ if (image && "file" in image) {
 }
 ---
 
-<section>
+<section data-hero>
   <div class="hero-content">
     <header>
       <h1>{title}</h1>
@@ -75,6 +75,10 @@ if (image && "file" in image) {
 <style>
   html[data-has-hero] body {
     --sl-content-width: 102rem;
+
+    *:has(* > [data-hero]) {
+      overflow-x: clip;
+    }
   }
 
   section {

@@ -45,17 +45,6 @@ export async function stop() {
   }
 }
 
-export function getStatus() {
-  if (!config) {
-    throw new Error("WebhoncManager not initialized");
-  }
-
-  return {
-    connected: socket?.readyState === WebSocket.OPEN,
-    connectionId: socket ? getWebHoncConnectionId(config.db) : null,
-  };
-}
-
 async function connect() {
   if (!config) {
     throw new Error("WebhoncManager not initialized");

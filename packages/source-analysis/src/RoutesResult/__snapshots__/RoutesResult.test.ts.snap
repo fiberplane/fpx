@@ -168,3 +168,111 @@ const app = new Hono();
 app.post("/hello-world", (c) => c.json({ hello: "world" })
 /* EOF: other.ts */"
 `;
+
+exports[`zod-openapi 1`] = `
+"/* index.ts */
+import { createRoute,z,z } from "@hono/zod-openapi";
+import { basicAuth } from "hono/basic-auth";
+const app = new OpenAPIHono();
+
+const NewUserSchema = z
+  .object({
+    name: z.string().openapi({
+      example: "John Doe",
+      description: "The name of the user",
+    }),
+    age: z.number().openapi({
+      example: 42,
+    }),
+  })
+  .openapi("NewUser")
+
+const UserSchema = z
+  .object({
+    id: z.number().openapi({
+      example: 123,
+    }),
+    name: z.string().openapi({
+      example: "John Doe",
+    }),
+    age: z.number().openapi({
+      example: 42,
+    }),
+  })
+  .openapi("User")
+
+app.post("/users", const createUserRoute = createRoute({
+  method: "post",
+  path: "/users",
+  middleware: [
+    basicAuth({
+      username: "goose",
+      password: "honkhonk",
+    }),
+  ] as const, // Use \`as const\` to ensure TypeScript infers the middleware's Context correctly
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: NewUserSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      content: {
+        "application/json": {
+          schema: UserSchema,
+        },
+      },
+      description: "Retrieve the user",
+    },
+  },
+})
+/* EOF: index.ts */"
+`;
+
+exports[`zod-openapi 2`] = `
+"/* index.ts */
+import { createRoute,z,z } from "@hono/zod-openapi";
+import { basicAuth } from "hono/basic-auth";
+const app = new OpenAPIHono();
+
+const UserSchema = z
+  .object({
+    id: z.number().openapi({
+      example: 123,
+    }),
+    name: z.string().openapi({
+      example: "John Doe",
+    }),
+    age: z.number().openapi({
+      example: 42,
+    }),
+  })
+  .openapi("User")
+
+app.get("/users", createRoute({
+    method: "get",
+    path: "/users",
+    middleware: [
+      basicAuth({
+        username: "goose",
+        password: "honkhonk",
+      }),
+    ] as const, // Use \`as const\` to ensure TypeScript infers the middleware's Context correctly
+    request: {},
+    responses: {
+      20: {
+        content: {
+          "application/json": {
+            schema: z.Array(UserSchema),
+          },
+        },
+        description: "Retrieve all users",
+      },
+    },
+  })
+/* EOF: index.ts */"
+`;

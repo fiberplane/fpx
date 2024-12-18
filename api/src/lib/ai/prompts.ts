@@ -42,6 +42,7 @@ export const invokeRequestGenerationPrompt = async ({
   openApiSpec,
   middleware,
   middlewareContext,
+  prompt,
 }: {
   persona: string;
   method: string;
@@ -56,6 +57,7 @@ export const invokeRequestGenerationPrompt = async ({
     path: string;
   }[];
   middlewareContext?: string;
+  prompt?: string;
 }) => {
   const promptTemplate =
     persona === "QA" ? qaTesterPrompt : friendlyTesterPrompt;
@@ -68,6 +70,7 @@ export const invokeRequestGenerationPrompt = async ({
     openApiSpec: openApiSpec ?? "NO OPENAPI SPEC",
     middleware: formatMiddleware(middleware),
     middlewareContext: middlewareContext ?? "NO MIDDLEWARE CONTEXT",
+    prompt: prompt ?? "",
   });
   const userPrompt = userPromptInterface.value;
   return userPrompt;
@@ -107,6 +110,8 @@ Here is the code for the handler:
 Here is some additional context for the handler source code, if you need it:
 {handlerContext}
 
+Here are some additional instructions from the user:
+{prompt}
 `.trim(),
 );
 
@@ -138,6 +143,9 @@ Here is the code for the handler:
 
 Here is some additional context for the handler source code, if you need it:
 {handlerContext}
+
+Here are some additional instructions from the user:
+{prompt}
 
 REMEMBER YOU ARE A QA. MISUSE THE API. BUT DO NOT MISUSE YOURSELF.
 Keep your responses short-ish. Including your random data.

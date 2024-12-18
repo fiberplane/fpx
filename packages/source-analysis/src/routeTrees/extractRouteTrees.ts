@@ -8,6 +8,7 @@ import {
   type RouteTree,
   type RouteTreeReference,
   type SearchContext,
+  type SourceReference,
   type SourceReferenceId,
   type TsArrowFunction,
   type TsCallExpression,
@@ -17,6 +18,7 @@ import {
   type TsLanguageService,
   type TsNode,
   type TsNodeArray,
+  type TsPackageType,
   type TsProgram,
   type TsReferenceEntry,
   type TsReturnStatement,
@@ -32,19 +34,12 @@ import { findNodeAtPosition } from "./utils";
 export function extractRouteTrees(
   service: TsLanguageService,
   program: TsProgram,
-  ts: TsType,
+  ts: TsPackageType,
   projectRoot: string,
 ): {
   errorCount?: number;
   resourceManager: ResourceManager;
 } {
-  // const now = performance.now();
-  // const program = service.getProgram();
-  // if (!program) {
-  // throw new Error("Program not found");
-  // }
-  // logger.log('program', performance.now() - now)
-
   const resourceManager = new ResourceManager(projectRoot);
   const checker = program.getTypeChecker();
 
@@ -69,7 +64,7 @@ export function extractRouteTrees(
   for (const sourceFile of files) {
     if (!sourceFile.isDeclarationFile) {
       ts.forEachChild(sourceFile, (node: TsNode) => {
-        visit(node, sourceFile.fileName, context);
+        visitToFindRouteTree(node, sourceFile.fileName, context);
       });
     }
   }
@@ -80,8 +75,32 @@ export function extractRouteTrees(
   };
 }
 
-function visit(node: TsNode, fileName: string, context: SearchContext) {
-  const { ts, checker, resourceManager, service } = context;
+function getTypeErrorDetails(type: TsType): string {
+  const symbol = type.getSymbol();
+  if (!symbol) {
+    return "No symbol found for type";
+  }
+  const declarations = symbol.getDeclarations();
+  if (!declarations || declarations.length === 0) {
+    return "No declarations found for symbol";
+  }
+  return declarations
+    .map((declaration) => {
+      const sourceFile = declaration.getSourceFile();
+      const { line, character } = sourceFile.getLineAndCharacterOfPosition(
+        declaration.getStart(),
+      );
+      return `Error in ${sourceFile.fileName} at ${line + 1}:${character + 1}`;
+    })
+    .join("\n");
+}
+
+function visitToFindRouteTree(
+  node: TsNode,
+  fileName: string,
+  context: SearchContext,
+) {
+  const { ts, checker } = context;
   if (!ts.isVariableStatement(node)) {
     return;
   }
@@ -94,68 +113,117 @@ function visit(node: TsNode, fileName: string, context: SearchContext) {
 
     if ("intrinsicName" in type && type.intrinsicName === "error") {
       context.errorCount++;
-      logger.error("Error in type check");
-      logger.error("In: ", node.getSourceFile().fileName, node.kind);
-      logger.error("Node text:", node.getFullText());
-      logger.error("type information", type.getSymbol());
+      logger.info("Error in type check");
+      const prettyLocation = node
+        .getSourceFile()
+        .getLineAndCharacterOfPosition(node.getStart());
+      logger.info(
+        `Location: ${node.getSourceFile().fileName}:${prettyLocation.line + 1}:${prettyLocation.character + 1}`,
+      );
+      logger.debug("Syntax kind:", ts.SyntaxKind[node.kind]);
+      logger.debug("Type error details:", getTypeErrorDetails(type));
     }
 
     const typeName = checker.typeToString(type);
     if (typeName.startsWith("Hono<")) {
-      // TODO: use the type information to get the name of the hono instance
-      // TODO: (edge case) handle reassignments of the same variable. It's possible reuse a variable for different hono instances
-      const honoInstanceName = declaration.name.getText();
-      const position = declaration.name.getStart();
-      const params = {
-        type: "ROUTE_TREE" as const,
-        baseUrl: "",
-        name: honoInstanceName,
-        fileName: resourceManager.asRelativePath(node.getSourceFile().fileName),
-        position,
-        entries: [],
-        modules: new Set<ModuleReferenceId>(),
-        sources: new Set<SourceReferenceId>(),
-      };
-
-      const current = resourceManager.createRouteTree(params);
-
-      // TODO: add support for late initialization of the hono instance
-      // What if people do something like:
-      //
-      // ``` ts
-      // let app: Hono;
-      // app = new Hono();
-      // ```
-      //
-      // Or have some other kind of initialization:
-      //
-      // ``` ts
-      // let app: Hono;
-      // app = createApp();
-      // ```
-
-      if (
-        declaration.initializer &&
-        ts.isCallExpression(declaration.initializer)
-      ) {
-        handleInitializerCallExpression(
-          declaration.initializer,
-          current,
-          context,
-        );
-      }
-
-      const references = (
-        service.getReferencesAtPosition(fileName, position) ?? []
-      ).filter(
-        (reference) =>
-          reference.fileName === fileName &&
-          reference.textSpan.start !== position,
-      );
-      for (const entry of references) {
-        followReference(current, entry, context);
-      }
+      handleHonoAppInstance(declaration, node, fileName, context);
+    } else if (typeName.startsWith("OpenAPIHono<")) {
+      handleOpenApiHonoInstance(declaration, node, fileName, context);
     }
+  }
+}
+
+function handleOpenApiHonoInstance(
+  declaration: TsVariableDeclaration,
+  node: TsNode,
+  fileName: string,
+  context: SearchContext,
+) {
+  const { ts, resourceManager, service } = context;
+
+  const honoInstanceName = declaration.name.getText();
+  const position = declaration.name.getStart();
+  const params = {
+    type: "ROUTE_TREE" as const,
+    baseUrl: "",
+    name: honoInstanceName,
+    fileName: resourceManager.asRelativePath(node.getSourceFile().fileName),
+    position,
+    entries: [],
+    library: "zod-openapi" as const,
+    modules: new Set<ModuleReferenceId>(),
+    sources: new Set<SourceReferenceId>(),
+  };
+
+  const current = resourceManager.createRouteTree(params);
+  if (declaration.initializer && ts.isCallExpression(declaration.initializer)) {
+    handleInitializerCallExpression(declaration.initializer, current, context);
+  }
+
+  const references = (
+    service.getReferencesAtPosition(fileName, position) ?? []
+  ).filter(
+    (reference) =>
+      reference.fileName === fileName && reference.textSpan.start !== position,
+  );
+
+  for (const entry of references) {
+    followReference(current, entry, context, handleOpenApiHonoMethodCall);
+  }
+}
+
+function handleHonoAppInstance(
+  declaration: TsVariableDeclaration,
+  node: TsNode,
+  fileName: string,
+  context: SearchContext,
+) {
+  const { ts, resourceManager, service } = context;
+  // TODO: use the type information to get the name of the hono instance
+  // TODO: (edge case) handle reassignments of the same variable. It's possible reuse a variable for different hono instances
+  const honoInstanceName = declaration.name.getText();
+  const position = declaration.name.getStart();
+  const params = {
+    type: "ROUTE_TREE" as const,
+    baseUrl: "",
+    name: honoInstanceName,
+    fileName: resourceManager.asRelativePath(node.getSourceFile().fileName),
+    position,
+    entries: [],
+    library: "hono" as const,
+    modules: new Set<ModuleReferenceId>(),
+    sources: new Set<SourceReferenceId>(),
+  };
+
+  const current = resourceManager.createRouteTree(params);
+
+  // TODO: add support for late initialization of the hono instance
+  // What if people do something like:
+  //
+  // ``` ts
+  // let app: Hono;
+  // app = new Hono();
+  // ```
+  //
+  // Or have some other kind of initialization:
+  //
+  // ``` ts
+  // let app: Hono;
+  // app = createApp();
+  // ```
+
+  if (declaration.initializer && ts.isCallExpression(declaration.initializer)) {
+    handleInitializerCallExpression(declaration.initializer, current, context);
+  }
+
+  const references = (
+    service.getReferencesAtPosition(fileName, position) ?? []
+  ).filter(
+    (reference) =>
+      reference.fileName === fileName && reference.textSpan.start !== position,
+  );
+  for (const entry of references) {
+    followReference(current, entry, context, handleHonoMethodCall);
   }
 }
 
@@ -194,7 +262,7 @@ function handleInitializerCallExpression(
   ) {
     const functionBody = functionNode.parent.body;
     functionBody.forEachChild((child) => {
-      visit(child, declarationFileName, context);
+      visitToFindRouteTree(child, declarationFileName, context);
     });
 
     // Now find the return statements in the function body to construct the route tree reference
@@ -232,6 +300,12 @@ function followReference(
   routeTree: RouteTree,
   reference: TsReferenceEntry,
   context: SearchContext,
+  handleMethodCall: (
+    callExpression: TsCallExpression,
+    methodName: string,
+    routeTree: RouteTree,
+    context: SearchContext,
+  ) => void,
 ) {
   const { getFile, ts } = context;
 
@@ -256,6 +330,92 @@ function followReference(
     ts.isCallExpression(callExpression)
   ) {
     const methodName = accessExpression.name.text;
+    handleMethodCall(callExpression, methodName, routeTree, context);
+  }
+}
+// function followHonoAppReference(
+//   routeTree: RouteTree,
+//   reference: TsReferenceEntry,
+//   context: SearchContext,
+// ) {
+//   followReference(routeTree, reference, context, handleHonoMethodCall);
+// }
+
+function handleOpenApiHonoMethodCall(
+  callExpression: TsCallExpression,
+  methodName: string,
+  routeTree: RouteTree,
+  context: SearchContext,
+) {
+  const { ts, resourceManager } = context;
+  if (methodName === "openapi") {
+    const [firstArgument] = callExpression.arguments;
+    if (!firstArgument) {
+      return;
+    }
+
+    if (ts.isIdentifier(firstArgument)) {
+      const symbol = context.checker.getSymbolAtLocation(firstArgument);
+      const declaration = symbol?.valueDeclaration;
+      if (declaration && ts.isVariableDeclaration(declaration)) {
+        const initializer = declaration.initializer;
+        if (!initializer || !ts.isCallExpression(initializer)) {
+          return;
+        }
+
+        const {
+          method,
+          path,
+          sourceReferencesIds = new Set(),
+        } = getOpenApiRouteDetailsFromCallExpression(initializer, context);
+        if (path) {
+          const params: Omit<RouteEntry, "id"> = {
+            type: "ROUTE_ENTRY",
+            fileName: callExpression.getSourceFile().fileName,
+            position: callExpression.getStart(),
+            method: method && isHonoMethod(method) ? method : undefined,
+            path,
+            modules: new Set(),
+            sources: sourceReferencesIds,
+          };
+
+          const entry = resourceManager.createRouteEntry(params);
+
+          // Add the tree node to the list of entries
+          // Later the entry will be filled with source references
+          routeTree.entries.push(entry.id);
+        }
+      }
+    } else if (ts.isCallExpression(firstArgument)) {
+      const {
+        method,
+        path,
+        sourceReferencesIds = new Set(),
+      } = getOpenApiRouteDetailsFromCallExpression(firstArgument, context);
+      if (path) {
+        const params: Omit<RouteEntry, "id"> = {
+          type: "ROUTE_ENTRY",
+          fileName: callExpression.getSourceFile().fileName,
+          position: callExpression.getStart(),
+          method: method && isHonoMethod(method) ? method : undefined,
+          path,
+          modules: new Set(),
+          sources: sourceReferencesIds,
+        };
+
+        const entry = resourceManager.createRouteEntry(params);
+
+        // Add the tree node to the list of entries
+        // Later the entry will be filled with source references
+        routeTree.entries.push(entry.id);
+      }
+    } else {
+      logger.warn(
+        "Unsupported firstArgument",
+        ts.SyntaxKind[firstArgument.kind],
+      );
+    }
+  } else {
     handleHonoMethodCall(callExpression, methodName, routeTree, context);
   }
 }
@@ -293,13 +453,20 @@ function handleHonoMethodCall(
     }
 
     const method = isHonoMethod(methodName) ? methodName : undefined;
+    let path = "";
+
+    if (ts.isStringLiteral(firstArgument)) {
+      path = firstArgument.text;
+    } else if (ts.isTemplateLiteral(firstArgument)) {
+      path = expandTemplateLiteral(firstArgument, context);
+    }
 
     const params: Omit<RouteEntry, "id"> = {
       type: "ROUTE_ENTRY",
       fileName: callExpression.getSourceFile().fileName,
       position: callExpression.getStart(),
       method,
-      path: JSON.parse(firstArgument.getText()),
+      path,
       modules: new Set(),
       sources: new Set(),
     };
@@ -319,6 +486,71 @@ function handleHonoMethodCall(
       }
     }
   }
+}
+
+function expandTemplateLiteral(
+  template: TsNode,
+  context: SearchContext,
+): string {
+  const { ts } = context;
+  let result = "";
+
+  template.forEachChild((child) => {
+    if (
+      ts.isTemplateHead(child) ||
+      ts.isTemplateMiddle(child) ||
+      ts.isTemplateTail(child)
+    ) {
+      result += child.text;
+    } else if (ts.isTemplateSpan(child)) {
+      const expression = child.expression;
+      const value = getExpressionValue(expression, context);
+      result += value;
+      result += child.literal.text;
+    } else if (ts.isExpression(child)) {
+      const value = getExpressionValue(child, context);
+      result += value;
+    }
+  });
+
+  return result;
+}
+
+function getExpressionValue(
+  expression: TsNode,
+  context: SearchContext,
+): string {
+  const { checker, ts } = context;
+  let constantValue: string | number | undefined;
+  if (
+    ts.isPropertyAccessExpression(expression) ||
+    ts.isElementAccessExpression(expression) ||
+    ts.isEnumMember(expression)
+  ) {
+    constantValue = checker.getConstantValue(expression);
+  }
+
+  if (constantValue !== undefined) {
+    return String(constantValue);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    const symbol = checker.getSymbolAtLocation(expression);
+    if (symbol) {
+      const declaration = symbol.valueDeclaration;
+      if (declaration && ts.isVariableDeclaration(declaration)) {
+        const initializer = declaration.initializer;
+        if (initializer) {
+          return getExpressionValue(initializer, context);
+        }
+      }
+    }
+  }
+  if (ts.isStringLiteral(expression)) {
+    return expression.text;
+  }
+
+  return expression.getText();
 }
 
 function handleRoute(
@@ -493,7 +725,6 @@ function analyzeReturnStatement(
     if (ts.isIdentifier(node)) {
       const symbol = checker.getSymbolAtLocation(node);
       const declaration = symbol?.declarations?.[0];
-      // logger.log('declaration', declaration && ts.SyntaxKind[declaration.kind])
       if (declaration && ts.isVariableDeclaration(declaration)) {
         variables.push(declaration);
       }
@@ -510,4 +741,67 @@ function analyzeReturnStatement(
 
 function isAlias(symbol: TsSymbol, context: SearchContext) {
   return symbol.flags === context.ts.SymbolFlags.Alias;
+}
+
+function getOpenApiRouteDetailsFromCallExpression(
+  callExpression: TsCallExpression,
+  context: SearchContext,
+): {
+  method?: string | undefined;
+  path?: string | undefined;
+  sourceReferencesIds?: Set<SourceReferenceId>;
+} {
+  const { ts } = context;
+
+  let rootSourceReference: null | SourceReference = null;
+
+  if (
+    !ts.isIdentifier(callExpression.expression) ||
+    callExpression.expression.text !== "createRoute"
+  ) {
+    logger.warn(
+      "Unsupported call expression for open api route declaration",
+      callExpression.getText(),
+    );
+    return {};
+  }
+
+  const [routeConfig] = callExpression.arguments;
+  if (!routeConfig || !ts.isObjectLiteralExpression(routeConfig)) {
+    logger.warn(
+      "Unsupported route config parameter for open api route declaration",
+      routeConfig?.getText(),
+    );
+    return {};
+  }
+
+  let method: string | undefined;
+  let path: string | undefined;
+
+  for (const property of routeConfig.properties) {
+    if (!ts.isPropertyAssignment(property) || !ts.isIdentifier(property.name)) {
+      continue;
+    }
+
+    const name = property.name.text;
+    if (name === "method" && ts.isStringLiteral(property.initializer)) {
+      method = property.initializer.text;
+    } else if (name === "path" && ts.isStringLiteral(property.initializer)) {
+      path = property.initializer.text;
+    }
+  }
+  rootSourceReference = createSourceReferenceForNode(callExpression, context);
+
+  let sourceReferencesIds: Set<SourceReferenceId>;
+  if (rootSourceReference) {
+    sourceReferencesIds = new Set([rootSourceReference.id]);
+  } else {
+    sourceReferencesIds = new Set();
+  }
+
+  return {
+    method,
+    path,
+    sourceReferencesIds,
+  };
 }

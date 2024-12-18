@@ -7,10 +7,11 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen, useKeySequence } from "@/hooks";
 import { cn } from "@/utils";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { type To, useNavigate } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
+import { AiPromptInput, CommandBar } from "../CommandBar";
 import { RequestPanel } from "../RequestPanel";
 import { RequestorInput } from "../RequestorInput";
 import { ResponsePanel } from "../ResponsePanel";
@@ -24,12 +25,12 @@ import RequestorPageContentBottomPanel from "./RequestorPageContentBottomPanel";
 import { useMostRecentProxiedRequestResponse } from "./useMostRecentProxiedRequestResponse";
 import { getMainSectionWidth } from "./util";
 
-interface RequestorPageContentProps {
+type RequestorPageContentProps = {
   history: ProxiedRequestResponse[];
   historyLoading: boolean;
   overrideTraceId?: string;
   generateNavigation: (traceId: string) => To;
-}
+};
 
 export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   props,
@@ -114,9 +115,24 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
 
   const isLgScreen = useIsLgScreen();
 
-  const { togglePanel, setAIDropdownOpen } = useRequestorStore(
+  const { togglePanel, setAIDropdownOpen, setAiPrompt } = useRequestorStore(
     "togglePanel",
     "setAIDropdownOpen",
+    "setAiPrompt",
+  );
+
+  const [commandBarOpen, setCommandBarOpen] = useState(false);
+  const [aiPromptOpen, setAiPromptOpen] = useState(false);
+
+  useHotkeys(
+    "mod+k",
+    (e) => {
+      e.preventDefault();
+      setCommandBarOpen(true);
+    },
+    {
+      enableOnFormTags: ["input"],
+    },
   );
 
   useHotkeys(
@@ -134,6 +150,21 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
         }
       } else {
         e.preventDefault();
+        setAIDropdownOpen(true);
+      }
+    },
+    {
+      enableOnFormTags: ["input"],
+    },
+  );
+
+  useHotkeys(
+    "mod+shift+g",
+    (e) => {
+      e.preventDefault();
+      if (aiEnabled) {
+        setAiPromptOpen(true);
+      } else {
         setAIDropdownOpen(true);
       }
     },
@@ -225,6 +256,23 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
         "overflow-hidden",
       )}
     >
+      <AiPromptInput
+        open={aiPromptOpen}
+        setOpen={setAiPromptOpen}
+        setAiPrompt={setAiPrompt}
+        onGenerateRequest={(prompt) => {
+          if (aiEnabled && !isLoadingParameters) {
+            toast({
+              duration: 3000,
+              description: prompt
+                ? "Generating request with user instructions"
+                : "Generating request parameters with AI",
+            });
+            fillInRequest();
+          }
+        }}
+      />
+      <CommandBar open={commandBarOpen} setOpen={setCommandBarOpen} />
       <RequestorInput
         onSubmit={onSubmit}
         disconnectWebsocket={disconnectWebsocket}

@@ -134,6 +134,27 @@
       "when": 1731628433547,
       "tag": "0018_exotic_rafael_vega",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1733842096335,
+      "tag": "0019_charming_hulk",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1733842457960,
+      "tag": "0020_misty_siren",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1733842554772,
+      "tag": "0021_woozy_inhumans",
+      "breakpoints": true
     }
   ]
 }

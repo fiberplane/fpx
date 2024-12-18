@@ -13,7 +13,7 @@ const RequestorBodyTypeSchema = z.union([
   RequestorBodyFileTypeSchema,
 ]);
 
-type RequestorBodyType = z.infer<typeof RequestorBodyTypeSchema>;
+export type RequestorBodyType = z.infer<typeof RequestorBodyTypeSchema>;
 
 export const isRequestorBodyType = (
   bodyType: unknown,

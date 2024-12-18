@@ -64,6 +64,7 @@ export async function generateRequestWithAiProvider({
   openApiSpec,
   middleware,
   middlewareContext,
+  prompt,
 }: {
   fpApiKey?: string;
   inferenceConfig: Settings;
@@ -80,7 +81,9 @@ export async function generateRequestWithAiProvider({
     path: string;
   }[];
   middlewareContext?: string;
-}) {
+  prompt?: string;
+  // biome-ignore lint/suspicious/noExplicitAny: TODO: replace the temporary type cast with a proper return type
+}): Promise<{ data: any; error?: { message: string } | null }> {
   const { aiProviderConfigurations, aiProvider } = inferenceConfig;
   const aiEnabled = hasValidAiConfig(inferenceConfig);
   if (!aiEnabled) {
@@ -109,6 +112,7 @@ export async function generateRequestWithAiProvider({
       persona,
       method,
       path,
+      prompt,
     });
   }
 
@@ -166,6 +170,7 @@ Here is some additional context for the handler source code, if you need it:
       openApiSpec,
       middleware,
       middlewareContext,
+      prompt,
     });
 
     const systemPrompt = getSystemPrompt(persona, aiProvider);

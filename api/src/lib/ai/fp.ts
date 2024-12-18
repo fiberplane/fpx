@@ -16,6 +16,7 @@ type GenerateRequestOptions = {
     path: string;
   }[];
   middlewareContext?: string;
+  prompt?: string;
 };
 
 export async function generateRequestWithFp({
@@ -29,7 +30,12 @@ export async function generateRequestWithFp({
   openApiSpec,
   middleware,
   middlewareContext,
-}: GenerateRequestOptions) {
+  prompt,
+}: GenerateRequestOptions): Promise<{
+  // biome-ignore lint/suspicious/noExplicitAny: TODO: replace the temporary type cast with a proper return type
+  data: any;
+  error?: { message: string } | null;
+}> {
   logger.debug(
     "Generating request data with FP",
     `persona: ${persona}`,
@@ -56,8 +62,13 @@ export async function generateRequestWithFp({
       openApiSpec,
       middleware,
       middlewareContext,
+      prompt,
     },
   });
 
-  return response.json();
+  return response.json() as Promise<{
+    // biome-ignore lint/suspicious/noExplicitAny: TODO: replace the temporary type cast with a proper return type
+    data: any;
+    error?: { message: string } | null;
+  }>;
 }

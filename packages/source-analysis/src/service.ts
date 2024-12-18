@@ -7,13 +7,14 @@ import type {
   TsCompilerOptions,
   TsISnapShot,
   TsLanguageServiceHost,
-  TsType,
+  TsPackageType,
 } from "./types";
+
 const relativeResolve = relative.sync;
 
 export function getParsedTsConfig(
   location: string,
-  ts: TsType,
+  ts: TsPackageType,
 ): ConfigFileContent {
   const configPath = ts.findConfigFile(
     location,
@@ -38,7 +39,10 @@ export function getParsedTsConfig(
   };
 }
 
-export function getOptions(location: string, ts: TsType): TsCompilerOptions {
+export function getOptions(
+  location: string,
+  ts: TsPackageType,
+): TsCompilerOptions {
   const { options } = getParsedTsConfig(location, ts);
   if (!options.baseUrl) {
     options.baseUrl = location;
@@ -81,7 +85,7 @@ export function startServer(params: {
   getScriptSnapshot: (fileName: string) => TsISnapShot | undefined;
   location: string;
   readFile: (fileName: string) => string | undefined;
-  ts: TsType;
+  ts: TsPackageType;
 }) {
   const {
     directoryExists,

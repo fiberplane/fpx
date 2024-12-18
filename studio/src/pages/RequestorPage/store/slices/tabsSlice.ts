@@ -1,10 +1,12 @@
 import type { StateCreator } from "zustand";
 import type { RequestsPanelTab, ResponsePanelTab } from "..";
-import type { TabsSlice } from "./types";
+import type { Store, TabsSlice } from "./types";
 
 export const tabsSlice: StateCreator<
-  TabsSlice,
-  [["zustand/immer", never], ["zustand/devtools", never]]
+  Store,
+  [["zustand/immer", never], ["zustand/devtools", never]],
+  [],
+  TabsSlice
 > = (set) => ({
   activeRequestsPanelTab: "params",
   visibleRequestsPanelTabs: ["params", "headers"],
@@ -27,7 +29,7 @@ export const tabsSlice: StateCreator<
 
 // Helper functions
 function isRequestsPanelTab(tab: string): tab is RequestsPanelTab {
-  return ["params", "headers", "body", "websocket"].includes(tab);
+  return ["params", "headers", "body", "docs", "websocket"].includes(tab);
 }
 
 function isResponsePanelTab(tab: string): tab is ResponsePanelTab {

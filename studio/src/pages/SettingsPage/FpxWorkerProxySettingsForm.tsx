@@ -63,30 +63,28 @@ export function FpxWorkerProxySettingsForm({
                     </FormControl>
                   </div>
                   {field.value && (
-                    <>
-                      <FormField
-                        control={form.control}
-                        name="fpxWorkerProxy.baseUrl"
-                        render={({ field }) => (
-                          <div className="flex flex-col gap-1">
-                            <FormLabel className="block font-normal text-sm text-gray-300">
-                              Base URL
-                            </FormLabel>
-                            <FormDescription className="mb-1">
-                              You can configure the base URL used by the
-                              Cloudflare Worker Trace Ingestion service.
-                            </FormDescription>
-                            <FormControl>
-                              <Input
-                                placeholder={field.value ?? ""}
-                                value={field.value ?? ""}
-                                onChange={field.onChange}
-                              />
-                            </FormControl>
-                          </div>
-                        )}
-                      />
-                    </>
+                    <FormField
+                      control={form.control}
+                      name="fpxWorkerProxy.baseUrl"
+                      render={({ field }) => (
+                        <div className="flex flex-col gap-1">
+                          <FormLabel className="block font-normal text-sm text-gray-300">
+                            Base URL
+                          </FormLabel>
+                          <FormDescription className="mb-1">
+                            You can configure the base URL used by the
+                            Cloudflare Worker Trace Ingestion service.
+                          </FormDescription>
+                          <FormControl>
+                            <Input
+                              placeholder={field.value ?? ""}
+                              value={field.value ?? ""}
+                              onChange={field.onChange}
+                            />
+                          </FormControl>
+                        </div>
+                      )}
+                    />
                   )}
                 </FormItem>
               )}

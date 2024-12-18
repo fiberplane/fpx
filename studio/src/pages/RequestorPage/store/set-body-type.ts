@@ -20,6 +20,7 @@ export function setBodyTypeInState(
 ): void {
   const oldBodyValue = state.body.value;
   const oldBodyType = state.body.type;
+
   // Handle the case where the body type is the same, but the multipart flag is different
   if (oldBodyType === newBodyType) {
     // HACK - Refactor
@@ -58,6 +59,5 @@ export function setBodyTypeInState(
   const isNonTextOldBody =
     Array.isArray(oldBodyValue) || oldBodyValue instanceof File;
   const newBodyValue = isNonTextOldBody ? "" : oldBodyValue;
-
   state.body = { type: newBodyType, value: newBodyValue }; //,
 }

@@ -4,13 +4,13 @@ name: Build node packages
 on:
   pull_request:
     branches: ["*"]
-    paths: 
+    paths:
       - "api/**"
       - "packages/client-library-otel/**"
       - "studio/**"
   push:
     branches: ["main", "release-*"]
-    paths: 
+    paths:
       - "api/**"
       - "packages/client-library-otel/**"
       - "studio/**"
@@ -30,7 +30,6 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
           run_install: false
 
       - name: Setup Node.js
@@ -42,7 +41,7 @@ jobs:
       - name: Setup Biome
         uses: biomejs/setup-biome@v2
         with:
-          version: 1.8.3
+          version: 1.9.4
 
       - name: Install dependencies
         run: pnpm install
