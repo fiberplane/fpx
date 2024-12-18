@@ -13,7 +13,7 @@ export function AddToRouteForm(props: Props) {
   // No active route? Then there's nothing to do here
   if (!activeRoute) {
     console.warn("No active route");
-    return null;
+    return <div>No matching route found</div>;
   }
 
   if (isLoading || !collections) {
