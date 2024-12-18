@@ -17,11 +17,18 @@ export function AddToRouteForm(props: Props) {
   }
 
   if (isLoading || !collections) {
-    return <div>Loading...</div>;
+    return <div>Loading collections...</div>;
   }
 
   if (collections.length === 0) {
-    return <div>Empty</div>;
+    return (
+      <div className="flex flex-col items-center justify-center gap-2">
+        <p className="text-md text-muted-foreground">No Collections Found</p>
+        <p className="text-sm text-gray-200">
+          Create a collection to start grouping requests.
+        </p>
+      </div>
+    );
   }
 
   return (
