@@ -75,7 +75,7 @@ export function CreateCollection() {
           className="bg-slate-900 px-2 py-1.5 text-white flex gap-1.5"
           align="end"
         >
-          Create a new group
+          Create collection
           <div className="flex gap-0.5">
             <KeyboardShortcutKey>C</KeyboardShortcutKey>
           </div>

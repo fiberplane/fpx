@@ -41,12 +41,12 @@ export function NamingRouteForm(props: Props) {
   return (
     <form className="grid gap-4" onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-2">
-        <DialogTitle className="text-md text-muted-foreground text-center">
-          Custom route name
+        <DialogTitle className="text-md text-muted-foreground">
+          Request Name
         </DialogTitle>
-        <DialogDescription>
-          You can (optionally) customize the name this specific combination of
-          route and parameters;
+        <DialogDescription className="text-sm text-gray-200">
+          You can (optionally) customize the name of this specific combination
+          of route and parameters.
         </DialogDescription>
         {error && (
           <p className="text-sm text-destructive-foreground">{error.message}</p>
@@ -54,7 +54,7 @@ export function NamingRouteForm(props: Props) {
       </div>
       <div className="space-y-2">
         <Label className="text-sm text-muted-foreground" htmlFor="name">
-          Name
+          Name (optional)
         </Label>
         <Input
           {...register("name")}
