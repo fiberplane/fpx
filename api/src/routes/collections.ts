@@ -285,10 +285,13 @@ async function updateCollectionItemOrder(
       eq(collectionItems.collectionId, collectionId),
     );
 
-    const position = newPosition < totalItems ? newPosition : totalItems - 1;
+    // NOTE - We clamp the position to the total items - 1 to avoid out of bounds errors
+    //        This allows us to use sentinel values for the position to do operations like "Move to bottom"
+    const clampedPosition =
+      newPosition < totalItems ? newPosition : totalItems - 1;
 
     // Update positions of other items
-    if (position > currentPosition) {
+    if (clampedPosition > currentPosition) {
       await db
         .update(collectionItems)
         .set({ position: sql`position - 1` })
@@ -296,10 +299,10 @@ async function updateCollectionItemOrder(
           and(
             eq(collectionItems.collectionId, collectionId),
             gt(collectionItems.position, currentPosition),
-            lte(collectionItems.position, position),
+            lte(collectionItems.position, clampedPosition),
           ),
         );
-    } else if (position < currentPosition) {
+    } else if (clampedPosition < currentPosition) {
       await db
         .update(collectionItems)
         .set({ position: sql`position + 1` })
@@ -315,7 +318,7 @@ async function updateCollectionItemOrder(
     // Update the position of the item
     await db
       .update(collectionItems)
-      .set({ position: newPosition })
+      .set({ position: clampedPosition })
       .where(eq(collectionItems.id, itemId));
   });
 }
