@@ -5,11 +5,19 @@ import {
   usePanelConstraints,
 } from "@/components/ui/resizable";
 import { useToast } from "@/components/ui/use-toast";
-import { useIsLgScreen, useKeySequence } from "@/hooks";
+import {
+  useActiveCollectionId,
+  useActiveCollectionItemId,
+  useActiveTraceId,
+  useIsLgScreen,
+  useKeySequence,
+  useLatest,
+} from "@/hooks";
+import type { CollectionItem } from "@/queries/collections";
 import { cn } from "@/utils";
 import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { type To, useNavigate } from "react-router-dom";
+import type { To } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
 import { AiPromptInput, CommandBar } from "../CommandBar";
 import { RequestPanel } from "../RequestPanel";
@@ -17,8 +25,10 @@ import { RequestorInput } from "../RequestorInput";
 import { ResponsePanel } from "../ResponsePanel";
 import { useAi } from "../ai";
 import { type ProxiedRequestResponse, useMakeProxiedRequest } from "../queries";
-import { useRequestorStore, useRequestorStoreRaw } from "../store";
+import { useStudioStoreRaw } from "../store";
+import { useStudioStore } from "../store";
 import { BACKGROUND_LAYER } from "../styles";
+import type { ProbedRoute } from "../types";
 import { useMakeWebsocketRequest } from "../useMakeWebsocketRequest";
 import { useRequestorSubmitHandler } from "../useRequestorSubmitHandler";
 import RequestorPageContentBottomPanel from "./RequestorPageContentBottomPanel";
@@ -32,11 +42,92 @@ type RequestorPageContentProps = {
   generateNavigation: (traceId: string) => To;
 };
 
+/**
+ * Gets the collection item for the current route (if applicable)
+ */
+function useCollectionItem():
+  | { collectionItem: CollectionItem; appRoute: ProbedRoute }
+  | undefined {
+  const collectionId = useActiveCollectionId();
+  const itemId = useActiveCollectionItemId();
+
+  const { collections, appRoutes } = useStudioStore("collections", "appRoutes");
+
+  if (itemId === null || collectionId === null) {
+    return;
+  }
+
+  const collection = collections.find((item) => item.id === collectionId);
+  const collectionItem = collection?.collectionItems.find(
+    (element) => element.id === itemId,
+  );
+  const appRoute = appRoutes.find(
+    (route) => route.id === collectionItem?.appRouteId,
+  );
+
+  if (!collectionItem || !appRoute) {
+    return;
+  }
+
+  return {
+    collectionItem,
+    appRoute,
+  };
+}
+
 export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   props,
 ) => {
   const { history, overrideTraceId, historyLoading, generateNavigation } =
     props;
+
+  const activeTraceId = useActiveTraceId();
+  const item = history.find((element) => getId(element) === activeTraceId);
+
+  const {
+    togglePanel,
+    setAIDropdownOpen,
+    setAiPrompt,
+    setRequestParams,
+    updateMethod,
+  } = useStudioStore(
+    "togglePanel",
+    "setAIDropdownOpen",
+    "setAiPrompt",
+    "setRequestParams",
+    "updateMethod",
+  );
+
+  const { collectionItem, appRoute } = useCollectionItem() ?? {};
+  const itemId = collectionItem?.id;
+  const collectionItemRef = useLatest<CollectionItem | undefined>(
+    collectionItem,
+  );
+  const appRouteRef = useLatest<ProbedRoute | undefined>(appRoute);
+
+  useEffect(() => {
+    if (itemId === null || !collectionItemRef.current || !appRouteRef.current) {
+      return;
+    }
+    const { id, appRouteId, ...extraParams } = collectionItemRef.current;
+
+    // const {}
+    setRequestParams({
+      ...extraParams,
+      requestUrl: `http://localhost:8787${appRouteRef.current.path}`,
+      requestMethod: appRouteRef.current.method,
+      requestRoute: appRouteId.toString(),
+    });
+    updateMethod(appRouteRef.current.method);
+  }, [itemId, collectionItemRef, appRouteRef, setRequestParams, updateMethod]);
+
+  useEffect(() => {
+    if (!item) {
+      return;
+    }
+
+    setRequestParams(item.app_requests);
+  }, [item, setRequestParams]);
 
   const { toast } = useToast();
 
@@ -48,26 +139,6 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   const traceId =
     overrideTraceId ??
     mostRecentProxiedRequestResponseForRoute?.app_responses?.traceId;
-
-  const { setActiveHistoryResponseTraceId, activeHistoryResponseTraceId } =
-    useRequestorStore(
-      "setActiveHistoryResponseTraceId",
-      "activeHistoryResponseTraceId",
-    );
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (traceId && traceId !== activeHistoryResponseTraceId) {
-      setActiveHistoryResponseTraceId(traceId);
-      navigate(generateNavigation(traceId), { replace: true });
-    }
-  }, [
-    traceId,
-    activeHistoryResponseTraceId,
-    generateNavigation,
-    navigate,
-    setActiveHistoryResponseTraceId,
-  ]);
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
     useMakeProxiedRequest();
@@ -114,12 +185,6 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   } = useAi(history);
 
   const isLgScreen = useIsLgScreen();
-
-  const { togglePanel, setAIDropdownOpen, setAiPrompt } = useRequestorStore(
-    "togglePanel",
-    "setAIDropdownOpen",
-    "setAiPrompt",
-  );
 
   const [commandBarOpen, setCommandBarOpen] = useState(false);
   const [aiPromptOpen, setAiPromptOpen] = useState(false);
@@ -234,7 +299,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
       dimension: "width",
     });
 
-  const bottomPanelVisible = useRequestorStoreRaw(
+  const bottomPanelVisible = useStudioStoreRaw(
     useShallow((state) => {
       return state.bottomPanelIndex !== undefined;
     }),
@@ -338,4 +403,8 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
       </ResizablePanelGroup>
     </div>
   );
+};
+
+const getId = (item: ProxiedRequestResponse) => {
+  return item.app_responses?.traceId || item.app_requests.id.toString();
 };

@@ -5,14 +5,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { FP_SERVICES_LOGIN_URL } from "@/constants";
-import { useRequestorStore } from "@/pages/RequestorPage/store";
+import { useStudioStore } from "@/pages/RequestorPage/store";
 import { useUserInfo } from "@/queries";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react";
 
 export function LoggedInUser() {
   const user = useUserInfo();
-  const { setSettingsOpen } = useRequestorStore("setSettingsOpen");
+  const { setSettingsOpen } = useStudioStore("setSettingsOpen");
   if (!user) {
     return (
       <div className="text-xs flex items-center border-l pl-2">

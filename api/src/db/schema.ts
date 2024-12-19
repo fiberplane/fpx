@@ -175,3 +175,60 @@ export const aiRequestLogs = sqliteTable("ai_request_logs", {
   log: text("log", { mode: "json" }).notNull(),
   createdAt: timestamps.createdAt,
 });
+
+export const collections = sqliteTable("collections", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  name: text("name").notNull().unique(),
+  ...timestamps,
+});
+
+export const newCollectionSchema = createInsertSchema(collections);
+export const selectCollectionSchema = createSelectSchema(collections);
+
+export type Collection = z.infer<typeof selectCollectionSchema>;
+export type NewCollection = z.infer<typeof newCollectionSchema>;
+
+// Define the app route -> collection relationship and store parameters
+export const collectionItems = sqliteTable("collection_items", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  collectionId: integer("collection_id")
+    .references(() => collections.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  appRouteId: integer("app_route_id")
+    .references(() => appRoutes.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  requestHeaders: text("request_headers", { mode: "json" }).$type<
+    Record<string, string>
+  >(),
+  requestQueryParams: text("request_query_params", { mode: "json" }),
+  requestPathParams: text("request_path_params", { mode: "json" }),
+  requestBody: text("request_body", { mode: "json" }),
+  name: text("name"),
+  position: integer("position").notNull(),
+});
+
+export const appRoutesRelations = relations(appRoutes, ({ many }) => ({
+  collectionItems: many(collectionItems),
+}));
+
+export const collectionRelations = relations(collections, ({ many }) => ({
+  collectionItems: many(collectionItems),
+}));
+
+export const collectionItemsRelations = relations(
+  collectionItems,
+  ({ one }) => ({
+    collection: one(collections, {
+      fields: [collectionItems.collectionId],
+      references: [collections.id],
+    }),
+    appRoute: one(appRoutes, {
+      fields: [collectionItems.appRouteId],
+      references: [appRoutes.id],
+    }),
+  }),
+);

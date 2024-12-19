@@ -1,6 +1,6 @@
 import { enforceFormDataTerminalDraftParameter } from "../FormDataForm";
+import type { RequestorBodyType } from "./request-body";
 import type { RequestResponseSlice } from "./slices/types";
-import type { RequestBodyType } from "./types";
 
 /**
  * This reducer is responsible for setting the body type of the request.
@@ -14,7 +14,7 @@ export function setBodyTypeInState(
     type: newBodyType,
     isMultipart,
   }: {
-    type: RequestBodyType;
+    type: RequestorBodyType;
     isMultipart?: boolean;
   },
 ): void {

@@ -1,7 +1,5 @@
-import type {
-  ChangeKeyValueParametersHandler,
-  KeyValueParameter,
-} from "../../KeyValueForm/types";
+import type { ChangeKeyValueParametersHandler } from "../../KeyValueForm/types";
+import type { KeyValueParameter } from "../../store";
 
 /**
  * Return a function to immutably update an element of a {@link KeyValueParameter[]} with a new `value` property.

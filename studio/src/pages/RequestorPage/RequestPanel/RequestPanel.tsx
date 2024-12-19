@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { cn } from "@/utils";
+import { cn, createObjectFromKeyValueParameters } from "@/utils";
 import { EraserIcon, InfoCircledIcon } from "@radix-ui/react-icons";
 import { type Dispatch, type SetStateAction, memo, useMemo } from "react";
 import { FormDataForm } from "../FormDataForm";
@@ -20,7 +20,10 @@ import {
   CodeMirrorJsonEditor,
   CodeMirrorTextEditor,
 } from "@/components/CodeMirrorEditor";
-import { useRequestorStore } from "../store";
+import { useActiveCollectionId, useActiveCollectionItemId } from "@/hooks";
+import { useUpdateCollectionItem } from "@/queries/collections";
+import type { CollectionItemParams } from "@fiberplane/fpx-types";
+import { useStudioStore } from "../store";
 import { RouteDocumentation } from "./RouteDocumentation/RouteDocumentation";
 import { isOpenApiOperation } from "./RouteDocumentation/openapi";
 
@@ -74,7 +77,7 @@ export const RequestPanel = memo(function RequestPanel(
     setWebsocketMessage,
     visibleRequestsPanelTabs,
     activeRoute,
-  } = useRequestorStore(
+  } = useStudioStore(
     "path",
     "body",
     "method",
@@ -110,6 +113,22 @@ export const RequestPanel = memo(function RequestPanel(
     }
   }, [activeRoute?.openApiSpec]);
   const shouldShowDocs = isOpenApiOperation(openApiSpec);
+
+  const collectionId = useActiveCollectionId() ?? null;
+  const collectionItemId = useActiveCollectionItemId() ?? null;
+
+  const { mutate: syncCollectionItem } = useUpdateCollectionItem();
+  const updateCollectionItem = (nullableExtraParams: CollectionItemParams) => {
+    if (collectionId === null || collectionItemId === null) {
+      return;
+    }
+
+    return syncCollectionItem({
+      collectionId,
+      itemId: collectionItemId,
+      extraParams: nullableExtraParams,
+    });
+  };
 
   return (
     <Tabs
@@ -185,6 +204,9 @@ export const RequestPanel = memo(function RequestPanel(
           title="Query"
           handleClearData={() => {
             setQueryParams([]);
+            updateCollectionItem({
+              requestQueryParams: createObjectFromKeyValueParameters([]),
+            });
           }}
         />
         <KeyValueForm
@@ -192,6 +214,9 @@ export const RequestPanel = memo(function RequestPanel(
           keyValueParameters={queryParams}
           onChange={(params) => {
             setQueryParams(params);
+            updateCollectionItem({
+              requestQueryParams: createObjectFromKeyValueParameters(params),
+            });
           }}
           onSubmit={onSubmit}
         />
@@ -207,6 +232,9 @@ export const RequestPanel = memo(function RequestPanel(
               keyValueParameters={pathParams}
               onChange={(params) => {
                 setPathParams(params);
+                updateCollectionItem({
+                  requestPathParams: createObjectFromKeyValueParameters(params),
+                });
               }}
               onSubmit={onSubmit}
             />
@@ -223,6 +251,9 @@ export const RequestPanel = memo(function RequestPanel(
           title="Request Headers"
           handleClearData={() => {
             setRequestHeaders([]);
+            updateCollectionItem({
+              requestHeaders: createObjectFromKeyValueParameters([]),
+            });
           }}
         />
         <KeyValueForm
@@ -230,6 +261,9 @@ export const RequestPanel = memo(function RequestPanel(
           keyValueParameters={requestHeaders}
           onChange={(headers) => {
             setRequestHeaders(headers);
+            updateCollectionItem({
+              requestHeaders: createObjectFromKeyValueParameters(headers),
+            });
           }}
           onSubmit={onSubmit}
           keyInputType="header-key"
@@ -266,9 +300,13 @@ export const RequestPanel = memo(function RequestPanel(
           )}
           {body.type === "json" && (
             <CodeMirrorJsonEditor
-              onChange={(bodyValue) =>
-                setBody({ type: "json", value: bodyValue })
-              }
+              onChange={(bodyValue) => {
+                const requestBody = { type: "json" as const, value: bodyValue };
+                setBody(requestBody);
+                updateCollectionItem({
+                  requestBody: requestBody,
+                });
+              }}
               value={body.value}
               maxHeight="800px"
               onSubmit={onSubmit}
@@ -278,10 +316,14 @@ export const RequestPanel = memo(function RequestPanel(
             <FormDataForm
               keyValueParameters={body.value}
               onChange={(params) => {
-                setBody({
-                  type: "form-data",
+                const requestBody = {
+                  type: "form-data" as const,
                   isMultipart: body.isMultipart,
                   value: params,
+                };
+                setBody(requestBody);
+                updateCollectionItem({
+                  requestBody: requestBody,
                 });
               }}
               onSubmit={onSubmit}
@@ -291,9 +333,13 @@ export const RequestPanel = memo(function RequestPanel(
             <FileUploadForm
               file={body.value}
               onChange={(file) => {
-                setBody({
-                  type: "file",
+                const requestBody = {
+                  type: "file" as const,
                   value: file,
+                };
+                setBody(requestBody);
+                updateCollectionItem({
+                  requestBody: requestBody,
                 });
               }}
             />

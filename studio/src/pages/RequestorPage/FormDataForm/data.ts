@@ -210,7 +210,7 @@ export const enforceSingleTerminalDraftParameter = (
 };
 
 /**
- * Helper to immutabily add a {@link DraftFormDataParameter} to the end of an array.
+ * Helper to immutably add a {@link DraftFormDataParameter} to the end of an array.
  */
 const concatDraftParameter = (parameters: FormDataParameter[]) => {
   const DRAFT_PARAMETER: DraftFormDataParameter = {
