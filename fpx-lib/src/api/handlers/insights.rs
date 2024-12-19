@@ -115,9 +115,7 @@ impl Buckets {
     }
 
     pub fn ingest_request(&mut self, timestamp: &OffsetDateTime, is_successful: bool) {
-        // TODO: support
-        // search for the bucket, increment by 1
-
+        // TODO: support success/failed
         let boundary: OffsetDateTime = {
             self.boundaries
                 .iter()
@@ -126,10 +124,22 @@ impl Buckets {
                 .expect("no boundary found")
                 .clone()
         };
+
         self.buckets.entry(boundary).and_modify(|entry| *entry += 1);
     }
 
     pub fn to_datapoints(self) -> Vec<DataPoint> {
-        todo!()
+        let mut result = Vec::with_capacity(self.boundaries.len());
+
+        for boundary in self.boundaries {
+            let total_requests = self.buckets[&boundary];
+            result.push(DataPoint {
+                timestamp: boundary,
+                total_requests: total_requests as u32,
+                failed_requests: 0,
+            });
+        }
+
+        result
     }
 }

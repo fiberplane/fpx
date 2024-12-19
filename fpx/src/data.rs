@@ -223,6 +223,13 @@ impl Store for LibsqlStore {
         &self,
         _tx: &Transaction,
     ) -> Result<Vec<fpx_lib::data::models::Span>> {
-        todo!()
+        let rows = self
+            .connection
+            .query("SELECT * FROM spans;", params!())
+            .await?
+            .fetch_all()
+            .await?;
+
+        Ok(rows)
     }
 }
