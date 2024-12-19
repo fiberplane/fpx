@@ -1,11 +1,7 @@
-import { TrendingUp } from "lucide-react";
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
-
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -15,14 +11,15 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
 const chartData = [
-  { month: "January", success: 186, failed: 44 },
-  { month: "February", success: 305, failed: 230 },
-  { month: "March", success: 237, failed: 120 },
-  { month: "April", success: 73, failed: 10 },
-  { month: "May", success: 209, failed: 414 },
-  { month: "June", success: 214, failed: 8 },
+  { month: "January", successful: 186, failed: 44 },
+  { month: "February", successful: 305, failed: 230 },
+  { month: "March", successful: 237, failed: 120 },
+  { month: "April", successful: 73, failed: 10 },
+  { month: "May", successful: 209, failed: 414 },
+  { month: "June", successful: 214, failed: 8 },
 ];
 
 const chartConfig = {
@@ -30,7 +27,7 @@ const chartConfig = {
     label: "Failed",
     color: "hsl(var(--chart-5))",
   },
-  success: {
+  successful: {
     label: "Successful",
     color: "hsl(var(--chart-2))",
   },
@@ -40,7 +37,7 @@ export function Chart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Line Chart</CardTitle>
+        <CardTitle>Requests</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
       <CardContent>
@@ -66,9 +63,9 @@ export function Chart() {
               content={<ChartTooltipContent hideLabel />}
             />
             <Line
-              dataKey="success"
+              dataKey="successful"
               type="natural"
-              stroke="var(--color-success)"
+              stroke="var(--color-successful)"
               strokeWidth={2}
               dot={false}
             />
@@ -82,14 +79,6 @@ export function Chart() {
           </LineChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter>
     </Card>
   );
 }

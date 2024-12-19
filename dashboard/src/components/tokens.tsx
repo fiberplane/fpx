@@ -1,5 +1,6 @@
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, HeartPulse, PauseIcon } from "lucide-react";
 import { Line, LineChart } from "recharts";
+import { TimeAgo } from "./time-ago";
 import { Button } from "./ui/button";
 import {
   type ChartConfig,
@@ -23,20 +24,27 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
+import { add, differenceInMinutes } from "date-fns";
+import { Tooltip, TooltipContent, TooltipProvider } from "./ui/tooltip";
+import { TooltipTrigger } from "@radix-ui/react-tooltip";
 
 const chartData = [
-  { month: "January", requests: 186 },
-  { month: "February", requests: 305 },
-  { month: "March", requests: 237 },
-  { month: "April", requests: 73 },
-  { month: "May", requests: 209 },
-  { month: "June", requests: 214 },
+  { month: "January", successful: 186, failed: 20 },
+  { month: "February", successful: 305, failed: 20 },
+  { month: "March", successful: 237, failed: 28 },
+  { month: "April", successful: 73, failed: 50 },
+  { month: "May", successful: 209, failed: 50 },
+  { month: "June", successful: 214, failed: 128 },
 ];
 
 const chartConfig = {
-  requests: {
-    label: "Requests",
+  successful: {
+    label: "Successful",
     color: "hsl(var(--chart-2))",
+  },
+  failed: {
+    label: "Failed",
+    color: "hsl(var(--chart-5))",
   },
 } satisfies ChartConfig;
 
@@ -53,12 +61,19 @@ export function Tokens() {
       </TableHeader>
       <TableBody>
         {new Array(20).fill(false).map((_, index) => {
+          const date = add(new Date(), { minutes: -10 });
+
           return (
             <TableRow key={index}>
               <TableCell>
                 <span>j.doe@example.com</span>
               </TableCell>
-              <TableCell className="text-right">2 hours ago</TableCell>
+              <TableCell className="text-right">
+                <span className="inline-flex gap-4 justify-items-end items-center">
+                  <ActivityIcon date={date} />
+                  <TimeAgo date={date.toISOString()} />
+                </span>
+              </TableCell>
               <TableCell className="text-right">
                 <div className="ml-auto max-w-16">
                   <ChartContainer config={chartConfig}>
@@ -75,9 +90,16 @@ export function Tokens() {
                         content={<ChartTooltipContent hideLabel />}
                       />
                       <Line
-                        dataKey="requests"
+                        dataKey="successful"
                         type="natural"
-                        stroke="var(--color-requests)"
+                        stroke="var(--color-successful)"
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                      <Line
+                        dataKey="failed"
+                        type="natural"
+                        stroke="var(--color-failed)"
                         strokeWidth={2}
                         dot={false}
                       />
@@ -105,5 +127,42 @@ export function Tokens() {
         })}
       </TableBody>
     </Table>
+  );
+}
+
+function ActivityIcon({ date }: { date: Date }) {
+  const diff = differenceInMinutes(new Date(), date);
+
+  const containerClassName = "bg-muted -m-2 p-1";
+  const iconClassName = "w-4 h-4";
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        {diff > 30 ? (
+          <>
+            <TooltipTrigger asChild>
+              <div className={containerClassName}>
+                <PauseIcon className={iconClassName} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Stale</p>
+            </TooltipContent>
+          </>
+        ) : (
+          <>
+            <TooltipTrigger asChild>
+              <div className={containerClassName}>
+                <HeartPulse className={iconClassName} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Active</p>
+            </TooltipContent>
+          </>
+        )}
+      </Tooltip>
+    </TooltipProvider>
   );
 }
