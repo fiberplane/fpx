@@ -47,10 +47,13 @@ export const NavItem = memo(({ collection }: NavItemProps) => {
         className={cn(
           "flex gap-2 hover:bg-muted px-2 py-1 rounded cursor-pointer items-center",
           "focus:outline-none",
+          "m-[1px]", // Add margin to accommodate focus ring
+          "relative",
+          "overflow-visible", // Ensure focus ring isn't clipped
           {
             "bg-muted": isSelected,
             "hover:bg-muted": !isSelected,
-            "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-25":
+            "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-50":
               isSelected,
           },
         )}
@@ -58,7 +61,15 @@ export const NavItem = memo(({ collection }: NavItemProps) => {
         id={`item-${collection.id.toString()}`}
       >
         <Icon icon="lucide:folder" className="w-4 h-4 text-gray-400 stroke-1" />
-        <div className="flex-1 text-nowrap text-ellipsis overflow-hidden text-muted-foreground">
+        <div
+          className={cn(
+            "flex-1 text-nowrap text-ellipsis overflow-hidden text-sm",
+            {
+              "text-gray-400": !isSelected,
+              "text-gray-300": isSelected,
+            },
+          )}
+        >
           {collection.name}
         </div>
       </Link>
