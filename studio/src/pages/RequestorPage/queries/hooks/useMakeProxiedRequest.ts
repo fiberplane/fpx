@@ -35,6 +35,9 @@ export function useMakeProxiedRequest() {
     },
     onError: () => {
       // Make sure the response panel is cleared of data
+      console.error(
+        "Error in makeProxiedRequest - setting active response to null",
+      );
       setActiveResponse(null);
     },
   });

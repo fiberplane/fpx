@@ -204,17 +204,15 @@ export const requestResponseSlice: StateCreator<
   removeServiceUrlFromPath: (path: string) =>
     removeBaseUrl(get().serviceBaseUrl, path),
 
-  activeHistoryResponseTraceId: null,
   activeResponse: null,
   showResponseBodyFromHistory: (traceId) =>
     set((state) => {
-      // state.activeHistoryResponseTraceId = traceId;
-
       // Recall that an 'active response' is one for which we will have the body we received from the service
       // This means it can contain binary data, whereas the history response will not
       // We should prefer to keep the active response as response to render, so long as its traceId matches the current history response traceId
       const activeTraceId = state.activeResponse?.traceId;
       if (!activeTraceId || activeTraceId !== traceId) {
+        console.debug("Trace id mismatch, Setting active response to null");
         state.activeResponse = null;
       }
     }),
