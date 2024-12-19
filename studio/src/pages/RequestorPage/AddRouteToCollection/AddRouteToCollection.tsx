@@ -7,10 +7,16 @@ import {
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { AddToRouteForm } from "./AddToRouteForm";
 
 export function AddRouteToCollection() {
   const [open, setOpen] = useState(false);
+
+  useHotkeys("shift+c", () => {
+    setOpen(true);
+  });
+
   const handleSuccess = useHandler(() => {
     setOpen(false);
   });

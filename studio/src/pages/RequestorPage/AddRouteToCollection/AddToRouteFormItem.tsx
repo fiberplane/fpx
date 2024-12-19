@@ -85,7 +85,7 @@ export function AddToRouteFormItem(props: {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-2 py-1 rounded-lg hover:bg-muted cursor-pointer text-left">
+      <DialogTrigger className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-2 py-1 rounded-lg hover:bg-muted cursor-pointer text-left m-1 focus:ring-2 focus:ring-primary/50 focus-visible:outline-none">
         <Icon icon="lucide:folder" />
         <div>{name}</div>
         <span>+</span>

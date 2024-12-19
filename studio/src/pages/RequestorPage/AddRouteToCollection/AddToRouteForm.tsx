@@ -38,7 +38,7 @@ export function AddToRouteForm(props: Props) {
         Select which collection to add the current request to
       </p>
       <div className="grid min-h-0 gap-2 py-2">
-        <div className="grid gap-2 overflow-auto">
+        <div className="grid gap-0.5 overflow-auto">
           {collections.map((collection) => {
             return (
               <AddToRouteFormItem
