@@ -64,6 +64,7 @@ pub struct InsightsOverviewQuery {
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct InsightsOverviewResponse {
     total_request: u32,
     failed_request: u32,
@@ -83,6 +84,7 @@ impl From<DbError> for ApiServerError<InsightsOverviewError> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DataPoint {
     timestamp: OffsetDateTime,
     total_requests: u32,
