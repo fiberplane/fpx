@@ -1,14 +1,22 @@
 import { useToast } from "@/components/ui/use-toast";
+import { useActiveCollectionId, useActiveCollectionItemId } from "@/hooks";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
-import { errorHasMessage, isJson } from "@/utils";
+import { useUpdateCollectionItem } from "@/queries/collections";
+import {
+  createKeyValueParametersFromValues,
+  createObjectFromKeyValueParameters,
+  errorHasMessage,
+  isJson,
+} from "@/utils";
+import type { CollectionItemParams } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { createFormDataParameter } from "../FormDataForm/data";
-import { createKeyValueParameters } from "../KeyValueForm";
 import type { ProxiedRequestResponse } from "../queries";
 import type { RequestorBody } from "../store";
-import { useRequestorStore, useServiceBaseUrl } from "../store";
+import { useServiceBaseUrl } from "../store";
+import { useStudioStore } from "../store";
 import { isRequestorBodyType } from "../store/request-body";
 import { useAiRequestData } from "./generate-request-data";
 
@@ -31,7 +39,7 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
     activeRoute,
     getMatchingMiddleware,
     currentAiPrompt,
-  } = useRequestorStore(
+  } = useStudioStore(
     "setBody",
     "setQueryParams",
     "updatePath",
@@ -70,6 +78,22 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
       currentAiPrompt,
     );
 
+  const collectionId = useActiveCollectionId() ?? null;
+  const collectionItemId = useActiveCollectionItemId() ?? null;
+
+  const { mutate: syncCollectionItem } = useUpdateCollectionItem();
+  const updateCollectionItem = (nullableExtraParams: CollectionItemParams) => {
+    if (collectionId === null || collectionItemId === null) {
+      return;
+    }
+
+    return syncCollectionItem({
+      collectionId,
+      itemId: collectionItemId,
+      extraParams: nullableExtraParams,
+    });
+  };
+
   const fillInRequest = useHandler(() => {
     generateRequestData().then(({ data, isError, error }) => {
       if (isError) {
@@ -79,7 +103,6 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
           description: errorHasMessage(error)
             ? error?.message
             : "There was a problem with your request.",
-          // action: <ToastAction altText="Try again"> Try again</ ToastAction >,
         });
         return;
       }
@@ -138,12 +161,18 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
         }
 
         setBody(nextBody);
+        updateCollectionItem({
+          requestBody: nextBody,
+        });
       }
 
       // NOTE - We need to be clear on the types here, otherwise this could wreak havoc on our form data
       if (validateKeyValueParamsFromResponse(queryParams)) {
-        const newParameters = createKeyValueParameters(queryParams);
+        const newParameters = createKeyValueParametersFromValues(queryParams);
         setQueryParams(newParameters);
+        updateCollectionItem({
+          requestQueryParams: createObjectFromKeyValueParameters(newParameters),
+        });
       } else {
         // TODO - Should we clear the query params if they are not present in the response?
       }
@@ -160,13 +189,19 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
       // TODO - Validate path params
       if (pathParams) {
         updatePathParamValues(pathParams);
+        updateCollectionItem({
+          requestPathParams: createObjectFromKeyValueParameters(pathParams),
+        });
       } else {
         // TODO - Clear path params if they are not present in the response
       }
 
       if (validateKeyValueParamsFromResponse(headers)) {
-        const newHeaders = createKeyValueParameters(headers);
+        const newHeaders = createKeyValueParametersFromValues(headers);
         setRequestHeaders(newHeaders);
+        updateCollectionItem({
+          requestHeaders: createObjectFromKeyValueParameters(newHeaders),
+        });
       } else {
         // TODO - Clear headers if they are not present in the response?
       }

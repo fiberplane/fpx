@@ -1,0 +1,1 @@
+export { CollectionSection } from "./CollectionSection";

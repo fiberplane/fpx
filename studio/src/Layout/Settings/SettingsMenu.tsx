@@ -1,6 +1,6 @@
 import { FP_SERVICES_LOGIN_URL } from "@/constants";
 import { useLogout, useUserInfo } from "@/queries";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import {
   Menubar,

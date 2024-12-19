@@ -1,8 +1,8 @@
 import type { StateCreator } from "zustand";
-import type { AiState, Store } from "./types";
+import type { AiState, StudioState } from "./types";
 
 export const aiSlice: StateCreator<
-  Store,
+  StudioState,
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   AiState
