@@ -18,7 +18,8 @@ pub async fn insights_overview_handler(
 ) -> Result<Json<InsightsOverviewResponse>, ApiServerError<InsightsOverviewError>> {
     let tx = store.start_readonly_transaction().await?;
 
-    let spans = store.insights_list_all(&tx).await?;
+    let timestamp = OffsetDateTime::now_utc() - Duration::hours(1);
+    let spans = store.insights_list_all(&tx, timestamp.into()).await?;
 
     let total_request = spans.len() as u32;
     let mut failed_request = 0;
@@ -143,5 +144,30 @@ impl Buckets {
         }
 
         result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use time::format_description::well_known::Rfc3339;
+
+    #[test]
+    fn buckets_tests() {
+        let min = OffsetDateTime::parse("2024-01-01T12:00:00+00:00", &Rfc3339).unwrap();
+        let max = OffsetDateTime::parse("2024-01-01T13:00:00+00:00", &Rfc3339).unwrap();
+        let mut buckets = Buckets::new(min, max, 60);
+
+        let d1 = OffsetDateTime::parse("2024-01-01T12:00:30+00:00", &Rfc3339).unwrap();
+        buckets.ingest_request(&d1.into(), true);
+
+        let d2 = OffsetDateTime::parse("2024-01-01T12:00:35+00:00", &Rfc3339).unwrap();
+        buckets.ingest_request(&d2.into(), true);
+
+        let datapoints = buckets.to_datapoints();
+
+        assert_eq!(datapoints.len(), 60);
+        assert_eq!(datapoints[0].total_requests, 2);
+        assert_eq!(datapoints[1].total_requests, 0);
     }
 }

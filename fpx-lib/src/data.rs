@@ -3,6 +3,7 @@ use crate::events::ServerEvents;
 use async_trait::async_trait;
 use std::sync::Arc;
 use thiserror::Error;
+use util::Timestamp;
 
 pub mod models;
 pub mod sql;
@@ -86,5 +87,9 @@ pub trait Store: Send + Sync {
         span_id: &HexEncodedId,
     ) -> Result<Option<u64>>;
 
-    async fn insights_list_all(&self, _tx: &Transaction) -> Result<Vec<models::Span>>;
+    async fn insights_list_all(
+        &self,
+        _tx: &Transaction,
+        newer_then: Timestamp,
+    ) -> Result<Vec<models::Span>>;
 }
