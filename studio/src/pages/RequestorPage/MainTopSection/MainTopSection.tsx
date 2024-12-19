@@ -12,7 +12,7 @@ import { useCrumbs } from "./useCrumbs";
 export function MainTopSection() {
   const crumbs = useCrumbs();
   return (
-    <div className="grid grid-cols-[1fr_auto] mt-0.5 px-4 items-center">
+    <div className="grid grid-cols-[1fr_auto] mt-0.5 px-4 items-center h-6">
       <BreadcrumbList className="text-xs">
         {crumbs.map((crumb, index) => {
           return (
