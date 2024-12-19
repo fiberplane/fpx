@@ -212,7 +212,6 @@ export const requestResponseSlice: StateCreator<
       // We should prefer to keep the active response as response to render, so long as its traceId matches the current history response traceId
       const activeTraceId = state.activeResponse?.traceId;
       if (!activeTraceId || activeTraceId !== traceId) {
-        console.debug("Trace id mismatch, Setting active response to null");
         state.activeResponse = null;
       }
     }),

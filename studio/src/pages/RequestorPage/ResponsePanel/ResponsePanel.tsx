@@ -53,8 +53,6 @@ export const ResponsePanel = memo(function ResponsePanel({
     "setShowViewLogsBanner",
   );
 
-  console.log("activeResponse", activeResponse);
-
   // NOTE - This is kind of annoying so I commented it out for now
   //
   // useEffect(() => {

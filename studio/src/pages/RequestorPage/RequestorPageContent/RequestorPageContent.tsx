@@ -8,7 +8,6 @@ import { useToast } from "@/components/ui/use-toast";
 import {
   useActiveCollectionId,
   useActiveCollectionItemId,
-  useActiveTraceId,
   useIsLgScreen,
   useKeySequence,
   useLatest,
@@ -25,7 +24,7 @@ import { RequestorInput } from "../RequestorInput";
 import { ResponsePanel } from "../ResponsePanel";
 import { useAi } from "../ai";
 import { type ProxiedRequestResponse, useMakeProxiedRequest } from "../queries";
-import { useStudioStoreRaw } from "../store";
+import { useServiceBaseUrl, useStudioStoreRaw } from "../store";
 import { useStudioStore } from "../store";
 import { BACKGROUND_LAYER } from "../styles";
 import type { ProbedRoute } from "../types";
@@ -81,9 +80,6 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   const { history, overrideTraceId, historyLoading, generateNavigation } =
     props;
 
-  const activeTraceId = useActiveTraceId();
-  const item = history.find((element) => getId(element) === activeTraceId);
-
   const {
     togglePanel,
     setAIDropdownOpen,
@@ -99,35 +95,43 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   );
 
   const { collectionItem, appRoute } = useCollectionItem() ?? {};
-  const itemId = collectionItem?.id;
+  const collectionItemId = collectionItem?.id;
   const collectionItemRef = useLatest<CollectionItem | undefined>(
     collectionItem,
   );
   const appRouteRef = useLatest<ProbedRoute | undefined>(appRoute);
 
+  const { addServiceUrlIfBarePath } = useServiceBaseUrl();
+
+  /**
+   * Updates request parameters when a collection item is selected, using its stored
+   * configuration and the associated route's path and method
+   */
   useEffect(() => {
-    if (itemId === null || !collectionItemRef.current || !appRouteRef.current) {
+    if (
+      collectionItemId === null ||
+      !collectionItemRef.current ||
+      !appRouteRef.current
+    ) {
       return;
     }
     const { id, appRouteId, ...extraParams } = collectionItemRef.current;
 
-    // const {}
     setRequestParams({
       ...extraParams,
-      requestUrl: `http://localhost:8787${appRouteRef.current.path}`,
+      requestUrl: addServiceUrlIfBarePath(appRouteRef.current.path),
       requestMethod: appRouteRef.current.method,
       requestRoute: appRouteId.toString(),
     });
     updateMethod(appRouteRef.current.method);
-  }, [itemId, collectionItemRef, appRouteRef, setRequestParams, updateMethod]);
-
-  useEffect(() => {
-    if (!item) {
-      return;
-    }
-
-    setRequestParams(item.app_requests);
-  }, [item, setRequestParams]);
+  }, [
+    addServiceUrlIfBarePath,
+    collectionItemId,
+    collectionItemRef,
+    appRouteRef,
+    setRequestParams,
+    updateMethod,
+  ]);
 
   const { toast } = useToast();
 
