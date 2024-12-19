@@ -85,4 +85,6 @@ pub trait Store: Send + Sync {
         trace_id: &HexEncodedId,
         span_id: &HexEncodedId,
     ) -> Result<Option<u64>>;
+
+    async fn insights_list_all(&self, _tx: &Transaction) -> Result<Vec<models::Span>>;
 }

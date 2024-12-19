@@ -68,6 +68,10 @@ impl Builder {
                 "/v1/traces/:trace_id/spans/:span_id",
                 get(handlers::spans::span_get_handler).delete(handlers::spans::span_delete_handler),
             )
+            .route(
+                "/v1/insights",
+                get(handlers::insights::insights_overview_handler),
+            )
             .with_state(api_state)
             .fallback(StatusCode::NOT_FOUND)
             .layer(OtelTraceLayer::default())

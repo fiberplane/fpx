@@ -150,6 +150,10 @@ impl Timestamp {
     fn fractional_to_nanos(t: f64) -> i128 {
         (t * 1_000_000_000_f64) as i128
     }
+
+    pub fn as_offset_data_time(&self) -> &OffsetDateTime {
+        &self.0
+    }
 }
 
 impl TryFrom<f64> for Timestamp {

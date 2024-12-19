@@ -218,4 +218,11 @@ impl Store for LibsqlStore {
 
         Ok(Some(rows_affected))
     }
+
+    async fn insights_list_all(
+        &self,
+        _tx: &Transaction,
+    ) -> Result<Vec<fpx_lib::data::models::Span>> {
+        todo!()
+    }
 }
