@@ -408,7 +408,3 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     </div>
   );
 };
-
-const getId = (item: ProxiedRequestResponse) => {
-  return item.app_responses?.traceId || item.app_requests.id.toString();
-};
