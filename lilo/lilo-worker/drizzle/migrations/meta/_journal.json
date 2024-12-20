@@ -15,6 +15,20 @@
       "when": 1734026698492,
       "tag": "0001_special_makkari",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1734522137372,
+      "tag": "0002_skinny_doctor_faustus",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1734548234756,
+      "tag": "0003_broken_killraven",
+      "breakpoints": true
     }
   ]
 }

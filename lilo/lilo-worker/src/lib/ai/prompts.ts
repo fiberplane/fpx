@@ -11,7 +11,7 @@ possibly by fixing their api or whatever.
 `);
 
 export const STEP_REQUEST_EVALUATION_SYSTEM_PROMPT = cleanPrompt(`
-Your are an intelligent task evaluator whose purpose it is to understand the next step to accomplish in a sequence of steps.
+You are an intelligent task evaluator whose purpose it is to understand the next step to accomplish in a sequence of steps.
 You're provided with the following:
 1. A user's goal, which you are to execute against.
 2. A list of steps to accomplish.

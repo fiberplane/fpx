@@ -52,15 +52,14 @@ export const projects = sqliteTable("projects", {
   ...timestamps,
 });
 
-export const queries = sqliteTable("queries", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => randomUUID()),
-  apiKeyId: text("api_key_id")
-    .notNull()
-    .references(() => apiKeys.id),
-  query: text("query").notNull(),
-  ...timestamps,
+export const prompts = sqliteTable("prompts", {
+  id: text("id").primaryKey(),
+  apiKeyId: text("api_key_id").notNull(),
+  prompt: text("prompt").notNull(),
+  workflowJson: text("workflow_json"),
+  errorMessage: text("error_message"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
 });
 
 export const apiKeys = sqliteTable("api_keys", {
@@ -87,9 +86,9 @@ export const projectsRelations = relations(projects, ({ one }) => ({
   }),
 }));
 
-export const queriesRelations = relations(queries, ({ one }) => ({
+export const promptsRelations = relations(prompts, ({ one }) => ({
   apiKey: one(apiKeys, {
-    fields: [queries.apiKeyId],
+    fields: [prompts.apiKeyId],
     references: [apiKeys.id],
   }),
 }));
@@ -99,5 +98,5 @@ export const apiKeysRelations = relations(apiKeys, ({ one, many }) => ({
     fields: [apiKeys.userId],
     references: [users.id],
   }),
-  queries: many(queries),
+  prompts: many(prompts),
 }));

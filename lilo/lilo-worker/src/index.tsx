@@ -7,11 +7,15 @@ import { internalApiRouter } from "./routes/internal/api";
 import { dashboardAuthRouter } from "./routes/internal/auth";
 import { apiReferenceRouter } from "./routes/reference";
 import type { AppType } from "./types";
+import { cors } from "hono/cors";
 
 const app = new OpenAPIHono<AppType>();
 
 // Add basic request logging
 app.use(logger());
+
+// Add cors
+app.use(cors());
 
 // Set drizzle database on context
 app.use(dbMiddleware);

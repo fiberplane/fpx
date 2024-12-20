@@ -21,6 +21,8 @@ export type Bindings = {
   SESSION_SECRET: string;
   // Environment
   LILO_ENV: string;
+  // Anthropic API key
+  ANTHROPIC_API_KEY: string;
 };
 
 export type AppType = {

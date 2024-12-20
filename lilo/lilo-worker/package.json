@@ -17,9 +17,11 @@
     "keypair:generate:prod": "ENVIRONMENT=production tsx keypair-generate.ts",
     "session:generate": "tsx session-secret-generate.ts",
     "add-allowed-user": "tsx add-allowed-user.ts",
-    "add-allowed-user:prod": "ENVIRONMENT=production tsx add-allowed-user.ts"
+    "add-allowed-user:prod": "ENVIRONMENT=production tsx add-allowed-user.ts",
+    "fiberplane": "fpx"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^1.0.5",
     "@ai-sdk/google": "^1.0.9",
     "@ai-sdk/openai": "^1.0.8",
     "@hono/oauth-providers": "^0.6.2",
@@ -37,6 +39,7 @@
     "@biomejs/biome": "^1.9.4",
     "@cloudflare/workers-types": "^4.20241205.0",
     "@fiberplane/hono-otel": "workspace:*",
+    "@fiberplane/studio": "^0.12.5",
     "@libsql/client": "^0.14.0",
     "drizzle-kit": "^0.28.1",
     "drizzle-seed": "^0.1.2",
