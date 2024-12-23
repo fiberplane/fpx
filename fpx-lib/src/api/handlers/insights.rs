@@ -1,6 +1,6 @@
 use crate::api::errors::{ApiServerError, CommonError};
 use crate::data::{BoxedStore, DbError};
-use axum::extract::{Query, State};
+use axum::extract::State;
 use axum::Json;
 use fpx_macros::ApiError;
 use opentelemetry_proto::tonic::trace::v1::status::StatusCode;
@@ -14,7 +14,7 @@ use tracing::error;
 #[tracing::instrument(skip_all)]
 pub async fn insights_overview_handler(
     State(store): State<BoxedStore>,
-    Query(query): Query<InsightsOverviewQuery>,
+    // Query(query): Query<InsightsOverviewQuery>,
 ) -> Result<Json<InsightsOverviewResponse>, ApiServerError<InsightsOverviewError>> {
     let tx = store.start_readonly_transaction().await?;
 
@@ -117,7 +117,7 @@ impl Buckets {
         }
     }
 
-    pub fn ingest_request(&mut self, timestamp: &OffsetDateTime, is_successful: bool) {
+    pub fn ingest_request(&mut self, timestamp: &OffsetDateTime, _is_successful: bool) {
         // TODO: support success/failed
         let boundary: OffsetDateTime = {
             self.boundaries

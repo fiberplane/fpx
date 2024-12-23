@@ -1,6 +1,7 @@
 use axum::async_trait;
 use fpx_lib::data::models::HexEncodedId;
 use fpx_lib::data::sql::SqlBuilder;
+use fpx_lib::data::util::Timestamp;
 use fpx_lib::data::{models, DbError, Result, Store, Transaction};
 use serde::Deserialize;
 use std::sync::Arc;
@@ -217,6 +218,21 @@ impl Store for D1Store {
             } else {
                 Ok(None)
             }
+        })
+        .await
+    }
+
+    async fn insights_list_all(
+        &self,
+        _tx: &Transaction,
+        newer_then: Timestamp,
+    ) -> Result<Vec<fpx_lib::data::models::Span>> {
+        SendFuture::new(async {
+            let spans = self
+                .fetch_all(self.sql_builder.insights_list_all(), &[newer_then.into()])
+                .await?;
+
+            Ok(spans)
         })
         .await
     }

@@ -2,6 +2,7 @@ use anyhow::Context;
 use async_trait::async_trait;
 use fpx_lib::data::models::{HexEncodedId, Span};
 use fpx_lib::data::sql::SqlBuilder;
+use fpx_lib::data::util::Timestamp;
 use fpx_lib::data::{DbError, Result, Store, Transaction};
 use libsql::{params, Builder, Connection};
 use std::fmt::Display;
@@ -222,10 +223,11 @@ impl Store for LibsqlStore {
     async fn insights_list_all(
         &self,
         _tx: &Transaction,
+        newer_then: Timestamp,
     ) -> Result<Vec<fpx_lib::data::models::Span>> {
         let rows = self
             .connection
-            .query("SELECT * FROM spans;", params!())
+            .query(&self.sql_builder.insights_list_all(), params!(newer_then))
             .await?
             .fetch_all()
             .await?;

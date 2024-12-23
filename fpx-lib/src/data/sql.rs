@@ -103,4 +103,12 @@ impl SqlBuilder {
     pub fn span_delete(&self) -> String {
         String::from("DELETE FROM spans WHERE trace_id=$1 AND span_id=$2")
     }
+
+    /// List all spans for insights.
+    ///
+    /// Query parameters:
+    /// - $1: start_time
+    pub fn insights_list_all(&self) -> String {
+        String::from("SELECT * FROM spans WHERE start_time>$1;")
+    }
 }
