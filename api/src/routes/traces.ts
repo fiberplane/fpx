@@ -39,8 +39,9 @@ app.get("/v1/traces", async (ctx) => {
   });
 
   const traceMap = new Map<string, Array<(typeof spans)[0]>>();
-
+  console.log('spans', spans.length);
   for (const span of spans) {
+    console.log('span.id', JSON.stringify(span, null, 2));
     const traceId = span.inner.trace_id;
     if (!traceId) {
       continue;
@@ -112,6 +113,7 @@ app.post("/v1/traces/delete-all-hack", async (ctx) => {
 app.post("/v1/traces", async (ctx) => {
   const db = ctx.get("db");
   const body: IExportTraceServiceRequest = await ctx.req.json();
+  console.log('body', JSON.stringify(body, null, 2));
 
   const fpxWorker = await getSetting(db, "fpxWorkerProxy");
   if (fpxWorker?.enabled && fpxWorker.baseUrl) {
@@ -137,7 +139,10 @@ app.post("/v1/traces", async (ctx) => {
     );
 
     try {
-      await db.insert(otelSpans).values(tracesPayload);
+      console.log('tracesPayload', tracesPayload);
+      if (tracesPayload.length > 0) {
+        await db.insert(otelSpans).values(tracesPayload);
+      }
     } catch (error) {
       logger.error("Error inserting trace", error);
       return ctx.text("Error inserting trace", 500);
