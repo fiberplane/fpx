@@ -20,24 +20,24 @@ axum = { workspace = true, default-features = false, features = [
     "ws",
 ] }
 clap = { workspace = true, features = ["derive", "env"] }
-bytes = { version = "1.6" }
+bytes = { version = "1.9" }
 futures-util = { version = "0.3" }
 fpx-macros = { version = "0.1.0", path = "../fpx-macros" }
 fpx-lib = { version = "0.1.0", path = "../fpx-lib", features = ["libsql"] }
 hex = { version = "0.4" }
-http = { version = "1.1" }
+http = { version = "1.2" }
 http-body-util = { version = "0.1" }
 include_dir = { version = "0.7.3" }
-libsql = { version = "0.5", default-features = false, features = ["core", "serde"] }
-once_cell = { version = "1.19" }
-opentelemetry = { version = "0.24" }
-opentelemetry_sdk = { version = "0.24", features = ["rt-tokio"] }
-opentelemetry-otlp = { version = "0.17", features = [
+libsql = { version = "0.6", default-features = false, features = ["core", "serde"] }
+once_cell = { version = "1.20" }
+opentelemetry = { version = "0.27" }
+opentelemetry_sdk = { version = "0.27", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.27", features = [
     "http-json",
     "reqwest-client",
     "reqwest-rustls-webpki-roots",
 ] }
-opentelemetry-proto = { version = "0.7", features = [
+opentelemetry-proto = { version = "0.27", features = [
     "gen-tonic-messages",
     "with-serde",
     "with-schemars",
@@ -53,10 +53,10 @@ schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 strum = { version = "0.26", features = ["derive"] }
-serde_with = { version = "3.8.1" }
+serde_with = { version = "3.12.0" }
 thiserror = { version = "1.0" }
-time = { version = "0.3.17", features = ["serde-human-readable"] }
-tokio = { version = "1.40", features = ["rt-multi-thread", "signal", "fs"] }
+time = { version = "0.3.37", features = ["serde-human-readable"] }
+tokio = { version = "1.42", features = ["rt-multi-thread", "signal", "fs"] }
 tokio-tungstenite = { version = "0.21", features = [
     "rustls-tls-webpki-roots",
 ] } # This should be kept the same as whatever Axum has
@@ -64,7 +64,7 @@ toml = { version = "0.8" }
 tonic = { version = "0.12" }
 tower = { version = "0.4" }
 tracing = { version = "0.1" }
-tracing-opentelemetry = { version = "0.25" }
+tracing-opentelemetry = { version = "0.28" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 url = { version = "2.5" }
 prost = { version = "0.13" }
