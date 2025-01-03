@@ -6,7 +6,7 @@ export function NavigationFrame({ children }: { children: React.ReactNode }) {
     <div
       className={cn(
         BACKGROUND_LAYER,
-        "px-4 overflow-hidden border rounded-md",
+        "px-4 overflow-hidden border border-border rounded-md",
         "h-full",
         "flex",
         "flex-col",
