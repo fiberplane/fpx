@@ -64,8 +64,8 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
         "w-full items-center px-2 py-1 rounded cursor-pointer font-mono text-sm text-left gap-2",
         "focus:outline-none min-w-0",
         {
-          "bg-muted": isActive,
-          "hover:bg-muted": !isActive,
+          "bg-bg-emphasis": isActive,
+          "hover:bg-bg-emphasis": !isActive,
           "focus:ring-inset focus:ring-1 focus:ring-blue-500 focus:ring-opacity-25 bg-muted":
             isSelected,
         },

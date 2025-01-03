@@ -127,6 +127,13 @@
     --fg-subtle: hsl(var(--neutral-400));
     --fg-success: hsl(var(--success-600));
     --fg-warning: hsl(var(--warning-600));
+    --radius-none: 0px;
+    --radius-rounded-full: 9999px;
+    --radius-rounded-lg: 10px;
+    --radius-rounded-md: 8px;
+    --radius-rounded-sm: 6px;
+    --radius-rounded-xl: 12px;
+    --radius-rounded-xs: 4px;
     --font-body-default: 400 14px / 20px Geist;
     --font-body-label: 400 14px / 16px Geist;
     --font-body-mono: 300 14px / 20px Geist Mono;
@@ -144,41 +151,41 @@
   }
 
   .dark {
-    --bg-background: var(--neutral-900);
+    --bg-background: hsl(var(--neutral-900));
     --bg-brand-muted: var(--flame-alpha-15);
-    --bg-brand: var(--flame-500);
+    --bg-brand: hsl(var(--flame-500));
     --bg-danger: var(--danger-alpha-15);
-    --bg-destructive-hover: var(--danger-500);
-    --bg-destructive: var(--danger-600);
-    --bg-emphasis: var(--neutral-800);
+    --bg-destructive-hover: hsl(var(--danger-500));
+    --bg-destructive: hsl(var(--danger-600));
+    --bg-emphasis: hsl(var(--neutral-800));
     --bg-info: var(--info-alpha-15);
-    --bg-input: var(--neutral-800);
-    --bg-popover-hover: var(--neutral-800);
-    --bg-popover: var(--neutral-950);
-    --bg-primary-hover: var(--flame-500);
-    --bg-primary: var(--flame-600);
-    --bg-secondary-hover: var(--neutral-700);
-    --bg-secondary: var(--neutral-800);
+    --bg-input: hsl(var(--neutral-800));
+    --bg-popover-hover: hsl(var(--neutral-800));
+    --bg-popover: hsl(var(--neutral-950));
+    --bg-primary-hover: hsl(var(--flame-500));
+    --bg-primary: hsl(var(--flame-600));
+    --bg-secondary-hover: hsl(var(--neutral-700));
+    --bg-secondary: hsl(var(--neutral-800));
     --bg-success: var(--success-alpha-15);
     --bg-warning: var(--warning-alpha-15);
-    --border-accent-on-primary: var(--neutral-600);
-    --border-brand: var(--flame-500);
-    --border-default: var(--neutral-700);
-    --border-focus: var(--neutral-500);
-    --border-primary: var(--flame-600);
-    --border-secondary: var(--neutral-700);
-    --fg-accent-1: var(--mint-500);
-    --fg-accent-2: var(--purple-500);
-    --fg-accent-3: var(--pink-500);
-    --fg-brand: var(--flame-500);
-    --fg-danger: var(--danger-500);
-    --fg-default: var(--neutral-50);
-    --fg-info: var(--info-500);
-    --fg-muted: var(--neutral-300);
-    --fg-on-primary: var(--neutral-white);
-    --fg-subtle: var(--neutral-500);
-    --fg-success: var(--success-500);
-    --fg-warning: var(--warning-500);
+    --border-accent-on-primary: hsl(var(--neutral-600));
+    --border-brand: hsl(var(--flame-500));
+    --border-default: hsl(var(--neutral-700));
+    --border-focus: hsl(var(--neutral-500));
+    --border-primary: hsl(var(--flame-600));
+    --border-secondary: hsl(var(--neutral-700));
+    --fg-accent-1: hsl(var(--mint-500));
+    --fg-accent-2: hsl(var(--purple-500));
+    --fg-accent-3: hsl(var(--pink-500));
+    --fg-brand: hsl(var(--flame-500));
+    --fg-danger: hsl(var(--danger-500));
+    --fg-default: hsl(var(--neutral-50));
+    --fg-info: hsl(var(--info-500));
+    --fg-muted: hsl(var(--neutral-300));
+    --fg-on-primary: hsl(var(--neutral-white));
+    --fg-subtle: hsl(var(--neutral-500));
+    --fg-success: hsl(var(--success-500));
+    --fg-warning: hsl(var(--warning-500));
   }
 
   /* :root {
@@ -232,7 +239,7 @@
   }
 
   body {
-    @apply bg-bg text-foreground;
+    @apply bg-bg text-fg;
     overflow: hidden;
     height: 100%;
     width: 100%;

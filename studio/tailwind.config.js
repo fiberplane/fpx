@@ -33,8 +33,9 @@ module.exports = {
           secondary: "var(--bg-secondary)",
           success: "var(--bg-success)",
           warning: "var(--bg-warning)",
+          popover: "var(--bg-popover)",
         },
-        foreground: {
+        fg: {
           DEFAULT: "var(--fg-default)",
           brand: "var(--fg-brand)",
           danger: "var(--fg-danger)",
@@ -78,9 +79,11 @@ module.exports = {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        xs: "var(--radius-rounded-xs)",
+        sm: "var(--radius-rounded-sm)",
+        md: "var(--radius-rounded-md)",
+        lg: "var(--radius-rounded-lg)",
+        xl: "var(--radius-rounded-xl)",
       },
       keyframes: {
         "accordion-down": {
