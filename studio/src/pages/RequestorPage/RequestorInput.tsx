@@ -85,7 +85,7 @@ export function RequestorInput({
     <form
       ref={formRef}
       onSubmit={onSubmit}
-      className="flex items-center justify-between rounded-md bg-muted border"
+      className="flex items-center justify-between rounded-md bg-bg-input border"
     >
       <div className="flex flex-grow items-center space-x-0">
         <RequestMethodCombobox
@@ -99,7 +99,7 @@ export function RequestorInput({
           onChange={(e) => {
             handlePathInputChange(e.target.value);
           }}
-          className="flex-grow text-xs w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
+          className="flex-grow text-xs w-full font-mono border-none bg-transparent shadow-none focus:ring-0 ml-0"
         />
       </div>
       <div className="flex items-center space-x-2 px-2 py-0">
