@@ -38,7 +38,7 @@ def get_request_attributes(request: Request) -> Dict[str, str]:
 
 
 def set_request_attributes(
-        span: Span, request: Request, root_request_attributes: Dict[str, str] = None
+    span: Span, request: Request, root_request_attributes: Dict[str, str] = None
 ):
     """Set request attributes on span"""
     request_attributes = {

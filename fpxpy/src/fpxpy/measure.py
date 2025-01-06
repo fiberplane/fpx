@@ -62,13 +62,13 @@ OnStartCallback = Callable[Concatenate[Span, Params], None]
 
 
 def measure(
-        name_or_fn: Union[str, Callable[Params, ReturnValue]],
-        span_kind: SpanKind = SpanKind.INTERNAL,
-        on_start: Optional[OnStartCallback[Params]] = None,
-        on_success: Optional[Callable[[Span, ReturnValue], None]] = None,
-        on_error: Optional[Callable[[Span, Exception], None]] = None,
-        attributes: Optional[Attributes] = None,
-        # attributes: Optional[dict] = None,
+    name_or_fn: Union[str, Callable[Params, ReturnValue]],
+    span_kind: SpanKind = SpanKind.INTERNAL,
+    on_start: Optional[OnStartCallback[Params]] = None,
+    on_success: Optional[Callable[[Span, ReturnValue], None]] = None,
+    on_error: Optional[Callable[[Span, Exception], None]] = None,
+    attributes: Optional[Attributes] = None,
+    # attributes: Optional[dict] = None,
 ) -> Union[Callable[Params, ReturnValue], ReturnValue]:
     """
     Wraps a function in a span, measuring the time it takes to execute.
@@ -88,10 +88,10 @@ def measure(
             print("Async wrapper")
             tracer = trace.get_tracer("fpx-tracer")
             with tracer.start_as_current_span(
-                    # name=fn.__name__ if isinstance(name_or_fn, Callable) else name_or_fn,
-                    name="request",
-                    kind=span_kind,
-                    attributes=attributes,
+                # name=fn.__name__ if isinstance(name_or_fn, Callable) else name_or_fn,
+                name="request",
+                kind=span_kind,
+                attributes=attributes,
             ) as span:
                 if on_start:
                     on_start(span, *args, **kwargs)
@@ -116,9 +116,9 @@ def measure(
             print("sync wrapper")
             tracer = trace.get_tracer("fpx-tracer")
             with tracer.start_as_current_span(
-                    name=fn.__name__ if isinstance(name_or_fn, Callable) else name_or_fn,
-                    kind=span_kind,
-                    attributes=attributes,
+                name=fn.__name__ if isinstance(name_or_fn, Callable) else name_or_fn,
+                kind=span_kind,
+                attributes=attributes,
             ) as span:
                 if on_start:
                     on_start(span, *args, **kwargs)

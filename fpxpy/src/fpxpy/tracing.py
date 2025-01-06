@@ -416,9 +416,9 @@ class CustomJSONEncoder(json.JSONEncoder):
         if isinstance(obj, dict):
             # Preserve keys with dashes
             return (
-                    "{"
-                    + ", ".join(f'"{k}": {self.encode(v)}' for k, v in obj.items())
-                    + "}"
+                "{"
+                + ", ".join(f'"{k}": {self.encode(v)}' for k, v in obj.items())
+                + "}"
             )
         elif isinstance(obj, list):
             return "[" + ", ".join(self.encode(e) for e in obj) + "]"
