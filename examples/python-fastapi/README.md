@@ -4,7 +4,6 @@ This project uses `uv`. To run:
 
 ```
 $ uv sync --frozen
-$ uv run fastapi dev main.py
+$ FPX_ENDPOINT=http://localhost:8788/v1/traces uv run fastapi dev main.py
 ```
 
-As `fpxpy` is not yet published on 
