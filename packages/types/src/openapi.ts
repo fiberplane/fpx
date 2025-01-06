@@ -18,7 +18,11 @@ const OpenAPISchemaTypeSchema = z.object({
 const OpenAPIAnySchema = z.object({});
 
 // This is a terrible name, but it actually is the Schema for an OpenAPI schema
-const SchemaSchema = z.union([OpenAPISchemaRefSchema, OpenAPISchemaTypeSchema, OpenAPIAnySchema]);
+const SchemaSchema = z.union([
+  OpenAPISchemaRefSchema,
+  OpenAPISchemaTypeSchema,
+  OpenAPIAnySchema,
+]);
 
 // Use this in OpenApiSpecSchema where schema validation is needed
 const ContentSchema = z.object({

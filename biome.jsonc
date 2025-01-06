@@ -92,6 +92,7 @@
   ],
   "files": {
     "ignore": [
+      ".venv",
       // API related
       "meta/*.json",
       // Honc code gen playground outputs
