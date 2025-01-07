@@ -1,5 +1,5 @@
-# from typing import Dict
 from types import MappingProxyType
+from typing import Coroutine, Any
 from opentelemetry import trace
 from opentelemetry.attributes import BoundedAttributes
 from opentelemetry.sdk.resources import Resource, Attributes
@@ -13,11 +13,10 @@ import json
 from enum import Enum
 
 import requests
-from dataclasses import is_dataclass, dataclass, fields
-from typing import Any, Optional, List
+from dataclasses import is_dataclass, dataclass, fields, asdict
+from typing import Any, Optional, List, Callable, Awaitable
 from contextlib import asynccontextmanager
-
-# from types import mappingproxy
+from humps import camelize
 from fastapi import FastAPI, Request
 from .measure import measure
 from .utils import set_request_attributes
@@ -33,36 +32,58 @@ class KeyValueData:
     # /** KeyValue value */
     value: Any
 
-    def to_json(self):
-        return to_json_serializable(self, allow_to_json=False)
+    def to_json(self, include_null=False):
+        return asdict(
+            self,
+            dict_factory=lambda fields: {
+                camelize(key): to_json_serializable(value)
+                for (key, value) in fields
+                if value is not None or include_null
+            },
+        )
 
 
 @dataclass
 class EventData:
-    timeUnixNano: float
+    time_unix_nano: float
     name: str
     attributes: List[KeyValueData]
-    droppedAttributesCount: int
+    dropped_attributes_count: int
 
-    def to_json(self):
-        return to_json_serializable(self, allow_to_json=False)
+    def to_json(self, include_null=False):
+        return asdict(
+            self,
+            dict_factory=lambda fields: {
+                camelize(key): to_json_serializable(value)
+                for (key, value) in fields
+                if value is not None or include_null
+            },
+        )
 
 
 @dataclass
 class LinkData:
     # /** Link traceId */
-    traceId: str
+    trace_id: str
     # /** Link spanId */
-    spanId: str
+    span_id: str
     # /** Link traceState */
-    traceState: Optional[str]
+    trace_state: Optional[str]
     # /** Link attributes */
     attributes: List[KeyValueData]
     # /** Link droppedAttributesCount */
-    droppedAttributesCount: int
+    dropped_attributes_count: int
 
-    def to_json(self):
-        return to_json_serializable(self, allow_to_json=False)
+    def to_json(self, include_null=False):
+        return asdict(
+            self,
+            dict_factory=lambda fields: {
+                camelize(key): to_json_serializable(value)
+                for (key, value) in fields
+                if value is not None or include_null
+            },
+        )
+        # return to_json_serializable(self, allow_to_json=False)
 
 
 @dataclass
@@ -74,32 +95,46 @@ class InstrumentationScopeData:
     # /** InstrumentationScope attributes */
     attributes: Optional[List[KeyValueData]]
     # /** InstrumentationScope droppedAttributesCount */
-    droppedAttributesCount: Optional[int]
+    dropped_attributes_count: Optional[int]
 
-    def to_json(self):
-        return to_json_serializable(self, allow_to_json=False)
+    def to_json(self, include_null=False):
+        return asdict(
+            self,
+            dict_factory=lambda fields: {
+                camelize(key): to_json_serializable(value)
+                for (key, value) in fields
+                if value is not None or include_null
+            },
+        )
 
 
 @dataclass
 class SpanData:
-    traceId: str
+    trace_id: str
     spanId: str
     name: str
     kind: SpanKind
-    startTimeUnixNano: float
-    endTimeUnixNano: float
+    start_time_unix_nano: float
+    end_time_unix_nano: float
     attributes: List[KeyValueData]
-    droppedAttributesCount: int
+    dropped_attributes_count: int
     events: List[EventData]
-    droppedEventsCount: int
+    dropped_events_count: int
     links: List[LinkData]
-    droppedLinksCount: int
+    dropped_links_count: int
     status: Status
-    traceState: Optional[str] = None
-    parentSpanId: Optional[str] = None
+    trace_state: Optional[str] = None
+    parent_span_id: Optional[str] = None
 
-    def to_json(self):
-        return to_json_serializable(self, allow_to_json=False)
+    def to_json(self, include_null=False):
+        return asdict(
+            self,
+            dict_factory=lambda fields: {
+                camelize(key): to_json_serializable(value)
+                for (key, value) in fields
+                if value is not None or include_null
+            },
+        )
 
 
 @dataclass
@@ -108,35 +143,32 @@ class ScopeSpanData:
     spans: Optional[List["SpanData"]] = None
     schema_url: Optional[str] = None
 
-    def to_json(self):
-        return to_json_serializable(self, allow_to_json=False)
+    def to_json(self, include_null=False):
+        return asdict(
+            self,
+            dict_factory=lambda fields: {
+                camelize(key): to_json_serializable(value)
+                for (key, value) in fields
+                if value is not None or include_null
+            },
+        )
 
 
 @dataclass
 class ResourceSpanData:
     resource: Optional[Resource] = None
-    scopeSpans: List[ScopeSpanData] = None
+    scope_spans: List[ScopeSpanData] = []
     schema_url: Optional[str] = None
 
-    def to_json(self):
-        return to_json_serializable(self, allow_to_json=False)
-
-
-# from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
-#     OTLPSpanExporter,
-# )
-
-# from opentelemetry.shim import opentracing_shim
-
-# __provider = TracerProvider()
-# __processor = SimpleSpanProcessor(OtlpGrpcSpanExporter())
-# __provider.add_span_processor(__processor)
-
-# Sets the global default tracer provider
-# trace.set_tracer_provider(__provider)
-
-# Creates a tracer from the global tracer provider
-# tracer = trace.get_tracer("my.tracer.name")
+    def to_json(self, include_null=False):
+        return asdict(
+            self,
+            dict_factory=lambda fields: {
+                camelize(key): to_json_serializable(value)
+                for (key, value) in fields
+                if value is not None or include_null
+            },
+        )
 
 
 def setup_tracer_provider(endpoint: str, service_name="unknown"):
@@ -149,24 +181,15 @@ def setup_tracer_provider(endpoint: str, service_name="unknown"):
     Returns:
         _type_: _description_
     """
-    # new_provider =
-    trace.set_tracer_provider(
-        TracerProvider(resource=Resource.create({"service.name": service_name}))
-    )
-    new_provider = trace.get_tracer_provider()
-    print("endpoint", endpoint)
+    provider = TracerProvider(resource=Resource.create({"service.name": service_name}))
     span_exporter = JSONSpanExporter(
         endpoint,
     )
-    new_provider.add_span_processor(SimpleSpanProcessor(span_exporter))
-    # new_provider.
-    # opentracing_tracer = opentracing_shim.create_tracer(tracer_provider)
+    provider.add_span_processor(SimpleSpanProcessor(span_exporter))
+
+    trace.set_tracer_provider(provider)
+    new_provider = trace.get_tracer_provider()
     return new_provider
-    # opentracing_tracer = opentracing_shim.create_tracer(tracer_provider)
-    # processor = SimpleSpanProcessor(OTLPSpanExporter(endpoint=endpoint, insecure=True))
-    # new_provider.add_span_processor(processor)
-    # new_provider.register()
-    # return new_provider
 
 
 def to_key_values(attributes: Attributes):
@@ -174,27 +197,28 @@ def to_key_values(attributes: Attributes):
         KeyValueData(key=key, value={"stringValue": value})
         for key, value in attributes.items()
     ]
-    # print("result", result)
     return result
 
 
 def to_event(event):
     return EventData(
-        timeUnixNano=event.timestamp,
+        time_unix_nano=event.timestamp,
         name=event.name,
         attributes=to_key_values(event.attributes),
         # attributes=event.attributes,
-        droppedAttributesCount=0,
+        dropped_attributes_count=0,
     )
 
 
 def to_link(link: Link):
     return LinkData(
-        traceId=int_to_hex_str(link.context.trace_id),
-        spanId=int_to_hex_str(link.context.span_id),
-        traceState=None,
-        attributes=link.attributes,
-        droppedAttributesCount=0,
+        trace_id=int_to_hex_str(link.context.trace_id),
+        span_id=int_to_hex_str(link.context.span_id),
+        trace_state=None,
+        attributes=(
+            to_key_values(link.attributes) if link.attributes is not None else []
+        ),
+        dropped_attributes_count=0,
     )
 
 
@@ -213,36 +237,40 @@ def int_to_hex_str(num: int) -> str:
 def to_span(span: ReadableSpan) -> SpanData:
     print("for all span kind", span.kind.name, span.kind.value)
     return SpanData(
-        traceId=int_to_hex_str(span.context.trace_id or 0),
+        trace_id=int_to_hex_str(span.context.trace_id or 0),
         spanId=int_to_hex_str(span.context.span_id or 0),
         name=span.name,
         kind=SpanKind[span.kind.name],
-        startTimeUnixNano=span.start_time,
-        endTimeUnixNano=span.end_time,
-        attributes=to_key_values(span.attributes),
-        droppedAttributesCount=0,
+        start_time_unix_nano=(
+            float(span.start_time) if span.start_time is not None else 0.0
+        ),
+        end_time_unix_nano=float(span.end_time) if span.end_time is not None else 0.0,
+        attributes=(
+            to_key_values(span.attributes) if span.attributes is not None else []
+        ),
+        dropped_attributes_count=0,
         events=[to_event(event) for event in span.events],
-        droppedEventsCount=0,
+        dropped_events_count=0,
         links=[to_link(link) for link in span.links],
-        droppedLinksCount=0,
+        dropped_links_count=0,
         status=create_status(span.status.status_code, span.status.description),
-        traceState=None,
-        parentSpanId=int_to_hex_str(span.parent.span_id) if span.parent else None,
+        trace_state=None,
+        parent_span_id=int_to_hex_str(span.parent.span_id) if span.parent else None,
     )
 
 
 def to_resource_span(span: ReadableSpan) -> ResourceSpanData:
-    print("span", span)
-    print("span.resource", span.resource)
+    # print("span", span)
+    # print("span.resource", span.resource)
     return ResourceSpanData(
         resource=span.resource,
-        scopeSpans=[
+        scope_spans=[
             ScopeSpanData(
                 scope=InstrumentationScopeData(
                     name=span.instrumentation_info.name,
                     version=span.instrumentation_info.version,
                     attributes=None,
-                    droppedAttributesCount=None,
+                    dropped_attributes_count=None,
                 ),
                 spans=[to_span(span)],
             )
@@ -290,11 +318,18 @@ def to_json_serializable(obj: Any, allow_to_json=True) -> Any:
 
 
 @dataclass
-class Payload:
-    resourceSpans: List[ResourceSpanData]
+class SpansPayload:
+    resource_spans: List[ResourceSpanData]
 
-    def to_json(self):
-        return to_json_serializable(self, allow_to_json=False)
+    def to_json(self, include_null=False):
+        return asdict(
+            self,
+            dict_factory=lambda fields: {
+                camelize(key): to_json_serializable(value)
+                for (key, value) in fields
+                if value is not None or include_null
+            },
+        )
 
 
 class JSONSpanExporter(SpanExporter):
@@ -302,51 +337,39 @@ class JSONSpanExporter(SpanExporter):
         self.endpoint = endpoint
 
     def export(self, spans):
-        # Convert to JSON format
-        # first step is to convert it to IResourceSpans
-        # format (as the typescript library expects))
         resource_spans = [to_resource_span(span) for span in spans]
-        # span_dicts = [to_resource_span(span) for span in spans]
-        # span_dicts = [to_json_readable_span(span) for span in spans]
 
-        payload = Payload(resourceSpans=resource_spans)
-        # debug_serialize(payload)
+        payload = SpansPayload(resource_spans=resource_spans)
 
         content = payload.to_json()
-        # print("Content", content, json.dumps(content, cls=CustomJSONEncoder))
         json_data = json.dumps(content, cls=CustomJSONEncoder)
 
-        print("Sending data to", self.endpoint)
-        print(json_data)
-        # Send JSON data to the endpoint
-        response = requests.post(
-            self.endpoint, data=json_data, headers={"Content-Type": "application/json"}
-        )
+        try:
+            response = requests.post(
+                self.endpoint,
+                data=json_data,
+                headers={"Content-Type": "application/json"},
+                timeout=5,
+            )
+            if response.status_code == 200:
+                return SpanExportResult.SUCCESS
+        except requests.Timeout:
+            # back off and retry
+            pass
+        except requests.ConnectionError:
+            pass
+            # # Send JSON data to the endpoint
+            # response = post(
 
-        if response.status_code == 200:
-            return SpanExportResult.SUCCESS
-        else:
+            # )
+
             return SpanExportResult.FAILURE
 
     def shutdown(self):
         pass
 
 
-# def debug_serialize(obj, path="root"):
-#     if isinstance(obj, dict):
-#         for key, value in obj.items():
-#             debug_serialize(value, f"{path}.{key}")
-#     elif isinstance(obj, (list, tuple)):
-#         for i, value in enumerate(obj):
-#             debug_serialize(value, f"{path}[{i}]")
-#     else:
-#         try:
-#             json.dumps(obj)
-#         except TypeError:
-#             print(f"Cannot serialize at {path}: {type(obj)} = {obj}")
-
-
-def instrument(instance: FastAPI):
+def setup_span_instrumentation(instance: FastAPI):
     """
     This function returns a patched instance of the fastAPI app.
 
@@ -356,7 +379,7 @@ def instrument(instance: FastAPI):
     setup_tracer_provider(endpoint="http://localhost:8788/v1/traces")
 
     @asynccontextmanager
-    async def lifespan(app: FastAPI):
+    async def lifespan(_app: FastAPI):
         # Set up before startup
         print("Starting up")
         yield
@@ -365,56 +388,33 @@ def instrument(instance: FastAPI):
 
     instance.router.lifespan_context = lifespan
 
-    async def middleware(request: Request, call_next):
-        # print("middleware")
-        # measured_next = call_next
+    async def middleware(
+        request: Request, call_next: Callable[[Request], Coroutine[Any, Any, Response]]
+    ):
         measured_next = measure(
-            call_next,
+            name="request",
+            func=call_next,
             on_start=set_request_attributes,
             on_success=on_success,
         )
-        # with trace.get_tracer(__name__).start_as_current_span(
-        #     "request", kind=trace.SpanKind.SERVER
-        # ) as span:
-
-        # start_time = time.perf_counter()
-        response = await measured_next(request)
-        # if response.status_code >= 400:
-        #     span.set_status(status=StatusCode.ERROR, description="Error response")
-        # else:
-        #     span.set_status(status=StatusCode.OK)
-
-        return response
+        return await measured_next(request)
 
     instance.middleware("http")(middleware)
-    # instance.add_middleware(middleware)
-    print("Added middleware")
     return instance
-
-
-# def measure()
 
 
 async def on_success(span: Span, response: Response):
     """Handle successful response with span updates"""
     span.add_event("first-response")
 
-    # FastAPI Response objects can't be cloned, but we can access attributes directly
-    # attributes_response = response
-
-    async def update_span(response: Response):
-        attributes = await get_response_attributes(response)
-        print("attributes", attributes)
-        span.set_attributes(attributes)
-        # span.end()
-
-    await update_span(response)
+    attributes = await get_response_attributes(response)
+    span.set_attributes(dict(attributes))
+    return None
 
 
 class CustomJSONEncoder(json.JSONEncoder):
     def encode(self, obj):
         if isinstance(obj, dict):
-            # Preserve keys with dashes
             return (
                 "{"
                 + ", ".join(f'"{k}": {self.encode(v)}' for k, v in obj.items())

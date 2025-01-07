@@ -1,20 +1,21 @@
 from fastapi import Request
 from opentelemetry.trace import Span
-from typing import Dict
+from typing import Dict, Optional, Sequence
 from fastapi import Response
 from opentelemetry.sdk.resources import Attributes
 
 import json
 
 
-def get_request_attributes(request: Request) -> Dict[str, str]:
+def get_request_attributes(
+    request: Request,
+) -> Attributes:
     """Extract OpenTelemetry attributes from FastAPI request"""
     # print("request.url", request.url.path)
     # Add headers as attributes
 
-    attributes = {
-        "http.method": request.method,
-        "http.request.method": request.method,
+    attributes: Attributes = {
+        # attributes = {
         "fpx.http.request.scheme": request.url.scheme,
         "http.scheme": request.url.scheme,
         "fpx.http.request.search": request.url.query,
@@ -32,13 +33,16 @@ def get_request_attributes(request: Request) -> Dict[str, str]:
 
     for key, value in request.headers.items():
         # print("response.headers.items", key, value)
+        attributes = dict(attributes)
         attributes[f"http.request.header.{key.lower()}"] = value
 
     return attributes
 
 
 def set_request_attributes(
-    span: Span, request: Request, root_request_attributes: Dict[str, str] = None
+    span: Span,
+    request: Request,
+    root_request_attributes: Optional[Dict[str, str]] = None,
 ):
     """Set request attributes on span"""
     request_attributes = {
@@ -48,7 +52,7 @@ def set_request_attributes(
     span.set_attributes(request_attributes)
 
 
-async def get_response_attributes(response: Response) -> Dict[str, str]:
+async def get_response_attributes(response: Response) -> Attributes:
     """Extract OpenTelemetry attributes from FastAPI response"""
     attributes: Attributes = {
         "http.response.status_code": str(response.status_code),
@@ -71,7 +75,8 @@ async def get_response_attributes(response: Response) -> Dict[str, str]:
             if content_type and "application/json" in content_type:
                 # Validate JSON before adding
                 json.loads(body)
-            attributes["http.response.body"] = body
+            attributes = dict(attributes)
+            attributes["http.response.body"] = str(body)
     except (UnicodeDecodeError, json.JSONDecodeError):
         # Skip body if we can't decode it
         pass
@@ -79,6 +84,7 @@ async def get_response_attributes(response: Response) -> Dict[str, str]:
     # Add headers as attributes
     for key, value in response.headers.items():
         # print("response.headers.items", key, value)
+        attributes = dict(attributes)
         attributes[f"http.response.header.{key.lower()}"] = value
 
     return attributes

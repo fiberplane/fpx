@@ -15,8 +15,10 @@ dependencies = [
     "opentelemetry-exporter-otlp>=1.29.0",
     "opentelemetry-instrumentation-fastapi>=0.50b0",
     "opentelemetry-sdk>=1.29.0",
+    "pyhumps>=3.8.0",
     "requests>=2.32.3",
     "tracing>=0.1.3",
+    "types-requests>=2.32.0.20241016",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -34,6 +36,7 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
+    "mypy>=1.14.1",
     "ruff>=0.8.6",
 ]
 
