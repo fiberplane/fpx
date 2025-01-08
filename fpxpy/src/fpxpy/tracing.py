@@ -17,6 +17,7 @@ from opentelemetry.trace import (
     set_span_in_context,
     NonRecordingSpan,
 )
+from urllib.parse import urlunparse, ParseResult as ParsedUrl
 from opentelemetry.sdk.trace.export import (
     SimpleSpanProcessor,
 )
@@ -257,8 +258,6 @@ def int_to_hex_str(num: int) -> str:
 
 def to_span(span: ReadableSpan) -> SpanData:
     """Convert a ReadableSpan to SpanData"""
-
-    print("links", span.links)
     return SpanData(
         trace_id=int_to_hex_str(span.context.trace_id or 0),
         spanId=int_to_hex_str(span.context.span_id or 0),
@@ -316,14 +315,12 @@ def to_json_serializable(obj: Any, allow_to_json=True) -> Any:
     elif isinstance(obj, dict):
         return {k: to_json_serializable(v) for k, v in obj.items()}
     elif isinstance(obj, Enum):
-        print("obj", obj)
         return obj.value
     elif isinstance(obj, Status):
         return to_json_serializable(
             {"code": obj.status_code.value, "message": obj.description}
         )
     elif isinstance(obj, dict):
-        print("is dict", obj)
         return {k: to_json_serializable(v) for k, v in obj.items()}
     elif isinstance(obj, BoundedAttributes):
         return obj.copy()
@@ -335,7 +332,6 @@ def to_json_serializable(obj: Any, allow_to_json=True) -> Any:
     elif isinstance(obj, MappingProxyType):
         return obj.copy()
 
-    # print("falling bac", obj, type(obj))
     return obj
 
 
@@ -396,63 +392,64 @@ class JSONSpanExporter(SpanExporter):
         pass
 
 
-def setup_span_instrumentation(instance: FastAPI):
+async def middleware(request: Request, call_next):
+    trace_id = request.headers.get("x-fpx-trace-id")
+
+    route_inspector = request.headers.get("x-fpx-route-inspector")
+    if route_inspector == "enabled":
+        return await call_next(request)
+
+    token = None
+    if trace_id:
+        # Convert hex strings to integers
+        trace_id_int = int(trace_id, 16)
+        span_id_int = span_id_int = random.getrandbits(64)  # Generate new span ID
+        trace_flags_int = 1
+
+        # Create new SpanContext
+        span_context = SpanContext(
+            trace_id=trace_id_int,
+            span_id=span_id_int,
+            is_remote=True,
+            trace_flags=TraceFlags(trace_flags_int),
+        )
+
+        # Create a NonRecordingSpan with the SpanContext
+        non_recording_span = NonRecordingSpan(span_context)
+
+        # Attach new context to current span
+        ctx = set_span_in_context(non_recording_span)
+        token = context.attach(ctx)
+
+    try:
+        measured_next = measure(
+            name="request",
+            func=call_next,
+            on_start=set_request_attributes,
+            on_success=on_success,
+        )
+        return await measured_next(request)
+    finally:
+        if token is not None:
+            context.detach(token)
+
+
+def setup_span_instrumentation(instance: FastAPI, endpoint: ParsedUrl) -> FastAPI:
     """
-    This function returns a patched instance of the fastAPI app.
+    This function adds tracing middleware to the FastAPI app.
 
     All requests to the app will be automatically traced.
     """
 
-    setup_tracer_provider(endpoint="http://localhost:8788/v1/traces")
-
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
+        provider = setup_tracer_provider(endpoint=urlunparse(endpoint))
         # Set up before startup
         yield
+        provider.get_tracer()
         # Clean up after shutdown
 
     instance.router.lifespan_context = lifespan
-
-    async def middleware(request: Request, call_next):
-        trace_id = request.headers.get("x-fpx-trace-id")
-
-        route_inspector = request.headers.get("x-fpx-route-inspector")
-        if route_inspector == "enabled":
-            return await call_next(request)
-
-        token = None
-        if trace_id:
-            # Convert hex strings to integers
-            trace_id_int = int(trace_id, 16)
-            span_id_int = span_id_int = random.getrandbits(64)  # Generate new span ID
-            trace_flags_int = 1
-
-            # Create new SpanContext
-            span_context = SpanContext(
-                trace_id=trace_id_int,
-                span_id=span_id_int,
-                is_remote=True,
-                trace_flags=TraceFlags(trace_flags_int),
-            )
-
-            # Create a NonRecordingSpan with the SpanContext
-            non_recording_span = NonRecordingSpan(span_context)
-
-            # Attach new context to current span
-            ctx = set_span_in_context(non_recording_span)
-            token = context.attach(ctx)
-
-        try:
-            measured_next = measure(
-                name="request",
-                func=call_next,
-                on_start=set_request_attributes,
-                on_success=on_success,
-            )
-            return await measured_next(request)
-        finally:
-            if token is not None:
-                context.detach(token)
 
     instance.middleware("http")(middleware)
     return instance

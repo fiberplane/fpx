@@ -75,20 +75,6 @@ def measure(
 ]: ...
 
 
-# @overload
-# def measure(
-#     name_or_fn: str,
-#     span_kind: SpanKind = SpanKind.INTERNAL,
-#     on_start: Optional[OnStartCallback[Params]] = None,
-#     on_success: Optional[Callable[[Span, Coroutine[Any, Any, ReturnValue]], None]] = None,
-#     on_error: Optional[Callable[[Span, Exception], None]] = None,
-#     attributes: Optional[Attributes] = None,
-# ) -> Callable[
-#     [Callable[Params, Awaitable[ReturnValue]]],
-#     Callable[Params, Awaitable[ReturnValue]],
-# ]: ...
-
-
 def measure(
     name: Optional[str] = None,
     func: Optional[
@@ -153,13 +139,10 @@ def measure(
                 kind=span_kind,
                 attributes=attributes,
             ) as span:
-                #     print("with span")
                 if on_start:
                     on_start(span, *args, **kwargs)
                 try:
                     result = fn(*args, **kwargs)
-                    # return result
-                    # print("setting status")
                     value = result if not inspect.isawaitable(result) else await result
 
                     span.set_status(Status(StatusCode.OK))
@@ -178,7 +161,6 @@ def measure(
 
         @functools.wraps(fn)
         def sync_wrapper(*args: Params.args, **kwargs: Params.kwargs):
-            print("Sync wrapper")
             tracer = trace.get_tracer("fpx-tracer")
             with tracer.start_as_current_span(
                 name=current_name,
@@ -201,6 +183,7 @@ def measure(
                             loop = asyncio.get_event_loop()
                             loop.run_until_complete(success)
                     return value
+
                 except Exception as e:
                     span.set_status(Status(StatusCode.ERROR, str(e)))
                     span.record_exception(e)
