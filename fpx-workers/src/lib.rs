@@ -4,6 +4,7 @@ use data::D1Store;
 use fpx_lib::api::models::ServerMessage;
 use fpx_lib::events::ServerEvents;
 use fpx_lib::{api, service};
+use middleware::auth::auth_middleware;
 use std::sync::Arc;
 use tower_service::Service;
 use tracing_subscriber::fmt::format::Pretty;
@@ -14,12 +15,10 @@ use worker::send::SendFuture;
 use worker::*;
 use ws::client::WebSocketWorkerClient;
 use ws::handlers::{ws_connect, WorkerApiState};
-use middleware::auth::auth_middleware;
 
-
-mod ws;
 mod data;
 mod middleware;
+mod ws;
 
 #[event(start)]
 fn start() {
@@ -60,11 +59,12 @@ async fn fetch(
     let boxed_store = Arc::new(store);
 
     let service = service::Service::new(boxed_store.clone(), boxed_events.clone());
-    let api_router = api::Builder::new()
-        .build(service, boxed_store)
-        .route_layer(axum::middleware::from_fn(move |req, next| {
-            auth_middleware(req, env.as_ref().clone(), next)
-        }));
+    let api_router =
+        api::Builder::new()
+            .build(service, boxed_store)
+            .route_layer(axum::middleware::from_fn(move |req, next| {
+                auth_middleware(req, env.as_ref().clone(), next)
+            }));
 
     let mut router: axum::Router = axum::Router::new()
         .route("/api/ws", get(ws_connect))
