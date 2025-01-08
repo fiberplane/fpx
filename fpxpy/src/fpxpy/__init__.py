@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from .tracing import setup_span_instrumentation
 from .routes import install
+from .measure import measure
 
 
 def setup(app: FastAPI) -> FastAPI:

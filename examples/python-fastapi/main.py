@@ -1,7 +1,7 @@
 from typing import Union
 
 from fastapi import FastAPI
-from fpxpy import setup
+from fpxpy import measure, setup
 
 app = FastAPI()
 setup(app)
@@ -12,10 +12,15 @@ def read_root():
     """
     Example index that returns a JSON object
     """
-    for i in range(10):
-        print("loop", i)
+    loop()
     # span.set_status(trace.StatusCode.OK, "All done")
     return {"Hello": "World"}
+
+
+@measure(name="loop")
+def loop():
+    for i in range(10):
+        print("loop", i)
 
 
 @app.get("/hello")
