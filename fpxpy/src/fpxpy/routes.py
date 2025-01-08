@@ -65,10 +65,7 @@ async def send_to_studio(req: Request):
         ),
     }
 
-    print("json", json)
-
     response = requests.post(url, json=json)
-    print("response", response.content)
 
     if not response.ok:
         print(

@@ -1,51 +1,43 @@
+import json
+import random
+from contextlib import asynccontextmanager
+from dataclasses import asdict, dataclass, fields, is_dataclass
+from enum import Enum
 from types import MappingProxyType
-from typing import Coroutine, Any, Optional, List, Callable
+from typing import Any, List, Optional
+from urllib.parse import ParseResult as ParsedUrl
+from urllib.parse import urlunparse
+
+import requests
+from fastapi import FastAPI, Request
+from fastapi.responses import Response
+from humps import camelize
+from opentelemetry import context
 
 # from opentelemetry import trace
 from opentelemetry.attributes import BoundedAttributes
-from opentelemetry.sdk.resources import Resource, Attributes
-from opentelemetry.sdk.trace import TracerProvider, ReadableSpan, StatusCode
-from opentelemetry.trace import (
-    SpanKind,
-    Status,
-    Link,
-    Span,
-    set_tracer_provider,
-    get_tracer_provider,
-    SpanContext,
-    TraceFlags,
-    set_span_in_context,
-    NonRecordingSpan,
-)
-from urllib.parse import urlunparse, ParseResult as ParsedUrl
+from opentelemetry.sdk.resources import Attributes, Resource
+from opentelemetry.sdk.trace import ReadableSpan, StatusCode, TracerProvider
 from opentelemetry.sdk.trace.export import (
     SimpleSpanProcessor,
+    SpanExporter,
+    SpanExportResult,
 )
-from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
-
-from opentelemetry.context import get_current, set_value, attach, detach
-import json
-import random
-from enum import Enum
-
-import requests
-from dataclasses import is_dataclass, dataclass, fields, asdict
-from contextlib import asynccontextmanager
-
-from humps import camelize
-from fastapi import FastAPI, Request
-from .measure import measure
-from .utils import set_request_attributes
-from fastapi.responses import Response
-from .utils import get_response_attributes
-
-from opentelemetry import trace, context
 from opentelemetry.trace import (
+    Link,
+    NonRecordingSpan,
+    Span,
     SpanContext,
+    SpanKind,
+    Status,
     TraceFlags,
+    get_tracer_provider,
     set_span_in_context,
-    get_current_span,
+    set_tracer_provider,
 )
+
+from .measure import measure
+from .utils import get_response_attributes, set_request_attributes
 
 
 # /** Properties of a KeyValue. */
@@ -100,7 +92,6 @@ class LinkData:
                 if value is not None or include_null
             },
         )
-        # return to_json_serializable(self, allow_to_json=False)
 
 
 @dataclass
@@ -339,20 +330,15 @@ def to_json_serializable(obj: Any, allow_to_json=True) -> Any:
 class SpansPayload:
     resource_spans: List[ResourceSpanData]
 
-    def to_json(self):
-        return {
-            "resourceSpans": [
-                to_json_serializable(span) for span in self.resource_spans
-            ]
-        }
-        # return asdict(
-        #     self,
-        #     dict_factory=lambda fields: {
-        #         camelize(key): to_json_serializable(value)
-        #         for (key, value) in fields
-        #         if value is not None or include_null
-        #     },
-        # )
+    def to_json(self, include_null=False):
+        return asdict(
+            self,
+            dict_factory=lambda fields: {
+                camelize(key): to_json_serializable(value)
+                for (key, value) in fields
+                if value is not None or include_null
+            },
+        )
 
 
 class JSONSpanExporter(SpanExporter):

@@ -117,7 +117,6 @@ def measure(
         attributes: Optional span attributes
     """
 
-    # @overload
     def wrap_function(
         fn: Union[
             Callable[Params, ReturnValue],
