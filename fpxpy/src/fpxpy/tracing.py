@@ -416,11 +416,12 @@ def setup_span_instrumentation(instance: FastAPI):
     async def middleware(request: Request, call_next):
         trace_id = request.headers.get("x-fpx-trace-id")
 
+        route_inspector = request.headers.get("x-fpx-route-inspector")
+        if route_inspector == "enabled":
+            return await call_next(request)
+
         token = None
         if trace_id:
-            # trace_id = request.headers.get("x-fpx-trace-id")
-            # version, trace_id, span_id, trace_flags = traceparent.split("-")
-
             # Convert hex strings to integers
             trace_id_int = int(trace_id, 16)
             span_id_int = span_id_int = random.getrandbits(64)  # Generate new span ID
@@ -452,47 +453,6 @@ def setup_span_instrumentation(instance: FastAPI):
         finally:
             if token is not None:
                 context.detach(token)
-            # async def middleware(
-
-    #     request: Request, call_next: Callable[[Request], Coroutine[Any, Any, Response]]
-    # ):
-    #     # trace_id = request.headers.get("x-fpx-trace-id")
-    #     # if trace_id:
-    #     #     # # Convert hex string to int
-    #     #     # trace_id_int = int(trace_id, 16)
-    #     #     # # Create new span context with the trace ID
-    #     #     # span_context = SpanContext(
-    #     #     #     trace_id=trace_id_int,
-    #     #     #     span_id=random.getrandbits(64),  # Generate new span ID
-    #     #     #     is_remote=True,
-    #     #     #     trace_flags=TraceFlags(TraceFlags.SAMPLED),
-    #     #     # )
-    #     #     # context = get_current()
-    #     #     # context.update(
-    #     #     #     {
-    #     #     #         "traceparent": f"00-{trace_id}-0000000000000000-01",
-    #     #     #     }
-    #     #     # )
-
-    #     #     # set_current(context)
-    #     #     # print("traceparent", context.get("traceparent"))
-    #     #     # Set as current context
-    #     #     ctx = set_span_in_context(span_context)
-    #     #     token = attach(ctx)
-    #     #
-
-    #     # try:
-    #     measured_next = measure(
-    #         name="request",
-    #         func=call_next,
-    #         on_start=set_request_attributes,
-    #         on_success=on_success,
-    #     )
-    #     return await measured_next(request)
-
-    # # finally:
-    # #     if trace_id:
-    # #         detach(token)
 
     instance.middleware("http")(middleware)
     return instance
