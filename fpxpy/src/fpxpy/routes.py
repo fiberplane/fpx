@@ -56,8 +56,6 @@ async def send_to_studio(req: Request):
     parsed_url = parsed_url._replace(path="/v0/probed-routes")
     url = urlunparse(parsed_url)
 
-    print("url", url)
-
     json = {
         "routes": routes,
         "openApiSpec": get_openapi(

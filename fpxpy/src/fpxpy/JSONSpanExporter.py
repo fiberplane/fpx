@@ -82,7 +82,6 @@ class JSONSpanExporter(SpanExporter):
         payload = SpansPayload(resource_spans=resource_spans)
 
         content = payload.to_json()
-        # json_data = json.dumps(content, cls=CustomJSONEncoder)
 
         try:
             response = requests.post(
@@ -103,7 +102,7 @@ class JSONSpanExporter(SpanExporter):
 
             # )
 
-            return SpanExportResult.FAILURE
+        return SpanExportResult.FAILURE
 
     def shutdown(self):
         pass
@@ -172,12 +171,12 @@ class InstrumentationScopeData:
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class StatusData:
-    status_code: StatusCode
+    code: StatusCode
     description: Optional[str] = None
 
     @classmethod
     def from_status(cls, status: Status) -> "StatusData":
-        return cls(status_code=status.status_code, description=status.description)
+        return cls(code=status.status_code, description=status.description)
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
