@@ -15,21 +15,24 @@ from opentelemetry.trace import Link, SpanKind, Status
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class KeyValueData:
-    # /** KeyValue key */
+    """For storing KeyValue data (in preparation for serialization)"""
+
     key: str
-    # /** KeyValue value */
     value: Any
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class ScopeSpanData:
+    """For storing ScopeSpan data (in preparation for serialization)"""
+
     scope: Optional["InstrumentationScopeData"] = None
     spans: Optional[List["ReadableSpanData"]] = None
     schema_url: Optional[str] = None
 
     @classmethod
     def from_span(cls, span: ReadableSpan):
+        """Create a ScopeSpanData from a ReadableSpan"""
         return cls(
             scope=InstrumentationScopeData.from_span(span),
             spans=[ReadableSpanData.from_span(span)],
@@ -39,12 +42,15 @@ class ScopeSpanData:
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class ResourceSpanData:
+    """For storing ResourceSpan data (in preparation for serialization)"""
+
     scope_spans: List[ScopeSpanData]
     resource: Optional[Resource] = None
     schema_url: Optional[str] = None
 
     @classmethod
     def from_span(cls, span: ReadableSpan):
+        """Create a ResourceSpanData from a ReadableSpan"""
         return cls(
             scope_spans=[
                 ScopeSpanData.from_span(span),
@@ -57,17 +63,22 @@ class ResourceSpanData:
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class SpansPayload:
+    """Class for storing all spans that get sent to the endpoint"""
+
     resource_spans: List[ResourceSpanData]
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class ResourceData:
+    """Class for storing Resource data (in preparation for serialization)"""
+
     attributes: List[KeyValueData]
     schema_url: Optional[str] = None
 
     @classmethod
     def from_resource(cls, resource: Resource):
+        """Create a ResourceData from a Resource"""
         return cls(
             attributes=to_key_values(resource.attributes),
             schema_url=resource.schema_url,
@@ -77,6 +88,8 @@ class ResourceData:
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class EventData:
+    """Class for storing Event data"""
+
     time_unix_nano: float
     name: str
     attributes: List[KeyValueData]
@@ -84,6 +97,7 @@ class EventData:
 
     @classmethod
     def from_event(cls, event: Event):
+        """Create an EventData from an Event"""
         return cls(
             time_unix_nano=event.timestamp,
             name=event.name,
@@ -97,6 +111,8 @@ class EventData:
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class LinkData:
+    """Class for storing Link data (in preparation for serialization)"""
+
     trace_id: str
     span_id: str
     trace_state: Optional[str]
@@ -105,6 +121,7 @@ class LinkData:
 
     @classmethod
     def from_link(cls, link: Link):
+        """Create a LinkData from a Link"""
         return cls(
             trace_id=int_to_hex_str(link.context.trace_id),
             span_id=int_to_hex_str(link.context.span_id),
@@ -119,6 +136,8 @@ class LinkData:
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class InstrumentationScopeData:
+    """Class for storing InstrumentationScope data (in preparation for serialization)"""
+
     name: str
     version: Optional[str]
     attributes: Optional[List[KeyValueData]]
@@ -126,6 +145,7 @@ class InstrumentationScopeData:
 
     @classmethod
     def from_span(cls, span: ReadableSpan):
+        """Create an InstrumentationScopeData from a ReadableSpan"""
         return cls(
             name=span.instrumentation_info.name,
             version=span.instrumentation_info.version,
@@ -137,17 +157,22 @@ class InstrumentationScopeData:
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class StatusData:
+    """Class for storing Status data (in preparation for serialization)"""
+
     code: StatusCode
     description: Optional[str] = None
 
     @classmethod
     def from_status(cls, status: Status) -> "StatusData":
+        """Create a StatusData from a Status"""
         return cls(code=status.status_code, description=status.description)
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class ReadableSpanData:
+    """Class for storing ReadableSpan data (in preparation for serialization)"""
+
     trace_id: str
     span_id: str
     name: str
@@ -166,6 +191,7 @@ class ReadableSpanData:
 
     @classmethod
     def from_span(cls, span: ReadableSpan) -> "ReadableSpanData":
+        """Create a ReadableSpanData from a ReadableSpan"""
         return cls(
             trace_id=int_to_hex_str(span.context.trace_id or 0),
             span_id=int_to_hex_str(span.context.span_id or 0),
@@ -192,6 +218,7 @@ class ReadableSpanData:
 
 
 def to_key_values(attributes: Attributes):
+    """Convert attributes to a list of KeyValueData"""
     result = [
         KeyValueData(key=key, value={"stringValue": value})
         for key, value in attributes.items()
@@ -205,6 +232,8 @@ def int_to_hex_str(num: int) -> str:
 
 
 class JSONSpanExporter(SpanExporter):
+    """Exporter that sends spans to a JSON endpoint"""
+
     def __init__(self, endpoint: str):
         self.endpoint = endpoint
 

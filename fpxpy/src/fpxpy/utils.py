@@ -1,11 +1,9 @@
-from fastapi import Request
-from opentelemetry.trace import Span
-from opentelemetry.context import set_value
-from typing import Dict, Optional, Sequence
-from fastapi import Response
-from opentelemetry.sdk.resources import Attributes
-
 import json
+from typing import Dict, Optional
+
+from fastapi import Request, Response
+from opentelemetry.sdk.resources import Attributes
+from opentelemetry.trace import Span
 
 
 def get_request_attributes(
@@ -47,34 +45,6 @@ def set_request_attributes(
     root_request_attributes: Optional[Dict[str, str]] = None,
 ):
     """Set request attributes on span"""
-
-    # trace_id = request.headers.get("x-fpx-trace-id")
-    # if trace_id:
-    # # Convert hex string to int
-    # trace_id_int = int(trace_id, 16)
-    # # Create new span context with the trace ID
-    # span_context = SpanContext(
-    #     trace_id=trace_id_int,
-    #     span_id=random.getrandbits(64),  # Generate new span ID
-    #     is_remote=True,
-    #     trace_flags=TraceFlags(TraceFlags.SAMPLED),
-    # )
-    # context = span.get_span_context()
-    # context.
-    # set_value("traceparent", f"00-{trace_id}-0000000000000000-01", context)
-    # context.update(
-    #     {
-    #         "traceparent": f"00-{trace_id}-0000000000000000-01",
-    #     }
-    # )
-
-    # set_current(context)
-    # print("traceparent", context.get("traceparent"))
-    # Set as current context
-    # ctx = set_span_in_context(span_context)
-    # token = attach(ctx)
-
-    # print("context", span.get_span_context())
     request_attributes = {
         **get_request_attributes(request),
         **(root_request_attributes or {}),
@@ -113,7 +83,6 @@ async def get_response_attributes(response: Response) -> Attributes:
 
     # Add headers as attributes
     for key, value in response.headers.items():
-        # print("response.headers.items", key, value)
         attributes = dict(attributes)
         attributes[f"http.response.header.{key.lower()}"] = value
 
