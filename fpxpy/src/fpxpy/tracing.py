@@ -11,6 +11,7 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import (
     SimpleSpanProcessor,
+    SpanExporter,
 )
 from opentelemetry.trace import (
     NonRecordingSpan,
@@ -28,20 +29,19 @@ from .measure import measure
 from .utils import get_response_attributes, set_request_attributes
 
 
-def setup_tracer_provider(endpoint: str, service_name="unknown"):
+def setup_tracer_provider(
+    span_exporter: SpanExporter,
+    service_name="unknown",
+):
     """Set up a tracer provider
 
     Args:
         endpoint (str): _description_
         service_name (str, optional): _description_. Defaults to "unknown".
 
-    Returns:
-        _type_: _description_
     """
     provider = TracerProvider(resource=Resource.create({"service.name": service_name}))
-    span_exporter = JSONSpanExporter(
-        endpoint,
-    )
+    print("span_exporter", span_exporter)
     provider.add_span_processor(SimpleSpanProcessor(span_exporter))
 
     set_tracer_provider(provider)
@@ -51,6 +51,7 @@ def setup_tracer_provider(endpoint: str, service_name="unknown"):
 
 async def middleware(request: Request, call_next):
     """Middleware to handle tracing"""
+
     trace_id = request.headers.get("x-fpx-trace-id")
 
     # Check if it is a route inspector request
@@ -99,11 +100,29 @@ def setup_span_instrumentation(instance: FastAPI, endpoint: ParsedUrl) -> FastAP
 
     All requests to the app will be automatically traced.
     """
+    return __internal_setup_span_instrumentation(
+        instance,
+        span_exporter=JSONSpanExporter(
+            urlunparse(endpoint),
+        ),
+    )
+
+
+def __internal_setup_span_instrumentation(
+    instance: FastAPI,
+    span_exporter: SpanExporter,
+) -> FastAPI:
+    """
+    This function adds tracing middleware to the FastAPI app.
+
+    All requests to the app will be automatically traced.
+    """
+
+    setup_tracer_provider(span_exporter)
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
         # Set up before startup
-        setup_tracer_provider(endpoint=urlunparse(endpoint))
         yield
         # TODO: Clean up after shutdown
 
