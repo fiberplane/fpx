@@ -1,13 +1,15 @@
-from typing import Any, List, Optional
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json, LetterCase
+"""Implementation of the JSON Span Exporter"""
 
-from opentelemetry.sdk.resources import Attributes, Resource
-from opentelemetry.sdk.trace import ReadableSpan, StatusCode, Event
-from opentelemetry.trace import Link, SpanKind, Status
+from dataclasses import dataclass
+from logging import getLogger
+from typing import Any, List, Optional
 
 import requests
-from opentelemetry.sdk.trace.export import SpanExportResult, SpanExporter
+from dataclasses_json import LetterCase, dataclass_json
+from opentelemetry.sdk.resources import Attributes, Resource
+from opentelemetry.sdk.trace import Event, ReadableSpan, StatusCode
+from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
+from opentelemetry.trace import Link, SpanKind, Status
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
@@ -70,42 +72,6 @@ class ResourceData:
             attributes=to_key_values(resource.attributes),
             schema_url=resource.schema_url,
         )
-
-
-class JSONSpanExporter(SpanExporter):
-    def __init__(self, endpoint: str):
-        self.endpoint = endpoint
-
-    def export(self, spans):
-        resource_spans = [ResourceSpanData.from_span(span) for span in spans]
-
-        payload = SpansPayload(resource_spans=resource_spans)
-
-        content = payload.to_json()
-
-        try:
-            response = requests.post(
-                self.endpoint,
-                data=content,
-                headers={"Content-Type": "application/json"},
-                timeout=5,
-            )
-            if response.status_code == 200:
-                return SpanExportResult.SUCCESS
-        except requests.Timeout:
-            # back off and retry
-            pass
-        except requests.ConnectionError:
-            pass
-            # # Send JSON data to the endpoint
-            # response = post(
-
-            # )
-
-        return SpanExportResult.FAILURE
-
-    def shutdown(self):
-        pass
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
@@ -236,3 +202,36 @@ def to_key_values(attributes: Attributes):
 def int_to_hex_str(num: int) -> str:
     """Convert integer to hex string padded to 16 chars"""
     return format(num, "016x")
+
+
+class JSONSpanExporter(SpanExporter):
+    def __init__(self, endpoint: str):
+        self.endpoint = endpoint
+
+    def export(self, spans):
+        logger = getLogger("fpxpy")
+        resource_spans = [ResourceSpanData.from_span(span) for span in spans]
+        payload = SpansPayload(resource_spans=resource_spans)
+        content = payload.to_json()
+
+        try:
+            response = requests.post(
+                self.endpoint,
+                data=content,
+                headers={"Content-Type": "application/json"},
+                timeout=5,
+            )
+            if response.status_code == 200:
+                logger.info("Successfully sent spans to %s", self.endpoint)
+                return SpanExportResult.SUCCESS
+            logger.error("Received status code %s", response.status_code)
+        except requests.Timeout:
+            # TODO: implement back off and retry
+            logger.error("Timeout while sending spans to %s", self.endpoint)
+        except requests.ConnectionError:
+            logger.error("Failed to connect to %s", self.endpoint)
+
+        return SpanExportResult.FAILURE
+
+    def shutdown(self):
+        pass

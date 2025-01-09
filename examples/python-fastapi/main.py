@@ -13,7 +13,6 @@ def read_root():
     Example index that returns a JSON object
     """
     loop()
-    # span.set_status(trace.StatusCode.OK, "All done")
     return {"Hello": "World"}
 
 

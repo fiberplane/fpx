@@ -51,8 +51,10 @@ def setup_tracer_provider(endpoint: str, service_name="unknown"):
 
 
 async def middleware(request: Request, call_next):
+    """Middleware to handle tracing"""
     trace_id = request.headers.get("x-fpx-trace-id")
 
+    # Check if it is a route inspector request
     route_inspector = request.headers.get("x-fpx-route-inspector")
     if route_inspector == "enabled":
         return await call_next(request)
@@ -101,11 +103,10 @@ def setup_span_instrumentation(instance: FastAPI, endpoint: ParsedUrl) -> FastAP
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
-        provider = setup_tracer_provider(endpoint=urlunparse(endpoint))
         # Set up before startup
+        setup_tracer_provider(endpoint=urlunparse(endpoint))
         yield
-        provider.get_tracer()
-        # Clean up after shutdown
+        # TODO: Clean up after shutdown
 
     instance.router.lifespan_context = lifespan
 
