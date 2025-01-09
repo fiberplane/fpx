@@ -5,9 +5,9 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "dataclasses-json>=0.6.7",
     "fastapi[standard]>=0.115.6",
     "fpxpy",
-    "pyhumps>=3.8.0",
     "tracing>=0.1.3",
 ]
 
