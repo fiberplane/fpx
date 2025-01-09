@@ -1,6 +1,5 @@
 import random
 from contextlib import asynccontextmanager
-from typing import Optional
 from urllib.parse import ParseResult as ParsedUrl
 from urllib.parse import urlunparse
 
@@ -24,7 +23,7 @@ from opentelemetry.trace import (
     set_tracer_provider,
 )
 
-from fpxpy.JSONSpanExporter import JSONSpanExporter
+from .JSONSpanExporter import JSONSpanExporter
 
 from .measure import measure
 from .utils import get_response_attributes, set_request_attributes
