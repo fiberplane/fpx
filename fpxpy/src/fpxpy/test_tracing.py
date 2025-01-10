@@ -1,5 +1,4 @@
 import io
-from time import sleep
 
 import pytest
 from fastapi import FastAPI

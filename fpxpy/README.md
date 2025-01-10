@@ -30,3 +30,11 @@ pointing to your instance of Fiberplane Studio, e.g:
 ```
 $ FPX_ENDPOINT=http://localhost:8788/v1/traces uv run fastapi dev main.py
 ```
+
+
+#### Development
+
+This package uses uv for its dependencies and running the tooling. The following tools are used for linting, checking & formatting. They are listed as part of the dev dependencies (and will be installed by uv by default). 
+
+* [MyPy](https://www.mypy-lang.org/) for type checking. Run: `uv run mypy .`
+* [ruff](https://docs.astral.sh/ruff/formatter/) for linting (`uv run ruff check`) and formatting (`uv run ruff format`)
