@@ -19,93 +19,91 @@ from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode, SpanKind, Span
 from opentelemetry.sdk.resources import Attributes
 
-ReturnValue = TypeVar("ReturnValue")
-Params = ParamSpec("Params")
+R = TypeVar("R")
+P = ParamSpec("P")
 
 # Type for the callback that gets both Span and original function params
-OnStartCallback = Callable[Concatenate[Span, Params], None]
-
-
-@overload
-def measure(
-    name: Optional[str],
-    func: Callable[Params, Coroutine[Any, Any, ReturnValue]],
-    span_kind: SpanKind = SpanKind.INTERNAL,
-    on_start: Optional[OnStartCallback[Params]] = None,
-    on_success: Union[
-        Callable[[Span, ReturnValue], Coroutine[Any, Any, None]],
-        None,
-    ] = None,
-    on_error: Optional[Callable[[Span, Exception], None]] = None,
-    attributes: Optional[Attributes] = None,
-) -> Callable[Params, Coroutine[Any, Any, ReturnValue]]: ...
-
-
-@overload
-def measure(
-    name: Optional[str],
-    func: Callable[Params, ReturnValue],
-    span_kind: SpanKind = SpanKind.INTERNAL,
-    on_start: Optional[OnStartCallback[Params]] = None,
-    on_success: Union[
-        Callable[[Span, ReturnValue], None],
-        None,
-    ] = None,
-    on_error: Optional[Callable[[Span, Exception], None]] = None,
-    attributes: Optional[Attributes] = None,
-) -> Callable[Params, ReturnValue]: ...
+OnStartCallback = Callable[Concatenate[Span, P], None]
 
 
 @overload
 def measure(
     name: str,
-    func: Optional[None] = None,
+    *,  # Force named parameters after name
     span_kind: SpanKind = SpanKind.INTERNAL,
-    on_start: Optional[OnStartCallback[Params]] = None,
-    on_success: Union[
-        Callable[[Span, ReturnValue], None],
-        Callable[[Span, ReturnValue], Coroutine[Any, Any, None]],
-        None,
+    on_start: Optional[OnStartCallback[Any]] = None,
+    on_success: Optional[Callable[[Span, Any], None]] = None,
+    on_error: Optional[Callable[[Span, Exception], None]] = None,
+    check_result: Optional[Callable[[Any], None]] = None,
+    attributes: Optional[Attributes] = None,
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]: ...
+
+
+@overload
+def measure(
+    name: Optional[str],
+    func: Callable[P, Coroutine[Any, Any, R]],
+    span_kind: SpanKind = SpanKind.INTERNAL,
+    on_start: Optional[OnStartCallback[P]] = None,
+    on_success: Optional[
+        Callable[[Span, R], Union[None, Coroutine[Any, Any, None]]]
     ] = None,
     on_error: Optional[Callable[[Span, Exception], None]] = None,
+    check_result: Optional[
+        Callable[[R], Union[None, Coroutine[Any, Any, None]]]
+    ] = None,
     attributes: Optional[Attributes] = None,
-) -> Callable[
-    [Callable[Params, ReturnValue]],
-    Callable[Params, ReturnValue],
-]: ...
+) -> Callable[P, Coroutine[Any, Any, R]]: ...
+
+
+@overload
+def measure(
+    name: Optional[str],
+    func: Callable[P, R],
+    span_kind: SpanKind = SpanKind.INTERNAL,
+    on_start: Optional[OnStartCallback[P]] = None,
+    on_success: Optional[Callable[[Span, R], None]] = None,
+    on_error: Optional[Callable[[Span, Exception], None]] = None,
+    check_result: Optional[Callable[[R], None]] = None,
+    attributes: Optional[Attributes] = None,
+) -> Callable[P, R]: ...
+
+
+@overload
+def measure(
+    name: str = "measure",
+    func: None = None,
+    *,
+    span_kind: SpanKind = SpanKind.INTERNAL,
+    on_start: Optional[OnStartCallback[P]] = None,
+    on_success: Optional[
+        Callable[[Span, R], Union[None, Coroutine[Any, Any, None]]]
+    ] = None,
+    on_error: Optional[Callable[[Span, Exception], None]] = None,
+    check_result: Optional[
+        Callable[[R], Union[None, Coroutine[Any, Any, None]]]
+    ] = None,
+    attributes: Optional[Attributes] = None,
+) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
 
 
 def measure(
     name: Optional[str] = None,
-    func: Optional[
-        Union[
-            Callable[Params, ReturnValue],
-            Callable[Params, Coroutine[Any, Any, ReturnValue]],
-        ]
-    ] = None,
+    func: Optional[Callable[P, Union[R, Coroutine[Any, Any, R]]]] = None,
     span_kind: SpanKind = SpanKind.INTERNAL,
-    on_start: Optional[OnStartCallback[Params]] = None,
-    on_success: Union[
-        Callable[
-            [Span, ReturnValue],
-            None,
-        ],
-        Callable[
-            [Span, ReturnValue],
-            Union[Coroutine[Any, Any, None]],
-        ],
-        None,
+    on_start: Optional[OnStartCallback[P]] = None,
+    on_success: Optional[
+        Callable[[Span, R], Union[None, Coroutine[Any, Any, None]]]
     ] = None,
     on_error: Optional[Callable[[Span, Exception], None]] = None,
+    check_result: Optional[
+        Callable[[R], Union[None, Coroutine[Any, Any, None]]]
+    ] = None,
     attributes: Optional[Attributes] = None,
 ) -> Union[
-    Callable[Params, ReturnValue],
-    Callable[Params, Coroutine[Any, Any, ReturnValue]],
-    Callable[[Callable[Params, ReturnValue]], Callable[Params, ReturnValue]],
-    Callable[
-        [Callable[Params, Coroutine[Any, Any, ReturnValue]]],
-        Callable[Params, Coroutine[Any, Any, ReturnValue]],
-    ],
+    Callable[P, R],
+    Callable[P, Coroutine[Any, Any, R]],
+    Callable[[Callable[P, R]], Callable[P, R]],
 ]:
     """
     Wraps a function in a span, measuring the time it takes to execute.
@@ -119,18 +117,18 @@ def measure(
 
     def wrap_function(
         fn: Union[
-            Callable[Params, ReturnValue],
-            Callable[Params, Coroutine[Any, Any, ReturnValue]],
+            Callable[P, R],
+            Callable[P, Coroutine[Any, Any, R]],
         ],
     ) -> Union[
-        Callable[Params, ReturnValue],
-        Callable[Params, Coroutine[Any, Any, ReturnValue]],
+        Callable[P, R],
+        Callable[P, Coroutine[Any, Any, R]],
     ]:
         is_coroutine = inspect.iscoroutinefunction(fn)
         current_name = name or fn.__name__
 
         @functools.wraps(fn)
-        async def async_wrapper(*args: Params.args, **kwargs: Params.kwargs):
+        async def async_wrapper(*args: P.args, **kwargs: P.kwargs):
             tracer = trace.get_tracer("fpx-tracer")
 
             with tracer.start_as_current_span(
@@ -139,10 +137,22 @@ def measure(
                 attributes=attributes,
             ) as span:
                 if on_start:
-                    on_start(span, *args, **kwargs)
+                    on_start(span, *args, **kwargs)  # Changed this line
                 try:
                     result = fn(*args, **kwargs)
                     value = result if not inspect.isawaitable(result) else await result
+                    if check_result:
+                        try:
+                            check = check_result(value)
+                            if inspect.iscoroutine(check):
+                                await check
+                        except Exception as e:
+                            span.set_status(Status(StatusCode.ERROR, str(e)))
+                            span.record_exception(e)
+                            if on_error:
+                                on_error(span, e)
+
+                            return value
 
                     span.set_status(Status(StatusCode.OK))
                     if on_success:
@@ -159,7 +169,7 @@ def measure(
                     raise e
 
         @functools.wraps(fn)
-        def sync_wrapper(*args: Params.args, **kwargs: Params.kwargs):
+        def sync_wrapper(*args: P.args, **kwargs: P.kwargs):
             tracer = trace.get_tracer("fpx-tracer")
             with tracer.start_as_current_span(
                 name=current_name,
@@ -167,7 +177,7 @@ def measure(
                 attributes=attributes,
             ) as span:
                 if on_start:
-                    on_start(span, *args, **kwargs)
+                    on_start(span, *args, **kwargs)  # Changed this line
                 try:
                     result = fn(*args, **kwargs)
                     value = (
@@ -175,6 +185,19 @@ def measure(
                         if inspect.isawaitable(result)
                         else result
                     )
+                    if check_result:
+                        try:
+                            check = check_result(value)
+                            if inspect.iscoroutine(check):
+                                loop = asyncio.get_event_loop()
+                                loop.run_until_complete(check)
+                        except Exception as e:
+                            span.set_status(Status(StatusCode.ERROR, str(e)))
+                            span.record_exception(e)
+                            if on_error:
+                                on_error(span, e)
+                            return value
+
                     span.set_status(Status(StatusCode.OK))
                     if on_success:
                         success = on_success(span, value)
@@ -195,17 +218,10 @@ def measure(
     # Used as decorator without parameters @measure
     if func is None:
         return cast(
-            Union[
-                Callable[
-                    [Callable[Params, ReturnValue]],
-                    Callable[Params, ReturnValue],
-                ],
-                Callable[
-                    [Callable[Params, Coroutine[Any, Any, ReturnValue]]],
-                    Callable[Params, Coroutine[Any, Any, ReturnValue]],
-                ],
-            ],
+            Callable[[Callable[P, R]], Callable[P, R]],
             wrap_function,
         )
 
-    return wrap_function(func)
+    return wrap_function(
+        cast(Union[Callable[P, R], Callable[P, Coroutine[Any, Any, R]]], func)
+    )
