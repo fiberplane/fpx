@@ -1,5 +1,5 @@
-import { Button } from "./components/ui/button"
-import { Input } from "./components/ui/input"
+import { Button } from "./components/ui/button";
+import { Input } from "./components/ui/input";
 
 export default function App() {
   return (
@@ -13,11 +13,11 @@ export default function App() {
             </div>
             <span className="font-semibold text-[#0F0E0C]">API docs</span>
           </div>
-          
+
           <div className="relative mb-4">
-            <Input 
-              type="search" 
-              placeholder="Search" 
+            <Input
+              type="search"
+              placeholder="Search"
               className="w-full pr-12"
             />
             <kbd className="pointer-events-none absolute right-3 top-2.5 h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 flex">
@@ -27,8 +27,8 @@ export default function App() {
 
           {/* Navigation */}
           <nav className="space-y-1">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="w-full justify-start text-[#0F0E0C] font-medium"
             >
               GEESE
@@ -40,31 +40,43 @@ export default function App() {
         <main className="flex-1 p-8">
           <div className="max-w-4xl">
             <div className="flex items-center gap-2 mb-4">
-              <span className="px-2 py-1 bg-muted rounded text-xs font-medium">1.0.0</span>
-              <span className="px-2 py-1 bg-muted rounded text-xs font-medium">OAS 3.0.0</span>
+              <span className="px-2 py-1 text-xs font-medium rounded bg-muted">
+                1.0.0
+              </span>
+              <span className="px-2 py-1 text-xs font-medium rounded bg-muted">
+                OAS 3.0.0
+              </span>
             </div>
-            
-            <h1 className="text-3xl font-bold mb-4">Geese API</h1>
-            <p className="text-muted-foreground mb-8">
+
+            <h1 className="mb-4 text-3xl font-bold">Geese API</h1>
+            <p className="mb-8 text-muted-foreground">
               The Geese API allows for creating and managing wise geese quotes
               and syncing the related data with supported systems
             </p>
 
             {/* Base URL section */}
             <div className="mb-8">
-              <h2 className="text-sm font-medium text-muted-foreground uppercase mb-2">BASE URL</h2>
-              <div className="p-3 bg-muted/10 rounded-md font-mono text-sm">
+              <h2 className="mb-2 text-sm font-medium uppercase text-muted-foreground">
+                BASE URL
+              </h2>
+              <div className="p-3 font-mono text-sm rounded-md bg-muted/10">
                 http://localhost:8788/requestor
               </div>
             </div>
 
             {/* Client Libraries section */}
             <div>
-              <h2 className="text-sm font-medium text-muted-foreground uppercase mb-2">CLIENT LIBRARIES</h2>
+              <h2 className="mb-2 text-sm font-medium uppercase text-muted-foreground">
+                CLIENT LIBRARIES
+              </h2>
               <div className="flex gap-4">
                 <Button variant="outline" className="gap-2">
                   <div className="w-4 h-4">
-                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="w-4 h-4 fill-current"
+                      aria-hidden="true"
+                    >
                       <title>Terminal icon</title>
                       <path d="M3 3h18v18H3V3zm16.5 1.5H4.5v15h15v-15z" />
                       <path d="M8 8h8v2H8z" />
@@ -74,7 +86,11 @@ export default function App() {
                 </Button>
                 <Button variant="outline" className="gap-2">
                   <div className="w-4 h-4">
-                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="w-4 h-4 fill-current"
+                      aria-hidden="true"
+                    >
                       <title>Node.js icon</title>
                       <path d="M12 18.8c-3.2 0-5.8-2.6-5.8-5.8s2.6-5.8 5.8-5.8 5.8 2.6 5.8 5.8-2.6 5.8-5.8 5.8z" />
                     </svg>
@@ -83,7 +99,11 @@ export default function App() {
                 </Button>
                 <Button variant="outline" className="gap-2">
                   <div className="w-4 h-4">
-                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="w-4 h-4 fill-current"
+                      aria-hidden="true"
+                    >
                       <title>Python icon</title>
                       <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" />
                     </svg>
@@ -96,5 +116,5 @@ export default function App() {
         </main>
       </div>
     </div>
-  )
+  );
 }

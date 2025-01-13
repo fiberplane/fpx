@@ -3,6 +3,7 @@ packages:
   - "api"
   - "fp-services"
   - "honc-code-gen"
+  - "playground"
   - "packages/*"
   - "examples/*"
   - "examples/service-bindings/*"
