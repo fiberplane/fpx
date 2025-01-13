@@ -1,4 +1,5 @@
 from typing import Union
+import inspect
 
 from fastapi import FastAPI
 from fpxpy import measure, setup
@@ -17,8 +18,8 @@ def read_root():
 
 
 @measure(name="loop")
-def loop():
-    for i in range(10):
+def loop(n: int = 10) -> None:
+    for i in range(n):
         print("loop", i)
 
 

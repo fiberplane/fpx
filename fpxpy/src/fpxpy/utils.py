@@ -10,7 +10,6 @@ def get_request_attributes(
     request: Request,
 ) -> Attributes:
     """Extract OpenTelemetry attributes from FastAPI request"""
-    # print("request.url", request.url.path)
     # Add headers as attributes
 
     attributes: Attributes = {
@@ -32,7 +31,6 @@ def get_request_attributes(
     }
 
     for key, value in request.headers.items():
-        # print("response.headers.items", key, value)
         attributes = dict(attributes)
         attributes[f"http.request.header.{key.lower()}"] = value
 

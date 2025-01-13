@@ -1,6 +1,6 @@
 [project]
 name = "fpxpy"
-version = "0.2.0"
+version = "0.2.1"
 authors = [
     { name = "Fiberplane", email = "support@fiberplane.com" },
     { name = "mellowagain", email = "py@mari.zip" },
@@ -41,4 +41,3 @@ dev = [
     "pytest>=8.3.4",
     "ruff>=0.8.6",
 ]
-

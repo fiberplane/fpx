@@ -97,7 +97,9 @@ app.get("/v0/app-routes-file-tree", async (ctx) => {
 
         const history = result.getHistory();
         const routeEntryId = history[history.length - 1];
-        const routeEntry = result.getRouteEntryById(routeEntryId as RouteEntryId);
+        const routeEntry = result.getRouteEntryById(
+          routeEntryId as RouteEntryId,
+        );
 
         routeEntries.push({
           ...currentRoute,
@@ -342,8 +344,8 @@ app.all(
       | null
       | string
       | {
-        [x: string]: string | SerializedFile | (string | SerializedFile)[];
-      } = null;
+          [x: string]: string | SerializedFile | (string | SerializedFile)[];
+        } = null;
     try {
       requestBody = await serializeRequestBodyForFpxDb(ctx);
     } catch (error) {
