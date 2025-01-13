@@ -1,0 +1,22 @@
+{
+  "$schema": "../../node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["../../biome.jsonc"],
+  "files": {
+    "ignore": ["dist", "node_modules"],
+  },
+  "overrides": [
+    {
+      "include": ["src"],
+      "linter": {
+        "enabled": true,
+        "rules": {
+          "suspicious": {
+            "noConsoleLog": {
+              "level": "warn",
+            },
+          },
+        },
+      },
+    },
+  ],
+}
