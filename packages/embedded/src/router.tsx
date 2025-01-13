@@ -1,31 +1,23 @@
 /** @jsx jsx */
 /** @jsxImportSource hono/jsx */
+// @ts-nocheck
 import { jsx } from "hono/jsx";
-// TODO: I think we need to include this if the consumer app doesn't have hono/jsx in tsconfig
-// TODO: Figure out how to fix this
 
-import { Hono } from "hono";
-import { dirname } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import path, { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
-import { readFileSync } from "node:fs";
-import type { BlankEnv, BlankSchema, Env, Schema } from "hono/types";
+import { type Env, Hono } from "hono";
 
+// TODO: This only works with node, fix asset loading for other runtimes as well
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const clientDistPath = join(__dirname, "../../embedded-client/dist");
 
-// TODO: Using Hono types returns in:
-// Type instantiation is excessively deep and possibly infinite.
-export function createRoutes<
-  E extends Env = BlankEnv,
-  S extends Schema = BlankSchema,
-  BasePath extends string = "/",
->() {
-  const app = new Hono<E, S, BasePath>();
+export function createRouter<E extends Env>(mountedPath: string): Hono<E> {
+  const router = new Hono<E>();
 
-  app.get("/client/index.js", async (c) => {
+  // TODO: This only works with node, fix asset loading for other runtimes as well
+  router.get("/client/index.js", async (c) => {
     const indexPath = join(clientDistPath, "index.js");
 
     if (!existsSync(indexPath)) {
@@ -34,7 +26,6 @@ export function createRoutes<
 
     try {
       const content = readFileSync(indexPath, "utf-8");
-
       return new Response(content, {
         status: 200,
         headers: {
@@ -48,7 +39,7 @@ export function createRoutes<
     }
   });
 
-  app.get("/", (c) => {
+  router.get("/*", (c) => {
     return c.html(
       <html lang="en">
         <head>
@@ -57,19 +48,17 @@ export function createRoutes<
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </head>
         <body>
-          <div id="root">
+          <div id="root" data-mount-path={mountedPath}>
             <p>Loading React application...</p>
           </div>
-          <script type="module" src="/fp/client/index.js" />
+          <script
+            type="module"
+            src={path.resolve(mountedPath, "client/index.js")}
+          />
         </body>
       </html>,
     );
   });
 
-  // Add a catch-all route to debug routing
-  app.all("*", (c) => {
-    return c.text("Catch-all route", 404);
-  });
-
-  return app;
+  return router;
 }
