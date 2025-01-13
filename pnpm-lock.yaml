@@ -580,6 +580,9 @@ importers:
 
   packages/embedded:
     dependencies:
+      '@fiberplane/embedded-client':
+        specifier: workspace:*
+        version: link:../embedded-client
       '@hono/node-server':
         specifier: ^1.13.7
         version: 1.13.7(hono@4.6.13)
