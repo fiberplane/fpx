@@ -30,13 +30,13 @@ type AnalysisCompleted = {
 
 type AnalysisCompletedPayload =
   | {
-    success: true;
-    routesResult: RoutesResult;
-  }
+      success: true;
+      routesResult: RoutesResult;
+    }
   | {
-    success: false;
-    error: string;
-  };
+      success: false;
+      error: string;
+    };
 
 type AnalysisEvents = {
   analysisCompleted: [AnalysisCompleted];
