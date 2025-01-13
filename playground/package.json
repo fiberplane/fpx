@@ -8,9 +8,11 @@
     "build": "tsc -b && vite build",
     "lint": "biome lint .",
     "format": "biome check . --write",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "shadd": "pnpm dlx shadcn@latest add"
   },
   "dependencies": {
+    "@radix-ui/react-navigation-menu": "^1.2.3",
     "@radix-ui/react-slot": "^1.1.0",
     "@tanstack/react-query": "^5.61.5",
     "@tanstack/react-query-devtools": "^5.64.1",

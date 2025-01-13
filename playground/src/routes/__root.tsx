@@ -1,9 +1,21 @@
-import { Outlet, createRootRoute } from "@tanstack/react-router";
 import React from "react";
+import { Outlet, createRootRoute } from "@tanstack/react-router";
 
 export const Route = createRootRoute({
   component: RootComponent,
 });
+
+function RootComponent() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div>
+        <Outlet />
+      </div>
+      <ReactQueryDevtools />
+      <TanStackRouterDevtools />
+    </div>
+  );
+}
 
 const TanStackRouterDevtools =
   process.env.NODE_ENV === "production"
@@ -26,13 +38,3 @@ const ReactQueryDevtools =
           default: res.ReactQueryDevtools,
         })),
       );
-
-function RootComponent() {
-  return (
-    <div className="min-h-screen bg-background">
-      <Outlet />
-      <ReactQueryDevtools />
-      <TanStackRouterDevtools />
-    </div>
-  );
-}
