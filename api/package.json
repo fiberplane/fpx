@@ -34,7 +34,11 @@
     "access": "public"
   },
   "license": "MIT or Apache 2",
-  "keywords": ["hono", "local", "debugging"],
+  "keywords": [
+    "hono",
+    "local",
+    "debugging"
+  ],
   "bin": {
     "fpx": "bin/cli.js"
   },
@@ -43,6 +47,7 @@
     "@ai-sdk/mistral": "^1.0.3",
     "@ai-sdk/openai": "^1.0.5",
     "@fiberplane/fpx-types": "workspace:*",
+    "@fiberplane/embedded": "workspace:*",
     "@fiberplane/source-analysis": "workspace:*",
     "@hono/node-server": "^1.13.7",
     "@hono/zod-validator": "^0.4.1",

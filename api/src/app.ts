@@ -15,6 +15,7 @@ import collections from "./routes/collections.js";
 import inference from "./routes/inference/index.js";
 import settings from "./routes/settings.js";
 import traces from "./routes/traces.js";
+import { createRoutes } from "@fiberplane/embedded";
 
 export function createApp(
   db: LibSQLDatabase<typeof schema>,
@@ -72,6 +73,14 @@ export function createApp(
   app.route("/", appRoutes);
   app.route("/", settings);
   app.route("/", collections);
+
+  const embeddedRoutes = createRoutes<{
+    Bindings: Bindings;
+    Variables: Variables;
+  }>();
+
+  // biome-ignore lint/suspicious/noExplicitAny: TODO: figure out why hono types break
+  app.route("/fp", embeddedRoutes as any);
 
   return app;
 }
