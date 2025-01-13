@@ -30,13 +30,13 @@ type AnalysisCompleted = {
 
 type AnalysisCompletedPayload =
   | {
-      success: true;
-      routesResult: RoutesResult;
-    }
+    success: true;
+    routesResult: RoutesResult;
+  }
   | {
-      success: false;
-      error: string;
-    };
+    success: false;
+    error: string;
+  };
 
 type AnalysisEvents = {
   analysisCompleted: [AnalysisCompleted];
@@ -172,7 +172,7 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
         this.updateRoutesResult();
         logger.debug(`Finished parsing result ${performance.now() - start}ms`);
       } catch (e) {
-        logger.error("Error while updating factory", e);
+        logger.error("Error while updating source code analysis", e);
       }
     }, 50);
   }
@@ -229,6 +229,10 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
     await this.isCompilerReady();
 
     this._isRunning = true;
+  }
+
+  public getFilesCount() {
+    return this.getFileNames().length;
   }
 
   private async isCompilerReady(): Promise<boolean> {

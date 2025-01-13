@@ -54,6 +54,7 @@ app.get("/v0/app-routes", async (ctx) => {
     env(ctx).FPX_SERVICE_TARGET as string,
     "http://localhost:8787",
   );
+
   return ctx.json({
     baseUrl,
     routes,
@@ -74,32 +75,35 @@ app.get("/v0/app-routes-file-tree", async (ctx) => {
     const result = await getResult();
 
     const routeEntries = [];
-    for (const currentRoute of routes) {
-      const url = new URL("http://localhost");
-      url.pathname = currentRoute.path ?? "";
-      const request = new Request(url, {
-        method: currentRoute.method ?? "",
-      });
-      result.resetHistory();
-      const response = await result.currentApp.fetch(request);
-      const responseText = await response.text();
 
-      if (responseText !== "Ok") {
-        logger.warn(
-          "Failed to fetch route for context expansion",
-          responseText,
-        );
-        continue;
+    if (result) {
+      for (const currentRoute of routes) {
+        const url = new URL("http://localhost");
+        url.pathname = currentRoute.path ?? "";
+        const request = new Request(url, {
+          method: currentRoute.method ?? "",
+        });
+        result.resetHistory();
+        const response = await result.currentApp.fetch(request);
+        const responseText = await response.text();
+
+        if (responseText !== "Ok") {
+          logger.warn(
+            "Failed to fetch route for context expansion",
+            responseText,
+          );
+          continue;
+        }
+
+        const history = result.getHistory();
+        const routeEntryId = history[history.length - 1];
+        const routeEntry = result.getRouteEntryById(routeEntryId as RouteEntryId);
+
+        routeEntries.push({
+          ...currentRoute,
+          fileName: routeEntry?.fileName,
+        });
       }
-
-      const history = result.getHistory();
-      const routeEntryId = history[history.length - 1];
-      const routeEntry = result.getRouteEntryById(routeEntryId as RouteEntryId);
-
-      routeEntries.push({
-        ...currentRoute,
-        fileName: routeEntry?.fileName,
-      });
     }
 
     const tree = buildRouteTree(
@@ -338,8 +342,8 @@ app.all(
       | null
       | string
       | {
-          [x: string]: string | SerializedFile | (string | SerializedFile)[];
-        } = null;
+        [x: string]: string | SerializedFile | (string | SerializedFile)[];
+      } = null;
     try {
       requestBody = await serializeRequestBodyForFpxDb(ctx);
     } catch (error) {
