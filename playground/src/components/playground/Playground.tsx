@@ -2,21 +2,27 @@ import { Input } from "@/components/ui/input";
 import { Navigation } from "./Navigation";
 import { getNavigationData } from "./navigation-data";
 import { RequestViewer } from "./request-viewer/RequestViewer";
+import { ThemeProvider } from "../theme-provider";
+import { ModeToggle } from "../mode-toggle";
 
 export function Playground() {
   const navigationItems = getNavigationData();
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="w-64 border-r border-border min-h-screen p-4">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="h-8 w-8 rounded bg-primary text-primary-foreground flex items-center justify-center font-semibold">
-              fpx
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <div className="min-h-screen bg-background">
+        <div className="flex">
+          {/* Sidebar */}
+          <aside className="w-64 border-r border-border min-h-screen p-4">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded bg-primary text-primary-foreground flex items-center justify-center font-semibold">
+                  fpx
+                </div>
+                <span className="font-semibold text-foreground">API docs</span>
+              </div>
+              <ModeToggle />
             </div>
-            <span className="font-semibold text-foreground">API docs</span>
-          </div>
 
           <div className="relative mb-6">
             <Input
@@ -29,14 +35,15 @@ export function Playground() {
             </kbd>
           </div>
 
-          <Navigation items={navigationItems} />
-        </aside>
+            <Navigation items={navigationItems} />
+          </aside>
 
-        {/* Main content */}
-        <main className="flex-1 min-h-screen flex flex-col">
-          <RequestViewer method="POST" path="/api/geese" />
-        </main>
+          {/* Main content */}
+          <main className="flex-1 min-h-screen flex flex-col">
+            <RequestViewer method="POST" path="/api/geese" />
+          </main>
+        </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 }
