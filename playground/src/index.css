@@ -298,7 +298,7 @@
     --background: var(--bg-background-dark);
     --foreground: var(--fg-default-dark);
 
-    --card: var(--bg-popover);
+    --card: var(--bg-popover-dark);
     --card-foreground: var(--fg-default-dark);
 
     --popover: var(--bg-popover-dark);
