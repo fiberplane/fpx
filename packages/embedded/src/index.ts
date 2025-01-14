@@ -1,8 +1,12 @@
 import type { Env, MiddlewareHandler } from "hono/types";
 import { createRouter } from "./router.js";
 
+export interface EmbeddedMiddlewareOptions {
+  cdn?: string;
+}
+
 export const createMiddleware =
-  <E extends Env>(): MiddlewareHandler<E> =>
+  <E extends Env>(options?: EmbeddedMiddlewareOptions): MiddlewareHandler<E> =>
   async (c, next) => {
     // The middleware gets mounted inside a consumer Hono app under a routePath,
     // we need to remove the prefix routePath for our embedded router to make
@@ -16,7 +20,7 @@ export const createMiddleware =
     const newRequest = new Request(newUrl, c.req.raw);
 
     // Let our embedded router handle the request
-    const router = createRouter(mountedPath);
+    const router = createRouter({ mountedPath, cdn: options?.cdn });
     const response = await router.fetch(newRequest);
 
     // Skip the middleware and continue if the embedded router doesn't match
