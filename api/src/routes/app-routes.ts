@@ -28,6 +28,7 @@ import {
   executeProxyRequest,
   handleFailedRequest,
   handleSuccessfulRequest,
+  removeUnsupportedHeaders,
 } from "../lib/proxy-request/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import {
@@ -314,8 +315,9 @@ app.all(
     const requestUrlHeader = proxyToHeader;
 
     // NOTE - These are the headers that will be used in the request to the service
-    const requestHeaders: Record<string, string> =
-      constructProxiedRequestHeaders(ctx, headersJsonHeader ?? "", traceId);
+    const requestHeaders: Record<string, string> = removeUnsupportedHeaders(
+      constructProxiedRequestHeaders(ctx, headersJsonHeader ?? "", traceId),
+    );
 
     // Construct the url we want to proxy to, using the query params from the original request
     const requestQueryParams = {
@@ -328,7 +330,6 @@ app.all(
     logger.debug("Proxying request to:", requestUrl);
     logger.debug("Proxying request with headers:", requestHeaders);
 
-    // Create a new request object
     // Clone the incoming request, so we can make a proxy Request object
     const clonedReq = ctx.req.raw.clone();
     const proxiedReq = new Request(requestUrl, {
