@@ -1,0 +1,40 @@
+{
+  "name": "@fiberplane/embedded",
+  "version": "0.0.10",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "license": "MIT or Apache 2",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc",
+    "format": "biome check . --write",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "*",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "hono": "^4.6.12",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "dependencies": {
+    "@fiberplane/embedded-client": "workspace:*",
+    "@hono/node-server": "^1.13.7"
+  }
+}

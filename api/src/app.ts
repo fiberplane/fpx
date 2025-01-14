@@ -13,6 +13,7 @@ import auth from "./routes/auth.js";
 import inference from "./routes/inference/index.js";
 import settings from "./routes/settings.js";
 import traces from "./routes/traces.js";
+import { createMiddleware } from "@fiberplane/embedded";
 
 export function createApp(
   db: LibSQLDatabase<typeof schema>,
@@ -58,6 +59,8 @@ export function createApp(
   app.route("/", inference);
   app.route("/", appRoutes);
   app.route("/", settings);
+
+  app.use("/fp/*", createMiddleware());
 
   return app;
 }
