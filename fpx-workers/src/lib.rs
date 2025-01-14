@@ -22,11 +22,6 @@ mod ws;
 
 #[event(start)]
 fn start() {
-    // This code runs in the start event handler for the Worker
-    // However, .env files are not supported in Cloudflare Workers
-    // and environment variables should be configured through wrangler.toml
-    // or the Cloudflare dashboard instead
-
     let fmt_layer = tracing_subscriber::fmt::layer()
         .json()
         .with_ansi(false) // Only partially supported across JavaScript runtimes
@@ -58,12 +53,17 @@ async fn fetch(
     let store = D1Store::new(d1_database);
     let boxed_store = Arc::new(store);
 
+    let expected_token = env
+        .var("API_TOKEN")
+        .expect("no auth token is set")
+        .to_string();
+
     let service = service::Service::new(boxed_store.clone(), boxed_events.clone());
     let api_router =
         api::Builder::new()
             .build(service, boxed_store)
             .route_layer(axum::middleware::from_fn(move |req, next| {
-                auth_middleware(req, env.as_ref().clone(), next)
+                auth_middleware(expected_token.clone(), req, next)
             }));
 
     let mut router: axum::Router = axum::Router::new()
