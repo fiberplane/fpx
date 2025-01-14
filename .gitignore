@@ -3,6 +3,10 @@ shared/dist
 .env
 .envrc
 
+# To make my life temporarily easier
+lilo/lilo-worker/.prod.vars
+lilo/lilo-worker/.dev.vars
+
 # Cursor
 .cursorrules
 
@@ -45,6 +49,7 @@ yarn-error.log
 # Personal files
 start-dev.sh
 slam-geese.sh
+remove_node_modules.sh
 
 # Ignore .dev.vars files in the examples folder
 examples/**/*.dev.vars

@@ -1,19 +1,19 @@
 import { useOtelTraces } from "@/queries";
-import { removeQueryParams } from "@/utils";
+import { createKeyValueParametersFromValues, removeQueryParams } from "@/utils";
 import type { TraceListResponse } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useMemo } from "react";
-import {
-  type KeyValueParameter,
-  createKeyValueParameters,
-} from "./KeyValueForm";
 import {
   type ProxiedRequestResponse,
   useFetchRequestorRequests,
 } from "./queries";
 import { findMatchedRoute } from "./routes";
-import { type RequestorBody, useRequestorStore } from "./store";
-import type { RequestorBodyType } from "./store/request-body";
+import type {
+  KeyValueParameter,
+  RequestorBody,
+  RequestorBodyType,
+} from "./store";
+import { useStudioStore } from "./store";
 import { isRequestMethod, isWsRequest } from "./types";
 import {
   sortProxiedRequestResponsesDescending,
@@ -24,7 +24,7 @@ const EMPTY_TRACES: TraceListResponse = [];
 
 export function useRequestorHistory() {
   const {
-    routes,
+    appRoutes: routes,
     setActiveRoute: handleSelectRoute,
     updatePath: setPath,
     updateMethod: setMethod,
@@ -32,8 +32,8 @@ export function useRequestorHistory() {
     setQueryParams,
     setBody,
     showResponseBodyFromHistory,
-  } = useRequestorStore(
-    "routes",
+  } = useStudioStore(
+    "appRoutes",
     "setActiveRoute",
     "updatePath",
     "setBody",
@@ -123,7 +123,7 @@ export function useRequestorHistory() {
 
         const headers = match.app_requests.requestHeaders ?? {};
         setRequestHeaders(
-          createKeyValueParameters(
+          createKeyValueParametersFromValues(
             Object.entries(headers)
               .map(([key, value]) => ({ key, value }))
               .filter(
@@ -135,7 +135,7 @@ export function useRequestorHistory() {
         );
 
         setQueryParams(
-          createKeyValueParameters(
+          createKeyValueParametersFromValues(
             Object.entries(queryParams).map(([key, value]) => ({
               key,
               value,
@@ -146,6 +146,8 @@ export function useRequestorHistory() {
         // NOTE - We set the body to be undefined or a (json serialized) string for now,
         //        since that helps us render it in the UI (specifically in CodeMirror editors)
         const body = match.app_requests.requestBody;
+
+        // const typeHint = getBodyJsonType(headers);
         if (body === undefined || body === null) {
           setBody(undefined);
         } else {
@@ -181,13 +183,19 @@ export function useRequestorHistory() {
 
         const headers = match.app_requests.requestHeaders ?? {};
         setRequestHeaders(
-          createKeyValueParameters(
-            Object.entries(headers).map(([key, value]) => ({ key, value })),
+          createKeyValueParametersFromValues(
+            Object.entries(headers)
+              .map(([key, value]) => ({ key, value }))
+              .filter(
+                // HACK - We don't want to pass through the trace id header,
+                //        Otherwise each successive request will be correlated!!
+                ({ key }) => key?.toLowerCase() !== "x-fpx-trace-id",
+              ),
           ),
         );
 
         setQueryParams(
-          createKeyValueParameters(
+          createKeyValueParametersFromValues(
             Object.entries(queryParams).map(([key, value]) => ({
               key,
               value,
@@ -330,7 +338,7 @@ function determineBodyType(headers: Record<string, string>): BodyType {
 
 function parseUrlEncodedFormBody(body: string): KeyValueParameter[] {
   if (isStringifiedRecordWithKeys(body)) {
-    return createKeyValueParameters(
+    return createKeyValueParametersFromValues(
       Object.entries(JSON.parse(body)).map(([key, value]) => ({
         key,
         value: String(value),
@@ -349,7 +357,7 @@ function parseUrlEncodedFormBody(body: string): KeyValueParameter[] {
   });
 
   // Use createKeyValueParameters to generate the final structure
-  return createKeyValueParameters(keyValueParameters);
+  return createKeyValueParametersFromValues(keyValueParameters);
 }
 
 function isStringifiedRecordWithKeys(

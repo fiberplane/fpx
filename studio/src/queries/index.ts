@@ -15,3 +15,9 @@ export {
 export { useOtelTrace, useOtelTraces } from "./traces-otel";
 
 export * from "./user-info";
+export {
+  useAddCollection,
+  useCollections,
+  useAddItemToCollection,
+} from "./collections";
+export type { CollectionWithItemsList } from "./collections";
