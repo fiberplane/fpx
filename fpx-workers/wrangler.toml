@@ -28,4 +28,4 @@ tag = "v1"
 new_classes = ["WebSocketHibernationServer"]
 
 [vars]
-API_TOKEN = "your-secret-token-here"
+AUTH_TOKEN = "your-secret-token-here"

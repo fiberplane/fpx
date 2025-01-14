@@ -53,8 +53,8 @@ async fn fetch(
     let store = D1Store::new(d1_database);
     let boxed_store = Arc::new(store);
 
-    let expected_token = env
-        .var("API_TOKEN")
+    let auth_token = env
+        .var("AUTH_TOKEN")
         .expect("no auth token is set")
         .to_string();
 
@@ -63,7 +63,7 @@ async fn fetch(
         api::Builder::new()
             .build(service, boxed_store)
             .route_layer(axum::middleware::from_fn(move |req, next| {
-                auth_middleware(expected_token.clone(), req, next)
+                auth_middleware(auth_token.clone(), req, next)
             }));
 
     let mut router: axum::Router = axum::Router::new()
