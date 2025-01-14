@@ -17,7 +17,7 @@ use tracing_opentelemetry::OpenTelemetrySpanExt;
 /// according to http header standards, are silently ignored.
 pub struct HeaderMapInjector<'a>(pub &'a mut HeaderMap);
 
-impl<'a> Injector for HeaderMapInjector<'a> {
+impl Injector for HeaderMapInjector<'_> {
     fn set(&mut self, key: &str, val: String) {
         if let Ok(key) = HeaderName::from_str(key) {
             if let Ok(val) = HeaderValue::from_str(&val) {
@@ -34,7 +34,7 @@ impl<'a> Injector for HeaderMapInjector<'a> {
 /// ie from a incoming http request.
 pub struct HeaderMapExtractor<'a>(pub &'a HeaderMap);
 
-impl<'a> Extractor for HeaderMapExtractor<'a> {
+impl Extractor for HeaderMapExtractor<'_> {
     fn get(&self, key: &str) -> Option<&str> {
         self.0.get(key).and_then(|val| val.to_str().ok())
     }
