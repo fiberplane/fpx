@@ -1,5 +1,5 @@
 {
-  "name": "playground",
+  "name": "@fiberplane/playground",
   "private": true,
   "version": "0.0.0",
   "type": "module",

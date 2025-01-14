@@ -14,4 +14,14 @@ export default defineConfig({
   server: {
     port: 6660,
   },
+  // TODO: Temporary to make sure we can load the assets from the fs using it's chunk name without a hash
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: "index.js",
+        chunkFileNames: "[name].js",
+        assetFileNames: "[name].[ext]",
+      },
+    },
+  },
 });
