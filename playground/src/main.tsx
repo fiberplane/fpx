@@ -10,11 +10,11 @@ if (rootElement === null) {
   throw new Error("Root element not found");
 }
 
-// NOTE: Mount path defines which path the whole playground is mounted on. The
+// NOTE: Mounted path defines which path the whole playground is mounted on. The
 // client router needs to know this so it can generate correct links
-const mountPath = rootElement.getAttribute("data-mount-path");
+const basepath = rootElement.dataset.mountedPath;
 
-const router = createRouter({ routeTree, basepath: mountPath ?? undefined });
+const router = createRouter({ routeTree, basepath });
 const queryClient = new QueryClient();
 
 // Register your router for maximum type safety

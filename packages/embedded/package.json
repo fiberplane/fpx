@@ -34,7 +34,7 @@
     "react-dom": "^18.2.0"
   },
   "dependencies": {
-    "@fiberplane/embedded-client": "workspace:*",
+    "@fiberplane/playground": "workspace:*",
     "@hono/node-server": "^1.13.7"
   }
 }

@@ -11,25 +11,30 @@ import { type Env, Hono } from "hono";
 // TODO: This only works with node, fix asset loading for other runtimes as well
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const clientDistPath = join(__dirname, "../../embedded-client/dist");
+const clientDistPath = join(__dirname, "../../../playground/dist");
 
 export function createRouter<E extends Env>(mountedPath: string): Hono<E> {
   const router = new Hono<E>();
 
   // TODO: This only works with node, fix asset loading for other runtimes as well
-  router.get("/client/index.js", async (c) => {
-    const indexPath = join(clientDistPath, "index.js");
+  router.get("/client/:file", async (c) => {
+    const file = c.req.param("file");
+    const filePath = join(clientDistPath, file);
 
-    if (!existsSync(indexPath)) {
+    if (!existsSync(filePath)) {
       return c.text("File not found", 404);
     }
 
     try {
-      const content = readFileSync(indexPath, "utf-8");
+      const content = readFileSync(filePath, "utf-8");
+      const contentType = file.endsWith(".js")
+        ? "application/javascript"
+        : "text/css";
+
       return new Response(content, {
         status: 200,
         headers: {
-          "Content-Type": "application/javascript",
+          "Content-Type": contentType,
           "Cache-Control": "no-store, no-cache, must-revalidate",
           Pragma: "no-cache",
         },
@@ -46,11 +51,13 @@ export function createRouter<E extends Env>(mountedPath: string): Hono<E> {
           <title>Embedded App</title>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <link
+            rel="stylesheet"
+            href={path.resolve(mountedPath, "client/index.css")}
+          />
         </head>
         <body>
-          <div id="root" data-mount-path={mountedPath}>
-            <p>Loading React application...</p>
-          </div>
+          <div id="root" data-mounted-path={mountedPath} />
           <script
             type="module"
             src={path.resolve(mountedPath, "client/index.js")}
