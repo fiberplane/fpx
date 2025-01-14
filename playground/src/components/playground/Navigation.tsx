@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import type { NavigationItem } from "./navigation-data";
 import { cn } from "@/lib/utils";
+import type { NavigationItem } from "./navigation-data";
 
 interface NavigationProps {
   items: NavigationItem[];
@@ -34,7 +34,12 @@ export function Navigation({ items }: NavigationProps) {
                   className="w-full justify-start text-sm font-normal hover:bg-muted"
                   title={route.summary}
                 >
-                  <span className={cn("mr-2 font-mono text-xs", methodColors[route.method as keyof typeof methodColors])}>
+                  <span
+                    className={cn(
+                      "mr-2 font-mono text-xs",
+                      methodColors[route.method as keyof typeof methodColors],
+                    )}
+                  >
                     {route.method}
                   </span>
                   {route.name}
@@ -46,4 +51,4 @@ export function Navigation({ items }: NavigationProps) {
       ))}
     </nav>
   );
-} 
+}

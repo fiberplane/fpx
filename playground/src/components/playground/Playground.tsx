@@ -34,10 +34,7 @@ export function Playground() {
 
         {/* Main content */}
         <main className="flex-1 min-h-screen flex flex-col">
-          <RequestViewer 
-            method="POST"
-            path="/api/geese"
-          />
+          <RequestViewer method="POST" path="/api/geese" />
         </main>
       </div>
     </div>

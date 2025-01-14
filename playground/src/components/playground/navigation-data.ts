@@ -128,7 +128,10 @@ export function getNavigationData(): NavigationItem[] {
   };
 
   // Transform OpenAPI spec into navigation items
-  const routesByTag = new Map<string, Array<{ name: string; path: string; method: string; summary?: string }>>();
+  const routesByTag = new Map<
+    string,
+    Array<{ name: string; path: string; method: string; summary?: string }>
+  >();
 
   // Process each path and its operations
   for (const [path, operations] of Object.entries(mockOpenAPISpec.paths)) {
@@ -152,4 +155,4 @@ export function getNavigationData(): NavigationItem[] {
     title: tag,
     routes: routes.sort((a, b) => a.name.localeCompare(b.name)),
   }));
-} 
+}

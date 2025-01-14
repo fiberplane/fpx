@@ -19,4 +19,4 @@ export function RequestViewer({ method, path }: RequestViewerProps) {
       </div>
     </div>
   );
-} 
+}

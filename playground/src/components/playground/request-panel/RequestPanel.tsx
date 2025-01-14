@@ -1,5 +1,5 @@
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface RequestPanelProps {
   method: string;
@@ -18,28 +18,34 @@ export function RequestPanel({ method, path }: RequestPanelProps) {
             className="font-mono text-sm bg-muted"
           />
         </div>
-        <Input
-          value={path}
-          readOnly
-          className="font-mono text-sm flex-1"
-        />
-        <Button variant="default">
-          Send
-        </Button>
+        <Input value={path} readOnly className="font-mono text-sm flex-1" />
+        <Button variant="default">Send</Button>
       </div>
 
       {/* Request Configuration Tabs */}
       <div className="flex border-b border-border">
-        <Button variant="ghost" className="px-4 py-2 -mb-px border-b-2 border-primary">
+        <Button
+          variant="ghost"
+          className="px-4 py-2 -mb-px border-b-2 border-primary"
+        >
           Params
         </Button>
-        <Button variant="ghost" className="px-4 py-2 -mb-px border-b-2 border-transparent">
+        <Button
+          variant="ghost"
+          className="px-4 py-2 -mb-px border-b-2 border-transparent"
+        >
           Headers
         </Button>
-        <Button variant="ghost" className="px-4 py-2 -mb-px border-b-2 border-transparent">
+        <Button
+          variant="ghost"
+          className="px-4 py-2 -mb-px border-b-2 border-transparent"
+        >
           Body
         </Button>
-        <Button variant="ghost" className="px-4 py-2 -mb-px border-b-2 border-transparent">
+        <Button
+          variant="ghost"
+          className="px-4 py-2 -mb-px border-b-2 border-transparent"
+        >
           Docs
         </Button>
       </div>
@@ -74,4 +80,4 @@ export function RequestPanel({ method, path }: RequestPanelProps) {
       </div>
     </div>
   );
-} 
+}

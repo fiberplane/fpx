@@ -5,27 +5,34 @@ interface ResponsePanelProps {
   responseBody?: string;
 }
 
-export function ResponsePanel({ statusCode, responseBody }: ResponsePanelProps) {
+export function ResponsePanel({
+  statusCode,
+  responseBody,
+}: ResponsePanelProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Response Status Bar */}
       <div className="flex items-center gap-2 p-4 border-b border-border">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-sm">
-            Status:
-          </span>
+          <span className="font-mono text-sm">Status:</span>
           <span className={`font-mono text-sm ${getStatusColor(statusCode)}`}>
-            {statusCode || '---'}
+            {statusCode || "---"}
           </span>
         </div>
       </div>
 
       {/* Response Tabs */}
       <div className="flex border-b border-border">
-        <Button variant="ghost" className="px-4 py-2 -mb-px border-b-2 border-primary">
+        <Button
+          variant="ghost"
+          className="px-4 py-2 -mb-px border-b-2 border-primary"
+        >
           Response
         </Button>
-        <Button variant="ghost" className="px-4 py-2 -mb-px border-b-2 border-transparent">
+        <Button
+          variant="ghost"
+          className="px-4 py-2 -mb-px border-b-2 border-transparent"
+        >
           Headers
         </Button>
       </div>
@@ -58,4 +65,4 @@ function getStatusColor(status?: number): string {
     return "text-yellow-600";
   }
   return "text-red-600";
-} 
+}
