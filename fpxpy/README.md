@@ -1,4 +1,4 @@
-# fpx.py
+# fpxpy
 
 Provides instrumentation and route detection for FastAPI apps.
 
