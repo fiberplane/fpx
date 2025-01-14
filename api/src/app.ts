@@ -60,7 +60,12 @@ export function createApp(
   app.route("/", appRoutes);
   app.route("/", settings);
 
-  app.use("/fp/*", createMiddleware());
+  app.use(
+    "/fp/*",
+    createMiddleware({
+      cdn: "https://cdn.jsdelivr.net/gh/fiberplane/fpx@embedded-playground/playground/dist/",
+    }),
+  );
 
   return app;
 }
