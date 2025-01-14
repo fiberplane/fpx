@@ -3,6 +3,10 @@ shared/dist
 .env
 .envrc
 
+# To make my life temporarily easier
+lilo/lilo-worker/.prod.vars
+lilo/lilo-worker/.dev.vars
+
 # Cursor
 .cursorrules
 
