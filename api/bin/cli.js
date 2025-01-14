@@ -85,7 +85,10 @@ async function runWizard() {
   }
 
   const MIGHT_BE_CREATING =
-    IS_INITIALIZING_FPX && !WRANGLER_TOML && !PACKAGE_JSON;
+    IS_INITIALIZING_FPX &&
+    !WRANGLER_TOML &&
+    !PACKAGE_JSON &&
+    !PYPROJECT_TOML_PATH;
 
   logger.debug("MIGHT_BE_CREATING", MIGHT_BE_CREATING);
 

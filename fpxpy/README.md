@@ -31,6 +31,7 @@ pointing to your instance of Fiberplane Studio, e.g:
 $ FPX_ENDPOINT=http://localhost:8788/v1/traces uv run fastapi dev main.py
 ```
 
+If you don't specify this environment variable, the library will not be enabled.
 
 #### Development
 
