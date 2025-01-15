@@ -914,13 +914,13 @@ importers:
         version: 3.2.1
       '@astrojs/starlight':
         specifier: ^0.28.6
-        version: 0.28.6(astro@4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))
+        version: 0.28.6(astro@4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))
       '@iconify-json/lucide':
         specifier: ^1.2.16
         version: 1.2.16
       astro:
-        specifier: ^4.16.17
-        version: 4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)
+        specifier: ^4.16.18
+        version: 4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)
       astro-icon:
         specifier: ^1.1.4
         version: 1.1.4
@@ -935,7 +935,7 @@ importers:
         version: 0.32.6
       starlight-package-managers:
         specifier: ^0.6.0
-        version: 0.6.0(@astrojs/starlight@0.28.6(astro@4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)))(astro@4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))
+        version: 0.6.0(@astrojs/starlight@0.28.6(astro@4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)))(astro@4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))
       tailwindcss:
         specifier: ^3.4.15
         version: 3.4.15
@@ -5163,8 +5163,8 @@ packages:
   astro-icon@1.1.4:
     resolution: {integrity: sha512-sMLkQaevIQLv38WBzb/RDbsmxhg5+X+KcNmpTi9cE6MLurNWU1MPnlO87d9Vwg4HxTenKpDlYp81A3syXFW/gw==}
 
-  astro@4.16.17:
-    resolution: {integrity: sha512-OuD+BP7U6OqQLKtZ/FJkU2S+TOlifxS/OKUbZOb5p6y+LLBa1J3zHRJrIl7DUSq6eXY+9wSWwbJpD9JS+lqhxA==}
+  astro@4.16.18:
+    resolution: {integrity: sha512-G7zfwJt9BDHEZwlaLNvjbInIw2hPryyD654314KV/XT34pJU6SfN1S+mWa8RAkALcZNJnJXCJmT3JXLQStD3Lw==}
     engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0, npm: '>=9.6.5', pnpm: '>=7.1.0'}
     hasBin: true
 
@@ -10790,12 +10790,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/mdx@3.1.9(astro@4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))':
+  '@astrojs/mdx@3.1.9(astro@4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))':
     dependencies:
       '@astrojs/markdown-remark': 5.3.0
       '@mdx-js/mdx': 3.1.0(acorn@8.14.0)
       acorn: 8.14.0
-      astro: 4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)
+      astro: 4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)
       es-module-lexer: 1.5.4
       estree-util-visit: 2.0.0
       gray-matter: 4.0.3
@@ -10825,15 +10825,15 @@ snapshots:
       stream-replace-string: 2.0.0
       zod: 3.24.0
 
-  '@astrojs/starlight@0.28.6(astro@4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))':
+  '@astrojs/starlight@0.28.6(astro@4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))':
     dependencies:
-      '@astrojs/mdx': 3.1.9(astro@4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))
+      '@astrojs/mdx': 3.1.9(astro@4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))
       '@astrojs/sitemap': 3.2.1
       '@pagefind/default-ui': 1.2.0
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
-      astro: 4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)
-      astro-expressive-code: 0.35.6(astro@4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))
+      astro: 4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)
+      astro-expressive-code: 0.35.6(astro@4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))
       bcp-47: 2.1.0
       hast-util-from-html: 2.0.3
       hast-util-select: 6.0.3
@@ -15316,9 +15316,9 @@ snapshots:
 
   astring@1.9.0: {}
 
-  astro-expressive-code@0.35.6(astro@4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)):
+  astro-expressive-code@0.35.6(astro@4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)):
     dependencies:
-      astro: 4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)
+      astro: 4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)
       rehype-expressive-code: 0.35.6
 
   astro-icon@1.1.4:
@@ -15330,7 +15330,7 @@ snapshots:
       - debug
       - supports-color
 
-  astro@4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2):
+  astro@4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2):
     dependencies:
       '@astrojs/compiler': 2.10.3
       '@astrojs/internal-helpers': 0.4.1
@@ -20101,10 +20101,10 @@ snapshots:
       as-table: 1.0.55
       get-source: 2.0.12
 
-  starlight-package-managers@0.6.0(@astrojs/starlight@0.28.6(astro@4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)))(astro@4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)):
+  starlight-package-managers@0.6.0(@astrojs/starlight@0.28.6(astro@4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)))(astro@4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)):
     dependencies:
-      '@astrojs/starlight': 0.28.6(astro@4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))
-      astro: 4.16.17(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)
+      '@astrojs/starlight': 0.28.6(astro@4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))
+      astro: 4.16.18(@types/node@22.10.1)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)
 
   state-local@1.0.7: {}
 
