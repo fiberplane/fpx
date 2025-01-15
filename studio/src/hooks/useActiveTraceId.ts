@@ -1,14 +1,9 @@
 import { TRACE_ID_ROUTES } from "@/constants";
-import { useRequestorStore } from "@/pages/RequestorPage/store";
 import { useMemo } from "react";
 import { matchRoutes, useLocation } from "react-router-dom";
 
 export function useActiveTraceId() {
-  const traceId = useTraceIdFromRoute();
-  const { activeHistoryResponseTraceId } = useRequestorStore(
-    "activeHistoryResponseTraceId",
-  );
-  return traceId ?? activeHistoryResponseTraceId;
+  return useTraceIdFromRoute();
 }
 
 function useTraceIdFromRoute() {
@@ -25,6 +20,4 @@ function useTraceIdFromRoute() {
   if (match && match.length > 0) {
     return match[0].params.traceId;
   }
-
-  return null;
 }

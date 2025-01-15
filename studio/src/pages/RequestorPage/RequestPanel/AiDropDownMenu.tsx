@@ -20,7 +20,7 @@ import { cn, isMac } from "@/utils";
 import { CaretDownIcon } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useState } from "react";
 import { type AiTestingPersona, FRIENDLY, HOSTILE } from "../ai";
-import { useRequestorStore } from "../store";
+import { useStudioStore } from "../store";
 
 type AiDropDownMenuProps = {
   aiEnabled: boolean;
@@ -41,11 +41,7 @@ export function AiDropDownMenu({
     aiDropdownOpen: open,
     setAIDropdownOpen: setOpen,
     setSettingsOpen,
-  } = useRequestorStore(
-    "aiDropdownOpen",
-    "setAIDropdownOpen",
-    "setSettingsOpen",
-  );
+  } = useStudioStore("aiDropdownOpen", "setAIDropdownOpen", "setSettingsOpen");
 
   const handleValueChange = useCallback(
     (value: string) => {

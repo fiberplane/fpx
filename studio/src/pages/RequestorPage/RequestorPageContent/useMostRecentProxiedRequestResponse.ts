@@ -1,7 +1,7 @@
-// import { useOtelTraces } from "@/queries";
+import { useActiveTraceId } from "@/hooks";
 import { useMemo } from "react";
 import type { ProxiedRequestResponse } from "../queries";
-import { useActiveRoute, useRequestorStore } from "../store";
+import { useActiveRoute, useStudioStore } from "../store";
 import { sortProxiedRequestResponsesDescending } from "../utils";
 
 /**
@@ -13,15 +13,14 @@ export function useMostRecentProxiedRequestResponse(
   overrideTraceId: string | null = null,
 ) {
   const { path: routePath } = useActiveRoute();
-  const { path, method, activeHistoryResponseTraceId, sessionHistory } =
-    useRequestorStore(
-      "path",
-      "method",
-      "activeHistoryResponseTraceId",
-      "sessionHistory",
-    );
+  const { path, method, sessionHistory } = useStudioStore(
+    "path",
+    "method",
+    "sessionHistory",
+  );
 
-  const traceId = overrideTraceId ?? activeHistoryResponseTraceId;
+  const defaultTraceId = useActiveTraceId();
+  const traceId = overrideTraceId ?? defaultTraceId;
   return useMemo<ProxiedRequestResponse | undefined>(() => {
     if (traceId) {
       const result = all.find(

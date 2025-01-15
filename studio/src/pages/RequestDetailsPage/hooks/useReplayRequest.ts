@@ -1,3 +1,4 @@
+import { NAVIGATION_PANEL_HISTORY, NAVIGATION_PANEL_KEY } from "@/constants";
 import { useMakeProxiedRequest } from "@/pages/RequestorPage/queries";
 import {
   getRequestBody,
@@ -126,7 +127,7 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
         onSuccess(response) {
           navigate({
             pathname: `/requests/${response.traceId}`,
-            search: "?filter-tab=requests",
+            search: `?${NAVIGATION_PANEL_KEY}=${NAVIGATION_PANEL_HISTORY}`,
           });
         },
         onError(error) {

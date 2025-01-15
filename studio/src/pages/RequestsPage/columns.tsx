@@ -74,7 +74,7 @@ export const columns: ColumnDef<OtelTrace>[] = [
       return (
         <Link
           className="hover:underline"
-          to={`/requests/otel/${props.row.original.traceId}`}
+          to={`/requests/${props.row.original.traceId}`}
           onClick={(e) => {
             // We have a navigation handler for selecting the row anyhow, so we don't want to double-trigger that
             // Thus, let's stop propagation

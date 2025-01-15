@@ -130,7 +130,6 @@ const headerKeyCompletions = autocompletion({
       if (!word) {
         return null;
       }
-      console.log("word", word);
 
       return {
         from: word.from,
