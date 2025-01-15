@@ -215,7 +215,7 @@ def measure(
 
         return async_wrapper if is_coroutine else sync_wrapper
 
-    # Used as decorator without parameters @measure
+    # Used as decorator without passing a function in directly
     if func is None:
         return cast(
             Callable[[Callable[P, R]], Callable[P, R]],

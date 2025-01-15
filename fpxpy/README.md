@@ -87,7 +87,7 @@ Basic Usage:
 from fpxpy import measure
 from opentelemetry.trace import SpanKind
 
-@measure
+@measure()
 def my_function():
     return "Hello World"
 
