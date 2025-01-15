@@ -1,12 +1,12 @@
 # fpxpy
 
-Provides instrumentation and route detection for FastAPI apps.
+Provides instrumentation and route detection for [FastAPI](https://fastapi.tiangolo.com/) apps.
 
 ## Installation
 
 The package is available on PyPy, installing it as simple as
 
-```
+``` sh
 uv add fpxpy
 ```
 
@@ -23,7 +23,7 @@ setup(app)
 After that, when running your FastAPI server, be sure to set the `FPX_ENDPOINT` env variable
 pointing to your instance of Fiberplane Studio, e.g:
 
-```
+``` sh
 $ FPX_ENDPOINT=http://localhost:8788/v1/traces uv run fastapi dev main.py
 ```
 
@@ -43,7 +43,7 @@ The package exports two functions:
 Initializes FPX instrumentation for a FastAPI application by configuring route detection and span instrumentation.
 
 #### Parameters
-- app (`FastAPI`): The FastAPI application instance that was instrumented
+- **app** (`FastAPI`): The FastAPI application instance that was instrumented
 
 #### Returns
 - `FastAPI`: The instrumented application instance
@@ -125,14 +125,14 @@ def monitored_function():
 
 #### Parameters
 
-- `name` (`Optional[str]`): Name of the span. Defaults to the function name if not provided.
-- `func` (`Optional[Callable]`): Function to wrap. Used internally by the decorator.
-- `span_kind` (`SpanKind`): Kind of span to create. Defaults to `SpanKind.INTERNAL`
-- `on_start` (`Optional[Callable]`): Callback executed when span starts. Receives span and function arguments.
-- `on_success`(`Optional[Callable]`): Callback executed on successful completion. Receives span and function result.
-- `on_error` (`Optional[Callable]`): Callback executed on error. Receives span and exception.
-- `check_result` (`Optional[Callable]`): Optional validation function for the result.
-- `attributes` (`Optional[Dict]`): Initial attributes to set on the span.
+- **name** (`Optional[str]`): Name of the span. Defaults to the function name if not provided.
+- **func** (`Optional[Callable]`): Function to wrap. Used internally by the decorator.
+- **span_kind** (`SpanKind`): Kind of span to create. Defaults to `SpanKind.INTERNAL`
+- **on_start** (`Optional[Callable]`): Callback executed when span starts. Receives span and function arguments.
+- **on_success**(`Optional[Callable]`): Callback executed on successful completion. Receives span and function result.
+- **on_error** (`Optional[Callable]`): Callback executed on error. Receives span and exception.
+- **check_result** (`Optional[Callable]`): Optional validation function for the result.
+- **attributes** (`Optional[Dict]`): Initial attributes to set on the span.
 
 #### Returns
 
