@@ -29,7 +29,10 @@ def read_root():
 def loop(n: int = 10) -> None:
     for i in range(n):
         sleep(0.1)
-        # logger.debug(f"loop {i}")
+        # Log the loop number
+        # This will be captured by FPX
+        # Unfortunately this will not appear in the terminal console
+        # When using `FPX_ENDPOINT=http://localhost:8788/v1/traces  uv run fastapi dev ./main.py`
         logger.info("loop %i", i)
 
 
