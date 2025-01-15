@@ -7,6 +7,7 @@ import type * as schema from "./db/schema.js";
 import type { Bindings, Variables } from "./lib/types.js";
 import logger from "./logger/index.js";
 
+import { createMiddleware } from "@fiberplane/embedded";
 import { HTTPException } from "hono/http-exception";
 import type * as webhoncType from "./lib/webhonc/index.js";
 import appRoutes from "./routes/app-routes.js";
@@ -72,6 +73,13 @@ export function createApp(
   app.route("/", appRoutes);
   app.route("/", settings);
   app.route("/", collections);
+
+  app.use(
+    "/fp/*",
+    createMiddleware({
+      cdn: "https://cdn.jsdelivr.net/gh/fiberplane/fpx@embedded-playground/playground/dist/",
+    }),
+  );
 
   return app;
 }
