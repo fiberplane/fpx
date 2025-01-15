@@ -97,13 +97,17 @@ const sendRequestTool: Tool = {
           type: "string",
         },
       },
+      body: {
+        type: ["object", "string", "null"],
+        description: "Optional request body. Can be a string for raw body or an object for JSON/form data",
+      }
     },
     required: ["url", "method"],
   },
 };
 
 async function main() {
-  console.log("Starting Fiberplane MCP Server ...");
+  console.error("Starting Fiberplane MCP Server ...");
 
   const server = new Server(
     { name: "Fiberplane MCP Server", version: "0.1.0" },
@@ -124,7 +128,7 @@ async function main() {
   server.setRequestHandler(
     CallToolRequestSchema,
     async (request: CallToolRequest) => {
-      console.log("Received tool call request:", request);
+      console.error("Received tool call request:", request);
       try {
         if (!request.params.arguments) {
           throw new Error("No arguments provided");
@@ -138,7 +142,6 @@ async function main() {
           case "fiberplane_list_traces": {
             const response = await fetch(`${baseUrl}/v1/traces`);
             const traces = await response.json();
-            console.log("traces", traces);
             return {
               content: [
                 {
@@ -158,7 +161,6 @@ async function main() {
               `${baseUrl}/v1/traces/${traceId}/spans`,
             );
             const spans = await response.json();
-            console.log("spans", spans);
             return {
               content: [
                 {
@@ -172,7 +174,6 @@ async function main() {
           case "fiberplane_list_all_registered_routes": {
             const response = await fetch(`${baseUrl}/v0/app-routes`);
             const routes = await response.json();
-            console.log("routes", routes);
             return {
               content: [
                 {
@@ -186,7 +187,6 @@ async function main() {
           case "fiberplane_list_all_requests": {
             const response = await fetch(`${baseUrl}/v0/all-requests`);
             const requests = await response.json();
-            console.log("requests", requests);
             return {
               content: [
                 {
@@ -200,7 +200,6 @@ async function main() {
           case "fiberplane_get_file_tree": {
             const response = await fetch(`${baseUrl}/v0/app-routes-file-tree`);
             const fileTree = await response.json();
-            console.log("fileTree", fileTree);
             return {
               content: [
                 {
@@ -218,12 +217,14 @@ async function main() {
               headers = {},
               route,
               pathParams,
+              body,
             } = request.params.arguments as {
               url: string;
               method: string;
               headers?: Record<string, string>;
               route?: string;
               pathParams?: Record<string, string>;
+              body?: string | object | null;
             };
 
             const proxyHeaders: Record<string, string> = {
@@ -239,17 +240,34 @@ async function main() {
               proxyHeaders["x-fpx-path-params"] = JSON.stringify(pathParams);
             }
 
-            const requestInit = {
+            const requestInit: RequestInit = {
               method: method as string,
               headers: proxyHeaders,
             };
+
+            // Handle body based on type
+            if (body !== undefined && body !== null) {
+              if (typeof body === "string") {
+                requestInit.body = body;
+              } else if (typeof body === "object") {
+                requestInit.body = JSON.stringify(body);
+                // Set content-type if not already set in headers
+                if (!headers["content-type"]) {
+                  proxyHeaders["x-fpx-headers-json"] = JSON.stringify({
+                    ...headers,
+                    "content-type": "application/json",
+                  });
+                }
+              }
+            }
+            console.error("Request headers:", proxyHeaders);
+            console.error("Request init:", requestInit);
 
             const response = await fetch(
               `${baseUrl}/v0/proxy-request/*`,
               requestInit,
             );
             const responseData = await response.json();
-            console.log("request response", responseData);
 
             return {
               content: [
@@ -282,7 +300,7 @@ async function main() {
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
-    console.log("Received list tools request");
+    console.error("Received list tools request");
     return {
       tools: [
         listTracesTool,
@@ -296,7 +314,7 @@ async function main() {
   });
 
   const transport = new StdioServerTransport();
-  console.log("Connecting server to transport ...");
+  console.error("Connecting server to transport ...");
   await server.connect(transport);
 }
 
