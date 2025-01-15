@@ -22,7 +22,7 @@ pub async fn ws_connect(State(state): State<WorkerApiState>, headers: HeaderMap)
                 Err(_) => Response::builder()
                     .status(StatusCode::INTERNAL_SERVER_ERROR)
                     .body(Body::from(
-                        "An unexpected error occured connecting to the Durable Object",
+                        "An unexpected error occurred connecting to the Durable Object",
                     ))
                     .unwrap(),
             };

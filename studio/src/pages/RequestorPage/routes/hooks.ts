@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useProbedRoutes } from "../queries";
-import { useRequestorStore } from "../store";
+import { useStudioStore } from "../store";
 import type { ProbedRoute } from "../types";
 import { WEBSOCKETS_ENABLED } from "../webSocketFeatureFlag";
 
@@ -49,11 +49,7 @@ const filterActive = (routesAndMiddleware: ProbedRoute[]) => {
 
 export function useRoutes() {
   const { setRoutes, setServiceBaseUrl, setRoutesAndMiddleware } =
-    useRequestorStore(
-      "setRoutes",
-      "setServiceBaseUrl",
-      "setRoutesAndMiddleware",
-    );
+    useStudioStore("setRoutes", "setServiceBaseUrl", "setRoutesAndMiddleware");
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     const routes = filterRoutes(routesAndMiddleware?.routes ?? []);

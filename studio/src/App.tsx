@@ -4,17 +4,12 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { Layout } from "./Layout";
 import { Toaster } from "./components/ui/toaster";
 import {
-  REQUESTOR_TRACE_ROUTE,
-  REQUESTS_ROUTE,
-  REQUEST_DETAILS_OTEL_ROUTE,
-  REQUEST_DETAILS_TRACE_ROUTE,
-  ROOT_ROUTE,
+  INTERNAL_AI_LOGS_ROUTE,
+  INTERNAL_AI_LOGS_WITH_ID_ROUTE,
 } from "./constants";
 import { AiRequestLogDetailsPage } from "./pages/AiRequestLogsPage/AiRequestLogDetailsPage";
 import { AiRequestLogsPage } from "./pages/AiRequestLogsPage/AiRequestLogsPage";
-import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPage";
 import { RequestorPage } from "./pages/RequestorPage";
-import { RequestsPage } from "./pages/RequestsPage/RequestsPage";
 
 export function App() {
   return (
@@ -23,22 +18,15 @@ export function App() {
         <TooltipProvider>
           <Layout>
             <Routes>
-              <Route path={REQUESTS_ROUTE} element={<RequestsPage />} />
               <Route
-                path={REQUEST_DETAILS_OTEL_ROUTE}
-                element={<RequestDetailsPage />}
+                path={INTERNAL_AI_LOGS_ROUTE}
+                element={<AiRequestLogsPage />}
               />
               <Route
-                path={REQUEST_DETAILS_TRACE_ROUTE}
-                element={<RequestDetailsPage />}
-              />
-              <Route path={ROOT_ROUTE} element={<RequestorPage />} />
-              <Route path={REQUESTOR_TRACE_ROUTE} element={<RequestorPage />} />
-              <Route path="/internal/ai-logs" element={<AiRequestLogsPage />} />
-              <Route
-                path="/internal/ai-logs/:id"
+                path={INTERNAL_AI_LOGS_WITH_ID_ROUTE}
                 element={<AiRequestLogDetailsPage />}
               />
+              <Route path="*" element={<RequestorPage />} />
             </Routes>
           </Layout>
           <Toaster />

@@ -7,11 +7,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { RequestorState } from "../../store";
+import type { StudioState } from "../../store";
 import { getBodyValue } from "./utils";
 
 export type CopyAsCurlProps = Pick<
-  RequestorState,
+  StudioState,
   "body" | "method" | "path" | "requestHeaders" | "queryParams"
 >;
 

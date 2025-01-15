@@ -4,16 +4,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn, noop } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
+import type { KeyValueParameter } from "../store";
 import {
   createChangeEnabled,
   createChangeKey,
   createChangeValue,
   isDraftParameter,
 } from "./data";
-import type {
-  ChangeKeyValueParametersHandler,
-  KeyValueParameter,
-} from "./types";
+import type { ChangeKeyValueParametersHandler } from "./types";
 
 type Props = {
   keyValueParameters: KeyValueParameter[];

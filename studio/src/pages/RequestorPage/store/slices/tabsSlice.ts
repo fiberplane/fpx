@@ -1,9 +1,9 @@
 import type { StateCreator } from "zustand";
 import type { RequestsPanelTab, ResponsePanelTab } from "..";
-import type { Store, TabsSlice } from "./types";
+import type { StudioState, TabsSlice } from "./types";
 
 export const tabsSlice: StateCreator<
-  Store,
+  StudioState,
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   TabsSlice
