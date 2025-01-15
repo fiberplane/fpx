@@ -1,0 +1,15 @@
+[project]
+name = "python-fastapi"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi[standard]>=0.115.6",
+    "fpxpy>=0.2.0",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.14.1",
+]

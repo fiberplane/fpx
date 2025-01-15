@@ -92,6 +92,9 @@
   ],
   "files": {
     "ignore": [
+      // Python related
+      ".venv",
+      ".mypy_cache",
       // API related
       "meta/*.json",
       // Honc code gen playground outputs

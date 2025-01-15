@@ -39,7 +39,6 @@ app.get("/v1/traces", async (ctx) => {
   });
 
   const traceMap = new Map<string, Array<(typeof spans)[0]>>();
-
   for (const span of spans) {
     const traceId = span.inner.trace_id;
     if (!traceId) {
@@ -137,7 +136,9 @@ app.post("/v1/traces", async (ctx) => {
     );
 
     try {
-      await db.insert(otelSpans).values(tracesPayload);
+      if (tracesPayload.length > 0) {
+        await db.insert(otelSpans).values(tracesPayload);
+      }
     } catch (error) {
       logger.error("Error inserting trace", error);
       return ctx.text("Error inserting trace", 500);

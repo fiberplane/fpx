@@ -26,7 +26,7 @@ export async function disableCodeAnalysis() {
 }
 
 // Getter function for RoutesResult, this is overwritten in setupCodeAnalysis
-let _resultGetter = async (): Promise<RoutesResult> => {
+let _resultGetter = async (): Promise<RoutesResult | undefined> => {
   return Promise.reject(new Error("Routes not yet parsed"));
 };
 
@@ -36,7 +36,7 @@ let _resultGetter = async (): Promise<RoutesResult> => {
  *       When we move into scenarios that require parallel analysis for routes, we will need to call `.clone` on the RouteResult
  *       to avoid race conditions on the returned object.
  */
-export const getResult = async (): Promise<RoutesResult> => {
+export const getResult = async (): Promise<RoutesResult | undefined> => {
   return _resultGetter();
 };
 
@@ -71,7 +71,12 @@ export function setupCodeAnalysis(monitor: RoutesMonitor) {
       return monitor.lastSuccessfulResult;
     }
 
-    throw new Error("Failed to get routes");
+    if (monitor.getFilesCount() > 0) {
+      logger.warn("Failed to get routes, but there are files to analyze");
+      throw new Error("Failed to get routes");
+    }
+
+    return undefined;
   };
 
   // Add a listener to start the analysis
