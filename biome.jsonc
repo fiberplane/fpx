@@ -103,6 +103,9 @@
       ".astro",
       // ignore all tsconfig.json files
       "tsconfig.json",
+      "tsconfig.node.json",
+      "tsconfig.app.json",
+      "playground/src/routeTree.gen.ts",
       // ignore any test data files
       "test-data/*.js",
       // fpx-workers build files
