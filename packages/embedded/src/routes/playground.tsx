@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxImportSource hono/jsx */
 import { jsx } from "hono/jsx";
-import type { EmbeddedRouterOptions } from "./router.js";
+import type { EmbeddedRouterOptions } from "../router.js";
 
 import { existsSync, readFileSync } from "node:fs";
 import path, { dirname, join } from "node:path";

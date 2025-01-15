@@ -63,6 +63,7 @@ export function createApp(
   app.use(
     "/fp/*",
     createMiddleware({
+      apiKey: "1234",
       cdn: "https://cdn.jsdelivr.net/gh/fiberplane/fpx@embedded-playground/playground/dist/",
     }),
   );

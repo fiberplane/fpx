@@ -24,16 +24,18 @@ const tokens: Array<Token> = [
   },
 ];
 
-const app = new Hono();
+export default function createTokensApiRoute(apiKey: string) {
+  const app = new Hono();
 
-app.get("/", (c) => c.json({ tokens }));
+  app.get("/", (c) => c.json({ tokens }));
 
-app.get("/:id", (c) => {
-  const id = c.req.param("id");
+  app.get("/:id", (c) => {
+    const id = c.req.param("id");
 
-  const token = tokens.filter((token) => token.id === id);
+    const token = tokens.filter((token) => token.id === id);
 
-  return c.json({ token });
-});
+    return c.json({ token });
+  });
 
-export default app;
+  return app;
+}

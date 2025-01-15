@@ -26,8 +26,8 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "hono": "^4.6.12",
-    "@hono/node-server": "^1.13.7"
+    "@hono/node-server": "^1.13.7",
+    "hono": "^4.6.12"
   },
   "devDependencies": {
     "@types/node": "*",
@@ -37,6 +37,7 @@
     "react-dom": "^18.2.0"
   },
   "dependencies": {
-    "@fiberplane/playground": "workspace:*"
+    "@fiberplane/playground": "workspace:*",
+    "zod": "^3.24.1"
   }
 }
