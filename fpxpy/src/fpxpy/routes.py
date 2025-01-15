@@ -4,6 +4,7 @@ import requests
 from urllib.parse import urlparse, urlunparse
 import inspect
 import os
+from .logger import logger
 
 
 def install(app: FastAPI) -> FastAPI:
@@ -36,20 +37,10 @@ async def send_to_studio(req: Request):
 
             routes.append(obj)
 
-    # for middleware in req.app.user_middleware:
-    #   obj = {
-    #     "method": "all",
-    #   "path": "/",
-    #   "handler": inspect.getsource(middleware),
-    #   "handlerType": "middleware"
-    # }
-
-    # routes.append(obj)
-
     env = os.getenv("FPX_ENDPOINT")
 
     if env is None:
-        print("FPX_ENDPOINT is not set")
+        logger.info("FPX_ENDPOINT is not set")
         return
 
     parsed_url = urlparse(env)
@@ -63,13 +54,12 @@ async def send_to_studio(req: Request):
         ),
     }
 
-    response = requests.post(url, json=json)
+    try:
+        response = requests.post(url, json=json, timeout=5)
+    except requests.exceptions.Timeout:
+        logger.warning("timeout sending routes to fiberplane studio")
+        return
 
     if not response.ok:
-        print(
-            "error sending to probed routes:",
-            response.content,
-            "(status",
-            response.status_code,
-            ")",
-        )
+        message = f"error sending to probed routes: {response.content.decode('utf-8')} (status {response.status_code})"
+        logger.warning(message)

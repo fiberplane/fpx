@@ -1,7 +1,7 @@
 """Implementation of the JSON Span Exporter"""
 
 from dataclasses import dataclass
-from logging import getLogger
+from .logger import logger
 from typing import Any, List, Optional
 
 import requests
@@ -238,7 +238,6 @@ class JSONSpanExporter(SpanExporter):
         self.endpoint = endpoint
 
     def export(self, spans):
-        logger = getLogger("fpxpy")
         resource_spans = [ResourceSpanData.from_span(span) for span in spans]
         payload = SpansPayload(resource_spans=resource_spans)
         content = payload.to_json()
