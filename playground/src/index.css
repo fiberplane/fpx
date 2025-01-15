@@ -244,7 +244,7 @@
     --background: var(--bg-background);
     --foreground: var(--fg-default);
 
-    --card: var(--bg-popover);
+    --card: var(--bg-background);
     --card-foreground: var(--fg-default);
 
     --popover: var(--bg-popover);
@@ -253,7 +253,8 @@
     --primary: var(--bg-brand);
     --primary-foreground: var(--fg-on-primary);
 
-    --secondary: var(--bg-secondary);
+    /* TODO - Secondary... probably should not be this color? */
+    --secondary: var(--bg-emphasis);
     --secondary-foreground: var(--fg-default);
 
     --muted: var(--bg-emphasis);
@@ -270,6 +271,27 @@
     --ring: var(--fg-info);
 
     --radius: 0.5rem;
+
+    /**
+     * Custom semantic tokens
+     */
+    --fp-method-get: var(--fg-info);
+    --fp-method-post: var(--fg-success);
+    --fp-method-put: var(--fg-warning);
+    --fp-method-delete: var(--fg-danger);
+    --fp-method-patch: var(--fg-warning);
+    --fp-method-head: var(--fg-info);
+    --fp-method-options: var(--fg-info);
+    --fp-method-trace: var(--fg-info);
+
+    --fp-method-get-bg: var(--bg-info);
+    --fp-method-post-bg: var(--bg-success);
+    --fp-method-put-bg: var(--bg-warning);
+    --fp-method-delete-bg: var(--bg-danger);
+    --fp-method-patch-bg: var(--bg-warning);
+    --fp-method-head-bg: var(--bg-info);
+    --fp-method-options-bg: var(--bg-info);
+    --fp-method-trace-bg: var(--bg-info);
   }
 
   .dark {
@@ -285,7 +307,8 @@
     --primary: var(--bg-brand-dark);
     --primary-foreground: var(--fg-on-primary-dark);
 
-    --secondary: var(--bg-secondary-dark);
+    /* TODO - Secondary... probably should not be this color? */
+    --secondary: var(--bg-emphasis-dark);
     --secondary-foreground: var(--fg-default-dark);
 
     --muted: var(--bg-emphasis-dark);
@@ -300,6 +323,27 @@
     --border: var(--border-default-dark);
     --input: var(--bg-input-dark);
     --ring: var(--fg-info-dark);
+
+    /**
+     * Custom semantic tokens
+     */
+    --fp-method-get: var(--fg-info-dark);
+    --fp-method-post: var(--fg-success-dark);
+    --fp-method-put: var(--fg-warning-dark);
+    --fp-method-delete: var(--fg-danger-dark);
+    --fp-method-patch: var(--fg-warning-dark);
+    --fp-method-head: var(--fg-info-dark);
+    --fp-method-options: var(--fg-info-dark);
+    --fp-method-trace: var(--fg-info-dark);
+
+    --fp-method-get-bg: var(--bg-info-dark);
+    --fp-method-post-bg: var(--bg-success-dark);
+    --fp-method-put-bg: var(--bg-warning-dark);
+    --fp-method-delete-bg: var(--bg-danger-dark);
+    --fp-method-patch-bg: var(--bg-warning-dark);
+    --fp-method-head-bg: var(--bg-info-dark);
+    --fp-method-options-bg: var(--bg-info-dark);
+    --fp-method-trace-bg: var(--bg-info-dark);
   }
 }
 

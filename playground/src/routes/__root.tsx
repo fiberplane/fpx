@@ -11,8 +11,8 @@ function RootComponent() {
       <div>
         <Outlet />
       </div>
-      <ReactQueryDevtools />
-      <TanStackRouterDevtools />
+      {/* <ReactQueryDevtools /> */}
+      {/* <TanStackRouterDevtools /> */}
     </div>
   );
 }
