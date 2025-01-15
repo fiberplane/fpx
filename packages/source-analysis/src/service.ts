@@ -100,13 +100,11 @@ export function startServer(params: {
   const options = getOptions(location, ts);
 
   const host: TsLanguageServiceHost = {
-    // fileExists: ts.sys.fileExists,
     fileExists,
     getCurrentDirectory: () => location,
     getDefaultLibFileName: (options) => {
       return ts.getDefaultLibFilePath(options);
     },
-    // directoryExists: ts.sys.directoryExists,
     directoryExists,
     getNewLine: () => "\n",
     getCompilationSettings() {
