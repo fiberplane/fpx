@@ -13,10 +13,7 @@
     "dev": "tsc --watch",
     "prepublish": "pnpm build"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "keywords": [],
   "publishConfig": {
     "access": "public"

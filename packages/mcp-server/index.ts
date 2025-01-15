@@ -99,8 +99,9 @@ const sendRequestTool: Tool = {
       },
       body: {
         type: ["object", "string", "null"],
-        description: "Optional request body. Can be a string for raw body or an object for JSON/form data",
-      }
+        description:
+          "Optional request body. Can be a string for raw body or an object for JSON/form data",
+      },
     },
     required: ["url", "method"],
   },
