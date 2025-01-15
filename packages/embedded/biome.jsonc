@@ -2,7 +2,7 @@
   "$schema": "../../node_modules/@biomejs/biome/configuration_schema.json",
   "extends": ["../../biome.jsonc"],
   "files": {
-    "ignore": ["dist", "node_modules"],
+    "ignore": ["dist", "node_modules"]
   },
   "overrides": [
     {
@@ -12,11 +12,11 @@
         "rules": {
           "suspicious": {
             "noConsoleLog": {
-              "level": "warn",
-            },
-          },
-        },
-      },
-    },
-  ],
+              "level": "warn"
+            }
+          }
+        }
+      }
+    }
+  ]
 }

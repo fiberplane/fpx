@@ -7,6 +7,7 @@ import type * as schema from "./db/schema.js";
 import type { Bindings, Variables } from "./lib/types.js";
 import logger from "./logger/index.js";
 
+import { createMiddleware } from "@fiberplane/embedded";
 import { HTTPException } from "hono/http-exception";
 import type * as webhoncType from "./lib/webhonc/index.js";
 import appRoutes from "./routes/app-routes.js";
@@ -15,7 +16,6 @@ import collections from "./routes/collections.js";
 import inference from "./routes/inference/index.js";
 import settings from "./routes/settings.js";
 import traces from "./routes/traces.js";
-import { createMiddleware } from "@fiberplane/embedded";
 
 export function createApp(
   db: LibSQLDatabase<typeof schema>,
