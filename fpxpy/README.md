@@ -1,6 +1,6 @@
 # fpxpy
 
-Provides instrumentation and route detection for [FastAPI](https://fastapi.tiangolo.com/) apps.
+Provides instrumentation and route detection for [FastAPI](https://github.com/fastapi/fastapi) apps.
 
 ## Installation
 
