@@ -1,33 +1,29 @@
 /** @jsx jsx */
 /** @jsxImportSource hono/jsx */
-// @ts-nocheck
 import { jsx } from "hono/jsx";
+import type { EmbeddedRouterOptions } from "./router.js";
 
 import { existsSync, readFileSync } from "node:fs";
 import path, { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { type Env, Hono } from "hono";
-import type { EmbeddedMiddlewareOptions } from "./index.js";
+import { Hono } from "hono";
 
 // TODO: This only works with node, fix asset loading for other runtimes as well
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
 const clientDistPath = join(__dirname, "../../../playground/dist");
 
-interface RouterOptions extends EmbeddedMiddlewareOptions {
-  mountedPath: string;
-}
-
-export function createRouter<E extends Env>({
+export default function createPlayground({
   cdn,
   mountedPath,
-}: RouterOptions): Hono<E> {
-  const router = new Hono<E>();
+}: EmbeddedRouterOptions) {
+  const app = new Hono();
 
   // TODO: This only works with node, fix asset loading for other runtimes as well
   // Skip the file handler when CDN is set, this one should be dropped eventually anyways
   if (!cdn) {
-    router.get("/client/:file", async (c) => {
+    app.get("/client/:file", async (c) => {
       const file = c.req.param("file");
       const filePath = join(clientDistPath, file);
 
@@ -63,7 +59,7 @@ export function createRouter<E extends Env>({
     ? new URL("index.js", cdn).href
     : path.resolve(mountedPath, "client/index.js");
 
-  router.get("/*", (c) => {
+  app.get("/*", (c) => {
     return c.html(
       <html lang="en">
         <head>
@@ -80,5 +76,5 @@ export function createRouter<E extends Env>({
     );
   });
 
-  return router;
+  return app;
 }
