@@ -8,3 +8,8 @@ dependencies = [
     "fastapi[standard]>=0.115.6",
     "fpxpy>=0.2.0",
 ]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.14.1",
+]
