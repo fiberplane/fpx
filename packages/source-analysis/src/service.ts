@@ -62,8 +62,8 @@ export function getTsLib(projectRoot: string) {
     const tsPath = relativeResolve("typescript", { basedir: projectRoot });
     return require(tsPath);
   } catch (error) {
-    logger.warn("Unable resolve typescript package", error);
-    logger.log(`Using bundled in typescript (version ${bundledTs.version})`);
+    // logger.warn("Unable resolve typescript package", error);
+    logger.warn(`Unable to resolve typescript package. Falling back to bundled typescript library (version ${bundledTs.version})`);
     return bundledTs;
   }
 }
@@ -77,10 +77,10 @@ export function startServer(params: {
   getFileInfo: (fileName: string) =>
     | undefined
     | {
-        version: number;
-        content: string;
-        snapshot: TsISnapShot;
-      };
+      version: number;
+      content: string;
+      snapshot: TsISnapShot;
+    };
   getFileNames: () => Array<string>;
   getScriptSnapshot: (fileName: string) => TsISnapShot | undefined;
   location: string;
