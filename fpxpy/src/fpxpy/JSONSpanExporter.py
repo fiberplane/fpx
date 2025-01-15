@@ -250,7 +250,7 @@ class JSONSpanExporter(SpanExporter):
                 timeout=5,
             )
             if response.status_code == 200:
-                logger.info("Successfully sent spans to %s", self.endpoint)
+                logger.debug("Successfully sent spans to %s", self.endpoint)
                 return SpanExportResult.SUCCESS
             logger.error("Received status code %s", response.status_code)
         except requests.Timeout:

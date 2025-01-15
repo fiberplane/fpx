@@ -45,9 +45,6 @@ Initializes FPX instrumentation for a FastAPI application by configuring route d
 #### Parameters
 - **app** (`FastAPI`): The FastAPI application instance that was instrumented
 
-#### Returns
-- `FastAPI`: The instrumented application instance
-
 #### Environment Variables
 - `FPX_ENDPOINT`: Required. The endpoint URL for FPX instrumentation
 
@@ -63,12 +60,10 @@ setup(app)
 ## Behavior
 1. Checks for `FPX_ENDPOINT` environment variable
 2. If not set:
-   - Prints warning message
-   - Returns unmodified app
+   - Logs a warning message
 3. If set:
    - Installs route detection
    - Configures span instrumentation with parsed URL
-   - Returns instrumented app
 
 ## Notes
 - Must be called after FastAPI app creation

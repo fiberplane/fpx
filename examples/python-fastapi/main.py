@@ -1,11 +1,19 @@
 from typing import Union
-import inspect
+import logging
+
+from time import sleep
 
 from fastapi import FastAPI
 from fpxpy import measure, setup
 
+
 app = FastAPI()
 setup(app)
+
+# Example logger
+logger = logging.getLogger(__name__)
+# Set the log level to log everything
+logger.setLevel(logging.DEBUG)
 
 
 @app.get("/")
@@ -20,7 +28,9 @@ def read_root():
 @measure(name="loop")
 def loop(n: int = 10) -> None:
     for i in range(n):
-        print("loop", i)
+        sleep(0.1)
+        # logger.debug(f"loop {i}")
+        logger.info("loop %i", i)
 
 
 @app.get("/hello")
