@@ -1,5 +1,6 @@
 import logging
-from typing import List, Optional, Callable
+from typing import Callable, Optional
+
 from opentelemetry.trace import get_current_span
 
 logger = logging.getLogger("fpxpy")
@@ -7,10 +8,6 @@ logger = logging.getLogger("fpxpy")
 
 class LogSnooper(logging.Handler):
     """Snoop on log messages by storing them in a list"""
-
-    def __init__(self):
-        super().__init__()
-        self.messages: List[str] = []
 
     def emit(self, record: logging.LogRecord) -> None:
         span = get_current_span()

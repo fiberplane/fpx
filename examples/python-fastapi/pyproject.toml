@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "fastapi[standard]>=0.115.6",
-    "fpxpy>=0.2.0",
+    "fpxpy>=0.3.1",
 ]
 
 [dependency-groups]

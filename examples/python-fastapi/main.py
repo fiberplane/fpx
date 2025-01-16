@@ -25,7 +25,7 @@ def read_root():
     return {"Hello": "World"}
 
 
-@measure(name="loop")
+@measure()
 def loop(n: int = 10) -> None:
     for i in range(n):
         sleep(0.1)

@@ -1,17 +1,16 @@
 import io
-
+from time import sleep
 from typing import List
 
 import pytest
-from time import sleep
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
-from opentelemetry.sdk.trace.export import SpanExporter
 from opentelemetry.sdk.trace import ReadableSpan
+from opentelemetry.sdk.trace.export import SpanExporter
 from opentelemetry.trace import SpanKind
 
-from .tracing import __internal_setup_span_instrumentation
 from .measure import measure
+from .tracing import __internal_setup_span_instrumentation
 
 
 class SpanCollectorExporter(SpanExporter):

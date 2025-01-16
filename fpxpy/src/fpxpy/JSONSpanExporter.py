@@ -1,7 +1,6 @@
 """Implementation of the JSON Span Exporter"""
 
 from dataclasses import dataclass
-from .logger import logger
 from typing import Any, List, Optional
 
 import requests
@@ -10,6 +9,8 @@ from opentelemetry.sdk.resources import Attributes, Resource
 from opentelemetry.sdk.trace import Event, ReadableSpan, StatusCode
 from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
 from opentelemetry.trace import Link, SpanKind, Status
+
+from .logger import logger
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL)

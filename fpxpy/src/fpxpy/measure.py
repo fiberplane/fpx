@@ -41,6 +41,18 @@ def measure(
 
 @overload
 def measure(
+    *,  # Force named parameters after name
+    span_kind: SpanKind = SpanKind.INTERNAL,
+    on_start: Optional[OnStartCallback[Any]] = None,
+    on_success: Optional[Callable[[Span, Any], None]] = None,
+    on_error: Optional[Callable[[Span, Exception], None]] = None,
+    check_result: Optional[Callable[[Any], None]] = None,
+    attributes: Optional[Attributes] = None,
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]: ...
+
+
+@overload
+def measure(
     name: Optional[str],
     func: Callable[P, Coroutine[Any, Any, R]],
     span_kind: SpanKind = SpanKind.INTERNAL,

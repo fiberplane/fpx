@@ -28,10 +28,6 @@ from .JSONSpanExporter import JSONSpanExporter
 from .measure import measure
 from .utils import get_response_attributes, set_request_attributes
 
-# logger = logging.getLogger()
-# logging.basicConfig(level=logging.INFO)
-# logger = logging.getLogger(__name__)
-
 
 def get_or_set_tracer_provider(service_name: str) -> TracerProvider:
     """
