@@ -16,15 +16,9 @@ export function RoutesPanel() {
     appRoutes: routes,
     activeRoute,
     setActiveRoute,
-    navigationPanelRoutesView: tab,
-    setNavigationPanelRoutesView: setTab,
-  } = useStudioStore(
-    "appRoutes",
-    "activeRoute",
-    "setActiveRoute",
-    "navigationPanelRoutesView",
-    "setNavigationPanelRoutesView",
-  );
+  } = useStudioStore("appRoutes", "activeRoute", "setActiveRoute");
+
+  console.log("routes", routes);
 
   // const navigate = useNavigate();
 
@@ -115,13 +109,7 @@ export function RoutesPanel() {
   };
 
   return (
-    <Tabs
-      value={tab}
-      className={cn("h-full", "flex", "flex-col")}
-      onValueChange={(tabValue: string) =>
-        setTab(tabValue as NavigationRoutesView)
-      }
-    >
+    <div className={cn("h-full", "flex", "flex-col")}>
       <div>
         <div className="flex items-center space-x-2 pb-3">
           <Search
@@ -139,46 +127,29 @@ export function RoutesPanel() {
       </div>
       <div className="overflow-y-auto h-full relative flex flex-col gap-2">
         {hasAnyRoutes && (
-          <RoutesSection title={<DetectedRoutesTitle />}>
-            <TabsContent value="list" className="mt-0">
-              {detectedRoutes.length === 0 ? (
-                <div className="italic text-center text-muted-foreground text-xs my-4">
-                  No routes match filter criteria
-                </div>
-              ) : (
-                <div className="grid">
-                  {detectedRoutes.map((route, index) => (
-                    <RoutesItem
-                      // biome-ignore lint/suspicious/noArrayIndexKey: let me do my thing
-                      key={index}
-                      index={index}
-                      route={route}
-                      selectedRoute={
-                        selectedRouteIndex === index ? route : null
-                      }
-                      activeRoute={activeRoute}
-                      handleRouteClick={handleRouteClick}
-                      setSelectedRouteIndex={setSelectedRouteIndex}
-                    />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+          <RoutesSection title="Routes">
+            {detectedRoutes.length === 0 ? (
+              <div className="italic text-center text-muted-foreground text-xs my-4">
+                No routes match filter criteria
+              </div>
+            ) : (
+              <div className="grid">
+                {detectedRoutes.map((route, index) => (
+                  <RoutesItem
+                    key={index}
+                    index={index}
+                    route={route}
+                    selectedRoute={selectedRouteIndex === index ? route : null}
+                    activeRoute={activeRoute}
+                    handleRouteClick={handleRouteClick}
+                    setSelectedRouteIndex={setSelectedRouteIndex}
+                  />
+                ))}
+              </div>
+            )}
           </RoutesSection>
         )}
       </div>
-    </Tabs>
-  );
-}
-
-function DetectedRoutesTitle() {
-  return (
-    <div className="flex">
-      <TabsList className="ml-auto -mr-2">
-        <TabsTrigger value="list">
-          <ListBulletIcon />
-        </TabsTrigger>
-      </TabsList>
     </div>
   );
 }

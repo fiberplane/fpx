@@ -31,7 +31,11 @@ const filterActive = (routesAndMiddleware: ProbedRoute[]) => {
 export function useRoutes() {
   const { setRoutes, setServiceBaseUrl, setRoutesAndMiddleware } =
     useStudioStore("setRoutes", "setServiceBaseUrl", "setRoutesAndMiddleware");
+
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
+
+  console.log("routesAndMiddleware", routesAndMiddleware);
+
   const routes = useMemo(() => {
     const routes = filterRoutes(routesAndMiddleware?.routes ?? []);
     return routes;
