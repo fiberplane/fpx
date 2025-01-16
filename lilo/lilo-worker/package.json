@@ -1,0 +1,48 @@
+{
+  "name": "lilo-worker",
+  "description": "api to generate and serve openapi specs with an assistant",
+  "scripts": {
+    "dev": "wrangler dev src/index.tsx",
+    "deploy": "wrangler deploy --minify src/index.tsx",
+    "db:touch": "wrangler d1 execute lilo-d1-database --local --command='SELECT 1'",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "wrangler d1 migrations apply lilo-d1-database --local",
+    "db:migrate:prod": "ENVIRONMENT=production drizzle-kit migrate",
+    "db:seed": "tsx seed.ts",
+    "db:setup": "npm run db:touch && npm run db:generate && npm run db:migrate && npm run db:seed",
+    "db:studio": "drizzle-kit studio",
+    "db:studio:prod": "ENVIRONMENT=production drizzle-kit studio",
+    "format": "biome check . --write",
+    "keypair:generate": "tsx keypair-generate.ts",
+    "keypair:generate:prod": "ENVIRONMENT=production tsx keypair-generate.ts",
+    "session:generate": "tsx session-secret-generate.ts",
+    "add-allowed-user": "tsx add-allowed-user.ts",
+    "add-allowed-user:prod": "ENVIRONMENT=production tsx add-allowed-user.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^1.0.9",
+    "@ai-sdk/openai": "^1.0.8",
+    "@fiberplane/embedded": "^0.0.9",
+    "@hono/oauth-providers": "^0.6.2",
+    "@hono/zod-openapi": "^0.18.0",
+    "@hono/zod-validator": "^0.4.1",
+    "@scalar/hono-api-reference": "^0.5.163",
+    "ai": "^4.0.16",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.36.4",
+    "hono": "^4.6.7",
+    "jose": "^5.9.6",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@cloudflare/workers-types": "^4.20241205.0",
+    "@fiberplane/hono-otel": "workspace:*",
+    "@libsql/client": "^0.14.0",
+    "drizzle-kit": "^0.28.1",
+    "drizzle-seed": "^0.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.5.4",
+    "wrangler": "^3.95.0"
+  }
+}
