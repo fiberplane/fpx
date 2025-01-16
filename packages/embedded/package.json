@@ -1,6 +1,6 @@
 {
   "name": "@fiberplane/embedded",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "exports": {
     ".": {
@@ -29,7 +29,8 @@
     "build": "tsc",
     "format": "biome check . --write",
     "lint": "biome lint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm run clean && pnpm run build"
   },
   "devDependencies": {
     "@types/node": "*",
