@@ -37,17 +37,17 @@ export const RouteDocumentation = memo(function RouteDocumentation({
         {(modTitle || summary || description) && (
           <section className="mb-4">
             {modTitle && (
-              <h3 className="text-xl font-semibold text-white mb-1">
+              <h3 className="text-xl font-semibold text-foreground mb-1">
                 {modTitle}
               </h3>
             )}
             {description && (
-              <p className="text-base leading-relaxed text-gray-300 mb-1">
+              <p className="text-base leading-relaxed text-muted-foreground mb-1">
                 {description}
               </p>
             )}
             {summary && (
-              <h3 className="text-lg font-semibold text-gray-300 mb-2">
+              <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                 {summary}
               </h3>
             )}
@@ -114,7 +114,7 @@ export const RouteDocumentation = memo(function RouteDocumentation({
               {Object.entries(responses).map(([status, response]) => (
                 <div
                   key={status}
-                  className="space-y-2 border-b border-gray-700 pb-4 border-dashed"
+                  className="space-y-2 border-b border-primary/20 pb-4 border-dashed"
                 >
                   {!response.content && (
                     <div className="">
@@ -201,8 +201,10 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
             )}
           </div>
           {schema.items && (
-            <div className="pl-4 border-l-2 border-gray-700 mt-2">
-              <div className="text-gray-400 text-xs mb-2">Array items:</div>
+            <div className="pl-4 border-l-2 mt-2">
+              <div className="text-muted-foreground text-xs mb-2">
+                Array items:
+              </div>
               <SchemaViewer schema={schema.items as OpenAPISchema} />
             </div>
           )}
@@ -230,9 +232,9 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
           ))}
         </div>
       ) : (
-        <div className="text-gray-400 px-3 py-2 text-sm">
+        <div className="text-muted-foreground px-3 py-2 text-sm">
           <div className="flex items-center gap-2">
-            <code className="text-xs px-1.5 py-0.5 rounded-md bg-gray-800 text-gray-400">
+            <code className="text-xs px-1.5 py-0.5 rounded-md bg-black text-gray-400">
               {schema.type}
             </code>
             {schema.enum && (
@@ -279,7 +281,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
-    <h4 className="text-lg font-medium text-white mb-2 border-b border-gray-700 pb-1 flex items-center">
+    <h4 className="text-lg font-medium mb-2 border-b pb-1 flex items-center">
       {children}
     </h4>
   );
@@ -287,7 +289,7 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
 
 function RequiredBadge() {
   return (
-    <span className="px-0.5 py-0 text-xs text-orange-300 border-none font-normal font-sans">
+    <span className="px-0.5 py-0 text-xs text-orange-700 border-none font-normal font-sans">
       required
     </span>
   );
@@ -295,7 +297,7 @@ function RequiredBadge() {
 
 function TypeBadge({ type }: { type: string }) {
   return (
-    <span className="px-0.5 py-0 text-xs text-gray-400 border-none font-normal font-sans ">
+    <span className="px-0.5 py-0 text-xs text-muted-foreground border-none font-normal font-sans ">
       {type}
     </span>
   );
@@ -303,7 +305,7 @@ function TypeBadge({ type }: { type: string }) {
 
 function ParameterName({ name }: { name: string }) {
   return (
-    <code className="mr-2 py-0.5 rounded-md text-sm font-sans tracking-wide text-gray-200">
+    <code className="mr-2 py-0.5 rounded-md text-sm font-sans tracking-wide text-muted-foreground">
       {name}
     </code>
   );
@@ -314,7 +316,9 @@ type ParameterDescriptionProps = {
 };
 
 function ParameterDescription({ description }: ParameterDescriptionProps) {
-  return <p className="text-xs text-gray-400 font-sans">{description}</p>;
+  return (
+    <p className="text-xs text-muted-foreground font-sans">{description}</p>
+  );
 }
 
 type ParameterExampleProps = {
@@ -324,8 +328,8 @@ type ParameterExampleProps = {
 function ParameterExample({ example }: ParameterExampleProps) {
   return (
     <div className="text-xs">
-      <span className="text-gray-500">Example: </span>
-      <code className="font-sans text-gray-200 px-1.5 py-0.5 rounded">
+      <span className="text-muted-foreground">Example: </span>
+      <code className="font-sans text-muted-foreground px-1.5 py-0.5 rounded">
         {typeof example === "string" ? `"${example}"` : JSON.stringify(example)}
       </code>
     </div>
@@ -343,7 +347,7 @@ function ContentTypeBadge({
     <Badge
       variant="outline"
       className={cn(
-        "my-1 text-xs text-gray-400 px-0 bg-none font-normal font-mono border-none",
+        "my-1 text-xs text-muted-foreground px-0 bg-none font-normal font-mono border-none",
         className,
       )}
     >
