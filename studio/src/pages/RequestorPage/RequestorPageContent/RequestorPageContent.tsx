@@ -269,28 +269,10 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     },
   );
 
-  const requestContent = (
-    <RequestPanel
-      aiEnabled={aiEnabled}
-      isLoadingParameters={isLoadingParameters}
-      fillInRequest={fillInRequest}
-      testingPersona={testingPersona}
-      setTestingPersona={setTestingPersona}
-      showAiGeneratedInputsBanner={showAiGeneratedInputsBanner}
-      setShowAiGeneratedInputsBanner={setShowAiGeneratedInputsBanner}
-      setIgnoreAiInputsBanner={setIgnoreAiInputsBanner}
-      websocketState={websocketState}
-      sendWebsocketMessage={sendWebsocketMessage}
-      onSubmit={onSubmit}
-    />
-  );
-
-  const responseContent = (
-    <ResponsePanel
-      tracedResponse={mostRecentProxiedRequestResponseForRoute}
-      isLoading={isRequestorRequesting || historyLoading}
-      websocketState={websocketState}
-    />
+  const bottomPanelVisible = useStudioStoreRaw(
+    useShallow((state) => {
+      return state.bottomPanelIndex !== undefined;
+    }),
   );
 
   const { minSize: requestPanelMinSize, maxSize: requestPanelMaxSize } =
@@ -302,12 +284,6 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
       minPixelSize: 200,
       dimension: "width",
     });
-
-  const bottomPanelVisible = useStudioStoreRaw(
-    useShallow((state) => {
-      return state.bottomPanelIndex !== undefined;
-    }),
-  );
 
   const bottomPanel = bottomPanelVisible ? (
     <RequestorPageContentBottomPanel traceId={traceId} history={history} />
@@ -354,7 +330,12 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
           <ResizablePanelGroup
             direction={isLgScreen ? "horizontal" : "vertical"}
             id="requestor-page-request-panel-group"
-            className={cn("rounded-md", "max-w-screen", "max-h-full")}
+            className={cn(
+              "rounded-md",
+              "max-w-screen",
+              "max-h-full",
+              "overflow-hidden",
+            )}
           >
             <ResizablePanel
               order={1}
@@ -362,24 +343,43 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
               id="request-panel"
               minSize={
                 requestPanelMinSize
-                  ? Math.min(100, requestPanelMinSize)
+                  ? Math.min(isLgScreen ? 100 : 20, requestPanelMinSize)
                   : undefined
               }
-              maxSize={requestPanelMaxSize}
+              maxSize={isLgScreen ? requestPanelMaxSize : undefined}
             >
-              {requestContent}
+              <RequestPanel
+                aiEnabled={aiEnabled}
+                isLoadingParameters={isLoadingParameters}
+                fillInRequest={fillInRequest}
+                testingPersona={testingPersona}
+                setTestingPersona={setTestingPersona}
+                showAiGeneratedInputsBanner={showAiGeneratedInputsBanner}
+                setShowAiGeneratedInputsBanner={setShowAiGeneratedInputsBanner}
+                setIgnoreAiInputsBanner={setIgnoreAiInputsBanner}
+                websocketState={websocketState}
+                sendWebsocketMessage={sendWebsocketMessage}
+                onSubmit={onSubmit}
+              />
             </ResizablePanel>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}
-              className="bg-transparent"
+              className={cn(
+                "bg-transparent",
+                isLgScreen ? "cursor-col-resize" : "cursor-row-resize h-4",
+              )}
             />
             <ResizablePanel
               id="response-panel"
               order={4}
-              minSize={10}
+              minSize={isLgScreen ? 10 : 15}
               className={cn(BACKGROUND_LAYER)}
             >
-              {responseContent}
+              <ResponsePanel
+                tracedResponse={mostRecentProxiedRequestResponseForRoute}
+                isLoading={isRequestorRequesting || historyLoading}
+                websocketState={websocketState}
+              />
             </ResizablePanel>
           </ResizablePanelGroup>
         </ResizablePanel>

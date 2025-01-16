@@ -53,14 +53,6 @@ export const ResponsePanel = memo(function ResponsePanel({
     "setShowViewLogsBanner",
   );
 
-  // NOTE - This is kind of annoying so I commented it out for now
-  //
-  // useEffect(() => {
-  //   if (tracedResponse) {
-  //     setShowViewLogsBanner(true);
-  //   }
-  // }, [tracedResponse, setShowViewLogsBanner]);
-
   const shouldShowResponseTab = (tab: ResponsePanelTab): boolean => {
     return visibleResponsePanelTabs.includes(tab);
   };
