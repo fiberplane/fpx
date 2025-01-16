@@ -22,7 +22,7 @@ export const createMiddleware =
     const newRequest = new Request(newUrl, c.req.raw);
 
     // Let our embedded router handle the request
-    const router = createRouter({ mountedPath, cdn: options?.cdn });
+    const router = createRouter({ mountedPath, cdn: options?.cdn, spec: options?.spec });
     const response = await router.fetch(newRequest);
 
     // Skip the middleware and continue if the embedded router doesn't match
