@@ -1,6 +1,6 @@
 {
   "name": "@fiberplane/embedded",
-  "version": "0.0.10",
+  "version": "0.0.1",
   "type": "module",
   "exports": {
     ".": {
@@ -8,6 +8,12 @@
       "import": "./src/index.ts"
     }
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    ".gitignore"
+  ],
   "publishConfig": {
     "access": "public",
     "exports": {
