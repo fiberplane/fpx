@@ -15,8 +15,6 @@ export function RoutesPanel() {
     setActiveRoute,
   } = useStudioStore("appRoutes", "activeRoute", "setActiveRoute");
 
-  console.log("routes", routes);
-
   // const navigate = useNavigate();
 
   const handleRouteClick = useHandler((route: ProbedRoute) => {

@@ -12,7 +12,7 @@ export default defineConfig({
     svgr({
       svgrOptions: { exportType: "default", ref: true },
       include: "**/*.svg",
-    })
+    }),
   ],
   resolve: {
     alias: {

@@ -34,8 +34,6 @@ export function useRoutes() {
 
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
 
-  console.log("routesAndMiddleware", routesAndMiddleware);
-
   const routes = useMemo(() => {
     const routes = filterRoutes(routesAndMiddleware?.routes ?? []);
     return routes;
