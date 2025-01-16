@@ -5,7 +5,7 @@ export type {
   NavigationRoutesView,
   KeyValueParameter,
 } from "./types";
-export type { StudioState, BottomPanelName } from "./slices";
+export type { StudioState } from "./slices";
 export { KeyValueParameterSchema } from "./types";
 export type { RequestorBodyType } from "./request-body";
 export {

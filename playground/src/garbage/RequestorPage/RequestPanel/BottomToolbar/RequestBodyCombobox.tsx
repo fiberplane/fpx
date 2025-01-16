@@ -101,8 +101,8 @@ export function RequestBodyTypeDropdown({
                   key={type.value}
                   value={type.value}
                   className="text-xs"
-                  onSelect={(currentValue: RequestorBodyType) => {
-                    handleRequestBodyTypeChange(currentValue);
+                  onSelect={(currentValue: string) => {
+                    handleRequestBodyTypeChange(currentValue as RequestorBodyType);
                     setOpen(false);
                   }}
                 >

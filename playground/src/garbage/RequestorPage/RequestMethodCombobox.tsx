@@ -107,8 +107,8 @@ export const RequestMethodCombobox = forwardRef<
                 <CommandItem
                   key={inputMethod.value}
                   value={inputMethod.value}
-                  onSelect={(currentValue: RequestMethodInputValue) => {
-                    handleMethodChange(currentValue);
+                  onSelect={(currentValue: string) => {
+                    handleMethodChange(currentValue as RequestMethodInputValue);
                     setOpen(false);
                   }}
                   className="data-[selected=true]:bg-secondary"

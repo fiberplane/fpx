@@ -1,10 +1,7 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
-import { ListBulletIcon } from "@radix-ui/react-icons";
 import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import type { NavigationRoutesView } from "../../store";
 import { useStudioStore } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { Search } from "../Search";

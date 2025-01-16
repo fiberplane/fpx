@@ -106,9 +106,6 @@ export const RequestorStateSchema = z.object({
     .array(KeyValueParameterSchema)
     .describe("Headers to be sent with the request"),
 
-  // Websocket messages form
-  websocketMessage: z.string().describe("Websocket message"),
-
   // Tabs
   activeRequestsPanelTab: RequestsPanelTabSchema.describe(
     "The tab to show in the requests panel",

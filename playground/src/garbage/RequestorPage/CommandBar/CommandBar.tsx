@@ -24,7 +24,7 @@ type CommandBarProps = {
 
 export function CommandBar({ open, setOpen }: CommandBarProps) {
   const {
-    togglePanel,
+    // togglePanel,
     visibleRequestsPanelTabs,
     setActiveRequestsPanelTab,
     setSettingsOpen,

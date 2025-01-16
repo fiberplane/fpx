@@ -1,6 +1,6 @@
 import "./CodeMirrorEditorCssOverrides.css";
 
-import { duotoneDark, duotoneLight } from "@uiw/codemirror-theme-duotone";
+import { duotoneLight } from "@uiw/codemirror-theme-duotone";
 import CodeMirror, { basicSetup, EditorView } from "@uiw/react-codemirror";
 import { useMemo } from "react";
 import { createOnSubmitKeymap, escapeKeymap } from "./keymaps";

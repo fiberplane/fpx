@@ -123,7 +123,7 @@ export const addBaseUrl = (
   serviceBaseUrl: string,
   path: string,
   {
-    requestType,
+    requestType: _requestType,
     forceChangeHost,
   }: { requestType?: RequestType; forceChangeHost?: boolean } = {
     requestType: "http",

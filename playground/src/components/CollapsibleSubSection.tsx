@@ -6,6 +6,7 @@ import {
 import { cn } from "@/utils";
 import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
 import { type ReactNode, useState } from "react";
+import { SubSectionHeading } from "./SubSectionHeading";
 
 export const SectionHeading = ({
   children,

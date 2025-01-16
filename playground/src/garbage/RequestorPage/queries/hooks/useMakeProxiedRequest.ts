@@ -62,13 +62,13 @@ function makeProxiedRequest({
   route?: string;
 }) {
   // HACK - We need to make sure the path is safe to use as a URL pathname
-  let safePath: string;
-  try {
-    const url = new URL(path);
-    safePath = url.pathname;
-  } catch {
-    safePath = path?.startsWith("/") ? path : `/${path}`;
-  }
+  // let safePath: string;
+  // try {
+  //   const url = new URL(path);
+  //   safePath = url.pathname;
+  // } catch {
+  //   safePath = path?.startsWith("/") ? path : `/${path}`;
+  // }
 
   const queryParamsForUrl = new URLSearchParams();
   for (const param of queryParams) {
