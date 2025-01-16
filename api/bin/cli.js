@@ -43,6 +43,7 @@ const CONFIG_FILE_NAME = "fpx.v0.config.json";
 // Paths to relevant project directories and files
 const WRANGLER_TOML_PATH = findInParentDirs("wrangler.toml");
 const PACKAGE_JSON_PATH = findInParentDirs("package.json");
+const PYPROJECT_TOML_PATH = findInParentDirs("pyproject.toml");
 // NOTE - Deno projects might also not necessarily have a deno.json
 const DENO_CONFIG_PATH = findInParentDirs(["deno.json", "deno.jsonc"]);
 const PROJECT_ROOT_DIR = findProjectRoot() ?? process.cwd();
@@ -84,7 +85,10 @@ async function runWizard() {
   }
 
   const MIGHT_BE_CREATING =
-    IS_INITIALIZING_FPX && !WRANGLER_TOML && !PACKAGE_JSON;
+    IS_INITIALIZING_FPX &&
+    !WRANGLER_TOML &&
+    !PACKAGE_JSON &&
+    !PYPROJECT_TOML_PATH;
 
   logger.debug("MIGHT_BE_CREATING", MIGHT_BE_CREATING);
 
@@ -389,6 +393,7 @@ function findProjectRoot() {
     WRANGLER_TOML_PATH,
     PACKAGE_JSON_PATH,
     DENO_CONFIG_PATH,
+    PYPROJECT_TOML_PATH,
   ]);
   if (!projectRoot) {
     logger.debug("No project root detected");

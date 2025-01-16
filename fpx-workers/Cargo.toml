@@ -34,6 +34,6 @@ tracing-subscriber = { version = "0.3", default-features = false, features = [
     "ansi",
 ] }
 tracing-web = { version = "0.1", default-features = false }
-worker = { version = "0.3", features = ["http", "axum", "d1"] }
-worker-macros = { version = "0.3", features = ["http"] }
 wasm-bindgen = { version = "0.2", default-features = false }
+worker = { version = "0.5", features = ["http", "axum", "d1"] }
+worker-macros = { version = "0.5", features = ["http"] }

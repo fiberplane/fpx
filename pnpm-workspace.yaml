@@ -4,6 +4,7 @@ packages:
   - "fp-services"
   - "honc-code-gen"
   - "playground"
+  - "lilo/*"
   - "packages/*"
   - "examples/*"
   - "examples/service-bindings/*"
