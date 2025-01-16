@@ -1,4 +1,3 @@
-import { html, raw } from "hono/html";
 /** @jsx jsx */
 /** @jsxImportSource hono/jsx */
 // @ts-nocheck
@@ -8,6 +7,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path, { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { type Env, Hono } from "hono";
+import { html, raw } from "hono/html";
 import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 import type { EmbeddedMiddlewareOptions } from "./index.js";
 
@@ -18,7 +18,6 @@ const clientDistPath = join(__dirname, "../../../playground/dist");
 
 interface RouterOptions extends EmbeddedMiddlewareOptions {
   mountedPath: string;
-  spec?: OpenAPIV3_1.Document | OpenAPIV3.Document | string;
 }
 
 export function createRouter<E extends Env>({
@@ -67,7 +66,6 @@ export function createRouter<E extends Env>({
     ? new URL("index.js", cdn).href
     : path.resolve(mountedPath, "client/index.js");
 
-
   router.get("/*", async (c) => {
     const resolvedSpec = await resolveSpec(spec);
     return c.html(
@@ -93,7 +91,9 @@ export function createRouter<E extends Env>({
 /**
  * The HTML to load the @scalar/api-reference JavaScript package.
  */
-export const apiSpecScriptTag = (spec: OpenAPIV3_1.Document | OpenAPIV3.Document) => {
+export const apiSpecScriptTag = (
+  spec: OpenAPIV3_1.Document | OpenAPIV3.Document,
+) => {
   return html`
     <script
       id="fp-api-spec"
@@ -118,7 +118,9 @@ async function resolveSpec(
     // Handle URLs
     if (spec.startsWith("http://") || spec.startsWith("https://")) {
       const response = await fetch(spec);
-      return await response.json() as OpenAPIV3_1.Document | OpenAPIV3.Document;
+      return (await response.json()) as
+        | OpenAPIV3_1.Document
+        | OpenAPIV3.Document;
     }
 
     throw new Error("Invalid spec path or URL");

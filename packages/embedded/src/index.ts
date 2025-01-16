@@ -1,8 +1,10 @@
 import type { Env, MiddlewareHandler } from "hono/types";
+import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 import { createRouter } from "./router.js";
 
 export interface EmbeddedMiddlewareOptions {
   cdn?: string;
+  spec?: OpenAPIV3_1.Document | OpenAPIV3.Document | string;
 }
 
 export const createMiddleware =
