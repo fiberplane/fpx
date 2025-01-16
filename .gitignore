@@ -54,3 +54,5 @@ remove_node_modules.sh
 
 # Ignore .dev.vars files in the examples folder
 examples/**/*.dev.vars
+workflows-api/workflows.db
+playground/dist

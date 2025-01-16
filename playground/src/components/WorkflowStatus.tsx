@@ -1,46 +1,24 @@
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Clock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-type WorkflowStatusProps = {
-  status: "completed" | "failed" | "pending";
-};
+type Status = "success" | "pending" | "error" | undefined;
+type Variant = "default" | "destructive" | "outline" | "secondary";
 
-type StatusConfig = {
-  [K in WorkflowStatusProps["status"]]: {
-    label: string;
-    icon: typeof CheckCircle;
-    variant: "success" | "destructive" | "default";
-    className?: string;
-  };
-};
+interface Props {
+  status?: Status;
+}
 
-const statusConfig: StatusConfig = {
-  completed: {
-    label: "Completed",
-    icon: CheckCircle,
-    variant: "success",
-  },
-  failed: {
-    label: "Failed",
-    icon: XCircle,
-    variant: "destructive",
-  },
-  pending: {
-    label: "Running",
-    icon: Clock,
-    variant: "default",
-    className: "bg-blue-100 hover:bg-blue-100/80 text-blue-700",
-  },
-};
-
-export function WorkflowStatus({ status }: WorkflowStatusProps) {
-  const config = statusConfig[status];
-  const Icon = config.icon;
+export function WorkflowStatus({ status = "pending" }: Props) {
+  const variant: Variant = "outline";
+  const className = status === "success"
+    ? "bg-green-100 text-green-800 hover:bg-green-100/80"
+    : status === "error"
+    ? "bg-red-100 text-red-800 hover:bg-red-100/80"
+    : "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
 
   return (
-    <Badge variant={config.variant} className={config.className}>
-      <Icon className="w-4 h-4 mr-1" />
-      {config.label}
+    <Badge variant={variant} className={cn(className)}>
+      {status ?? "pending"}
     </Badge>
   );
 }

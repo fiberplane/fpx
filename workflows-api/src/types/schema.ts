@@ -44,4 +44,4 @@ export const apiErrorSchema = z.object({
     message: z.string(),
     code: z.string().optional(),
   }),
-}); 
+});

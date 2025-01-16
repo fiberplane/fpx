@@ -15,8 +15,8 @@ if (rootElement === null) {
 // client router needs to know this so it can generate correct links
 const basepath = rootElement.dataset.mountedPath;
 
-const router = createRouter({ routeTree, basepath });
 const queryClient = new QueryClient();
+const router = createRouter({ routeTree, basepath, context: { queryClient } });
 
 // Register your router for maximum type safety
 declare module "@tanstack/react-router" {

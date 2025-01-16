@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Runtime Expression Schema
-const runtimeExpressionSchema = z.string().regex(/^\$(?:url|method|statusCode|request\.|response\.|message\.|inputs\.|outputs\.|steps\.|workflows\.|sourceDescriptions\.|components\.)/);
+const runtimeExpressionSchema = z.string().regex(/^\$(?:url|method|statusCode|(?:request|response|message)\.((?:header|query|path)\.[a-zA-Z0-9_]+|body(?:#\/[^/]+)*)|(?:inputs|outputs|steps|workflows|sourceDescriptions)\.[a-zA-Z0-9_]+|components(?:\.parameters\.[a-zA-Z0-9_]+|.[a-zA-Z0-9_]+))$/);
 
 // Info Object Schema
 export const infoSchema = z.object({
@@ -9,32 +9,32 @@ export const infoSchema = z.object({
   summary: z.string().optional(),
   description: z.string().optional(),
   version: z.string(),
-}).catchall(z.any()); // For x- extensions
+}).strict();
 
 // Source Description Object Schema
 export const sourceDescriptionSchema = z.object({
   name: z.string(),
   url: z.string().url(),
   type: z.string(), // e.g., "openapi"
-}).catchall(z.any());
+}).strict();
 
 // Parameter Object Schema
 export const parameterSchema = z.object({
   name: z.string(),
   in: z.enum(["query", "header", "path", "cookie"]),
   value: z.union([z.string(), runtimeExpressionSchema]),
-}).catchall(z.any());
+}).strict();
 
 // Success Criteria Object Schema
 export const successCriteriaSchema = z.object({
   condition: runtimeExpressionSchema,
-}).catchall(z.any());
+}).strict();
 
 // Payload Replacement Object Schema
 export const payloadReplacementSchema = z.object({
   target: z.string(), // JSON Pointer or XPath Expression
-  value: z.union([z.any(), runtimeExpressionSchema]),
-}).catchall(z.any());
+  value: z.union([z.unknown(), runtimeExpressionSchema]),
+}).strict();
 
 // Step Object Schema
 export const stepSchema = z.object({
@@ -45,7 +45,7 @@ export const stepSchema = z.object({
   parameters: z.array(parameterSchema).optional(),
   successCriteria: z.array(successCriteriaSchema).optional(),
   outputs: z.record(z.union([z.string(), runtimeExpressionSchema])).optional(),
-}).catchall(z.any());
+}).strict();
 
 // Workflow Object Schema
 export const workflowSchema = z.object({
@@ -57,18 +57,18 @@ export const workflowSchema = z.object({
     properties: z.record(z.object({
       type: z.string(),
       description: z.string().optional(),
-    })),
+    }).strict()),
     required: z.array(z.string()).optional(),
   }).optional(),
   steps: z.array(stepSchema),
   outputs: z.record(z.union([z.string(), runtimeExpressionSchema])).optional(),
-}).catchall(z.any());
+}).strict();
 
 // Components Object Schema
 export const componentsSchema = z.object({
   parameters: z.record(parameterSchema).optional(),
-  schemas: z.record(z.any()).optional(),
-}).catchall(z.any());
+  schemas: z.record(z.unknown()).optional(),
+}).strict();
 
 // Root Arazzo Specification Object Schema
 export const arazzoSpecificationSchema = z.object({
@@ -77,7 +77,7 @@ export const arazzoSpecificationSchema = z.object({
   sourceDescriptions: z.array(sourceDescriptionSchema).min(1),
   workflows: z.array(workflowSchema).min(1),
   components: componentsSchema.optional(),
-}).catchall(z.any()); // For x- extensions
+}).strict();
 
 // Type exports for TypeScript usage
 export type ArazzoSpecification = z.infer<typeof arazzoSpecificationSchema>;

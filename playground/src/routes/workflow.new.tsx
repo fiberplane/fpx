@@ -1,9 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useCreateWorkflow } from "@/lib/hooks/useWorkflows";
-import { useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createWorkflowMutationOptions, WORKFLOWS_KEY } from "@/lib/hooks/useWorkflows";
 import { useState } from "react";
+import { WorkflowPrompt } from "@/components/WorkflowPrompt";
 
 export const Route = createFileRoute("/workflow/new")({
   component: NewWorkflow,
@@ -11,35 +10,41 @@ export const Route = createFileRoute("/workflow/new")({
 
 function NewWorkflow() {
   const [userStory, setUserStory] = useState("");
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { mutate: createWorkflow, isPending, error } = useCreateWorkflow();
+  const { mutate: createWorkflow, isPending, error } = useMutation({
+    ...createWorkflowMutationOptions(queryClient),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [WORKFLOWS_KEY] });
+      navigate({ to: "/workflow" });
+    },
+  });
 
   const handleSubmit = () => {
-    createWorkflow(userStory, {
-      onSuccess: () => {
-        navigate({ to: "/workflow" });
-      },
+    createWorkflow({
+      name: "New Workflow",
+      prompt: userStory,
+      oaiSchemaId: "123",
     });
   };
 
   return (
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Create New Workflow</h2>
-      </div>
-      <div className="grid gap-4">
-        <Textarea
-          value={userStory}
-          onChange={(e) => setUserStory(e.target.value)}
-          placeholder="Enter a user story or description..."
-          className="w-full"
-          rows={4}
+    <div className="grid min-h-screen p-8 place-items-center">
+      <div className="w-[800px]">
+        <div className="mb-8 text-center">
+          <h2 className="text-xl font-bold">Create New Workflow</h2>
+          <p>Use the force</p>
+        </div>
+
+        <WorkflowPrompt
+          userStory={userStory}
+          setUserStory={setUserStory}
+          handleSubmit={handleSubmit}
+          isPending={isPending}
         />
-        <Button onClick={handleSubmit} disabled={isPending}>
-          {isPending ? "Creating..." : "Create Workflow"}
-        </Button>
+
         {error && (
-          <div className="text-red-500">
+          <div className="mt-4 text-red-500">
             {error instanceof Error ? error.message : "Failed to create workflow"}
           </div>
         )}

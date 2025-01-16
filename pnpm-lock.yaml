@@ -22,7 +22,7 @@ importers:
         version: 5.7.2
       wrangler:
         specifier: ^3.91.0
-        version: 3.91.0(@cloudflare/workers-types@4.20241205.0)
+        version: 3.91.0(@cloudflare/workers-types@4.20250109.0)
 
   api:
     dependencies:
@@ -744,8 +744,8 @@ importers:
         specifier: ^1.1.4
         version: 1.1.4(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@scalar/openapi-parser':
-        specifier: ^0.8.10
-        version: 0.8.10
+        specifier: ^0.10.3
+        version: 0.10.3
       '@tanstack/react-query':
         specifier: ^5.61.5
         version: 5.61.5(react@19.0.0)
@@ -952,8 +952,8 @@ importers:
         specifier: ^1.1.4
         version: 1.1.4(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@scalar/openapi-parser':
-        specifier: ^0.8.10
-        version: 0.8.10
+        specifier: ^0.10.3
+        version: 0.10.3
       '@scalar/openapi-types':
         specifier: ^0.1.5
         version: 0.1.5
@@ -1107,6 +1107,52 @@ importers:
         specifier: ^3.91.0
         version: 3.91.0(@cloudflare/workers-types@4.20241112.0)
 
+  workflows-api:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^1.13.7
+        version: 1.13.7(hono@4.6.16)
+      '@hono/zod-openapi':
+        specifier: ^0.18.0
+        version: 0.18.3(hono@4.6.16)(zod@3.24.1)
+      '@hono/zod-validator':
+        specifier: ^0.4.2
+        version: 0.4.2(hono@4.6.16)(zod@3.24.1)
+      '@libsql/client':
+        specifier: ^0.14.0
+        version: 0.14.0
+      '@scalar/hono-api-reference':
+        specifier: ^0.5.165
+        version: 0.5.165(hono@4.6.16)
+      '@scalar/openapi-parser':
+        specifier: ^0.10.3
+        version: 0.10.3
+      ai:
+        specifier: ^4.0.39
+        version: 4.0.39(react@19.0.0)(zod@3.24.1)
+      drizzle-orm:
+        specifier: ^0.38.3
+        version: 0.38.3(@cloudflare/workers-types@4.20250109.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.18)(react@19.0.0)
+      hono:
+        specifier: ^4.6.16
+        version: 4.6.16
+      nanoid:
+        specifier: ^5.0.9
+        version: 5.0.9
+      zod:
+        specifier: ^3.24.1
+        version: 3.24.1
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.17
+        version: 20.17.8
+      drizzle-kit:
+        specifier: ^0.30.1
+        version: 0.30.1
+      tsx:
+        specifier: ^4.7.1
+        version: 4.19.2
+
   www:
     dependencies:
       '@astrojs/check':
@@ -1163,7 +1209,7 @@ importers:
         version: 0.14.1
       wrangler:
         specifier: ^3.91.0
-        version: 3.91.0(@cloudflare/workers-types@4.20241205.0)
+        version: 3.91.0(@cloudflare/workers-types@4.20250109.0)
 
 packages:
 
@@ -1230,6 +1276,15 @@ packages:
       zod:
         optional: true
 
+  '@ai-sdk/provider-utils@2.0.8':
+    resolution: {integrity: sha512-R/wsIqx7Lwhq+ogzkqSOek8foj2wOnyBSGW/CH8IPBla0agbisIE9Ug7R9HDTNiBbIIKVhduB54qQSMPFw0MZA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
+
   '@ai-sdk/provider@0.0.24':
     resolution: {integrity: sha512-XMsNGJdGO+L0cxhhegtqZ8+T6nn4EoShS819OvCgI2kLbYTIvk0GWFGD0AXJmxkxs3DrpsJxKAFukFR7bvTkgQ==}
     engines: {node: '>=18'}
@@ -1242,8 +1297,24 @@ packages:
     resolution: {integrity: sha512-mV+3iNDkzUsZ0pR2jG0sVzU6xtQY5DtSCBy3JFycLp6PwjyLw/iodfL3MwdmMCRJWgs3dadcHejRnMvF9nGTBg==}
     engines: {node: '>=18'}
 
+  '@ai-sdk/provider@1.0.4':
+    resolution: {integrity: sha512-lJi5zwDosvvZER3e/pB8lj1MN3o3S7zJliQq56BRr4e9V3fcRyFtwP0JRxaRS5vHYX3OJ154VezVoQNrk0eaKw==}
+    engines: {node: '>=18'}
+
   '@ai-sdk/react@0.0.70':
     resolution: {integrity: sha512-GnwbtjW4/4z7MleLiW+TOZC2M29eCg1tOUpuEiYFMmFNZK8mkrqM0PFZMo6UsYeUYMWqEOOcPOU9OQVJMJh7IQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: ^18 || ^19 || ^19.0.0-rc
+      zod: ^3.0.0
+    peerDependenciesMeta:
+      react:
+        optional: true
+      zod:
+        optional: true
+
+  '@ai-sdk/react@1.0.12':
+    resolution: {integrity: sha512-vh4CVgZWNYECK49eV2NJpWL7Am9DlMAYD8Z2kauXYmTT2Ktjng0rLQFtUGYyyJqgYUqXTODOGg6t8w8liWhsbw==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
@@ -1286,6 +1357,15 @@ packages:
 
   '@ai-sdk/ui-utils@0.0.50':
     resolution: {integrity: sha512-Z5QYJVW+5XpSaJ4jYCCAVG7zIAuKOOdikhgpksneNmKvx61ACFaf98pmOd+xnjahl0pIlc/QIe6O4yVaJ1sEaw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
+
+  '@ai-sdk/ui-utils@1.0.11':
+    resolution: {integrity: sha512-hbC3eSw42zbl+sRUxuvxGr9Tzx4MY7Ln3s2FTU2t4s4rcl546Xdq36pzM7k8ZQUDFMzfVfjLYqtM4Gfnno2MlQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -1884,6 +1964,9 @@ packages:
 
   '@cloudflare/workers-types@4.20241205.0':
     resolution: {integrity: sha512-pj1VKRHT/ScQbHOIMFODZaNAlJHQHdBSZXNIdr9ebJzwBff9Qz8VdqhbhggV7f+aUEh8WSbrsPIo4a+WtgjUvw==}
+
+  '@cloudflare/workers-types@4.20250109.0':
+    resolution: {integrity: sha512-Y1zgSaEOOevl9ORpzgMcm4j535p3nK2lrblHHvYM2yxR50SBKGh+wvkRFAIxWRfjUGZEU+Fp6923EGioDBbobA==}
 
   '@codemirror/autocomplete@6.18.3':
     resolution: {integrity: sha512-1dNIOmiM0z4BIBwxmxEfA1yoxh1MF/6KPBbh20a5vphGV0ictKlgQsbJs6D6SkR6iJpGbpwRsa6PFMNlg9T9pQ==}
@@ -3122,6 +3205,12 @@ packages:
 
   '@hono/zod-validator@0.4.1':
     resolution: {integrity: sha512-I8LyfeJfvVmC5hPjZ2Iij7RjexlgSBT7QJudZ4JvNPLxn0JQ3sqclz2zydlwISAnw21D2n4LQ0nfZdoiv9fQQA==}
+    peerDependencies:
+      hono: '>=3.9.0'
+      zod: ^3.19.1
+
+  '@hono/zod-validator@0.4.2':
+    resolution: {integrity: sha512-1rrlBg+EpDPhzOV4hT9pxr5+xDVmKuz6YJl+la7VCwK6ass5ldyKm5fD+umJdV2zhHD6jROoCCv8NbTwyfhT0g==}
     peerDependencies:
       hono: '>=3.9.0'
       zod: ^3.19.1
@@ -4874,12 +4963,22 @@ packages:
     resolution: {integrity: sha512-xzvBr1Q1c4lCe7i6sRnrofxeO1QTP/LKQ6A6qy0iB4x5yfiSfARMEQEghojzTNALDTcv8En04qYNIco9/K9eZQ==}
     engines: {node: '>=v14.0.0', npm: '>=7.0.0'}
 
-  '@scalar/openapi-parser@0.8.10':
-    resolution: {integrity: sha512-wAHrxB6SMKqlyOfj2Bq5rPl9s25+0LXD3UsFvx3v35bQSoIS13h0akVgpph5sbwRvufgQoE4IDWYuFTXH393Bg==}
+  '@scalar/hono-api-reference@0.5.165':
+    resolution: {integrity: sha512-UOdH9vKQxNC5wi3fQufq44g93x3oE7YoeI1bdLncbrK3Nm+XtLe4Wc0kSpz1n6gsjvqSJij/ioXmkC8OJpM5hA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      hono: ^4.0.0
+
+  '@scalar/openapi-parser@0.10.3':
+    resolution: {integrity: sha512-H8kf03e7ScaCZMYSsBsYcu/2ypxzwpxwnAaEmNAATwrfsfMU6M3iEBshy+RL2JjqlRSBQ6zhc9EUOhpZlvRjSw==}
     engines: {node: '>=18'}
 
   '@scalar/openapi-types@0.1.5':
     resolution: {integrity: sha512-6geH9ehvQ/sG/xUyy3e0lyOw3BaY5s6nn22wHjEJhcobdmWyFER0O6m7AU0ZN4QTjle/gYvFJOjj552l/rsNSw==}
+    engines: {node: '>=18'}
+
+  '@scalar/types@0.0.25':
+    resolution: {integrity: sha512-sGnOFnfiSn4o23rklU/jrg81hO+630bsFIdHg8MZ/w2Nc6IoUwARA2hbe4d4Fg+D0KBu40Tan/L+WAYDXkTJQg==}
     engines: {node: '>=18'}
 
   '@sevinf/maybe@0.5.0':
@@ -5583,6 +5682,9 @@ packages:
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
+  '@unhead/schema@1.11.18':
+    resolution: {integrity: sha512-a3TA/OJCRdfbFhcA3Hq24k1ZU1o9szicESrw8DZcGyQFacHnh84mVgnyqSkMnwgCmfN4kvjSiTBlLEHS6+wATw==}
+
   '@upstash/vector@1.1.7':
     resolution: {integrity: sha512-yxgXdH/Z2uX8XUVrLeo6ZNci2Z8EzXGwjIZ8EZwctF5+oiBIKwz8tsh/yUesyGrbuQ+ViBPGtZWV5vLFbp649w==}
 
@@ -5761,6 +5863,18 @@ packages:
       sswr:
         optional: true
       svelte:
+        optional: true
+      zod:
+        optional: true
+
+  ai@4.0.39:
+    resolution: {integrity: sha512-Iari2vMHROKs/ul3PToaza4JEIE56oecbJdS8mFFVrB5uOxNqJY1CHfRBX24HNiXYA+nXJunZujCSOzfcwBqbg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: ^18 || ^19 || ^19.0.0-rc
+      zod: ^3.0.0
+    peerDependenciesMeta:
+      react:
         optional: true
       zod:
         optional: true
@@ -6664,6 +6778,10 @@ packages:
     resolution: {integrity: sha512-JimOV+ystXTWMgZkLHYHf2w3oS28hxiH1FR0dkmJLc7GHzdGJoJAQtQS5DRppnabsRZwE2U1F6CuezVBgmsBBQ==}
     hasBin: true
 
+  drizzle-kit@0.30.1:
+    resolution: {integrity: sha512-HmA/NeewvHywhJ2ENXD3KvOuM/+K2dGLJfxVfIHsGwaqKICJnS+Ke2L6UcSrSrtMJLJaT0Im1Qv4TFXfaZShyw==}
+    hasBin: true
+
   drizzle-orm@0.33.0:
     resolution: {integrity: sha512-SHy72R2Rdkz0LEq0PSG/IdvnT3nGiWuRk+2tXZQ90GVq/XQhpCzu/EFT3V2rox+w8MlkBQxifF8pCStNYnERfA==}
     peerDependencies:
@@ -6937,6 +7055,98 @@ packages:
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=3'
+      '@electric-sql/pglite': '>=0.2.0'
+      '@libsql/client': '>=0.10.0'
+      '@libsql/client-wasm': '>=0.10.0'
+      '@neondatabase/serverless': '>=0.10.0'
+      '@op-engineering/op-sqlite': '>=2'
+      '@opentelemetry/api': ^1.4.1
+      '@planetscale/database': '>=1'
+      '@prisma/client': '*'
+      '@tidbcloud/serverless': '*'
+      '@types/better-sqlite3': '*'
+      '@types/pg': '*'
+      '@types/react': '>=18'
+      '@types/sql.js': '*'
+      '@vercel/postgres': '>=0.8.0'
+      '@xata.io/client': '*'
+      better-sqlite3: '>=7'
+      bun-types: '*'
+      expo-sqlite: '>=14.0.0'
+      knex: '*'
+      kysely: '*'
+      mysql2: '>=2'
+      pg: '>=8'
+      postgres: '>=3'
+      prisma: '*'
+      react: '>=18'
+      sql.js: '>=1'
+      sqlite3: '>=5'
+    peerDependenciesMeta:
+      '@aws-sdk/client-rds-data':
+        optional: true
+      '@cloudflare/workers-types':
+        optional: true
+      '@electric-sql/pglite':
+        optional: true
+      '@libsql/client':
+        optional: true
+      '@libsql/client-wasm':
+        optional: true
+      '@neondatabase/serverless':
+        optional: true
+      '@op-engineering/op-sqlite':
+        optional: true
+      '@opentelemetry/api':
+        optional: true
+      '@planetscale/database':
+        optional: true
+      '@prisma/client':
+        optional: true
+      '@tidbcloud/serverless':
+        optional: true
+      '@types/better-sqlite3':
+        optional: true
+      '@types/pg':
+        optional: true
+      '@types/react':
+        optional: true
+      '@types/sql.js':
+        optional: true
+      '@vercel/postgres':
+        optional: true
+      '@xata.io/client':
+        optional: true
+      better-sqlite3:
+        optional: true
+      bun-types:
+        optional: true
+      expo-sqlite:
+        optional: true
+      knex:
+        optional: true
+      kysely:
+        optional: true
+      mysql2:
+        optional: true
+      pg:
+        optional: true
+      postgres:
+        optional: true
+      prisma:
+        optional: true
+      react:
+        optional: true
+      sql.js:
+        optional: true
+      sqlite3:
+        optional: true
+
+  drizzle-orm@0.38.3:
+    resolution: {integrity: sha512-w41Y+PquMpSff/QDRGdItG0/aWca+/J3Sda9PPGkTxBtjWQvgU1jxlFBXdjog5tYvTu58uvi3PwR1NuCx0KeZg==}
+    peerDependencies:
+      '@aws-sdk/client-rds-data': '>=3'
+      '@cloudflare/workers-types': '>=4'
       '@electric-sql/pglite': '>=0.2.0'
       '@libsql/client': '>=0.10.0'
       '@libsql/client-wasm': '>=0.10.0'
@@ -7743,6 +7953,9 @@ packages:
   hono@4.6.16:
     resolution: {integrity: sha512-iE6xOPwDYlfnZFwk6BfIMMIH4WZm3pPhz6rc1uJM/OPew0pjG5K6p8WTLaMBY1/szF/T0TaEjprMpwn16BA0NQ==}
     engines: {node: '>=16.9.0'}
+
+  hookable@5.5.3:
+    resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
 
   html-entities@2.5.2:
     resolution: {integrity: sha512-K//PSRMQk4FZ78Kyau+mZurHn3FH0Vwr+H36eE0rPbeYkRRi9YxceYPhuN60UwWorxyKHhqoAJl2OFKa4BVtaA==}
@@ -8793,6 +9006,11 @@ packages:
   nanoid@3.3.8:
     resolution: {integrity: sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
+    hasBin: true
+
+  nanoid@5.0.9:
+    resolution: {integrity: sha512-Aooyr6MXU6HpvvWXKoVoXwKMs/KyVakWwg7xQfv5/S/RIgJMy0Ifa45H9qqYy7pTCszrHzP21Uk4PZq2HpEM8Q==}
+    engines: {node: ^18 || >=20}
     hasBin: true
 
   napi-build-utils@1.0.2:
@@ -11262,6 +11480,9 @@ packages:
   youch@3.3.4:
     resolution: {integrity: sha512-UeVBXie8cA35DS6+nBkls68xaBBXCye0CNznrhszZjTbRVnJKQuNsyLKBTTL4ln1o1rh2PKtv35twV7irj5SEg==}
 
+  zhead@2.2.4:
+    resolution: {integrity: sha512-8F0OI5dpWIA5IGG5NHUg9staDwz/ZPxZtvGVf01j7vHqSyZ0raHY+78atOVxRqb73AotX22uV1pXt3gYSstGag==}
+
   zod-package-json@1.0.3:
     resolution: {integrity: sha512-Mb6GzuRyUEl8X+6V6xzHbd4XV0au/4gOYrYP+CAfHL32uPmGswES+v2YqonZiW1NZWVA3jkssCKSU2knonm/aQ==}
     engines: {node: '>=20'}
@@ -11270,6 +11491,11 @@ packages:
     resolution: {integrity: sha512-5wlSS0bXfF/BrL4jPAbz9da5hDlDptdEppYfe+x4eIJ7jioqKG9uUxOwPzqof09u/XeVdrgFu29lZi+8XNDJtA==}
     peerDependencies:
       zod: ^3.23.3
+
+  zod-to-json-schema@3.24.1:
+    resolution: {integrity: sha512-3h08nf3Vw3Wl3PK+q3ow/lIil81IT2Oa7YpQyUUDsEWbXveMesdfK1xBd2RhCkynwZndAxixji/7SYJJowr62w==}
+    peerDependencies:
+      zod: ^3.24.1
 
   zod-to-ts@1.2.0:
     resolution: {integrity: sha512-x30XE43V+InwGpvTySRNz9kB7qFU8DlyEy7BsSTCHPH1R0QasMmHWZDCzYm6bVXtj/9NNJAZF3jW8rzFvH5OFA==}
@@ -11396,6 +11622,15 @@ snapshots:
     optionalDependencies:
       zod: 3.23.8
 
+  '@ai-sdk/provider-utils@2.0.8(zod@3.24.1)':
+    dependencies:
+      '@ai-sdk/provider': 1.0.4
+      eventsource-parser: 3.0.0
+      nanoid: 3.3.8
+      secure-json-parse: 2.7.0
+    optionalDependencies:
+      zod: 3.24.1
+
   '@ai-sdk/provider@0.0.24':
     dependencies:
       json-schema: 0.4.0
@@ -11405,6 +11640,10 @@ snapshots:
       json-schema: 0.4.0
 
   '@ai-sdk/provider@1.0.1':
+    dependencies:
+      json-schema: 0.4.0
+
+  '@ai-sdk/provider@1.0.4':
     dependencies:
       json-schema: 0.4.0
 
@@ -11427,6 +11666,16 @@ snapshots:
     optionalDependencies:
       react: 19.0.0
       zod: 3.24.0
+
+  '@ai-sdk/react@1.0.12(react@19.0.0)(zod@3.24.1)':
+    dependencies:
+      '@ai-sdk/provider-utils': 2.0.8(zod@3.24.1)
+      '@ai-sdk/ui-utils': 1.0.11(zod@3.24.1)
+      swr: 2.2.5(react@19.0.0)
+      throttleit: 2.1.0
+    optionalDependencies:
+      react: 19.0.0
+      zod: 3.24.1
 
   '@ai-sdk/react@1.0.3(react@19.0.0)(zod@3.23.8)':
     dependencies:
@@ -11491,6 +11740,14 @@ snapshots:
       zod-to-json-schema: 3.23.5(zod@3.24.0)
     optionalDependencies:
       zod: 3.24.0
+
+  '@ai-sdk/ui-utils@1.0.11(zod@3.24.1)':
+    dependencies:
+      '@ai-sdk/provider': 1.0.4
+      '@ai-sdk/provider-utils': 2.0.8(zod@3.24.1)
+      zod-to-json-schema: 3.24.1(zod@3.24.1)
+    optionalDependencies:
+      zod: 3.24.1
 
   '@ai-sdk/ui-utils@1.0.2(zod@3.23.8)':
     dependencies:
@@ -11677,7 +11934,7 @@ snapshots:
     dependencies:
       sitemap: 8.0.0
       stream-replace-string: 2.0.0
-      zod: 3.24.0
+      zod: 3.24.1
 
   '@astrojs/starlight@0.28.6(astro@4.16.17(@types/node@22.10.5)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))':
     dependencies:
@@ -12321,7 +12578,7 @@ snapshots:
       '@babel/traverse': 7.26.5
       '@babel/types': 7.26.3
       convert-source-map: 2.0.0
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -12430,8 +12687,8 @@ snapshots:
       '@babel/generator': 7.26.2
       '@babel/parser': 7.26.3
       '@babel/template': 7.25.9
-      '@babel/types': 7.26.3
-      debug: 4.4.0
+      '@babel/types': 7.26.5
+      debug: 4.4.0(supports-color@8.1.1)
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -12443,7 +12700,7 @@ snapshots:
       '@babel/parser': 7.26.5
       '@babel/template': 7.25.9
       '@babel/types': 7.26.5
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -12567,16 +12824,19 @@ snapshots:
   '@cloudflare/workers-shared@0.11.0':
     dependencies:
       mime: 3.0.0
-      zod: 3.24.0
+      zod: 3.24.1
 
   '@cloudflare/workers-shared@0.9.0':
     dependencies:
       mime: 3.0.0
-      zod: 3.24.0
+      zod: 3.24.1
 
   '@cloudflare/workers-types@4.20241112.0': {}
 
   '@cloudflare/workers-types@4.20241205.0': {}
+
+  '@cloudflare/workers-types@4.20250109.0':
+    optional: true
 
   '@codemirror/autocomplete@6.18.3(@codemirror/language@6.10.5)(@codemirror/state@6.4.1)(@codemirror/view@6.35.0)(@lezer/common@1.2.3)':
     dependencies:
@@ -13426,6 +13686,10 @@ snapshots:
     dependencies:
       hono: 4.6.13
 
+  '@hono/node-server@1.13.7(hono@4.6.16)':
+    dependencies:
+      hono: 4.6.16
+
   '@hono/oauth-providers@0.6.2(hono@4.6.12)':
     dependencies:
       hono: 4.6.12
@@ -13442,6 +13706,13 @@ snapshots:
       '@asteasolutions/zod-to-openapi': 7.3.0(zod@3.24.1)
       '@hono/zod-validator': 0.4.1(hono@4.6.12)(zod@3.24.1)
       hono: 4.6.12
+      zod: 3.24.1
+
+  '@hono/zod-openapi@0.18.3(hono@4.6.16)(zod@3.24.1)':
+    dependencies:
+      '@asteasolutions/zod-to-openapi': 7.3.0(zod@3.24.1)
+      '@hono/zod-validator': 0.4.1(hono@4.6.16)(zod@3.24.1)
+      hono: 4.6.16
       zod: 3.24.1
 
   '@hono/zod-validator@0.2.2(hono@4.6.12)(zod@3.23.8)':
@@ -13462,6 +13733,16 @@ snapshots:
   '@hono/zod-validator@0.4.1(hono@4.6.12)(zod@3.24.1)':
     dependencies:
       hono: 4.6.12
+      zod: 3.24.1
+
+  '@hono/zod-validator@0.4.1(hono@4.6.16)(zod@3.24.1)':
+    dependencies:
+      hono: 4.6.16
+      zod: 3.24.1
+
+  '@hono/zod-validator@0.4.2(hono@4.6.16)(zod@3.24.1)':
+    dependencies:
+      hono: 4.6.16
       zod: 3.24.1
 
   '@hookform/resolvers@3.9.1(react-hook-form@7.53.2(react@18.3.1))':
@@ -13649,8 +13930,8 @@ snapshots:
       '@anthropic-ai/sdk': 0.27.3(encoding@0.1.13)
       '@langchain/core': 0.2.36(openai@4.76.0(encoding@0.1.13)(zod@3.24.0))
       fast-xml-parser: 4.5.0
-      zod: 3.24.0
-      zod-to-json-schema: 3.23.5(zod@3.24.0)
+      zod: 3.24.1
+      zod-to-json-schema: 3.23.5(zod@3.24.1)
     transitivePeerDependencies:
       - encoding
 
@@ -13665,8 +13946,8 @@ snapshots:
       p-queue: 6.6.2
       p-retry: 4.6.2
       uuid: 10.0.0
-      zod: 3.24.0
-      zod-to-json-schema: 3.23.5(zod@3.24.0)
+      zod: 3.24.1
+      zod-to-json-schema: 3.23.5(zod@3.24.1)
     transitivePeerDependencies:
       - openai
 
@@ -13681,8 +13962,8 @@ snapshots:
       p-queue: 6.6.2
       p-retry: 4.6.2
       uuid: 10.0.0
-      zod: 3.24.0
-      zod-to-json-schema: 3.23.5(zod@3.24.0)
+      zod: 3.24.1
+      zod-to-json-schema: 3.23.5(zod@3.24.1)
     transitivePeerDependencies:
       - openai
 
@@ -13697,8 +13978,8 @@ snapshots:
       p-queue: 6.6.2
       p-retry: 4.6.2
       uuid: 10.0.0
-      zod: 3.24.0
-      zod-to-json-schema: 3.23.5(zod@3.24.0)
+      zod: 3.24.1
+      zod-to-json-schema: 3.23.5(zod@3.24.1)
     transitivePeerDependencies:
       - openai
 
@@ -13713,8 +13994,8 @@ snapshots:
       p-queue: 6.6.2
       p-retry: 4.6.2
       uuid: 10.0.0
-      zod: 3.24.0
-      zod-to-json-schema: 3.23.5(zod@3.24.0)
+      zod: 3.24.1
+      zod-to-json-schema: 3.23.5(zod@3.24.1)
     transitivePeerDependencies:
       - openai
 
@@ -13736,7 +14017,7 @@ snapshots:
       '@langchain/langgraph-checkpoint': 0.0.13(@langchain/core@0.2.36(openai@4.76.0(encoding@0.1.13)(zod@3.24.0)))
       '@langchain/langgraph-sdk': 0.0.31
       uuid: 10.0.0
-      zod: 3.24.0
+      zod: 3.24.1
 
   '@lezer/common@1.2.3': {}
 
@@ -13836,11 +14117,11 @@ snapshots:
       - pathe
       - tiktoken
 
-  '@llamaindex/clip@0.0.8(@aws-crypto/sha256-js@5.2.0)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.0)':
+  '@llamaindex/clip@0.0.8(@aws-crypto/sha256-js@5.2.0)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.1)':
     dependencies:
       '@llamaindex/core': 0.3.7(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
       '@llamaindex/env': 0.1.16(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
-      '@llamaindex/openai': 0.1.24(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.0)
+      '@llamaindex/openai': 0.1.24(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.1)
       '@xenova/transformers': 2.17.2
     transitivePeerDependencies:
       - '@aws-crypto/sha256-js'
@@ -13861,8 +14142,8 @@ snapshots:
       '@llamaindex/env': 0.1.16(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
       '@types/node': 22.10.5
       magic-bytes.js: 1.10.0
-      zod: 3.24.0
-      zod-to-json-schema: 3.23.5(zod@3.24.0)
+      zod: 3.24.1
+      zod-to-json-schema: 3.23.5(zod@3.24.1)
     transitivePeerDependencies:
       - '@aws-crypto/sha256-js'
       - '@xenova/transformers'
@@ -13871,11 +14152,11 @@ snapshots:
       - pathe
       - tiktoken
 
-  '@llamaindex/deepinfra@0.0.8(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.0)':
+  '@llamaindex/deepinfra@0.0.8(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.1)':
     dependencies:
       '@llamaindex/core': 0.3.7(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
       '@llamaindex/env': 0.1.16(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
-      '@llamaindex/openai': 0.1.24(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.0)
+      '@llamaindex/openai': 0.1.24(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.1)
     transitivePeerDependencies:
       - '@aws-crypto/sha256-js'
       - '@xenova/transformers'
@@ -13895,10 +14176,10 @@ snapshots:
       js-tiktoken: 1.0.15
       pathe: 1.1.2
 
-  '@llamaindex/groq@0.0.23(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.0)':
+  '@llamaindex/groq@0.0.23(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.1)':
     dependencies:
       '@llamaindex/env': 0.1.16(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
-      '@llamaindex/openai': 0.1.24(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.0)
+      '@llamaindex/openai': 0.1.24(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.1)
       groq-sdk: 0.6.1(encoding@0.1.13)
     transitivePeerDependencies:
       - '@aws-crypto/sha256-js'
@@ -13910,12 +14191,12 @@ snapshots:
       - tiktoken
       - zod
 
-  '@llamaindex/huggingface@0.0.8(@aws-crypto/sha256-js@5.2.0)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.0)':
+  '@llamaindex/huggingface@0.0.8(@aws-crypto/sha256-js@5.2.0)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.1)':
     dependencies:
       '@huggingface/inference': 2.8.1
       '@llamaindex/core': 0.3.7(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
       '@llamaindex/env': 0.1.16(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
-      '@llamaindex/openai': 0.1.24(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.0)
+      '@llamaindex/openai': 0.1.24(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.1)
       '@xenova/transformers': 2.17.2
     transitivePeerDependencies:
       - '@aws-crypto/sha256-js'
@@ -13940,11 +14221,11 @@ snapshots:
       - pathe
       - tiktoken
 
-  '@llamaindex/openai@0.1.24(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.0)':
+  '@llamaindex/openai@0.1.24(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.1)':
     dependencies:
       '@llamaindex/core': 0.3.7(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
       '@llamaindex/env': 0.1.16(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
-      openai: 4.76.0(encoding@0.1.13)(zod@3.24.0)
+      openai: 4.76.0(encoding@0.1.13)(zod@3.24.1)
       remeda: 2.17.4
     transitivePeerDependencies:
       - '@aws-crypto/sha256-js'
@@ -14029,11 +14310,11 @@ snapshots:
       - acorn
       - supports-color
 
-  '@mistralai/mistralai@1.3.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(zod@3.24.0)':
+  '@mistralai/mistralai@1.3.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(zod@3.24.1)':
     dependencies:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
-      zod: 3.24.0
+      zod: 3.24.1
 
   '@mixedbread-ai/sdk@2.2.11(encoding@0.1.13)':
     dependencies:
@@ -14050,7 +14331,7 @@ snapshots:
     dependencies:
       content-type: 1.0.5
       raw-body: 3.0.0
-      zod: 3.24.0
+      zod: 3.24.1
 
   '@mole-inc/bin-wrapper@8.0.1':
     dependencies:
@@ -15806,7 +16087,12 @@ snapshots:
 
   '@sapphire/snowflake@3.5.5': {}
 
-  '@scalar/openapi-parser@0.8.10':
+  '@scalar/hono-api-reference@0.5.165(hono@4.6.16)':
+    dependencies:
+      '@scalar/types': 0.0.25
+      hono: 4.6.16
+
+  '@scalar/openapi-parser@0.10.3':
     dependencies:
       ajv: 8.17.1
       ajv-draft-04: 1.0.0(ajv@8.17.1)
@@ -15816,6 +16102,11 @@ snapshots:
       yaml: 2.6.1
 
   '@scalar/openapi-types@0.1.5': {}
+
+  '@scalar/types@0.0.25':
+    dependencies:
+      '@scalar/openapi-types': 0.1.5
+      '@unhead/schema': 1.11.18
 
   '@sevinf/maybe@0.5.0': {}
 
@@ -16720,6 +17011,11 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
+  '@unhead/schema@1.11.18':
+    dependencies:
+      hookable: 5.5.3
+      zhead: 2.2.4
+
   '@upstash/vector@1.1.7': {}
 
   '@vitejs/plugin-react-swc@3.7.2(@swc/helpers@0.5.13)(vite@6.0.1(@types/node@22.10.0)(jiti@1.21.6)(lightningcss@1.28.1)(tsx@4.19.2)(yaml@2.6.1))':
@@ -17027,6 +17323,18 @@ snapshots:
       - solid-js
       - vue
 
+  ai@4.0.39(react@19.0.0)(zod@3.24.1):
+    dependencies:
+      '@ai-sdk/provider': 1.0.4
+      '@ai-sdk/provider-utils': 2.0.8(zod@3.24.1)
+      '@ai-sdk/react': 1.0.12(react@19.0.0)(zod@3.24.1)
+      '@ai-sdk/ui-utils': 1.0.11(zod@3.24.1)
+      '@opentelemetry/api': 1.9.0
+      jsondiffpatch: 0.6.0
+    optionalDependencies:
+      react: 19.0.0
+      zod: 3.24.1
+
   ai@4.0.7(react@19.0.0)(zod@3.23.8):
     dependencies:
       '@ai-sdk/provider': 1.0.1
@@ -17211,9 +17519,9 @@ snapshots:
       which-pm: 3.0.0
       xxhash-wasm: 1.1.0
       yargs-parser: 21.1.1
-      zod: 3.24.0
-      zod-to-json-schema: 3.23.5(zod@3.24.0)
-      zod-to-ts: 1.2.0(typescript@5.7.2)(zod@3.24.0)
+      zod: 3.24.1
+      zod-to-json-schema: 3.23.5(zod@3.24.1)
+      zod-to-ts: 1.2.0(typescript@5.7.2)(zod@3.24.1)
     optionalDependencies:
       sharp: 0.33.5
     transitivePeerDependencies:
@@ -17888,19 +18196,11 @@ snapshots:
 
   dayjs@1.11.13: {}
 
-  debug@4.3.7:
-    dependencies:
-      ms: 2.1.3
-
   debug@4.3.7(supports-color@5.5.0):
     dependencies:
       ms: 2.1.3
     optionalDependencies:
       supports-color: 5.5.0
-
-  debug@4.4.0:
-    dependencies:
-      ms: 2.1.3
 
   debug@4.4.0(supports-color@8.1.1):
     dependencies:
@@ -18063,6 +18363,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  drizzle-kit@0.30.1:
+    dependencies:
+      '@drizzle-team/brocli': 0.10.2
+      '@esbuild-kit/esm-loader': 2.6.5
+      esbuild: 0.19.12
+      esbuild-register: 3.6.0(esbuild@0.19.12)
+    transitivePeerDependencies:
+      - supports-color
+
   drizzle-orm@0.33.0(@cloudflare/workers-types@4.20241205.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.18)(react@19.0.0):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20241205.0
@@ -18098,6 +18407,17 @@ snapshots:
   drizzle-orm@0.36.4(@cloudflare/workers-types@4.20241112.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.18)(react@19.0.0):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20241112.0
+      '@libsql/client': 0.14.0
+      '@libsql/client-wasm': 0.14.0
+      '@neondatabase/serverless': 0.10.4
+      '@opentelemetry/api': 1.9.0
+      '@types/pg': 8.11.10
+      '@types/react': 18.3.18
+      react: 19.0.0
+
+  drizzle-orm@0.38.3(@cloudflare/workers-types@4.20250109.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.18)(react@19.0.0):
+    optionalDependencies:
+      '@cloudflare/workers-types': 4.20250109.0
       '@libsql/client': 0.14.0
       '@libsql/client-wasm': 0.14.0
       '@neondatabase/serverless': 0.10.4
@@ -19167,6 +19487,8 @@ snapshots:
 
   hono@4.6.16: {}
 
+  hookable@5.5.3: {}
+
   html-entities@2.5.2: {}
 
   html-escaper@3.0.3: {}
@@ -19671,18 +19993,18 @@ snapshots:
       '@google/generative-ai': 0.12.0
       '@grpc/grpc-js': 1.12.4
       '@llamaindex/anthropic': 0.0.8(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
-      '@llamaindex/clip': 0.0.8(@aws-crypto/sha256-js@5.2.0)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.0)
+      '@llamaindex/clip': 0.0.8(@aws-crypto/sha256-js@5.2.0)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.1)
       '@llamaindex/cloud': 1.0.8(@llamaindex/core@0.3.7(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2))(@llamaindex/env@0.1.16(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2))
       '@llamaindex/core': 0.3.7(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
-      '@llamaindex/deepinfra': 0.0.8(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.0)
+      '@llamaindex/deepinfra': 0.0.8(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.1)
       '@llamaindex/env': 0.1.16(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
-      '@llamaindex/groq': 0.0.23(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.0)
-      '@llamaindex/huggingface': 0.0.8(@aws-crypto/sha256-js@5.2.0)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.0)
+      '@llamaindex/groq': 0.0.23(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.1)
+      '@llamaindex/huggingface': 0.0.8(@aws-crypto/sha256-js@5.2.0)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.1)
       '@llamaindex/ollama': 0.0.15(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
-      '@llamaindex/openai': 0.1.24(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.0)
+      '@llamaindex/openai': 0.1.24(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(encoding@0.1.13)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)(zod@3.24.1)
       '@llamaindex/portkey-ai': 0.0.8(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
       '@llamaindex/replicate': 0.0.8(@aws-crypto/sha256-js@5.2.0)(@xenova/transformers@2.17.2)(gpt-tokenizer@2.8.1)(js-tiktoken@1.0.15)(pathe@1.1.2)
-      '@mistralai/mistralai': 1.3.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(zod@3.24.0)
+      '@mistralai/mistralai': 1.3.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(zod@3.24.1)
       '@mixedbread-ai/sdk': 2.2.11(encoding@0.1.13)
       '@pinecone-database/pinecone': 3.0.3
       '@qdrant/js-client-rest': 1.12.0(typescript@5.7.2)
@@ -19707,7 +20029,7 @@ snapshots:
       md-utils-ts: 2.0.0
       mongodb: 6.11.0(@aws-sdk/credential-providers@3.699.0(@aws-sdk/client-sso-oidc@3.699.0(@aws-sdk/client-sts@3.699.0)))
       notion-md-crawler: 1.0.0(encoding@0.1.13)
-      openai: 4.76.0(encoding@0.1.13)(zod@3.24.0)
+      openai: 4.76.0(encoding@0.1.13)(zod@3.24.1)
       papaparse: 5.4.1
       pathe: 1.1.2
       rake-modified: 1.0.8
@@ -19716,7 +20038,7 @@ snapshots:
       weaviate-client: 3.2.5(encoding@0.1.13)
       wikipedia: 2.1.2
       wink-nlp: 2.3.2
-      zod: 3.24.0
+      zod: 3.24.1
     optionalDependencies:
       '@notionhq/client': 2.2.15(encoding@0.1.13)
     transitivePeerDependencies:
@@ -20411,7 +20733,7 @@ snapshots:
       workerd: 1.20241106.1
       ws: 8.18.0
       youch: 3.3.4
-      zod: 3.24.0
+      zod: 3.24.1
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -20430,7 +20752,7 @@ snapshots:
       workerd: 1.20241205.0
       ws: 8.18.0
       youch: 3.3.4
-      zod: 3.24.0
+      zod: 3.24.1
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -20533,6 +20855,8 @@ snapshots:
   nanoid@3.3.6: {}
 
   nanoid@3.3.8: {}
+
+  nanoid@5.0.9: {}
 
   napi-build-utils@1.0.2: {}
 
@@ -20802,7 +21126,6 @@ snapshots:
       zod: 3.24.1
     transitivePeerDependencies:
       - encoding
-    optional: true
 
   openapi-types@12.1.3: {}
 
@@ -21298,7 +21621,7 @@ snapshots:
       quick-lru: 7.0.0
       url-join: 5.0.0
       validate-npm-package-name: 5.0.1
-      zod: 3.24.0
+      zod: 3.24.1
       zod-package-json: 1.0.3
 
   query-string@9.1.1:
@@ -22483,7 +22806,7 @@ snapshots:
       tslib: 2.8.1
       tsutils: 3.21.0(typescript@5.7.2)
       typescript: 5.7.2
-      zod: 3.24.0
+      zod: 3.24.1
     transitivePeerDependencies:
       - supports-color
 
@@ -22504,7 +22827,7 @@ snapshots:
       tslib: 2.8.1
       tsutils: 3.21.0(typescript@5.7.2)
       typescript: 5.7.2
-      zod: 3.24.0
+      zod: 3.24.1
     transitivePeerDependencies:
       - supports-color
 
@@ -22873,7 +23196,7 @@ snapshots:
   vite-node@2.1.6(@types/node@22.10.5)(jiti@1.21.6)(lightningcss@1.28.1)(tsx@4.19.2)(yaml@2.6.1):
     dependencies:
       cac: 6.7.14
-      debug: 4.4.0
+      debug: 4.4.0(supports-color@8.1.1)
       es-module-lexer: 1.5.4
       pathe: 1.1.2
       vite: 6.0.7(@types/node@22.10.5)(jiti@1.21.6)(lightningcss@1.28.1)(tsx@4.19.2)(yaml@2.6.1)
@@ -23116,7 +23439,7 @@ snapshots:
       '@vitest/spy': 2.1.6
       '@vitest/utils': 2.1.6
       chai: 5.1.2
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@5.5.0)
       expect-type: 1.1.0
       magic-string: 0.30.14
       pathe: 1.1.2
@@ -23429,7 +23752,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  wrangler@3.91.0(@cloudflare/workers-types@4.20241205.0):
+  wrangler@3.91.0(@cloudflare/workers-types@4.20250109.0):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.4
       '@cloudflare/workers-shared': 0.9.0
@@ -23451,7 +23774,7 @@ snapshots:
       workerd: 1.20241106.1
       xxhash-wasm: 1.1.0
     optionalDependencies:
-      '@cloudflare/workers-types': 4.20241205.0
+      '@cloudflare/workers-types': 4.20250109.0
       fsevents: 2.3.3
     transitivePeerDependencies:
       - bufferutil
@@ -23589,9 +23912,11 @@ snapshots:
       mustache: 4.2.0
       stacktracey: 2.1.8
 
+  zhead@2.2.4: {}
+
   zod-package-json@1.0.3:
     dependencies:
-      zod: 3.24.0
+      zod: 3.24.1
 
   zod-to-json-schema@3.23.5(zod@3.23.8):
     dependencies:
@@ -23601,10 +23926,18 @@ snapshots:
     dependencies:
       zod: 3.24.0
 
-  zod-to-ts@1.2.0(typescript@5.7.2)(zod@3.24.0):
+  zod-to-json-schema@3.23.5(zod@3.24.1):
+    dependencies:
+      zod: 3.24.1
+
+  zod-to-json-schema@3.24.1(zod@3.24.1):
+    dependencies:
+      zod: 3.24.1
+
+  zod-to-ts@1.2.0(typescript@5.7.2)(zod@3.24.1):
     dependencies:
       typescript: 5.7.2
-      zod: 3.24.0
+      zod: 3.24.1
 
   zod@3.23.8: {}
 

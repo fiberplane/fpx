@@ -1,11 +1,15 @@
 import { serve } from "@hono/node-server";
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { apiReference } from "@scalar/hono-api-reference";
 import oaiSchemaRouter from "./routes/oai-schema.js";
 import workflowRouter from "./routes/workflow.js";
 
-const app = new OpenAPIHono({ strict: false });
+const app = new OpenAPIHono();
 
-app.doc("/docs", {
+// Mount routes
+const router = app.route("/", oaiSchemaRouter).route("/", workflowRouter);
+
+app.doc("/openapi.json", {
   openapi: "3.0.0",
   info: {
     title: "Workflows API",
@@ -14,13 +18,12 @@ app.doc("/docs", {
   },
 });
 
-const routes = [oaiSchemaRouter, workflowRouter] as const;
-
-// Mount routes
-const router = app
-  .basePath("/")
-  .route("/", oaiSchemaRouter)
-  .route("/", workflowRouter);
+app.get(
+  "/docs",
+  apiReference({
+    spec: { url: "/openapi.json" },
+  }),
+);
 
 export type AppType = typeof router;
 

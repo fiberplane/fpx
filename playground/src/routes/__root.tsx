@@ -1,14 +1,15 @@
-import { Outlet, createRootRoute } from "@tanstack/react-router";
+import type { QueryClient } from "@tanstack/react-query";
+import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import React from "react";
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   component: RootComponent,
 });
 
 function RootComponent() {
   return (
     <div className="min-h-screen bg-background">
-      <div>
+      <div className="flex-1">
         <Outlet />
       </div>
       <ReactQueryDevtools />

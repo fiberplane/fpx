@@ -5,25 +5,27 @@ const mockWorkflows: Workflow[] = [
   {
     id: "1",
     name: "User Authentication Flow",
-    status: "completed",
-    createdAt: new Date().toISOString(),
+    prompt: "Create a user authentication workflow",
+    oaiSchemaId: "auth-schema",
+    summary: "Handles user authentication process",
+    description: "A workflow that manages the user authentication process including validation and token generation",
+    lastRunStatus: "success",
+    createdAt: new Date(),
+    updatedAt: new Date(),
     steps: [
       {
-        id: "1",
-        name: "Validate Input",
-        status: "completed",
+        stepId: "1",
+        description: "Validate user input",
         operationPath: "/auth/validate",
       },
       {
-        id: "2",
-        name: "Check Credentials",
-        status: "completed",
+        stepId: "2", 
+        description: "Check user credentials",
         operationPath: "/auth/check",
       },
       {
-        id: "3",
-        name: "Generate Token",
-        status: "completed",
+        stepId: "3",
+        description: "Generate auth token",
         operationPath: "/auth/token",
       },
     ],
@@ -31,62 +33,43 @@ const mockWorkflows: Workflow[] = [
   {
     id: "2",
     name: "Data Processing Pipeline",
-    status: "pending",
-    createdAt: new Date().toISOString(),
+    prompt: "Create a data processing pipeline",
+    oaiSchemaId: "data-schema",
+    summary: "Processes data through ETL pipeline",
+    lastRunStatus: "pending",
+    createdAt: new Date(),
+    updatedAt: new Date(),
     steps: [
       {
-        id: "1",
-        name: "Extract Data",
-        status: "completed",
+        stepId: "1",
+        description: "Extract data from source",
         operationPath: "/data/extract",
       },
       {
-        id: "2",
-        name: "Transform Data",
-        status: "pending",
+        stepId: "2",
+        description: "Transform data",
         operationPath: "/data/transform",
       },
       {
-        id: "3",
-        name: "Load Data",
-        status: "pending",
+        stepId: "3",
+        description: "Load data to target",
         operationPath: "/data/load",
-      },
-    ],
-  },
-  {
-    id: "3",
-    name: "Error Handling Flow",
-    status: "failed",
-    createdAt: new Date().toISOString(),
-    steps: [
-      {
-        id: "1",
-        name: "Try Operation",
-        status: "failed",
-        operationPath: "/error/try",
-      },
-      {
-        id: "2",
-        name: "Catch Error",
-        status: "pending",
-        operationPath: "/error/catch",
-      },
-      {
-        id: "3",
-        name: "Log Error",
-        status: "pending",
-        operationPath: "/error/log",
       },
     ],
   },
 ];
 
+const API_BASE_URL = "http://localhost:3000";
+
 export const api = {
   getWorkflows: async () => {
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 500));
-    return mockWorkflows;
+    const response = {
+      success: true as const,
+      data: mockWorkflows,
+    };
+    return response;
   },
 
   getWorkflow: async (id: string) => {
@@ -94,43 +77,63 @@ export const api = {
     await new Promise((resolve) => setTimeout(resolve, 500));
     const workflow = mockWorkflows.find((w) => w.id === id);
     if (!workflow) {
-      throw new Error("Workflow not found");
+      const errorResponse = {
+        success: false as const,
+        error: { message: "Workflow not found" },
+      };
+      throw new Error(JSON.stringify(errorResponse));
     }
-    return workflow;
+    return {
+      success: true as const,
+      data: workflow,
+    };
   },
 
-  createWorkflow: async (userStory: string) => {
+  createWorkflow: async (data: {
+    name: string;
+    prompt: string;
+    oaiSchemaId: string;
+    summary?: string;
+    description?: string;
+  }) => {
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const newWorkflow: Workflow = {
       id: String(mockWorkflows.length + 1),
-      name: userStory,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-      steps: [
-        {
-          id: "1",
-          name: "Analyze Requirements",
-          status: "pending",
-          operationPath: "/analyze",
-        },
-        {
-          id: "2",
-          name: "Generate Steps",
-          status: "pending",
-          operationPath: "/generate",
-        },
-        {
-          id: "3",
-          name: "Validate Steps",
-          status: "pending",
-          operationPath: "/validate",
-        },
-      ],
+      ...data,
+      lastRunStatus: "pending",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      steps: [], // Steps will be populated by the backend
     };
 
     mockWorkflows.push(newWorkflow);
-    return newWorkflow;
+    return {
+      success: true as const,
+      data: newWorkflow,
+    };
+  },
+
+  getSchemas: async () => {
+    const response = await fetch(`${API_BASE_URL}/oai_schema`);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(JSON.stringify(data));
+    }
+    
+    return data;
+  },
+
+  getSchema: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/oai_schema/${id}`);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(JSON.stringify(data));
+    }
+    
+    return data;
   },
 };
