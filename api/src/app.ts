@@ -77,7 +77,7 @@ export function createApp(
   app.use(
     "/fp/*",
     createMiddleware({
-      cdn: "https://cdn.jsdelivr.net/gh/fiberplane/fpx@embedded-playground/playground/dist/",
+      cdn: "https://cdn.jsdelivr.net/gh/fiberplane/fpx@playground/playground/dist/",
     }),
   );
 
