@@ -62,8 +62,10 @@ export function getTsLib(projectRoot: string) {
     const tsPath = relativeResolve("typescript", { basedir: projectRoot });
     return require(tsPath);
   } catch (error) {
-    logger.warn("Unable resolve typescript package", error);
-    logger.log(`Using bundled in typescript (version ${bundledTs.version})`);
+    // logger.warn("Unable resolve typescript package", error);
+    logger.warn(
+      `Unable to resolve typescript package. Falling back to bundled typescript library (version ${bundledTs.version})`,
+    );
     return bundledTs;
   }
 }
@@ -100,13 +102,11 @@ export function startServer(params: {
   const options = getOptions(location, ts);
 
   const host: TsLanguageServiceHost = {
-    // fileExists: ts.sys.fileExists,
     fileExists,
     getCurrentDirectory: () => location,
     getDefaultLibFileName: (options) => {
       return ts.getDefaultLibFilePath(options);
     },
-    // directoryExists: ts.sys.directoryExists,
     directoryExists,
     getNewLine: () => "\n",
     getCompilationSettings() {

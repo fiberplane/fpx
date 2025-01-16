@@ -1,0 +1,1 @@
+export { externalApiRouter } from "./api";

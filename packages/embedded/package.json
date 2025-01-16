@@ -1,6 +1,6 @@
 {
   "name": "@fiberplane/embedded",
-  "version": "0.0.10",
+  "version": "0.0.9",
   "type": "module",
   "exports": {
     ".": {
@@ -34,8 +34,6 @@
     "react-dom": "^18.2.0"
   },
   "dependencies": {
-    "@fiberplane/playground": "workspace:*",
-    "@hono/node-server": "^1.13.7",
     "openapi-types": "^12.1.3"
   }
 }

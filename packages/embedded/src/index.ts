@@ -1,8 +1,10 @@
 import type { Env, MiddlewareHandler } from "hono/types";
+import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 import { createRouter } from "./router.js";
 
 export interface EmbeddedMiddlewareOptions {
   cdn?: string;
+  spec?: OpenAPIV3_1.Document | OpenAPIV3.Document | string;
 }
 
 export const createMiddleware =
@@ -20,7 +22,7 @@ export const createMiddleware =
     const newRequest = new Request(newUrl, c.req.raw);
 
     // Let our embedded router handle the request
-    const router = createRouter({ mountedPath, cdn: options?.cdn });
+    const router = createRouter({ mountedPath, cdn: options?.cdn, spec: options?.spec });
     const response = await router.fetch(newRequest);
 
     // Skip the middleware and continue if the embedded router doesn't match

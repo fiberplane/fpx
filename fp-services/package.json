@@ -38,7 +38,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@cloudflare/workers-types": "^4.20241112.0",
-    "drizzle-kit": "^0.24.2",
+    "drizzle-kit": "^0.30.0",
     "wrangler": "^3.91.0"
   }
 }

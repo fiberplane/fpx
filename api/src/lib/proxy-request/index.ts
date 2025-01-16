@@ -33,6 +33,20 @@ export async function executeProxyRequest(
   }
 }
 
+export function removeUnsupportedHeaders(headers: Record<string, string>) {
+  const unsupportedHeaders = ["transfer-encoding"];
+  const validHeaders: Record<string, string> = {};
+  for (const headerName in headers) {
+    if (unsupportedHeaders.includes(headerName.toLowerCase())) {
+      logger.warn("Detected an unsupported header:", { headerName });
+    } else {
+      validHeaders[headerName] = headers[headerName];
+    }
+  }
+
+  return validHeaders;
+}
+
 function createProxyRequestFromNewAppRequest(
   requestDescription: NewAppRequest,
 ) {
@@ -40,9 +54,8 @@ function createProxyRequestFromNewAppRequest(
 
   let { requestHeaders } = requestDescription;
 
-  if (!requestHeaders) {
-    requestHeaders = {};
-  }
+  // Cleanup requestHeaders to remove unsupported headers
+  requestHeaders = removeUnsupportedHeaders(requestHeaders || {});
 
   let validBody: Required<RequestInit>["body"] | null = null;
   if (requestBody != null) {
