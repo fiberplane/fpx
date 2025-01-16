@@ -4,6 +4,7 @@ packages:
   - "fp-services"
   - "honc-code-gen"
   - "playground"
+  - "workflows-api"
   - "packages/*"
   - "examples/*"
   - "examples/service-bindings/*"
