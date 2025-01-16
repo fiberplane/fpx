@@ -146,7 +146,23 @@ export const requestResponseSlice: StateCreator<
 
   setRequestHeaders: (headers) =>
     set((state) => {
-      state.requestHeaders = enforceTerminalDraftParameter(headers);
+      // Merge persistent auth headers with request headers
+      const persistentHeaders = state.persistentAuthHeaders || [];
+      const mergedHeaders = [...headers];
+
+      // Add persistent headers if they don't already exist
+      for (const persistentHeader of persistentHeaders) {
+        if (persistentHeader.enabled) {
+          const headerExists = mergedHeaders.some(
+            (h) => h.key.toLowerCase() === persistentHeader.key.toLowerCase(),
+          );
+          if (!headerExists) {
+            mergedHeaders.push(persistentHeader);
+          }
+        }
+      }
+
+      state.requestHeaders = enforceTerminalDraftParameter(mergedHeaders);
     }),
 
   setBody: (body) =>

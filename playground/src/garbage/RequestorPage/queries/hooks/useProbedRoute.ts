@@ -1,5 +1,6 @@
 import PLACEGOOSE_API_SPEC from "@/lib/placegoose.json";
 import { useQuery } from "@tanstack/react-query";
+import { useStudioStore } from "../../store";
 import type { ProbedRoute } from "../../types";
 
 const PROBED_ROUTES_KEY = "probed-routes";
@@ -10,8 +11,8 @@ type ProbedRoutesResponse = {
 };
 
 type OpenAPIOperation = {
-  summary: string;
-  description: string;
+  summary?: string;
+  description?: string;
   parameters?: Array<{
     name: string;
     in: string;
@@ -63,11 +64,36 @@ function isValidMethod(method: string): method is ValidMethod {
   return VALID_METHODS.includes(method.toUpperCase() as ValidMethod);
 }
 
-function transformOpenApiToProbedRoutes(): ProbedRoutesResponse {
+function getOpenApiSpec(useMockApiSpec: boolean): OpenAPISpec {
+  if (useMockApiSpec) {
+    return PLACEGOOSE_API_SPEC as unknown as OpenAPISpec;
+  }
+
+  // Try to get the spec from the DOM
+  const specElement = document.getElementById("fp-api-spec");
+  if (!specElement?.textContent) {
+    throw new Error(
+      "No API spec found in DOM. Make sure there's a script element with id='fp-api-spec'",
+    );
+  }
+
+  try {
+    return JSON.parse(specElement.textContent) as OpenAPISpec;
+  } catch (error) {
+    console.error("Failed to parse API spec from DOM:", error);
+    throw new Error(
+      "Failed to parse API spec from DOM. Make sure it's valid JSON.",
+    );
+  }
+}
+
+function transformOpenApiToProbedRoutes(
+  useMockApiSpec: boolean,
+): ProbedRoutesResponse {
   const routes: ProbedRoute[] = [];
   let id = 1;
 
-  const spec = PLACEGOOSE_API_SPEC as OpenAPISpec;
+  const spec = getOpenApiSpec(useMockApiSpec);
   const baseUrl = spec.servers?.[0]?.url ?? "http://localhost:8787";
 
   // Iterate through paths and methods to create ProbedRoute objects
@@ -89,6 +115,7 @@ function transformOpenApiToProbedRoutes(): ProbedRoutesResponse {
           registrationOrder: id,
           routeOrigin: "discovered",
           isDraft: false,
+          openApiSpec: operation ? JSON.stringify(operation) : undefined,
         });
       }
     }
@@ -101,8 +128,10 @@ function transformOpenApiToProbedRoutes(): ProbedRoutesResponse {
 }
 
 export function useProbedRoutes() {
+  const { useMockApiSpec } = useStudioStore("useMockApiSpec");
+
   return useQuery({
-    queryKey: [PROBED_ROUTES_KEY],
-    queryFn: transformOpenApiToProbedRoutes,
+    queryKey: [PROBED_ROUTES_KEY, useMockApiSpec],
+    queryFn: () => transformOpenApiToProbedRoutes(useMockApiSpec),
   });
 }

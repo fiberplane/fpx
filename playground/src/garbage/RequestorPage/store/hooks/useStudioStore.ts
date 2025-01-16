@@ -6,6 +6,7 @@ import {
   type StudioState,
   requestResponseSlice,
   routesSlice,
+  settingsSlice,
   tabsSlice,
   uiSlice,
 } from "../slices";
@@ -35,6 +36,7 @@ export const useStudioStoreRaw = create<StudioState>()(
       ...tabsSlice(...a),
       ...requestResponseSlice(...a),
       ...uiSlice(...a),
+      ...settingsSlice(...a),
     })),
     { name: "StudioStore" },
   ),

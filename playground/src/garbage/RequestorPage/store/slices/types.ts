@@ -12,6 +12,7 @@ import type {
   RequestType,
 } from "../../types";
 import type { KeyValueParameter, RequestorActiveResponse } from "../types";
+import type { SettingsSlice } from "./settingsSlice";
 
 type RequestorTraceId = string;
 
@@ -64,10 +65,8 @@ export interface RequestResponseSlice {
 export interface RoutesSlice {
   appRoutes: ProbedRoute[];
   activeRoute: ProbedRoute | null;
-
   setRoutes: (routes: ProbedRoute[]) => void;
   setActiveRoute: (route: ProbedRoute) => void;
-
   routesAndMiddleware: ProbedRoute[];
   setRoutesAndMiddleware: (routesAndMiddleware: ProbedRoute[]) => void;
 }
@@ -81,6 +80,8 @@ export interface TabsSlice {
   setActiveResponsePanelTab: (tab: string) => void;
 }
 
+export type PanelState = "open" | "closed";
+
 export interface UISlice {
   settingsOpen: boolean;
   defaultSettingsTab: string | null;
@@ -89,9 +90,8 @@ export interface UISlice {
   togglePanel: (panelName: "sidePanel") => void;
 }
 
-export type PanelState = "open" | "closed";
-
 export type StudioState = RequestResponseSlice &
   RoutesSlice &
   TabsSlice &
-  UISlice;
+  UISlice &
+  SettingsSlice;

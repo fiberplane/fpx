@@ -23,12 +23,21 @@ type CommandBarProps = {
 };
 
 export function CommandBar({ open, setOpen }: CommandBarProps) {
-  const { togglePanel, visibleRequestsPanelTabs, setActiveRequestsPanelTab } =
-    useStudioStore(
-      "togglePanel",
-      "visibleRequestsPanelTabs",
-      "setActiveRequestsPanelTab",
-    );
+  const {
+    togglePanel,
+    visibleRequestsPanelTabs,
+    setActiveRequestsPanelTab,
+    setSettingsOpen,
+    useMockApiSpec,
+    setUseMockApiSpec,
+  } = useStudioStore(
+    "togglePanel",
+    "visibleRequestsPanelTabs",
+    "setActiveRequestsPanelTab",
+    "setSettingsOpen",
+    "useMockApiSpec",
+    "setUseMockApiSpec",
+  );
 
   const [inputValue, setInputValue] = React.useState("");
 
@@ -51,6 +60,32 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
           <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden">
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandSeparator className="mx-2" />
+            <CommandGroup heading="Settings" className="py-2">
+              <CommandItem
+                onSelect={() => {
+                  setSettingsOpen(true);
+                  setOpen(false);
+                }}
+              >
+                <Icon icon="lucide:settings" className="h-4 w-4 mr-2" />
+                <span>Open Settings</span>
+              </CommandItem>
+              <CommandItem
+                onSelect={() => {
+                  setUseMockApiSpec(!useMockApiSpec);
+                  setOpen(false);
+                }}
+              >
+                <Icon
+                  icon="lucide:toggle-left"
+                  className={`h-4 w-4 mr-2 ${useMockApiSpec ? "rotate-180" : ""}`}
+                />
+                <span>
+                  {useMockApiSpec ? "Disable" : "Enable"} Mock API Spec
+                </span>
+              </CommandItem>
+            </CommandGroup>
+            <CommandSeparator className="mx-2" />
             <CommandGroup heading="Request" className="py-2">
               {visibleRequestsPanelTabs.map((tabName) => {
                 return (
@@ -70,13 +105,6 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
                 );
               })}
             </CommandGroup>
-            {/* <CommandSeparator className="mx-2" />
-            <CommandGroup heading="History" className="py-2">
-              <CommandItem className="flex items-center gap-2 px-2 hover:bg-accent rounded-sm cursor-pointer">
-                <ClockIcon className="flex-shrink-0" />
-                <span>Recent Requests</span>
-              </CommandItem>
-            </CommandGroup> */}
           </CommandList>
         </Command>
       </DialogContent>

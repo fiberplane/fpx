@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-// import { SettingsPage } from "@/pages/SettingsPage";
 import { Icon } from "@iconify/react";
 import {
   Dialog,
@@ -9,10 +8,7 @@ import {
   DialogPortal,
   DialogTitle,
 } from "@radix-ui/react-dialog";
-
-function SettingsPage() {
-  return <div>Settings</div>;
-}
+import { SettingsPage } from "../../garbage/RequestorPage/Settings/SettingsPage";
 
 export function SettingsScreen({
   settingsOpen,
