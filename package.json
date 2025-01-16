@@ -5,7 +5,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "postinstall": "pnpm run build:types && pnpm run build:source-analysis",
-    "build:embedded": "pnpm --filter @fiberplane/playground build && pnpm --filter @fiberplane/embedded build",
+    "build:embedded": "pnpm --filter @fiberplane/playground build && rimraf packages/embedded/dist/playground && pnpm --filter @fiberplane/embedded build && cp -r playground/dist packages/embedded/dist/playground",
     "build:types": "pnpm --filter @fiberplane/fpx-types build",
     "build:source-analysis": "pnpm --filter @fiberplane/source-analysis build",
     "build:fpx-studio": "pnpm clean:fpx-studio && pnpm build:api && pnpm build:frontend",

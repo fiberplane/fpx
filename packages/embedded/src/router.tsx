@@ -30,12 +30,18 @@ export function createRouter<E extends Env>({
           <title>FPX</title>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <link rel="stylesheet" href={cssBundleUrl} />
+          <link
+            rel="stylesheet"
+            href={`${cssBundleUrl}?t=${new Date().getTime()}`}
+          />
         </head>
         <body>
           <div id="root" data-mounted-path={mountedPath} />
           {resolvedSpec ? apiSpecScriptTag(resolvedSpec) : null}
-          <script type="module" src={jsBundleUrl} />
+          <script
+            type="module"
+            src={`${jsBundleUrl}?t=${new Date().getTime()}`}
+          />
         </body>
       </html>,
     );
