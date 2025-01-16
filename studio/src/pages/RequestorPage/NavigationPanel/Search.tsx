@@ -69,7 +69,13 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(
           onBlur={onBlur}
         />
         {!value && (
-          <div className="peer-focus:hidden absolute left-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+          <div
+            className={cn(
+              "absolute left-2 top-1/2 transform -translate-y-1/2",
+              "flex items-center space-x-1",
+              "peer-focus:hidden pointer-events-none",
+            )}
+          >
             <span className="text-muted-foreground text-xs">Type</span>
             <KeyboardShortcutKey>/</KeyboardShortcutKey>
             <span className="text-muted-foreground text-xs">

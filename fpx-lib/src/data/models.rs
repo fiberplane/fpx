@@ -92,10 +92,6 @@ impl HexEncodedId {
     pub fn as_inner(&self) -> &str {
         &self.0
     }
-
-    pub fn as_mut(&mut self) -> &mut str {
-        &mut self.0
-    }
 }
 
 impl From<HexEncodedId> for String {

@@ -93,6 +93,9 @@
   ],
   "files": {
     "ignore": [
+      // Python related
+      ".venv",
+      ".mypy_cache",
       // API related
       "meta/*.json",
       // Honc code gen playground outputs
@@ -107,7 +110,9 @@
       // ignore all tsconfig.json files
       "tsconfig*.json",
       // ignore any test data files
-      "test-data/*.js"
+      "test-data/*.js",
+      // fpx-workers build files
+      "fpx-workers/build/**/*"
       // Rust code related
       // This caused biome to ignore the entire fpx folder
       // commenting out for now as we still want to find a way to
