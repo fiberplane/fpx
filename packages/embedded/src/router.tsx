@@ -1,3 +1,7 @@
+/** @jsx jsx */
+/** @jsxImportSource hono/jsx */
+import { jsx } from "hono/jsx";
+
 import { type Env, Hono } from "hono";
 import { html, raw } from "hono/html";
 import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
