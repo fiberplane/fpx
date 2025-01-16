@@ -7,6 +7,7 @@ import { internalApiRouter } from "./routes/internal/api";
 import { dashboardAuthRouter } from "./routes/internal/auth";
 import { apiReferenceRouter } from "./routes/reference";
 import type { AppType } from "./types";
+import { createMiddleware } from "@fiberplane/embedded";
 
 const app = new OpenAPIHono<AppType>();
 
@@ -40,6 +41,33 @@ app.doc("/doc", (c) => ({
     },
   ],
 }));
+
+// Mount the Fiberplane playground to play with the API
+app.use("/fp/*", createMiddleware({
+  cdn: "https://cdn.jsdelivr.net/npm/@fiberplane/embedded/dist/playground/",
+  // @ts-expect-error - The imported spec does not match our expected OpenAPIv3 type
+  spec: app.getOpenAPIDocument({
+    openapi: "3.0.0",
+    info: {
+      title: "Lilo API",
+      version: "0.0.1",
+      description: "API documentation for Lilo",
+    },
+    servers: [
+      {
+        // url: new URL(c.req.url).origin,
+        url: "http://localhost:6246",
+        description: "Local",
+      },
+      {
+        // url: new URL(c.req.url).origin,
+        url: "https://lilo.fp.dev",
+        description: "Production",
+      },
+    ],
+  }),
+}));
+
 app.route("/reference", apiReferenceRouter);
 
 export default instrument(app);
