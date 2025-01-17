@@ -1,27 +1,26 @@
-import { z } from "zod";
+import {
+  type CreateTokenResponse,
+  CreateTokenResponseSchema,
+  type RevokeTokenResponse,
+  RevokeTokenResponseSchema,
+  type VerifyTokenResponse,
+  VerifyTokenResponseSchema,
+} from "@fiberplane/fpx-types";
 
 interface ServiceOptions {
   apiKey: string;
+  baseUrl?: string;
 }
-
-const CreateTokenResponseSchema = z.object({ token: z.string() });
-
-type CreateTokenResponse = z.infer<typeof CreateTokenResponseSchema>;
-
-const VerifyTokenResponseSchema = z.object({ isValid: z.boolean() });
-
-type VerifyTokenResponse = z.infer<typeof VerifyTokenResponseSchema>;
-
-const RevokeTokenResponseSchema = z.object({ success: z.boolean() });
-
-type RevokeTokenResponse = z.infer<typeof RevokeTokenResponseSchema>;
 
 export class Service {
   private apiKey: string;
   private baseUrl = "http://localhost:1234/api";
 
-  constructor({ apiKey }: ServiceOptions) {
+  constructor({ apiKey, baseUrl }: ServiceOptions) {
     this.apiKey = apiKey;
+    if (baseUrl) {
+      this.baseUrl = baseUrl;
+    }
   }
 
   async createToken(metadata: string): Promise<CreateTokenResponse> {

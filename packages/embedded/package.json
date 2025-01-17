@@ -37,6 +37,7 @@
     "react-dom": "^18.2.0"
   },
   "dependencies": {
+    "@fiberplane/fpx-types": "workspace:*",
     "@fiberplane/playground": "workspace:*",
     "zod": "^3.24.1"
   }
