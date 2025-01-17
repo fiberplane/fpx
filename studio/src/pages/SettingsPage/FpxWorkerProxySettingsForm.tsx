@@ -19,7 +19,8 @@ export function FpxWorkerProxySettingsForm({
   const { form, onSubmit } = useSettingsForm(settings);
   const isDirty =
     (form.formState.dirtyFields.fpxWorkerProxy?.enabled ||
-      form.formState.dirtyFields.fpxWorkerProxy?.baseUrl) ??
+      form.formState.dirtyFields.fpxWorkerProxy?.baseUrl ||
+      form.formState.dirtyFields.fpxWorkerProxy?.bearerToken) ??
     false;
 
   return (
@@ -74,6 +75,31 @@ export function FpxWorkerProxySettingsForm({
                           <FormDescription className="mb-1">
                             You can configure the base URL used by the
                             Cloudflare Worker Trace Ingestion service.
+                          </FormDescription>
+                          <FormControl>
+                            <Input
+                              placeholder={field.value ?? ""}
+                              value={field.value ?? ""}
+                              onChange={field.onChange}
+                            />
+                          </FormControl>
+                        </div>
+                      )}
+                    />
+                  )}
+                  {field.value && (
+                    <FormField
+                      control={form.control}
+                      name="fpxWorkerProxy.bearerToken"
+                      render={({ field }) => (
+                        <div className="flex flex-col gap-1">
+                          <FormLabel className="block font-normal text-sm text-gray-300">
+                            Bearer token
+                          </FormLabel>
+                          <FormDescription className="mb-1">
+                            Configure the authorization token that will be used
+                            in the Authorization header when making requests to
+                            the Cloudflare Worker Trace Ingestion service.
                           </FormDescription>
                           <FormControl>
                             <Input

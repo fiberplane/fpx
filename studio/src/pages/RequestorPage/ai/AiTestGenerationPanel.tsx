@@ -6,7 +6,8 @@ import { CopyIcon, ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import type { ProxiedRequestResponse } from "../queries";
 import { findMatchedRoute } from "../routes";
-import { useActiveRoute, useServiceBaseUrl } from "../store";
+import { useServiceBaseUrl } from "../store";
+import { useActiveRoute } from "../store/hooks/useActiveRoute";
 import { ContextEntry } from "./AiTestGenerationDrawer";
 import { usePrompt } from "./ai-test-generation";
 

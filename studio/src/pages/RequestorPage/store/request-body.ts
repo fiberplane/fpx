@@ -13,6 +13,9 @@ const RequestorBodyTypeSchema = z.union([
   RequestorBodyFileTypeSchema,
 ]);
 
+/**
+ * The identifying value for the discriminator `type` property on the RequestorBody (schema) types
+ */
 export type RequestorBodyType = z.infer<typeof RequestorBodyTypeSchema>;
 
 export const isRequestorBodyType = (

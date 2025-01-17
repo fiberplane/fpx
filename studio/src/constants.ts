@@ -67,17 +67,28 @@ export const SpanKind = {
   CONSUMER: "Consumer",
 };
 
-export const REQUESTS_ROUTE = "/requests";
-export const REQUEST_DETAILS_OTEL_ROUTE = "/requests/otel/:traceId";
-export const REQUEST_DETAILS_TRACE_ROUTE = "/requests/:traceId";
 export const ROOT_ROUTE = "/";
-export const REQUESTOR_TRACE_ROUTE = "/:requestType/:traceId";
+export const INTERNAL_AI_LOGS_ROUTE = "/internal-ai-logs";
+export const INTERNAL_AI_LOGS_WITH_ID_ROUTE = `${INTERNAL_AI_LOGS_ROUTE}/:traceId`;
+export const COLLECTION_ROUTE = "/collections/:collectionId";
+export const REQUESTOR_HISTORY_ROUTE = "/history/:traceId";
+export const REQUESTOR_TRACE_ROUTE = "/requests/:traceId";
+export const COLLECTION_WITH_ITEM_ID = `${COLLECTION_ROUTE}/item/:itemId`;
 
-export const TRACE_ID_ROUTES = [
-  REQUEST_DETAILS_OTEL_ROUTE,
-  REQUEST_DETAILS_TRACE_ROUTE,
-  REQUESTOR_TRACE_ROUTE,
-];
+export const NAVIGATION_PANEL_KEY = "filter-tab";
+export const NAVIGATION_PANEL_ROUTES = "routes" as const;
+export const NAVIGATION_PANEL_COLLECTIONS = "collections" as const;
+export const NAVIGATION_PANEL_HISTORY = "history" as const;
+export const TAB_KEYS = [
+  NAVIGATION_PANEL_ROUTES,
+  NAVIGATION_PANEL_COLLECTIONS,
+  NAVIGATION_PANEL_HISTORY,
+] as const;
+export type NavigationTab = (typeof TAB_KEYS)[number];
+
+export const TRACE_ID_ROUTES = [REQUESTOR_TRACE_ROUTE];
+
+export const COLLECTION_ID_ROUTES = [COLLECTION_ROUTE, COLLECTION_WITH_ITEM_ID];
 
 export const REQUEST_HEADERS = [
   {

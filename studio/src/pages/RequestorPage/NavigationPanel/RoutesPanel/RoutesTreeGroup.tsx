@@ -1,7 +1,7 @@
 import { cn } from "@/utils";
 import { ChevronDownIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { type ReactNode, memo } from "react";
-import { useRequestorStore } from "../../store";
+import { useStudioStore } from "../../store";
 
 type RoutesTreeGroupProps = {
   children: ReactNode;
@@ -16,8 +16,7 @@ export const RoutesTreeGroup = memo(function RoutesTreeGroup({
   level = 0,
   collapsed = false,
 }: RoutesTreeGroupProps) {
-  const { toggleTreeNode: toggleCollapsed } =
-    useRequestorStore("toggleTreeNode");
+  const { toggleTreeNode: toggleCollapsed } = useStudioStore("toggleTreeNode");
   return (
     <div className={cn("pt-2 grid min-w-0", { "pt-0": level === 0 })}>
       <button

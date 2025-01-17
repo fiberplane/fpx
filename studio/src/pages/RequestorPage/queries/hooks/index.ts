@@ -6,4 +6,4 @@ export {
   type MakeProxiedRequestQueryFn,
 } from "./useMakeProxiedRequest";
 export { useOpenApiParse } from "./useOpenApiParse";
-export { useProbedRoutes } from "./useProbedRoute.ts";
+export { useProbedRoutes } from "./useProbedRoute";

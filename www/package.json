@@ -18,7 +18,7 @@
     "@astrojs/sitemap": "^3.2.1",
     "@astrojs/starlight": "^0.28.6",
     "@iconify-json/lucide": "^1.2.16",
-    "astro": "^4.16.16",
+    "astro": "^4.16.18",
     "astro-icon": "^1.1.4",
     "rehype-autolink-headings": "^7.1.0",
     "rollup": "^4.27.4",

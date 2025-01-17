@@ -13,9 +13,9 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import React from "react";
-import { useRequestorStore } from "../store";
+import { useStudioStore } from "../store";
 
 type CommandBarProps = {
   open: boolean;
@@ -24,7 +24,7 @@ type CommandBarProps = {
 
 export function CommandBar({ open, setOpen }: CommandBarProps) {
   const { togglePanel, visibleRequestsPanelTabs, setActiveRequestsPanelTab } =
-    useRequestorStore(
+    useStudioStore(
       "togglePanel",
       "visibleRequestsPanelTabs",
       "setActiveRequestsPanelTab",

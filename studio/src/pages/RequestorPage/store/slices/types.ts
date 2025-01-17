@@ -1,11 +1,12 @@
+import type { CollectionWithItemsList } from "@/queries";
 import type { TreeNode } from "@/queries/app-routes";
 import type {
-  RequestBodyType,
   RequestorBody,
+  RequestorBodyType,
   RequestsPanelTab,
   ResponsePanelTab,
 } from "..";
-import type { KeyValueParameter } from "../../KeyValueForm";
+import type { ProxiedRequestResponse } from "../../queries";
 import type { ProbedRoute } from "../../types";
 import type {
   RequestMethod,
@@ -14,6 +15,7 @@ import type {
 } from "../../types";
 import type {
   CollapsableTreeNode,
+  KeyValueParameter,
   NavigationRoutesView,
   RequestorActiveResponse,
 } from "../types";
@@ -39,12 +41,10 @@ export interface RequestResponseSlice {
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
   setBody: (body: undefined | string | RequestorBody) => void;
   handleRequestBodyTypeChange: (
-    requestBodyType: RequestBodyType,
+    requestBodyType: RequestorBodyType,
     isMultipart?: boolean,
   ) => void;
   /** Response related state */
-  activeHistoryResponseTraceId: string | null;
-  setActiveHistoryResponseTraceId: (traceId: string | null) => void;
 
   activeResponse: RequestorActiveResponse | null;
   /** A banner that tells the user they can view logs for a request */
@@ -52,16 +52,27 @@ export interface RequestResponseSlice {
   setShowViewLogsBanner: (showViewLogsBanner: boolean) => void;
 
   showResponseBodyFromHistory: (traceId: string) => void;
-  clearResponseBodyFromHistory: () => void;
   setActiveResponse: (response: RequestorActiveResponse | null) => void;
 
   /** Session history related state */
   sessionHistory: RequestorTraceId[];
   recordRequestInSessionHistory: (traceId: RequestorTraceId) => void;
+  setRequestParams: (
+    requestParams: Pick<
+      ProxiedRequestResponse["app_requests"],
+      | "requestBody"
+      | "requestHeaders"
+      | "requestMethod"
+      | "requestPathParams"
+      | "requestQueryParams"
+      | "requestRoute"
+      | "requestUrl"
+    >,
+  ) => void;
 }
 
 export interface RoutesSlice {
-  routes: ProbedRoute[];
+  appRoutes: ProbedRoute[];
   activeRoute: ProbedRoute | null;
 
   setRoutes: (routes: ProbedRoute[]) => void;
@@ -80,6 +91,9 @@ export interface RoutesSlice {
   routesAndMiddleware: ProbedRoute[];
   getMatchingMiddleware: () => null | ProbedRoute[];
   setRoutesAndMiddleware: (routesAndMiddleware: ProbedRoute[]) => void;
+
+  collections: CollectionWithItemsList;
+  setCollections: (collections: CollectionWithItemsList) => void;
 }
 
 export interface TabsSlice {
@@ -105,19 +119,19 @@ export interface UISlice {
   aiDropdownOpen: boolean;
   setAIDropdownOpen: (open: boolean) => void;
   sidePanel: PanelState;
-  bottomPanels: BOTTOM_PANEL_NAMES[];
+  bottomPanels: BottomPanelName[];
   bottomPanelIndex: undefined | number;
   timelineShowLogs: boolean;
   timelineAsTree: boolean;
   toggleTimelineLogs: () => void;
   toggleTimelineAsTree: () => void;
   setBottomPanelIndex(index: number | undefined): void;
-  togglePanel: (panelName: "sidePanel" | BOTTOM_PANEL_NAMES) => void;
+  togglePanel: (panelName: "sidePanel" | BottomPanelName) => void;
 }
 
-export type BOTTOM_PANEL_NAMES = "logsPanel" | "timelinePanel" | "aiPanel";
+export type BottomPanelName = "logsPanel" | "timelinePanel" | "aiPanel";
 
-export const validBottomPanelNames: BOTTOM_PANEL_NAMES[] = [
+export const validBottomPanelNames: BottomPanelName[] = [
   "logsPanel",
   "timelinePanel",
   "aiPanel",
@@ -130,7 +144,7 @@ export type AiState = {
   setAiPrompt: (prompt?: string) => void;
 };
 
-export type Store = RequestResponseSlice &
+export type StudioState = RequestResponseSlice &
   RoutesSlice &
   TabsSlice &
   WebsocketSlice &

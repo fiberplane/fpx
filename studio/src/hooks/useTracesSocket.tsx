@@ -48,7 +48,7 @@ export const useTracesSocket = () => {
                 toastId.dismiss();
               },
               description: (
-                <Link to={`/requests/otel/${parentId}`}>view details</Link>
+                <Link to={`/requests/${parentId}`}>view details</Link>
               ),
             });
           }

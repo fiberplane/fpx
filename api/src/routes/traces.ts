@@ -39,7 +39,6 @@ app.get("/v1/traces", async (ctx) => {
   });
 
   const traceMap = new Map<string, Array<(typeof spans)[0]>>();
-
   for (const span of spans) {
     const traceId = span.inner.trace_id;
     if (!traceId) {
@@ -76,8 +75,15 @@ app.get("/v1/traces/:traceId/spans", async (ctx) => {
 
   const fpxWorker = await getSetting(db, "fpxWorkerProxy");
   if (fpxWorker?.enabled && fpxWorker.baseUrl) {
+    const headers: Record<string, string> = fpxWorker.bearerToken
+      ? { Authorization: `Bearer ${fpxWorker.bearerToken}` }
+      : {};
+
     const response = await fetch(
       `${fpxWorker.baseUrl}/v1/traces/${traceId}/spans`,
+      {
+        headers,
+      },
     );
     const json = await response.json();
     return ctx.json(json as JSON);
@@ -115,9 +121,14 @@ app.post("/v1/traces", async (ctx) => {
 
   const fpxWorker = await getSetting(db, "fpxWorkerProxy");
   if (fpxWorker?.enabled && fpxWorker.baseUrl) {
+    const headers: Record<string, string> = fpxWorker.bearerToken
+      ? { Authorization: `Bearer ${fpxWorker.bearerToken}` }
+      : {};
+
     const response = await fetch(`${fpxWorker.baseUrl}/v1/traces`, {
       headers: {
         "Content-Type": "application/json",
+        ...headers,
       },
       method: "POST",
       body: JSON.stringify(body),
@@ -137,7 +148,9 @@ app.post("/v1/traces", async (ctx) => {
     );
 
     try {
-      await db.insert(otelSpans).values(tracesPayload);
+      if (tracesPayload.length > 0) {
+        await db.insert(otelSpans).values(tracesPayload);
+      }
     } catch (error) {
       logger.error("Error inserting trace", error);
       return ctx.text("Error inserting trace", 500);

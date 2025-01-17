@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { SettingsPage } from "@/pages/SettingsPage";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import {
   Dialog,
   DialogClose,

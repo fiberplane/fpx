@@ -1,22 +1,19 @@
 {
   "name": "@fiberplane/mcp-server-fiberplane",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "access": "public",
   "description": "MCP server for Fiberplane Studio",
   "main": "dist/index.js",
   "bin": {
-    "mcp-server-fiberplane": "./dist/src/index.js"
+    "mcp-server-fiberplane": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "prepublish": "pnpm build"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "keywords": [],
   "publishConfig": {
     "access": "public"
@@ -24,7 +21,7 @@
   "author": "Fiberplane<info@fiberplane.com>",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.3"
+    "@modelcontextprotocol/sdk": "^1.1.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.1",

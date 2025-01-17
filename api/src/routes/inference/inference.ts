@@ -50,6 +50,10 @@ app.post(
       provider !== "ollama"
         ? await getResult()
             .then(async (routesResult) => {
+              if (!routesResult) {
+                return [null, null];
+              }
+
               const url = new URL("http://localhost");
               url.pathname = path;
               const request = new Request(url, { method });
@@ -71,7 +75,6 @@ app.post(
             })
         : [null, null];
 
-    logger.debug("handlerContextPerformant", handlerContextPerformant);
     // HACK - Get latest token from db
     const [token] = await db
       .select()

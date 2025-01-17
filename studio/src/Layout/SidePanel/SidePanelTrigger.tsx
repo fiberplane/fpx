@@ -5,16 +5,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useRequestorStore } from "@/pages/RequestorPage/store";
+import { useStudioStore } from "@/pages/RequestorPage/store";
 import { isMac } from "@/utils";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 export function SidePanelTrigger() {
-  const { sidePanel, togglePanel } = useRequestorStore(
-    "sidePanel",
-    "togglePanel",
-  );
+  const { sidePanel, togglePanel } = useStudioStore("sidePanel", "togglePanel");
 
   useHotkeys("mod+b", () => {
     togglePanel("sidePanel");

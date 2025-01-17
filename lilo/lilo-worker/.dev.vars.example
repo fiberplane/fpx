@@ -1,0 +1,12 @@
+SESSION_SECRET=""
+PUBLIC_KEY=""
+PRIVATE_KEY=""
+GITHUB_ID=
+GITHUB_SECRET=
+
+# For local development with the SPA,
+# helps with redirecting
+LILO_ENV=local
+
+# For local development with Fiberplane studio
+FPX_ENDPOINT=http://localhost:8788/v1/traces
