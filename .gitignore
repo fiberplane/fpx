@@ -3,9 +3,10 @@ shared/dist
 .env
 .envrc
 
-# To make my life temporarily easier
+# temp for my branch
 lilo/lilo-worker/.prod.vars
 lilo/lilo-worker/.dev.vars
+remove_node_modules.sh
 
 # Cursor
 .cursorrules

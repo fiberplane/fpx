@@ -1,0 +1,69 @@
+node_modules
+.dev.vars
+.dev.vars.example
+
+# do not publish source files, even though we point to them in the package.json
+src/
+
+# do not publish biome config
+biome.jsonc
+
+# do not publish migrate typescript file
+migrate.ts
+
+# Change them to your taste:
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+
+# mac
+.DS_Store
+
+# dbs
+mizu.db
+mizu.db*
+mizu*.db
+fpx.db
+fpx.db*
+fpx*.db
+.fpxconfig
+.fpxconfig/*
+.fpx
+.fpx/*
+
+# Rust targets
+**/target
+target
+
+.env
+.envrc
+
+# VS Code
+.vscode/*
+*.code-workspace
+
+# CLion
+.idea
+
+# TypeScript / Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+node_modules
+package-lock.json
+yarn-error.log
+
+# Build tools
+.parcel-cache*
+.nx/cache
+*.tsbuildinfo
+
+.git/*
+
+# Personal files
+mizu.boots.code-workspace
+start-dev.sh
