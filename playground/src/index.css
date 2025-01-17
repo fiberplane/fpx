@@ -275,6 +275,11 @@
     /**
      * Custom semantic tokens
      */
+    --warning: var(--fg-warning);
+    --info: var(--fg-info);
+    --success: var(--fg-success);
+    --danger: var(--fg-danger);
+
     --fp-method-get: var(--fg-info);
     --fp-method-post: var(--fg-success);
     --fp-method-put: var(--fg-warning);
@@ -335,6 +340,11 @@
     /**
      * Custom semantic tokens
      */
+    --warning: var(--fg-warning-dark);
+    --info: var(--fg-info-dark);
+    --success: var(--fg-success-dark);
+    --danger: var(--fg-danger-dark);
+
     --fp-method-get: var(--fg-info-dark);
     --fp-method-post: var(--fg-success-dark);
     --fp-method-put: var(--fg-warning-dark);
