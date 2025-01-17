@@ -75,8 +75,15 @@ app.get("/v1/traces/:traceId/spans", async (ctx) => {
 
   const fpxWorker = await getSetting(db, "fpxWorkerProxy");
   if (fpxWorker?.enabled && fpxWorker.baseUrl) {
+    const headers: Record<string, string> = fpxWorker.bearerToken
+      ? { Authorization: `Bearer ${fpxWorker.bearerToken}` }
+      : {};
+
     const response = await fetch(
       `${fpxWorker.baseUrl}/v1/traces/${traceId}/spans`,
+      {
+        headers,
+      },
     );
     const json = await response.json();
     return ctx.json(json as JSON);
@@ -114,9 +121,14 @@ app.post("/v1/traces", async (ctx) => {
 
   const fpxWorker = await getSetting(db, "fpxWorkerProxy");
   if (fpxWorker?.enabled && fpxWorker.baseUrl) {
+    const headers: Record<string, string> = fpxWorker.bearerToken
+      ? { Authorization: `Bearer ${fpxWorker.bearerToken}` }
+      : {};
+
     const response = await fetch(`${fpxWorker.baseUrl}/v1/traces`, {
       headers: {
         "Content-Type": "application/json",
+        ...headers,
       },
       method: "POST",
       body: JSON.stringify(body),

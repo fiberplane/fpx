@@ -124,6 +124,7 @@ export const SettingsSchema = z.object({
       // Fix from:
       // https://github.com/colinhacks/zod/discussions/1254#discussioncomment-3123225
       baseUrl: z.union([z.literal(""), z.string().trim().url()]).optional(),
+      bearerToken: z.string().optional(),
     })
     .optional(),
   openApiSpecUrl: z.string().optional(),
