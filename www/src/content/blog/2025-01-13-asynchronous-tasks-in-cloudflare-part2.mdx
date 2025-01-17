@@ -14,15 +14,15 @@ tags:
 import { LinkCard } from "@astrojs/starlight/components";
 import PackageManagers from "@/components/PackageManagers.astro";
 
-[In Part 1](https://fiberplane.com/blog/asynchronous-tasks-in-cloudflare-part1/), we explored strategies for managing asynchronous tasks within a single Cloudflare Worker, from sequential execution to parallel background processing with `waitUntil()`.
-While effective for simple cases, complex systems benefit from error handling, retries, and separation of concerns. These patterns are easier to achieve when we decompose asynchronous tasks into multiple workers.
+[In Part 1](https://fiberplane.com/blog/asynchronous-tasks-in-cloudflare-part1/), we explored strategies for managing asynchronous tasks within a single Cloudflare Worker, focusing on sequential execution and parallel background processing with `waitUntil()`.
+While this approach works well for simple cases, complex systems require robust error handling, retry mechanisms, and separation of concerns. These patterns become more manageable when we distribute asynchronous tasks across multiple workers.
 
 In Part 2, we will:
 
 1. Distribute tasks across workers using Service Bindings
 2. Then explore how to achieve enhanced fault tolerance with Cloudflare Queues.
 
-Let’s start by breaking down the Marathon Sign-up Worker from Part 1!
+Let's start by breaking down the Marathon Sign-up Worker from Part 1!
 
 ## 1. Cloudflare Service Bindings: Service Decomposition
 
