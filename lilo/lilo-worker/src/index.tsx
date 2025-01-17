@@ -56,16 +56,18 @@ app.use(
         description: "API documentation for Lilo",
       },
       servers: [
-        {
-          // url: new URL(c.req.url).origin,
-          url: "http://localhost:6246",
-          description: "Local",
-        },
-        {
-          // url: new URL(c.req.url).origin,
-          url: "https://lilo.fp.dev",
-          description: "Production",
-        },
+        // NOTE - Embedded should add the current origin automatically.
+        //
+        // {
+        //   // url: new URL(c.req.url).origin,
+        //   url: "http://localhost:6246",
+        //   description: "Local",
+        // },
+        // {
+        //   // url: new URL(c.req.url).origin,
+        //   url: "https://lilo.fp.dev",
+        //   description: "Production",
+        // },
       ],
     }),
   }),

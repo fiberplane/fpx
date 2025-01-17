@@ -608,8 +608,8 @@ importers:
         specifier: ^1.0.8
         version: 1.0.8(zod@3.24.0)
       '@fiberplane/embedded':
-        specifier: ^0.0.11
-        version: 0.0.11(hono@4.6.13)
+        specifier: ^0.0.12
+        version: 0.0.12(hono@4.6.13)
       '@hono/oauth-providers':
         specifier: ^0.6.2
         version: 0.6.2(hono@4.6.13)
@@ -3256,8 +3256,8 @@ packages:
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
 
-  '@fiberplane/embedded@0.0.11':
-    resolution: {integrity: sha512-Nrr0s2Ma/p/9Sqkz03KuvT3ZWeryXEqO3ug2ej7OSiuSDOd7izAKpMew8f3ud6ix+e5qztK//IBlGTHasXQaBQ==}
+  '@fiberplane/embedded@0.0.12':
+    resolution: {integrity: sha512-mLu4C9pnSyaA0cQgZaEWnBxLAjLCTLcO7kw77qaR99RxqhrA/vIe12ILyDUFv4p1mZ8lbV3uHqPrkLjDgpHOmg==}
     peerDependencies:
       hono: ^4.0
 
@@ -13703,7 +13703,7 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
-  '@fiberplane/embedded@0.0.11(hono@4.6.13)':
+  '@fiberplane/embedded@0.0.12(hono@4.6.13)':
     dependencies:
       hono: 4.6.13
       openapi-types: 12.1.3
