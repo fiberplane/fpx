@@ -3,6 +3,7 @@ packages:
   - "api"
   - "fp-services"
   - "honc-code-gen"
+  - "lilo/*"
   - "packages/*"
   - "examples/*"
   - "examples/service-bindings/*"
