@@ -6,9 +6,9 @@ export function StatusCode({
   className,
 }: { status: string | number; isFailure: boolean; className?: string }) {
   const strStatus = status?.toString() ?? "-";
-  const isGreen = strStatus.startsWith("2");
-  const isOrange = strStatus.startsWith("4");
-  const isRed = strStatus.startsWith("5");
+  const isSuccess = strStatus.startsWith("2");
+  const isWarning = strStatus.startsWith("4");
+  const isError = strStatus.startsWith("5");
 
   return (
     <span
@@ -17,11 +17,11 @@ export function StatusCode({
         "px-2",
         "py-1",
         "text-xs",
-        "bg-opacity-30",
-        "font-sans",
-        isGreen && ["text-green-400", "bg-green-800"],
-        isOrange && ["text-orange-400", "bg-orange-800"],
-        (isRed || isFailure) && ["text-red-400", "bg-red-800"],
+        "font-mono",
+        "font-medium",
+        isSuccess && ["text-[--fp-status-success-fg]", "bg-[--fp-status-success]"],
+        isWarning && ["text-[--fp-status-warning-fg]", "bg-[--fp-status-warning]"],
+        (isError || isFailure) && ["text-[--fp-status-error-fg]", "bg-[--fp-status-error]"],
         className,
       )}
     >

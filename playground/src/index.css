@@ -292,6 +292,14 @@
     --fp-method-head-bg: var(--bg-info);
     --fp-method-options-bg: var(--bg-info);
     --fp-method-trace-bg: var(--bg-info);
+
+    --fp-status-success: var(--bg-success);
+    --fp-status-warning: var(--bg-warning);
+    --fp-status-error: var(--bg-danger);
+
+    --fp-status-success-fg: var(--fg-success);
+    --fp-status-warning-fg: var(--fg-warning);
+    --fp-status-error-fg: var(--fg-danger);
   }
 
   .dark {
@@ -344,6 +352,14 @@
     --fp-method-head-bg: var(--bg-info-dark);
     --fp-method-options-bg: var(--bg-info-dark);
     --fp-method-trace-bg: var(--bg-info-dark);
+
+    --fp-status-success: var(--bg-success-dark);
+    --fp-status-warning: var(--bg-warning-dark);
+    --fp-status-error: var(--bg-danger-dark);
+
+    --fp-status-success-fg: var(--fg-success-dark);
+    --fp-status-warning-fg: var(--fg-warning-dark);
+    --fp-status-error-fg: var(--fg-danger-dark);
   }
 }
 
