@@ -59,6 +59,32 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
           />
           <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden">
             <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup heading="Settings" className="py-2">
+              <CustomCommandItem
+                onSelect={() => {
+                  setSettingsOpen(true);
+                  setOpen(false);
+                }}
+              >
+                <Icon icon="lucide:settings" className="h-4 w-4 mr-2" />
+                <span>Open Settings</span>
+              </CustomCommandItem>
+              <CustomCommandItem
+                onSelect={() => {
+                  setUseMockApiSpec(!useMockApiSpec);
+                  setOpen(false);
+                }}
+              >
+                <Icon
+                  icon="lucide:toggle-left"
+                  className={`h-4 w-4 mr-2 ${useMockApiSpec ? "rotate-180" : ""}`}
+                />
+                <span>
+                  {useMockApiSpec ? "Disable" : "Enable"} Mock API Spec
+                </span>
+              </CustomCommandItem>
+            </CommandGroup>
+            <CommandSeparator className="mx-2" />
             <CommandGroup heading="Theme" className="py-2">
               <CustomCommandItem
                 onSelect={() => {
@@ -86,32 +112,6 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
               >
                 <Icon icon="lucide:monitor" className="h-4 w-4 mr-2" />
                 <span>System Theme</span>
-              </CustomCommandItem>
-            </CommandGroup>
-            <CommandSeparator className="mx-2" />
-            <CommandGroup heading="Settings" className="py-2">
-              <CustomCommandItem
-                onSelect={() => {
-                  setSettingsOpen(true);
-                  setOpen(false);
-                }}
-              >
-                <Icon icon="lucide:settings" className="h-4 w-4 mr-2" />
-                <span>Open Settings</span>
-              </CustomCommandItem>
-              <CustomCommandItem
-                onSelect={() => {
-                  setUseMockApiSpec(!useMockApiSpec);
-                  setOpen(false);
-                }}
-              >
-                <Icon
-                  icon="lucide:toggle-left"
-                  className={`h-4 w-4 mr-2 ${useMockApiSpec ? "rotate-180" : ""}`}
-                />
-                <span>
-                  {useMockApiSpec ? "Disable" : "Enable"} Mock API Spec
-                </span>
               </CustomCommandItem>
             </CommandGroup>
             <CommandSeparator className="mx-2" />
