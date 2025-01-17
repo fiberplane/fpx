@@ -26,11 +26,18 @@ export const createMiddleware =
     newUrl.pathname = correctedPath;
     const newRequest = new Request(newUrl, c.req.raw);
 
+    let modSpec = options?.spec;
+    if (typeof modSpec === "string" && modSpec.startsWith("/")) {
+      modSpec = `${new URL(c.req.url).origin}${modSpec}`;
+    }
+
+    console.log("modSpec", modSpec);
+
     // Let our embedded router handle the request
     const router = createRouter({
       mountedPath,
       cdn: options?.cdn ?? CDN_URL,
-      spec: options?.spec,
+      spec: modSpec,
     });
     const response = await router.fetch(newRequest);
 
