@@ -2,6 +2,11 @@ import type { Env, MiddlewareHandler } from "hono/types";
 import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 import { createRouter } from "./router.js";
 
+// HACK - We need to manually update the version in the CDN URL when you release a new version
+//        Eventually we should do this automagically when building the package (and derive the version from the package.json)
+const VERSION = "0.0.13";
+const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/embedded@${VERSION}/dist/playground/`;
+
 export interface EmbeddedMiddlewareOptions {
   cdn?: string;
   spec?: OpenAPIV3_1.Document | OpenAPIV3.Document | string;
@@ -24,7 +29,7 @@ export const createMiddleware =
     // Let our embedded router handle the request
     const router = createRouter({
       mountedPath,
-      cdn: options?.cdn,
+      cdn: options?.cdn ?? CDN_URL,
       spec: options?.spec,
     });
     const response = await router.fetch(newRequest);
