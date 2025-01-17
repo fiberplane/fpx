@@ -28,7 +28,7 @@ export function createRouter<E extends Env>({
     return c.html(
       <html lang="en">
         <head>
-          <title>FPX</title>
+          <title>{resolvedSpec?.info?.title ?? "FPX Playground"}</title>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link
@@ -90,6 +90,9 @@ async function resolveSpec(
     return undefined;
   }
   if (typeof spec !== "string") {
+    if (origin) {
+      ensureOriginServer(spec, origin);
+    }
     return spec;
   }
 
@@ -109,7 +112,9 @@ async function resolveSpec(
 
     if (spec.startsWith("/")) {
       if (origin) {
-        const response = await fetch(`${origin}${spec}`);
+        const url = `${origin}${spec}`;
+        console.log("Fetching spec from", url);
+        const response = await fetch(url);
         const doc = (await response.json()) as OpenAPIV3_1.Document | OpenAPIV3.Document;
         ensureOriginServer(doc, origin);
         return doc;
