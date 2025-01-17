@@ -10,6 +10,7 @@ import {
   appResponses,
   appRoutes,
   appRoutesInsertSchema,
+  collectionItems,
 } from "../db/schema.js";
 import {
   buildRouteTree,
@@ -28,6 +29,7 @@ import {
   executeProxyRequest,
   handleFailedRequest,
   handleSuccessfulRequest,
+  removeUnsupportedHeaders,
 } from "../lib/proxy-request/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import {
@@ -50,10 +52,12 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 app.get("/v0/app-routes", async (ctx) => {
   const db = ctx.get("db");
   const routes = await db.query.appRoutes.findMany();
+
   const baseUrl = resolveServiceArg(
     env(ctx).FPX_SERVICE_TARGET as string,
     "http://localhost:8787",
   );
+
   return ctx.json({
     baseUrl,
     routes,
@@ -74,32 +78,37 @@ app.get("/v0/app-routes-file-tree", async (ctx) => {
     const result = await getResult();
 
     const routeEntries = [];
-    for (const currentRoute of routes) {
-      const url = new URL("http://localhost");
-      url.pathname = currentRoute.path ?? "";
-      const request = new Request(url, {
-        method: currentRoute.method ?? "",
-      });
-      result.resetHistory();
-      const response = await result.currentApp.fetch(request);
-      const responseText = await response.text();
 
-      if (responseText !== "Ok") {
-        logger.warn(
-          "Failed to fetch route for context expansion",
-          responseText,
+    if (result) {
+      for (const currentRoute of routes) {
+        const url = new URL("http://localhost");
+        url.pathname = currentRoute.path ?? "";
+        const request = new Request(url, {
+          method: currentRoute.method ?? "",
+        });
+        result.resetHistory();
+        const response = await result.currentApp.fetch(request);
+        const responseText = await response.text();
+
+        if (responseText !== "Ok") {
+          logger.warn(
+            "Failed to fetch route for context expansion",
+            responseText,
+          );
+          continue;
+        }
+
+        const history = result.getHistory();
+        const routeEntryId = history[history.length - 1];
+        const routeEntry = result.getRouteEntryById(
+          routeEntryId as RouteEntryId,
         );
-        continue;
+
+        routeEntries.push({
+          ...currentRoute,
+          fileName: routeEntry?.fileName,
+        });
       }
-
-      const history = result.getHistory();
-      const routeEntryId = history[history.length - 1];
-      const routeEntry = result.getRouteEntryById(routeEntryId as RouteEntryId);
-
-      routeEntries.push({
-        ...currentRoute,
-        fileName: routeEntry?.fileName,
-      });
     }
 
     const tree = buildRouteTree(
@@ -200,7 +209,7 @@ app.delete("/v0/app-routes/:method/:path", async (ctx) => {
   const db = ctx.get("db");
   const { method, path } = ctx.req.param();
   const decodedPath = decodeURIComponent(path);
-  const createdRoute = await db
+  const deletedRoute = await db
     .delete(appRoutes)
     .where(
       and(
@@ -212,13 +221,14 @@ app.delete("/v0/app-routes/:method/:path", async (ctx) => {
       ),
     )
     .returning();
-  return ctx.json(createdRoute?.[0]);
+  return ctx.json(deletedRoute?.[0]);
 });
 
 app.delete("/v0/app-requests/", async (ctx) => {
   const db = ctx.get("db");
   await db.delete(appResponses);
   await db.delete(appRequests);
+  await db.delete(collectionItems);
   return ctx.text("OK");
 });
 
@@ -308,8 +318,9 @@ app.all(
     const requestUrlHeader = proxyToHeader;
 
     // NOTE - These are the headers that will be used in the request to the service
-    const requestHeaders: Record<string, string> =
-      constructProxiedRequestHeaders(ctx, headersJsonHeader ?? "", traceId);
+    const requestHeaders: Record<string, string> = removeUnsupportedHeaders(
+      constructProxiedRequestHeaders(ctx, headersJsonHeader ?? "", traceId),
+    );
 
     // Construct the url we want to proxy to, using the query params from the original request
     const requestQueryParams = {
@@ -322,7 +333,6 @@ app.all(
     logger.debug("Proxying request to:", requestUrl);
     logger.debug("Proxying request with headers:", requestHeaders);
 
-    // Create a new request object
     // Clone the incoming request, so we can make a proxy Request object
     const clonedReq = ctx.req.raw.clone();
     const proxiedReq = new Request(requestUrl, {

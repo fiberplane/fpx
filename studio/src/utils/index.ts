@@ -1,5 +1,12 @@
+import { createParameterId } from "@/pages/RequestorPage/KeyValueForm/data";
+import type {
+  KeyValueParameter,
+  RequestorBody,
+} from "@/pages/RequestorPage/store";
+import { RequestorBodySchema } from "@/pages/RequestorPage/store/request-body";
 import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
+import { type PathParam, generatePath } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
 
 export * from "./screen-size";
@@ -149,6 +156,7 @@ export function truncatePathWithEllipsis(path: string | null) {
   if (path === null) {
     return null;
   }
+
   const maxLength = 50;
   return path.length > maxLength ? `${path.slice(0, maxLength)}...` : path;
 }
@@ -216,44 +224,79 @@ export function isSensitiveEnvVar(key: string) {
   if (!key) {
     return false;
   }
-  if (key.includes("APIKEY")) {
-    return true;
+
+  return (
+    key.includes("APIKEY") ||
+    key.includes("API_KEY") ||
+    key.includes("ACCESS") ||
+    key.includes("AUTH_") ||
+    key.includes("CREDENTIALS") ||
+    key.includes("CERTIFICATE") ||
+    key.includes("PASSPHRASE") ||
+    key.includes("DATABASE_URL") ||
+    key.includes("CONNECTION_STRING") ||
+    key.includes("SECRET") ||
+    key.includes("PASSWORD") ||
+    key.includes("PRIVATE") ||
+    key.includes("TOKEN")
+  );
+}
+
+export function constructRequestorBody(bodyValue: string): RequestorBody {
+  try {
+    const parsed = JSON.parse(bodyValue);
+    const result = RequestorBodySchema.safeParse(parsed);
+    if (result.success) {
+      return result.data;
+    }
+  } catch {
+    // swallow error
   }
-  if (key.includes("API_KEY")) {
-    return true;
+
+  return {
+    type: "text",
+    value: bodyValue,
+  };
+}
+
+export function createKeyValueParametersFromValues(
+  values: Array<{ key: string; value: string }>,
+) {
+  return values.map(({ key, value }) => {
+    return {
+      id: createParameterId(),
+      key,
+      value,
+      enabled: true,
+    };
+  });
+}
+
+export function createObjectFromKeyValueParameters<
+  T extends Array<KeyValueParameter>,
+>(parameters: T): Record<T[0]["key"], T[0]["value"]> {
+  const result: Record<string, string> = {};
+  for (const item of parameters) {
+    if (item.key && item.enabled) {
+      result[item.key] = item.value;
+    }
   }
-  if (key.includes("ACCESS")) {
-    return true;
+
+  return result;
+}
+
+export function generatePathWithSearchParams<Path extends string>(
+  originalPath: Path,
+  params: {
+    [key in PathParam<Path>]: string | null;
+  },
+  searchParams: URLSearchParams,
+): string {
+  const searchString = searchParams.toString();
+  const generatedPath = generatePath(originalPath, params);
+  if (!searchString) {
+    return generatedPath;
   }
-  if (key.includes("AUTH_")) {
-    return true;
-  }
-  if (key.includes("CREDENTIALS")) {
-    return true;
-  }
-  if (key.includes("CERTIFICATE")) {
-    return true;
-  }
-  if (key.includes("PASSPHRASE")) {
-    return true;
-  }
-  if (key.includes("DATABASE_URL")) {
-    return true;
-  }
-  if (key.includes("CONNECTION_STRING")) {
-    return true;
-  }
-  if (key.includes("SECRET")) {
-    return true;
-  }
-  if (key.includes("PASSWORD")) {
-    return true;
-  }
-  if (key.includes("PRIVATE")) {
-    return true;
-  }
-  if (key.includes("TOKEN")) {
-    return true;
-  }
-  return false;
+
+  return `${generatedPath}${generatedPath.includes("?") ? "&" : "?"}${searchString}`;
 }

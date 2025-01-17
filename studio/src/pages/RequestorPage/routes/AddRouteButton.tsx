@@ -53,7 +53,7 @@ export function AddRouteButton() {
           </div>
         </TooltipContent>
       </Tooltip>
-      <PopoverContent className="w-96 max-lg:hidden">
+      <PopoverContent align="end" className="w-72 max-w-dvw">
         {/* default tab opens on openapi if there is no openapi spec added already */}
         <AddRoutesTabs
           setOpen={setOpen}
@@ -301,6 +301,7 @@ function CustomRouteForm({
             {...register("path")}
             id="pathPattern"
             type="text"
+            placeholder="Enter path pattern"
             className="col-span-2 h-8 font-mono"
             autoFocus
           />

@@ -41,7 +41,7 @@
       }
     },
     {
-      "include": ["studio"],
+      "include": ["studio", "lilo/lilo-frontend"],
       "linter": {
         "enabled": true,
         "rules": {
@@ -72,7 +72,8 @@
         "packages/client-library-otel",
         "api",
         "honc-code-gen",
-        "fp-services"
+        "fp-services",
+        "lilo/lilo-worker"
       ],
       "linter": {
         "enabled": true,
@@ -92,6 +93,9 @@
   ],
   "files": {
     "ignore": [
+      // Python related
+      ".venv",
+      ".mypy_cache",
       // API related
       "meta/*.json",
       // Honc code gen playground outputs
@@ -99,12 +103,16 @@
       "honc-code-gen/storage/**/*",
       // Client library and website related
       "dist",
+      "lilo/lilo-frontend/dist",
+      "lilo/lilo-worker/public",
       "www/",
       ".astro",
       // ignore all tsconfig.json files
-      "tsconfig.json",
+      "tsconfig*.json",
       // ignore any test data files
-      "test-data/*.js"
+      "test-data/*.js",
+      // fpx-workers build files
+      "fpx-workers/build/**/*"
       // Rust code related
       // This caused biome to ignore the entire fpx folder
       // commenting out for now as we still want to find a way to

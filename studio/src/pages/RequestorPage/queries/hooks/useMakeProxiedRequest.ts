@@ -1,11 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { reduceFormDataParameters } from "../../FormDataForm";
-import {
-  type KeyValueParameter,
-  reduceKeyValueParameters,
-} from "../../KeyValueForm";
-import type { RequestorBody, RequestorResponseBody } from "../../store";
-import { useRequestorStore } from "../../store";
+import { reduceKeyValueParameters } from "../../KeyValueForm";
+import type {
+  KeyValueParameter,
+  RequestorBody,
+  RequestorResponseBody,
+} from "../../store";
+import { useStudioStore } from "../../store";
 import { REQUESTOR_REQUESTS_KEY } from "./constants";
 
 export type MakeProxiedRequestQueryFn = ReturnType<
@@ -13,10 +14,7 @@ export type MakeProxiedRequestQueryFn = ReturnType<
 >["mutate"];
 
 export function useMakeProxiedRequest() {
-  const { clearResponseBodyFromHistory, setActiveResponse } = useRequestorStore(
-    "clearResponseBodyFromHistory",
-    "setActiveResponse",
-  );
+  const { setActiveResponse } = useStudioStore("setActiveResponse");
 
   const queryClient = useQueryClient();
   const mutation = useMutation({
@@ -26,7 +24,6 @@ export function useMakeProxiedRequest() {
       queryClient.invalidateQueries({ queryKey: [REQUESTOR_REQUESTS_KEY] });
 
       // Make sure the response panel is cleared of data, then add the new response
-      clearResponseBodyFromHistory();
       if (data) {
         setActiveResponse(data);
       } else {
@@ -38,7 +35,6 @@ export function useMakeProxiedRequest() {
     },
     onError: () => {
       // Make sure the response panel is cleared of data
-      clearResponseBodyFromHistory();
       setActiveResponse(null);
     },
   });

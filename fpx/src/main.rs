@@ -2,8 +2,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use opentelemetry::trace::TracerProvider;
 use opentelemetry::KeyValue;
-use opentelemetry_otlp::WithExportConfig;
-use opentelemetry_sdk::trace::Config;
+use opentelemetry_otlp::{SpanExporter, WithExportConfig};
 use opentelemetry_sdk::{runtime, Resource};
 use std::env;
 use std::path::PathBuf;
@@ -45,20 +44,16 @@ fn setup_tracing(args: &commands::Args) -> Result<()> {
     let log_layer = tracing_subscriber::fmt::layer();
 
     let trace_layer = if args.enable_tracing {
+        let exporter = SpanExporter::builder()
+            .with_tonic()
+            .with_endpoint(args.otlp_endpoint.to_string())
+            .build()?;
+
         // This tracer is responsible for sending the actual traces.
-        let tracer_provider = opentelemetry_otlp::new_pipeline()
-            .tracing()
-            .with_exporter(
-                opentelemetry_otlp::new_exporter()
-                    .tonic()
-                    .with_endpoint(args.otlp_endpoint.to_string()),
-            )
-            .with_trace_config(
-                Config::default()
-                    .with_resource(Resource::new(vec![KeyValue::new("service.name", "fpx")])),
-            )
-            .install_batch(runtime::Tokio)
-            .context("unable to install tracer")?;
+        let tracer_provider = opentelemetry_sdk::trace::TracerProvider::builder()
+            .with_resource(Resource::new(vec![KeyValue::new("service.name", "fpx")]))
+            .with_batch_exporter(exporter, runtime::Tokio)
+            .build();
 
         opentelemetry::global::set_tracer_provider(tracer_provider.clone());
 

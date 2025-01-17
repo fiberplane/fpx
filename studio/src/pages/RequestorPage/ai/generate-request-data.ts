@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ProxiedRequestResponse } from "../queries";
-import type { RequestBodyType } from "../store";
+import type { RequestorBodyType } from "../store";
 import type { ProbedRoute } from "../types";
 import { simplifyHistoryEntry } from "./utils";
 
@@ -20,7 +20,7 @@ export const expandFunction = (handler: string | undefined) => {
 const fetchAiRequestData = async (
   route: ProbedRoute | null,
   middleware: ProbedRoute[] | null,
-  bodyType: RequestBodyType,
+  bodyType: RequestorBodyType,
   history: Array<ProxiedRequestResponse>,
   persona: string,
   prompt?: string,
@@ -61,7 +61,7 @@ const fetchAiRequestData = async (
 export function useAiRequestData(
   route: ProbedRoute | null,
   matchingMiddleware: ProbedRoute[] | null,
-  bodyType: RequestBodyType,
+  bodyType: RequestorBodyType,
   history: Array<ProxiedRequestResponse>,
   persona = "Friendly",
   prompt?: string,
