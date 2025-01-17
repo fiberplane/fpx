@@ -19,9 +19,12 @@ export function StatusCode({
         "text-xs",
         "font-mono",
         "font-medium",
-        isSuccess && ["text-[--fp-status-success-fg]", "bg-[--fp-status-success]"],
-        isWarning && ["text-[--fp-status-warning-fg]", "bg-[--fp-status-warning]"],
-        (isError || isFailure) && ["text-[--fp-status-error-fg]", "bg-[--fp-status-error]"],
+        isSuccess && ["text-fp-status-success-fg", "bg-fp-status-success/15"],
+        isWarning && ["text-fp-status-warning-fg", "bg-fp-status-warning/15"],
+        (isError || isFailure) && [
+          "text-fp-status-error-fg",
+          "bg-fp-status-error/15",
+        ],
         className,
       )}
     >
