@@ -24,7 +24,7 @@ export function createRouter<E extends Env>({
   const jsBundleUrl = new URL("index.js", cdn).href;
 
   router.get("/*", async (c) => {
-    const resolvedSpec = await resolveSpec(spec);
+    const resolvedSpec = await resolveSpec(spec, new URL(c.req.url).origin);
     return c.html(
       <html lang="en">
         <head>
@@ -67,8 +67,24 @@ export const apiSpecScriptTag = (
   `;
 };
 
+function ensureOriginServer(
+  doc: OpenAPIV3_1.Document | OpenAPIV3.Document,
+  origin: string
+): void {
+  if (!doc?.servers?.some((server) => server.url === origin)) {
+    doc.servers = [
+      {
+        url: origin,
+        description: "Current environment",
+      },
+      ...(doc.servers || []),
+    ];
+  }
+}
+
 async function resolveSpec(
   spec?: OpenAPIV3_1.Document | OpenAPIV3.Document | string,
+  origin?: string,
 ): Promise<OpenAPIV3_1.Document | OpenAPIV3.Document | undefined> {
   if (!spec) {
     return undefined;
@@ -81,9 +97,23 @@ async function resolveSpec(
     // Handle URLs
     if (spec.startsWith("http://") || spec.startsWith("https://")) {
       const response = await fetch(spec);
-      return (await response.json()) as
+      const doc = (await response.json()) as
         | OpenAPIV3_1.Document
         | OpenAPIV3.Document;
+
+      if (origin) {
+        ensureOriginServer(doc, origin);
+      }
+      return doc;
+    }
+
+    if (spec.startsWith("/")) {
+      if (origin) {
+        const response = await fetch(`${origin}${spec}`);
+        const doc = (await response.json()) as OpenAPIV3_1.Document | OpenAPIV3.Document;
+        ensureOriginServer(doc, origin);
+        return doc;
+      }
     }
 
     throw new Error("Invalid spec path or URL");
