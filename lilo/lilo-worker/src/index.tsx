@@ -46,7 +46,7 @@ app.doc("/doc", (c) => ({
 app.use(
   "/fp/*",
   createMiddleware({
-    cdn: "https://cdn.jsdelivr.net/npm/@fiberplane/embedded@0.0.11/dist/playground/",
+    cdn: "https://cdn.jsdelivr.net/npm/@fiberplane/embedded@0.0.12/dist/playground/",
     // @ts-expect-error - The imported spec does not match our expected OpenAPIv3 type
     spec: app.getOpenAPIDocument({
       openapi: "3.0.0",
