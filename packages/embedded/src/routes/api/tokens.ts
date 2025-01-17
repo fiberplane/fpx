@@ -1,40 +1,32 @@
 import { Hono } from "hono";
+import { Service } from "../../services.js";
+import { z } from "zod";
 
-type Token = {
-  id: string;
-  token: string;
-};
-
-const tokens: Array<Token> = [
-  {
-    id: "1234",
-    token: "abc123",
-  },
-  {
-    id: "5678",
-    token: "def456",
-  },
-  {
-    id: "91011",
-    token: "ghi789",
-  },
-  {
-    id: "121314",
-    token: "jkl012",
-  },
-];
-
+// Temporary implementation
 export default function createTokensApiRoute(apiKey: string) {
   const app = new Hono();
 
-  app.get("/", (c) => c.json({ tokens }));
+  const service = new Service({ apiKey });
 
-  app.get("/:id", (c) => {
-    const id = c.req.param("id");
+  app.put("/", async (c) => {
+    const requestBody = await c.req.json();
+    const { metadata } = z.object({ metadata: z.string() }).parse(requestBody);
+    const response = await service.createToken(metadata);
+    return c.json(response);
+  });
 
-    const token = tokens.filter((token) => token.id === id);
+  app.post("/verify", async (c) => {
+    const requestBody = await c.req.json();
+    const { token } = z.object({ token: z.string() }).parse(requestBody);
+    const response = await service.verifyToken(token);
+    return c.json(response);
+  });
 
-    return c.json({ token });
+  app.delete("/revoke", async (c) => {
+    const requestBody = await c.req.json();
+    const { token } = z.object({ token: z.string() }).parse(requestBody);
+    const response = await service.revokeToken(token);
+    return c.json(response);
   });
 
   return app;
