@@ -1,12 +1,14 @@
 import os
+from typing import Callable, Optional
 from urllib.parse import urlparse
-from typing import Optional, Callable
 
 from fastapi import FastAPI
-from .tracing import setup_span_instrumentation
-from .routes import install
+
+from .capturePrint import setup_capture_print_middleware
+from .logger import capture_logs, logger
 from .measure import measure
-from .logger import logger, capture_logs
+from .routes import install
+from .tracing import setup_span_instrumentation
 
 __all__ = ["setup", "measure"]
 
@@ -34,6 +36,7 @@ def setup(app: FastAPI) -> None:
     url = urlparse(endpoint)
     # setup span instrumentation
     setup_span_instrumentation(app, url)
+    setup_capture_print_middleware(app)
 
     # Avoid capturing logs multiple times
     global __teardown_capture_logs
