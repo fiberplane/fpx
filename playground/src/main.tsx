@@ -5,6 +5,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { routeTree } from "./routeTree.gen";
 import "./index.css";
+import { ThemeProvider } from "./components/theme-provider";
 
 const rootElement = document.getElementById("root");
 if (rootElement === null) {
@@ -27,10 +28,12 @@ declare module "@tanstack/react-router" {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <TooltipProvider>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </TooltipProvider>
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <TooltipProvider>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+        </QueryClientProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </StrictMode>,
 );
