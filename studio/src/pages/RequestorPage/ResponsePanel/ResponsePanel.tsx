@@ -53,14 +53,6 @@ export const ResponsePanel = memo(function ResponsePanel({
     "setShowViewLogsBanner",
   );
 
-  // NOTE - This is kind of annoying so I commented it out for now
-  //
-  // useEffect(() => {
-  //   if (tracedResponse) {
-  //     setShowViewLogsBanner(true);
-  //   }
-  // }, [tracedResponse, setShowViewLogsBanner]);
-
   const shouldShowResponseTab = (tab: ResponsePanelTab): boolean => {
     return visibleResponsePanelTabs.includes(tab);
   };
@@ -233,20 +225,20 @@ function ResponseSummary({
   return (
     <div className="flex items-center space-x-2 text-sm">
       <StatusCode status={status ?? "—"} isFailure={!status} />
-      <div>
+      <div className="grid grid-cols-[auto_1fr] items-center">
         <Method method={method ?? "—"} />
-        <span
+        <div
           className={cn(
             "font-mono",
             "whitespace-nowrap",
-            "overflow-ellipsis",
+            "truncate",
             "text-xs",
             "ml-2",
             "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
           )}
         >
           {transformUrl(url ?? "")}
-        </span>
+        </div>
       </div>
     </div>
   );

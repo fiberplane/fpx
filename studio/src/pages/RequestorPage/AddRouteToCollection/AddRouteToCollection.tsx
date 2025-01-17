@@ -31,12 +31,15 @@ export function AddRouteToCollection() {
       <PopoverTrigger asChild>
         <div>
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <Button size="icon-xs" variant="ghost">
                 <Icon icon="lucide:folder" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="left">
+            <TooltipContent
+              side="left"
+              className="bg-slate-900 px-2 py-1.5 text-white"
+            >
               <p>Add to Collection</p>
             </TooltipContent>
           </Tooltip>
