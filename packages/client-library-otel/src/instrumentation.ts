@@ -314,7 +314,7 @@ function setupTracerProvider(options: {
 
   const exporter = new OTLPTraceExporter({
     url: options.endpoint,
-    headers: headers,
+    headers,
   });
   provider.addSpanProcessor(
     new SimpleSpanProcessor(exporter),
