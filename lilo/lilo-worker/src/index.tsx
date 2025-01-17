@@ -35,10 +35,10 @@ app.doc("/doc", (c) => ({
     description: "API documentation for Lilo",
   },
   servers: [
-    {
-      url: new URL(c.req.url).origin,
-      description: "Current environment",
-    },
+    // {
+    //   url: "https://lilo.fp.dev",
+    //   description: "Production",
+    // },
   ],
 }));
 
@@ -48,28 +48,7 @@ app.use(
   createMiddleware({
     cdn: "https://cdn.jsdelivr.net/npm/@fiberplane/embedded@0.0.12/dist/playground/",
     // @ts-expect-error - The imported spec does not match our expected OpenAPIv3 type
-    spec: app.getOpenAPIDocument({
-      openapi: "3.0.0",
-      info: {
-        title: "Lilo API",
-        version: "0.0.1",
-        description: "API documentation for Lilo",
-      },
-      servers: [
-        // NOTE - Embedded should add the current origin automatically.
-        //
-        // {
-        //   // url: new URL(c.req.url).origin,
-        //   url: "http://localhost:6246",
-        //   description: "Local",
-        // },
-        // {
-        //   // url: new URL(c.req.url).origin,
-        //   url: "https://lilo.fp.dev",
-        //   description: "Production",
-        // },
-      ],
-    }),
+    spec: "/doc",
   }),
 );
 
