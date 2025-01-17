@@ -23,7 +23,7 @@ export function SidePanelTrigger() {
         <Button
           variant="ghost"
           size="icon"
-          className="p-0.5 w-6 h-6"
+          className="p-0.5 w-6 h-6 hover:bg-secondary hover:text-secondary-foreground"
           onClick={() => togglePanel("sidePanel")}
         >
           <Icon

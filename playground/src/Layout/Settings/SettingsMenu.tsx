@@ -59,7 +59,7 @@ export function SettingsMenu({
           </MenuItemLink>
           <MenubarSeparator className="h-px bg-muted" />
           <MenubarItem
-            className="pointer-cursor-auto px-2 py-1 select-none focus:bg-accent focus:text-accent-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="pointer-cursor-auto px-2 py-1 select-none focus:bg-secondary focus:text-secondary-foreground cursor-pointer focus:outline-none focus:ring-1 rounded-lg"
             onClick={() => setSettingsOpen(true)}
           >
             <div className="flex items-center gap-2">
@@ -79,7 +79,7 @@ function MenuItemLink({
   children,
 }: { href: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <MenubarItem className="pointer-cursor-auto px-2 py-1 select-none focus:bg-accent focus:text-accent-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500">
+    <MenubarItem className="pointer-cursor-auto px-2 py-1 select-none focus:bg-secondary focus:text-secondary-foreground cursor-pointer focus:outline-none focus:ring-1 rounded-lg">
       <a
         href={href}
         target="_blank"
