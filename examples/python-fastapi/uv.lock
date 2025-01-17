@@ -229,7 +229,7 @@ standard = [
 
 [[package]]
 name = "fpxpy"
-version = "0.3.1"
+version = "0.3.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dataclasses-json" },
@@ -242,9 +242,9 @@ dependencies = [
     { name = "tracing" },
     { name = "types-requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4b/2b/764293cd7278034664404afb7254878e8b881c159f2ed913d7c82cf869da/fpxpy-0.3.1.tar.gz", hash = "sha256:05cee57eb2c66dc7abf057fce47117a402841da2a29c7c693e54e6df1dcdbe77", size = 48524 }
+sdist = { url = "https://files.pythonhosted.org/packages/4e/a9/1babd734150ac4082564d6d601346e059f2b1a09d8dbb5c53848b345bc72/fpxpy-0.3.2.tar.gz", hash = "sha256:c133830bc55ea1fe9637a6bec78e094558db51bbed7ee6ad486e15702fbbfd89", size = 49198 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/86/ed/79b89eaa406fde796c1561ce2940a7c1b6e6e8832fcdc0c6687e9e7110cd/fpxpy-0.3.1-py3-none-any.whl", hash = "sha256:0f973f70eed3e6afb29fa9627df1e3acbf7f979739f0d109512da1a05f63d5de", size = 13293 },
+    { url = "https://files.pythonhosted.org/packages/75/f9/40c47965f8761030d5be929197e1f746fa9e820f828e621ccd80c50d4cd9/fpxpy-0.3.2-py3-none-any.whl", hash = "sha256:2c9c1426caa68a7bc0ddc6d218a0a5ee4184e920bf81293910801bd36b12d286", size = 14333 },
 ]
 
 [[package]]
@@ -863,7 +863,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.6" },
-    { name = "fpxpy", specifier = ">=0.3.1" },
+    { name = "fpxpy", specifier = ">=0.3.2" },
 ]
 
 [package.metadata.requires-dev]
