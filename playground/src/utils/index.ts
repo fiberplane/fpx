@@ -205,14 +205,14 @@ export const safeParseJson = (jsonString: string) => {
 
 export function getHttpMethodTextColor(method: string) {
   return {
-    GET: "text-fp-method-get",
-    POST: "text-fp-method-post",
-    PUT: "text-fp-method-put",
-    PATCH: "text-fp-method-patch",
-    DELETE: "text-fp-method-delete",
-    OPTIONS: "text-fp-method-options",
-    HEAD: "text-fp-method-head",
-    WS: "text-fp-method-trace",
+    GET: "text-info",
+    POST: "text-success",
+    PUT: "text-warning",
+    PATCH: "text-warning",
+    DELETE: "text-danger",
+    OPTIONS: "text-info",
+    HEAD: "text-info",
+    WS: "text-info",
   }[String(method).toUpperCase()];
 }
 
