@@ -21,10 +21,7 @@ export function StatusCode({
         "font-medium",
         isSuccess && ["text-success", "bg-success/15"],
         isWarning && ["text-warning", "bg-warning/15"],
-        (isError || isFailure) && [
-          "text-danger",
-          "bg-danger/15",
-        ],
+        (isError || isFailure) && ["text-danger", "bg-danger/15"],
         className,
       )}
     >

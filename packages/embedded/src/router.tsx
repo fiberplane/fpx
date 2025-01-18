@@ -69,7 +69,7 @@ export const apiSpecScriptTag = (
 
 function ensureOriginServer(
   doc: OpenAPIV3_1.Document | OpenAPIV3.Document,
-  origin: string
+  origin: string,
 ): void {
   if (!doc?.servers?.some((server) => server.url === origin)) {
     doc.servers = [
@@ -115,7 +115,9 @@ async function resolveSpec(
         const url = `${origin}${spec}`;
         console.log("Fetching spec from", url);
         const response = await fetch(url);
-        const doc = (await response.json()) as OpenAPIV3_1.Document | OpenAPIV3.Document;
+        const doc = (await response.json()) as
+          | OpenAPIV3_1.Document
+          | OpenAPIV3.Document;
         ensureOriginServer(doc, origin);
         return doc;
       }
