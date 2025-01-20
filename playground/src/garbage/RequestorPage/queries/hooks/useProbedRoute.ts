@@ -1,4 +1,6 @@
-import PLACEGOOSE_API_SPEC from "@/lib/placegoose.json";
+// import PLACEGOOSE_API_SPEC from "@/lib/placegoose.json";
+import TIGHTKNIT_API_SPEC from "@/lib/tightknit.json";
+
 import type { OpenAPIComponents } from "@fiberplane/fpx-types";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
@@ -69,7 +71,7 @@ function isValidMethod(method: string): method is ValidMethod {
 
 function getOpenApiSpec(useMockApiSpec: boolean): OpenAPISpec {
   if (useMockApiSpec) {
-    return PLACEGOOSE_API_SPEC as unknown as OpenAPISpec;
+    return TIGHTKNIT_API_SPEC as unknown as OpenAPISpec;
   }
 
   // Try to get the spec from the DOM
