@@ -34,12 +34,13 @@ def loop(n: int = 10) -> None:
         sleep(0.1)
         # Log the loop number
         # This will be captured by FPX
+        logger.info(f"Loop number: {i}")
         # Unfortunately this will not appear in the terminal console
         # When using `FPX_ENDPOINT=http://localhost:8788/v1/traces  uv run fastapi dev ./main.py`
 
         # When using `uv run fastapi dev ./main.py` this logger statement
         # will only appear as events of the span in the Fiberplane UI
-        logger.info(f"Loop number: {i}")
+        print(f"Printing loop: %i" % i)
 
 
 @app.get("/hello")

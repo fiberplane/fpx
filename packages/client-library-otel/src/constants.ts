@@ -1,6 +1,7 @@
 /**
  * Constants for the environment variables we use to configure the library.
  */
+export const ENV_FPX_AUTH_TOKEN = "FPX_AUTH_TOKEN";
 export const ENV_FPX_ENDPOINT = "FPX_ENDPOINT";
 export const ENV_FPX_LOG_LEVEL = "FPX_LOG_LEVEL";
 export const ENV_FPX_SERVICE_NAME = "FPX_SERVICE_NAME";

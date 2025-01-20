@@ -36,6 +36,7 @@ def setup(app: FastAPI, capture_stdout_stderr=True) -> None:
     url = urlparse(endpoint)
     # setup span instrumentation
     setup_span_instrumentation(app, url)
+    setup_capture_print_middleware(app)
 
     if capture_stdout_stderr:
         # Capture prints to stdout/stderr

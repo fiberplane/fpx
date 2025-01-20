@@ -4,18 +4,30 @@ from typing import TextIO
 from fastapi import FastAPI
 from opentelemetry import trace
 from starlette.middleware.base import BaseHTTPMiddleware
+<<<<<<< HEAD
 from .utils import safely_serialize_json
 
 
 class SpanAwareOutput:
     def __init__(self, original: TextIO, level: str):
         self.original = original
+=======
+
+
+class SpanAwareOutput:
+    def __init__(self, original_stdout: TextIO, level: str):
+        self.original_stdout = original_stdout
+>>>>>>> origin/main
         self.current_line: list[str] = []
         self.level = level
 
     def write(self, text: str):
         # Always write to the original stdout
+<<<<<<< HEAD
         self.original.write(text)
+=======
+        self.original_stdout.write(text)
+>>>>>>> origin/main
 
         # Accumulate the text
         self.current_line.append(text)
@@ -28,6 +40,7 @@ class SpanAwareOutput:
             if complete_line.strip():  # Only process non-empty lines
                 span = trace.get_current_span()
                 if span.is_recording():
+<<<<<<< HEAD
                     message = complete_line
                     span.add_event(
                         name="log",
@@ -37,6 +50,11 @@ class SpanAwareOutput:
                             "arguments": safely_serialize_json([]),
                             "source": "stoud/stderr",
                         },
+=======
+                    span.add_event(
+                        name="log",
+                        attributes={"message": complete_line, "level": self.level},
+>>>>>>> origin/main
                     )
 
     def flush(self):
@@ -46,6 +64,7 @@ class SpanAwareOutput:
             if complete_line.strip():
                 span = trace.get_current_span()
                 if span.is_recording():
+<<<<<<< HEAD
                     message = complete_line
                     span.add_event(
                         name="log",
@@ -58,6 +77,14 @@ class SpanAwareOutput:
                     )
             self.current_line = []
         self.original.flush()
+=======
+                    span.add_event(
+                        name="log",
+                        attributes={"message": complete_line, "level": self.level},
+                    )
+            self.current_line = []
+        self.original_stdout.flush()
+>>>>>>> origin/main
 
 
 class RealtimePrintCaptureMiddleware(BaseHTTPMiddleware):

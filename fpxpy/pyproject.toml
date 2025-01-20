@@ -1,6 +1,10 @@
 [project]
 name = "fpxpy"
+<<<<<<< HEAD
 version = "0.3.3"
+=======
+version = "0.3.2"
+>>>>>>> origin/main
 authors = [
     { name = "Fiberplane", email = "support@fiberplane.com" },
     { name = "mellowagain", email = "py@mari.zip" },
