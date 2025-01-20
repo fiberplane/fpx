@@ -1,2 +1,2 @@
 export { createMiddleware } from "./middleware.js";
-export { Service } from "./services.js";
+export { FpService } from "./services/index.js";
