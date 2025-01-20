@@ -80,7 +80,11 @@ export const useThemeMode = () => {
   useEffect(() => {
     const updateMode = () => {
       if (theme === "system") {
-        setMode(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        setMode(
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light",
+        );
       } else {
         setMode(theme);
       }

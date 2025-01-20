@@ -1,13 +1,13 @@
 import "./CodeMirrorEditorCssOverrides.css";
 
 import { json } from "@codemirror/lang-json";
-import { duotoneLight } from "@uiw/codemirror-theme-duotone";
 import { basicDark } from "@uiw/codemirror-theme-basic";
+import { duotoneLight } from "@uiw/codemirror-theme-duotone";
 import CodeMirror, { basicSetup, EditorView } from "@uiw/react-codemirror";
 import { useMemo } from "react";
+import { useThemeMode } from "../theme-provider";
 import { createOnSubmitKeymap, escapeKeymap } from "./keymaps";
 import { customTheme } from "./themes";
-import { useThemeMode } from "../theme-provider";
 
 type CodeMirrorEditorProps = {
   height?: string;

@@ -32,9 +32,10 @@ export const customTheme = EditorView.theme({
     background: "hsl(var(--muted)) !important",
   },
   // Maximum specificity targeting
-  "&.cm-editor.cm-focused .cm-selectionLayer .cm-selectionBackground, &.cm-editor .cm-selectionLayer .cm-selectionBackground, &.cm-editor .cm-focused .cm-selectionBackground, .cm-selectionBackground": {
-    background: "hsl(var(--muted)) !important",
-  },
+  "&.cm-editor.cm-focused .cm-selectionLayer .cm-selectionBackground, &.cm-editor .cm-selectionLayer .cm-selectionBackground, &.cm-editor .cm-focused .cm-selectionBackground, .cm-selectionBackground":
+    {
+      background: "hsl(var(--muted)) !important",
+    },
 });
 
 // NOTE - This used to require overrides in studio but does not really need them anymore
