@@ -16,6 +16,7 @@ import {
   CodeMirrorTextEditor,
 } from "@/components/CodeMirrorEditor";
 import { useStudioStore } from "../store";
+import { Faker } from "./Faker";
 import { RouteDocumentation } from "./RouteDocumentation/RouteDocumentation";
 import { isOpenApiOperation } from "./RouteDocumentation/openapi";
 
@@ -117,9 +118,9 @@ export const RequestPanel = memo(function RequestPanel(
           <CustomTabTrigger value="docs">Docs</CustomTabTrigger>
         )}
 
-        {/* <div className="flex items-center justify-end flex-grow ml-auto text-white">
-          fakr
-        </div> */}
+        <div className="flex items-center justify-end flex-grow ml-auto">
+          <Faker />
+        </div>
       </CustomTabsList>
       <CustomTabsContent
         value="params"
