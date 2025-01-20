@@ -69,36 +69,105 @@ function isValidMethod(method: string): method is ValidMethod {
   return VALID_METHODS.includes(method.toUpperCase() as ValidMethod);
 }
 
-function getOpenApiSpec(useMockApiSpec: boolean): OpenAPISpec {
+type ResolvedSpecResult =
+  | {
+      type: "success";
+      spec: OpenAPISpec;
+    }
+  | {
+      type: "error";
+      error: string;
+      source: string;
+      retryable: boolean;
+      attemptedUrl?: string;
+    }
+  | {
+      type: "empty";
+    };
+
+function getOpenApiSpec(useMockApiSpec: boolean): ResolvedSpecResult {
   if (useMockApiSpec) {
-    return TIGHTKNIT_API_SPEC as unknown as OpenAPISpec;
+    return {
+      type: "success",
+      spec: TIGHTKNIT_API_SPEC as unknown as OpenAPISpec,
+    };
   }
 
   // Try to get the spec from the DOM
   const specElement = document.getElementById("fp-api-spec");
-  if (!specElement?.textContent) {
-    throw new Error(
-      "No API spec found in DOM. Make sure there's a script element with id='fp-api-spec'",
-    );
+  const errorElement = document.getElementById("fp-api-spec-error");
+
+  // If we have an error element, parse it to get error details
+  if (errorElement?.textContent) {
+    try {
+      const errorResult = JSON.parse(
+        errorElement.textContent,
+      ) as ResolvedSpecResult;
+      if (errorResult.type === "error") {
+        return errorResult;
+      }
+    } catch {
+      // If we can't parse the error, fall through to try the spec
+    }
   }
 
-  try {
-    return JSON.parse(specElement.textContent) as OpenAPISpec;
-  } catch (error) {
-    console.error("Failed to parse API spec from DOM:", error);
-    throw new Error(
-      "Failed to parse API spec from DOM. Make sure it's valid JSON.",
-    );
+  // If we have a spec element, try to parse it
+  if (specElement?.textContent) {
+    try {
+      const spec = JSON.parse(specElement.textContent) as OpenAPISpec;
+      return { type: "success", spec };
+    } catch (error) {
+      return {
+        type: "error",
+        error: "Failed to parse API spec from DOM",
+        source: "dom",
+        retryable: false,
+      };
+    }
   }
+
+  // If we have neither element, return empty
+  return { type: "empty" };
 }
 
-function transformOpenApiToProbedRoutes(
+async function transformOpenApiToProbedRoutes(
   useMockApiSpec: boolean,
-): ProbedRoutesResponse {
-  const routes: ProbedRoute[] = [];
+): Promise<ProbedRoutesResponse> {
+  // This is the generated ID for the converted routes
   let id = 1;
+  const generateId = () => id++;
 
-  const spec = getOpenApiSpec(useMockApiSpec);
+  const result = getOpenApiSpec(useMockApiSpec);
+  if (result.type === "error") {
+    if (result.retryable && result.attemptedUrl) {
+      console.log(
+        "Fetching the spec failed on the server, let's retry here",
+        result.attemptedUrl,
+      );
+      const spec = await fetch(result.attemptedUrl).then((res) => res.json());
+      return parseThatSpec(spec, generateId);
+    }
+    throw new Error(result.error);
+  }
+
+  if (result.type === "empty") {
+    return {
+      baseUrl: "http://localhost:8787",
+      routes: [],
+    };
+  }
+
+  return parseThatSpec(result.spec, generateId);
+}
+
+function parseThatSpec(
+  spec: OpenAPISpec,
+  generateId: () => number,
+): {
+  baseUrl: string;
+  routes: ProbedRoute[];
+} {
+  const routes: ProbedRoute[] = [];
   const baseUrl = spec.servers?.[0]?.url ?? "http://localhost:8787";
 
   // Iterate through paths and methods to create ProbedRoute objects
@@ -109,6 +178,7 @@ function transformOpenApiToProbedRoutes(
     for (const [method, operation] of Object.entries(pathItem)) {
       const upperMethod = method.toUpperCase();
       if (isValidMethod(upperMethod)) {
+        const id = generateId();
         const dereferencedOperation = dereferenceSchema<OpenAPIOperation>(
           operation,
           spec.components ?? {},
@@ -116,7 +186,7 @@ function transformOpenApiToProbedRoutes(
           new Map(),
         );
         routes.push({
-          id: id++,
+          id,
           path: transformedPath,
           method: upperMethod,
           requestType: "http",

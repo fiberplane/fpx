@@ -6,11 +6,34 @@ import { jsx } from "hono/jsx";
 import { type Env, Hono } from "hono";
 import { html, raw } from "hono/html";
 import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
-import type { EmbeddedMiddlewareOptions } from "./index.js";
 
-interface RouterOptions extends EmbeddedMiddlewareOptions {
+export type RouterSpec =
+  | {
+      type: "url";
+      value: string;
+      origin: string;
+    }
+  | {
+      type: "path";
+      value: string;
+      origin: string;
+    }
+  | {
+      type: "raw";
+      value: OpenAPIV3_1.Document | OpenAPIV3.Document;
+      origin: string;
+    }
+  | {
+      type: "empty";
+      value: undefined;
+      origin: string;
+    };
+
+export type RouterOptions = {
   mountedPath: string;
-}
+  cdn: string;
+  spec: RouterSpec;
+};
 
 export function createRouter<E extends Env>({
   cdn,
@@ -28,21 +51,25 @@ export function createRouter<E extends Env>({
     return c.html(
       <html lang="en">
         <head>
-          <title>{resolvedSpec?.info?.title ?? "FPX Playground"}</title>
+          <title>
+            {(resolvedSpec.type === "success" &&
+              resolvedSpec.spec?.info?.title) ??
+              "FPX Playground"}
+          </title>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <link
-            rel="stylesheet"
-            href={`${cssBundleUrl}?t=${new Date().getTime()}`}
-          />
+          <link rel="stylesheet" href={cssBundleUrl} />
         </head>
         <body>
           <div id="root" data-mounted-path={mountedPath} />
-          {resolvedSpec ? apiSpecScriptTag(resolvedSpec) : null}
-          <script
-            type="module"
-            src={`${jsBundleUrl}?t=${new Date().getTime()}`}
-          />
+          {resolvedSpec.type === "success" ? (
+            apiSpecScriptTag(resolvedSpec.spec)
+          ) : (
+            <script id="fp-api-spec-error" type="application/json">
+              {raw(JSON.stringify(resolvedSpec))}
+            </script>
+          )}
+          <script type="module" src={jsBundleUrl} />
         </body>
       </html>,
     );
@@ -55,7 +82,7 @@ export function createRouter<E extends Env>({
  * The HTML to load the @scalar/api-reference JavaScript package.
  */
 export const apiSpecScriptTag = (
-  spec: OpenAPIV3_1.Document | OpenAPIV3.Document,
+  spec: OpenAPIV3_1.Document | OpenAPIV3.Document | undefined,
 ) => {
   return html`
     <script
@@ -82,50 +109,85 @@ function ensureOriginServer(
   }
 }
 
+export type ResolvedSpec =
+  | {
+      type: "success";
+      spec: OpenAPIV3_1.Document | OpenAPIV3.Document | undefined;
+      source: RouterSpec["type"];
+    }
+  | {
+      type: "error";
+      error: string;
+      source: RouterSpec["type"];
+      retryable: boolean;
+      attemptedUrl?: string;
+    };
+
 async function resolveSpec(
-  spec?: OpenAPIV3_1.Document | OpenAPIV3.Document | string,
+  spec?: RouterSpec,
   origin?: string,
-): Promise<OpenAPIV3_1.Document | OpenAPIV3.Document | undefined> {
-  if (!spec) {
-    return undefined;
-  }
-  if (typeof spec !== "string") {
-    if (origin) {
-      ensureOriginServer(spec, origin);
-    }
-    return spec;
+): Promise<ResolvedSpec> {
+  if (!spec || spec.type === "empty") {
+    return { type: "success", spec: undefined, source: "empty" };
   }
 
-  try {
-    // Handle URLs
-    if (spec.startsWith("http://") || spec.startsWith("https://")) {
-      const response = await fetch(spec);
-      const doc = (await response.json()) as
-        | OpenAPIV3_1.Document
-        | OpenAPIV3.Document;
-
-      if (origin) {
-        ensureOriginServer(doc, origin);
+  switch (spec.type) {
+    case "raw":
+      try {
+        if (origin) {
+          ensureOriginServer(spec.value, origin);
+        }
+        return { type: "success", spec: spec.value, source: "raw" };
+      } catch (error) {
+        return {
+          type: "error",
+          error: "Failed to process raw spec",
+          source: "raw",
+          retryable: false,
+        };
       }
-      return doc;
-    }
 
-    if (spec.startsWith("/")) {
-      if (origin) {
-        const url = `${origin}${spec}`;
+    case "url":
+    case "path": {
+      const url = spec.type === "url" ? spec.value : `${origin}${spec.value}`;
+      try {
         console.log("Fetching spec from", url);
         const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const doc = (await response.json()) as
           | OpenAPIV3_1.Document
           | OpenAPIV3.Document;
-        ensureOriginServer(doc, origin);
-        return doc;
+
+        if (origin) {
+          ensureOriginServer(doc, origin);
+        }
+        return { type: "success", spec: doc, source: spec.type };
+      } catch (error) {
+        return {
+          type: "error",
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch or parse spec",
+          source: spec.type,
+          retryable: true,
+          attemptedUrl: url,
+        };
       }
     }
 
-    throw new Error("Invalid spec path or URL");
-  } catch (error) {
-    console.error("Error loading API spec:", error);
-    return undefined;
+    default: {
+      const _exhaustiveCheck: never = spec;
+      return {
+        type: "error",
+        error: "Unknown spec type",
+        source: "empty",
+        retryable: false,
+      };
+    }
   }
 }

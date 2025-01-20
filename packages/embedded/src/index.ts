@@ -1,16 +1,16 @@
 import type { Env, MiddlewareHandler } from "hono/types";
 import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
-import { createRouter } from "./router.js";
+import { type RouterSpec, createRouter } from "./router.js";
 
 // HACK - We need to manually update the version in the CDN URL when you release a new version
 //        Eventually we should do this automagically when building the package (and derive the version from the package.json)
 const VERSION = "0.0.15";
 const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/embedded@${VERSION}/dist/playground/`;
 
-export interface EmbeddedMiddlewareOptions {
+type EmbeddedMiddlewareOptions = {
   cdn?: string;
   spec?: OpenAPIV3_1.Document | OpenAPIV3.Document | string;
-}
+};
 
 export const createMiddleware =
   <E extends Env>(options?: EmbeddedMiddlewareOptions): MiddlewareHandler<E> =>
@@ -26,12 +26,8 @@ export const createMiddleware =
     newUrl.pathname = correctedPath;
     const newRequest = new Request(newUrl, c.req.raw);
 
-    let modSpec = options?.spec;
-    if (typeof modSpec === "string" && modSpec.startsWith("/")) {
-      modSpec = `${new URL(c.req.url).origin}${modSpec}`;
-    }
-
-    console.log("modSpec", modSpec);
+    const origin = new URL(c.req.url).origin;
+    const modSpec: RouterSpec = parseSpecParameter(options?.spec, origin);
 
     // Let our embedded router handle the request
     const router = createRouter({
@@ -48,3 +44,37 @@ export const createMiddleware =
 
     return response;
   };
+
+function parseSpecParameter(
+  spec: OpenAPIV3_1.Document | OpenAPIV3.Document | string | undefined,
+  origin: string,
+): RouterSpec {
+  if (!spec) {
+    return {
+      type: "empty",
+      value: undefined,
+      origin,
+    };
+  }
+  if (typeof spec === "string" && spec.startsWith("/")) {
+    return {
+      type: "path",
+      value: spec,
+      origin,
+    };
+  }
+  if (spec && typeof spec === "object") {
+    return {
+      type: "raw",
+      value: spec,
+      origin,
+    };
+  }
+  // NOTE - We assume the spec is a URL if it's not a path-like string or an object
+  // TODO - Make this more robust, add an unknown type
+  return {
+    type: "url",
+    value: spec,
+    origin,
+  };
+}
