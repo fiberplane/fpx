@@ -58,20 +58,16 @@ export const ProbedRouteSchema = z.object({
 
 export type ProbedRoute = z.infer<typeof ProbedRouteSchema>;
 
-export interface Step {
+export interface Parameter {
+  name: string;
+  value: string;
+}
+
+export interface WorkflowStep {
   stepId: string;
   description: string;
-  operationId?: string;
-  operationPath?: string;
-  parameters?: Array<{
-    name: string;
-    in: "query" | "header" | "path" | "cookie";
-    value: string;
-  }>;
-  successCriteria?: Array<{
-    condition: string;
-  }>;
-  outputs?: Record<string, string>;
+  operation: string;
+  parameters: Parameter[];
 }
 
 export interface OAISchema {
@@ -81,17 +77,10 @@ export interface OAISchema {
 }
 
 export interface Workflow {
-  id: string;
-  name: string;
-  prompt: string;
-  oaiSchemaId: string;
-  summary?: string;
-  description?: string;
-  arazzoSchema?: string;
-  steps: Step[];
-  lastRunStatus?: "success" | "pending" | "error";
-  createdAt: Date;
-  updatedAt: Date;
+  workflowId: string;
+  summary: string;
+  description: string;
+  steps: WorkflowStep[];
 }
 
 export interface ApiResponse<T> {

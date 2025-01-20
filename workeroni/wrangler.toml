@@ -1,0 +1,16 @@
+name = "workeroni"
+main = "src/app.ts"
+compatibility_date = "2025-01-20"
+compatibility_flags = [ "nodejs_compat" ]
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "workflows-db"
+database_id = "87b20a11-5548-4382-ab64-f67a0b3d9524"
+migrations_dir = "drizzle/migrations"
+
+[ai]
+binding = "AI"
