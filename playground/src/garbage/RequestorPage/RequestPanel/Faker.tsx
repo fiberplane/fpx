@@ -1,9 +1,11 @@
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { isMac } from "@/utils";
 import { SparklesIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -271,7 +273,11 @@ export function Faker() {
         </Button>
       </TooltipTrigger>
       <TooltipContent side="left">
-        Fill in request with fake data
+        Use sample data
+        <div className="flex gap-0.5">
+          <KeyboardShortcutKey>{isMac ? "⌘" : "Ctrl"}</KeyboardShortcutKey>{" "}
+          <KeyboardShortcutKey>G</KeyboardShortcutKey>
+        </div>
       </TooltipContent>
     </Tooltip>
   );
