@@ -287,7 +287,7 @@ export function PanelSectionHeader({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-3.5 w-3.5 cursor-pointer hover:text-white transition-color"
+          className="h-3.5 w-3.5 p-0.5 cursor-pointer hover:bg-transparent transition-color"
           title="Clear data"
           onClick={handleClearData}
           tabIndex={0}

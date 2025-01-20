@@ -1,5 +1,6 @@
 /** @jsx jsx */
 /** @jsxImportSource hono/jsx */
+
 import { jsx } from "hono/jsx";
 
 import { type Env, Hono } from "hono";
@@ -23,11 +24,11 @@ export function createRouter<E extends Env>({
   const jsBundleUrl = new URL("index.js", cdn).href;
 
   router.get("/*", async (c) => {
-    const resolvedSpec = await resolveSpec(spec);
+    const resolvedSpec = await resolveSpec(spec, new URL(c.req.url).origin);
     return c.html(
       <html lang="en">
         <head>
-          <title>FPX</title>
+          <title>{resolvedSpec?.info?.title ?? "FPX Playground"}</title>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link
@@ -66,13 +67,32 @@ export const apiSpecScriptTag = (
   `;
 };
 
+function ensureOriginServer(
+  doc: OpenAPIV3_1.Document | OpenAPIV3.Document,
+  origin: string,
+): void {
+  if (!doc?.servers?.some((server) => server.url === origin)) {
+    doc.servers = [
+      {
+        url: origin,
+        description: "Current environment",
+      },
+      ...(doc.servers || []),
+    ];
+  }
+}
+
 async function resolveSpec(
   spec?: OpenAPIV3_1.Document | OpenAPIV3.Document | string,
+  origin?: string,
 ): Promise<OpenAPIV3_1.Document | OpenAPIV3.Document | undefined> {
   if (!spec) {
     return undefined;
   }
   if (typeof spec !== "string") {
+    if (origin) {
+      ensureOriginServer(spec, origin);
+    }
     return spec;
   }
 
@@ -80,9 +100,27 @@ async function resolveSpec(
     // Handle URLs
     if (spec.startsWith("http://") || spec.startsWith("https://")) {
       const response = await fetch(spec);
-      return (await response.json()) as
+      const doc = (await response.json()) as
         | OpenAPIV3_1.Document
         | OpenAPIV3.Document;
+
+      if (origin) {
+        ensureOriginServer(doc, origin);
+      }
+      return doc;
+    }
+
+    if (spec.startsWith("/")) {
+      if (origin) {
+        const url = `${origin}${spec}`;
+        console.log("Fetching spec from", url);
+        const response = await fetch(url);
+        const doc = (await response.json()) as
+          | OpenAPIV3_1.Document
+          | OpenAPIV3.Document;
+        ensureOriginServer(doc, origin);
+        return doc;
+      }
     }
 
     throw new Error("Invalid spec path or URL");

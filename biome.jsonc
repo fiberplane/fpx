@@ -41,7 +41,7 @@
       }
     },
     {
-      "include": ["studio", "lilo/lilo-frontend"],
+      "include": ["studio", "lilo/lilo-frontend", "playground"],
       "linter": {
         "enabled": true,
         "rules": {

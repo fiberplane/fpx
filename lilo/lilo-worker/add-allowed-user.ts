@@ -1,18 +1,18 @@
 import fs from "node:fs";
 import path from "node:path";
+import { createClient } from "@libsql/client";
 import { config } from "dotenv";
 import {
-  drizzle as drizzleLibsql,
   type LibSQLDatabase,
+  drizzle as drizzleLibsql,
 } from "drizzle-orm/libsql";
 // import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import {
   type AsyncBatchRemoteCallback,
   type AsyncRemoteCallback,
-  drizzle as drizzleSQLiteProxy,
   type SqliteRemoteDatabase,
+  drizzle as drizzleSQLiteProxy,
 } from "drizzle-orm/sqlite-proxy";
-import { createClient } from "@libsql/client";
 
 import * as schema from "./src/db/schema";
 
@@ -22,9 +22,10 @@ type Any = any;
 addAllowedUser();
 
 async function addAllowedUser() {
-  const db = process.env.ENVIRONMENT === "production"
-    ? await getProductionDatabase()
-    : await getLocalDatabase();
+  const db =
+    process.env.ENVIRONMENT === "production"
+      ? await getProductionDatabase()
+      : await getLocalDatabase();
 
   const args = process.argv.slice(2);
   if (args.length === 0) {
@@ -63,7 +64,6 @@ async function getLocalDatabase(): Promise<
 
   return drizzleLibsql(client);
 }
-
 
 /**
  * Creates a connection to the production Cloudflare D1 database and returns a Drizzle ORM instance.

@@ -21,6 +21,11 @@ export function TextOrJsonViewer({
     }
     // @ts-expect-error hacky way to just quickly change the background color
     nordTheme["--w-rjv-background-color"] = "transparent";
+    // @ts-expect-error hacky way to just quickly change the info text color
+    nordTheme["--w-rjv-info-color"] = "hsl(var(--text-muted-foreground))";
+    // @ts-expect-error hacky way to just quickly change the border color
+    nordTheme["--w-rjv-line-color"] = "hsl(var(--border))";
+
     return (
       <JsonView
         value={json}

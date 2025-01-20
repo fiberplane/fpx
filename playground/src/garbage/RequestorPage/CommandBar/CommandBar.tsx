@@ -1,9 +1,9 @@
+import { useTheme } from "@/components/theme-provider";
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
-  CommandItem,
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
@@ -16,6 +16,7 @@ import {
 import { Icon } from "@iconify/react";
 import React from "react";
 import { useStudioStore } from "../store";
+import { CustomCommandItem } from "./CustomCommandItem";
 
 type CommandBarProps = {
   open: boolean;
@@ -24,14 +25,12 @@ type CommandBarProps = {
 
 export function CommandBar({ open, setOpen }: CommandBarProps) {
   const {
-    // togglePanel,
     visibleRequestsPanelTabs,
     setActiveRequestsPanelTab,
     setSettingsOpen,
     useMockApiSpec,
     setUseMockApiSpec,
   } = useStudioStore(
-    "togglePanel",
     "visibleRequestsPanelTabs",
     "setActiveRequestsPanelTab",
     "setSettingsOpen",
@@ -39,6 +38,7 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
     "setUseMockApiSpec",
   );
 
+  const { setTheme } = useTheme();
   const [inputValue, setInputValue] = React.useState("");
 
   return (
@@ -59,9 +59,8 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
           />
           <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden">
             <CommandEmpty>No results found.</CommandEmpty>
-            <CommandSeparator className="mx-2" />
             <CommandGroup heading="Settings" className="py-2">
-              <CommandItem
+              <CustomCommandItem
                 onSelect={() => {
                   setSettingsOpen(true);
                   setOpen(false);
@@ -69,8 +68,8 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
               >
                 <Icon icon="lucide:settings" className="h-4 w-4 mr-2" />
                 <span>Open Settings</span>
-              </CommandItem>
-              <CommandItem
+              </CustomCommandItem>
+              <CustomCommandItem
                 onSelect={() => {
                   setUseMockApiSpec(!useMockApiSpec);
                   setOpen(false);
@@ -83,15 +82,44 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
                 <span>
                   {useMockApiSpec ? "Disable" : "Enable"} Mock API Spec
                 </span>
-              </CommandItem>
+              </CustomCommandItem>
+            </CommandGroup>
+            <CommandSeparator className="mx-2" />
+            <CommandGroup heading="Theme" className="py-2">
+              <CustomCommandItem
+                onSelect={() => {
+                  setTheme("light");
+                  setOpen(false);
+                }}
+              >
+                <Icon icon="lucide:sun" className="h-4 w-4 mr-2" />
+                <span>Light Theme</span>
+              </CustomCommandItem>
+              <CustomCommandItem
+                onSelect={() => {
+                  setTheme("dark");
+                  setOpen(false);
+                }}
+              >
+                <Icon icon="lucide:moon" className="h-4 w-4 mr-2" />
+                <span>Dark Theme</span>
+              </CustomCommandItem>
+              <CustomCommandItem
+                onSelect={() => {
+                  setTheme("system");
+                  setOpen(false);
+                }}
+              >
+                <Icon icon="lucide:monitor" className="h-4 w-4 mr-2" />
+                <span>System Theme</span>
+              </CustomCommandItem>
             </CommandGroup>
             <CommandSeparator className="mx-2" />
             <CommandGroup heading="Request" className="py-2">
               {visibleRequestsPanelTabs.map((tabName) => {
                 return (
-                  <CommandItem
+                  <CustomCommandItem
                     key={tabName}
-                    className="flex items-center gap-2 px-2 hover:bg-accent rounded-sm cursor-pointer"
                     onSelect={() => {
                       setActiveRequestsPanelTab(tabName);
                       setOpen(false);
@@ -101,7 +129,7 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
                     <span>
                       Open Request <span className="capitalize">{tabName}</span>
                     </span>
-                  </CommandItem>
+                  </CustomCommandItem>
                 );
               })}
             </CommandGroup>
