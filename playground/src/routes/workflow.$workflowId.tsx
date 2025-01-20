@@ -2,12 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WorkflowStatus } from "@/components/WorkflowStatus";
 import { workflowQueryOptions } from "@/lib/hooks/useWorkflows";
-import type { Step } from "@/types";
+import type { Step, ApiError, ApiResponse, Workflow } from "@/types";
 
 export const Route = createFileRoute("/workflow/$workflowId")({
   component: WorkflowDetail,
   loader: async ({ context: { queryClient }, params: { workflowId } }) => {
-    const response = await queryClient.ensureQueryData(workflowQueryOptions(workflowId));
+    const response = await queryClient.ensureQueryData(workflowQueryOptions(workflowId)) as ApiResponse<Workflow> | ApiError;
+    if (!response.success) {
+      throw new Error(response.error.message);
+    }
     return { workflow: response.data };
   }
 });

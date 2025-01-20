@@ -56,3 +56,4 @@ remove_node_modules.sh
 examples/**/*.dev.vars
 workflows-api/workflows.db
 playground/dist
+workflows-api/.dev.vars
