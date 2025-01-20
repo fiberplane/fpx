@@ -38,6 +38,7 @@
     "@tanstack/react-router": "^1.95.5",
     "@tanstack/router-devtools": "^1.95.5",
     "@tanstack/router-plugin": "^1.95.5",
+    "@uiw/codemirror-theme-basic": "^4.23.7",
     "@uiw/codemirror-theme-duotone": "^4.23.6",
     "@uiw/react-codemirror": "^4.23.6",
     "@uiw/react-json-view": "2.0.0-alpha.30",

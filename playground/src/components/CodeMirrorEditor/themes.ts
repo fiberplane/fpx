@@ -16,8 +16,24 @@ export const customTheme = EditorView.theme({
   ".ͼt": {
     color: "hsl(var(--info))",
   },
+  ".ͼ1d": {
+    color: "hsl(var(--secondary-foreground) / 0.6)",
+  },
   ".cm-matchingBracket": {
     "background-color": "hsl(var(--info) / 0.2) !important",
+  },
+  ".cm-gutters": {
+    background: "hsl(var(--muted)) !important",
+  },
+  ".cm-selectionLayer .cm-selectionBackground": {
+    background: "hsl(var(--muted)) !important",
+  },
+  ".cm-focused .cm-selectionBackground": {
+    background: "hsl(var(--muted)) !important",
+  },
+  // Maximum specificity targeting
+  "&.cm-editor.cm-focused .cm-selectionLayer .cm-selectionBackground, &.cm-editor .cm-selectionLayer .cm-selectionBackground, &.cm-editor .cm-focused .cm-selectionBackground, .cm-selectionBackground": {
+    background: "hsl(var(--muted)) !important",
   },
 });
 

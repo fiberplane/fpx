@@ -143,7 +143,7 @@ importers:
         version: link:../../packages/client-library-otel
       '@langchain/core':
         specifier: ^0.2.36
-        version: 0.2.36(openai@4.76.0(encoding@0.1.13)(zod@3.24.0))
+        version: 0.2.36(openai@4.76.0(encoding@0.1.13)(zod@3.24.1))
       hono:
         specifier: ^4.6.12
         version: 4.6.12
@@ -910,6 +910,9 @@ importers:
       '@tanstack/router-plugin':
         specifier: ^1.95.5
         version: 1.95.5(@tanstack/react-router@1.95.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@6.0.7(@types/node@22.10.5)(jiti@1.21.6)(lightningcss@1.28.1)(tsx@4.19.2)(yaml@2.6.1))
+      '@uiw/codemirror-theme-basic':
+        specifier: ^4.23.7
+        version: 4.23.7(@codemirror/language@6.10.5)(@codemirror/state@6.4.1)(@codemirror/view@6.35.0)
       '@uiw/codemirror-theme-duotone':
         specifier: ^4.23.6
         version: 4.23.6(@codemirror/language@6.10.5)(@codemirror/state@6.4.1)(@codemirror/view@6.35.0)
@@ -5791,11 +5794,21 @@ packages:
       '@codemirror/state': '>=6.0.0'
       '@codemirror/view': '>=6.0.0'
 
+  '@uiw/codemirror-theme-basic@4.23.7':
+    resolution: {integrity: sha512-jutMIBSJuwr5OIMHugt7mA+y8vUcgojoKEcpDuqCykDdYPjmVTdK1rJcQnRygsbRQCJ8fSSzGm9c59Rnio0yHw==}
+
   '@uiw/codemirror-theme-duotone@4.23.6':
     resolution: {integrity: sha512-dUFTdSIAipLbo4pqVpMPhRaty9uIQCz2AdKLCJ6QA1BV8gu733v/7zNUjAvVEcS3lJiDhPT3rHpQ0Cg+AhoHgA==}
 
   '@uiw/codemirror-themes@4.23.6':
     resolution: {integrity: sha512-0dpuLQW+V6zrKvfvor/eo71V3tpr2L2Hsu8QZAdtSzksjWABxTOzH3ShaBRxCEsrz6sU9sa9o7ShwBMMDz59bQ==}
+    peerDependencies:
+      '@codemirror/language': '>=6.0.0'
+      '@codemirror/state': '>=6.0.0'
+      '@codemirror/view': '>=6.0.0'
+
+  '@uiw/codemirror-themes@4.23.7':
+    resolution: {integrity: sha512-UNf1XOx1hG9OmJnrtT86PxKcdcwhaNhbrcD+nsk8WxRJ3n5c8nH6euDvgVPdVLPwbizsaQcZTILACgA/FjRpVg==}
     peerDependencies:
       '@codemirror/language': '>=6.0.0'
       '@codemirror/state': '>=6.0.0'
@@ -8440,6 +8453,7 @@ packages:
 
   libsql@0.4.7:
     resolution: {integrity: sha512-T9eIRCs6b0J1SHKYIvD8+KCJMcWZ900iZyxdnSCdqxN12Z1ijzT+jY5nrk72Jw4B0HGzms2NgpryArlJqvc3Lw==}
+    cpu: [x64, arm64, wasm32]
     os: [darwin, linux, win32]
 
   lie@3.3.0:
@@ -14033,6 +14047,22 @@ snapshots:
     transitivePeerDependencies:
       - openai
 
+  '@langchain/core@0.2.36(openai@4.76.0(encoding@0.1.13)(zod@3.24.1))':
+    dependencies:
+      ansi-styles: 5.2.0
+      camelcase: 6.3.0
+      decamelize: 1.2.0
+      js-tiktoken: 1.0.15
+      langsmith: 0.1.68(openai@4.76.0(encoding@0.1.13)(zod@3.24.1))
+      mustache: 4.2.0
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      uuid: 10.0.0
+      zod: 3.24.0
+      zod-to-json-schema: 3.23.5(zod@3.24.0)
+    transitivePeerDependencies:
+      - openai
+
   '@langchain/core@0.3.19(openai@4.73.1(encoding@0.1.13)(zod@3.23.8))':
     dependencies:
       ansi-styles: 5.2.0
@@ -17038,6 +17068,14 @@ snapshots:
       '@codemirror/state': 6.4.1
       '@codemirror/view': 6.35.0
 
+  '@uiw/codemirror-theme-basic@4.23.7(@codemirror/language@6.10.5)(@codemirror/state@6.4.1)(@codemirror/view@6.35.0)':
+    dependencies:
+      '@uiw/codemirror-themes': 4.23.7(@codemirror/language@6.10.5)(@codemirror/state@6.4.1)(@codemirror/view@6.35.0)
+    transitivePeerDependencies:
+      - '@codemirror/language'
+      - '@codemirror/state'
+      - '@codemirror/view'
+
   '@uiw/codemirror-theme-duotone@4.23.6(@codemirror/language@6.10.5)(@codemirror/state@6.4.1)(@codemirror/view@6.35.0)':
     dependencies:
       '@uiw/codemirror-themes': 4.23.6(@codemirror/language@6.10.5)(@codemirror/state@6.4.1)(@codemirror/view@6.35.0)
@@ -17047,6 +17085,12 @@ snapshots:
       - '@codemirror/view'
 
   '@uiw/codemirror-themes@4.23.6(@codemirror/language@6.10.5)(@codemirror/state@6.4.1)(@codemirror/view@6.35.0)':
+    dependencies:
+      '@codemirror/language': 6.10.5
+      '@codemirror/state': 6.4.1
+      '@codemirror/view': 6.35.0
+
+  '@uiw/codemirror-themes@4.23.7(@codemirror/language@6.10.5)(@codemirror/state@6.4.1)(@codemirror/view@6.35.0)':
     dependencies:
       '@codemirror/language': 6.10.5
       '@codemirror/state': 6.4.1
@@ -19952,6 +19996,17 @@ snapshots:
     optionalDependencies:
       openai: 4.76.0(encoding@0.1.13)(zod@3.24.0)
 
+  langsmith@0.1.68(openai@4.76.0(encoding@0.1.13)(zod@3.24.1)):
+    dependencies:
+      '@types/uuid': 10.0.0
+      commander: 10.0.1
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      semver: 7.6.3
+      uuid: 10.0.0
+    optionalDependencies:
+      openai: 4.76.0(encoding@0.1.13)(zod@3.24.1)
+
   langsmith@0.2.8(openai@4.73.1(encoding@0.1.13)(zod@3.23.8)):
     dependencies:
       '@types/uuid': 10.0.0
@@ -21180,6 +21235,21 @@ snapshots:
       zod: 3.24.0
     transitivePeerDependencies:
       - encoding
+
+  openai@4.76.0(encoding@0.1.13)(zod@3.24.1):
+    dependencies:
+      '@types/node': 18.19.67
+      '@types/node-fetch': 2.6.12
+      abort-controller: 3.0.0
+      agentkeepalive: 4.5.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0(encoding@0.1.13)
+    optionalDependencies:
+      zod: 3.24.1
+    transitivePeerDependencies:
+      - encoding
+    optional: true
 
   openapi-types@12.1.3: {}
 
