@@ -110,7 +110,7 @@ export const RequestPanel = memo(function RequestPanel(
           <CustomTabTrigger value="body">
             Body
             {!isBodyEmpty(body) && (
-              <span className="inline-block w-2 h-2 ml-2 bg-orange-300 rounded-full" />
+              <span className="inline-block w-2 h-2 ml-2 bg-accent/75 rounded-full" />
             )}
           </CustomTabTrigger>
         )}

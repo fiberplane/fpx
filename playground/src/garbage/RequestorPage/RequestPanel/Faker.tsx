@@ -1,6 +1,12 @@
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { SparklesIcon } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useStudioStore } from "../store";
 // TODO - Use barrel file
 import {
@@ -214,6 +220,7 @@ export function Faker() {
     "setRequestHeaders",
     "setPathParams",
   );
+
   const openApiSpec = useMemo(() => {
     try {
       return JSON.parse(activeRoute?.openApiSpec ?? "{}");
@@ -222,31 +229,50 @@ export function Faker() {
     }
   }, [activeRoute?.openApiSpec]);
 
-  console.log("openApiSpec", openApiSpec);
-  const shouldShowDocs = isOpenApiOperation(openApiSpec);
+  const hasDocs = isOpenApiOperation(openApiSpec);
+
+  // TODO - Could eventually move this to be a setter from the store
+  const fillInData = useCallback(() => {
+    if (!hasDocs || !activeRoute) {
+      console.error("No route spec found or parseable");
+      window.alert("No route spec found or parseable");
+      return;
+    }
+    const fakeData = generateFakeData(openApiSpec, activeRoute.path);
+    console.log("Generated fake data:", fakeData);
+
+    // Transform data to match form state types
+    setBody(transformToFormBody(fakeData.body));
+    setQueryParams(transformToFormParams(fakeData.queryParams));
+    setRequestHeaders(transformToFormParams(fakeData.headers));
+    setPathParams(transformToFormParams(fakeData.pathParams));
+  }, [
+    activeRoute,
+    hasDocs,
+    openApiSpec,
+    setBody,
+    setQueryParams,
+    setRequestHeaders,
+    setPathParams,
+  ]);
+
+  useHotkeys("mod+g", fillInData);
 
   return (
-    <Button
-      variant="ghost"
-      className="p-2 h-auto"
-      size="sm"
-      onClick={() => {
-        if (!shouldShowDocs || !activeRoute) {
-          console.error("No route spec found or parseable");
-          window.alert("No route spec found or parseable");
-          return;
-        }
-        const fakeData = generateFakeData(openApiSpec, activeRoute.path);
-        console.log("Generated fake data:", fakeData);
-
-        // Transform data to match form state types
-        setBody(transformToFormBody(fakeData.body));
-        setQueryParams(transformToFormParams(fakeData.queryParams));
-        setRequestHeaders(transformToFormParams(fakeData.headers));
-        setPathParams(transformToFormParams(fakeData.pathParams));
-      }}
-    >
-      <SparklesIcon className="w-4 h-4" />
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          className="p-2 h-auto hover:bg-transparent transition-colors"
+          size="sm"
+          onClick={fillInData}
+        >
+          <SparklesIcon className="w-4 h-4" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="left">
+        Fill in request with fake data
+      </TooltipContent>
+    </Tooltip>
   );
 }
