@@ -4,13 +4,15 @@ import {
   apiErrorSchema,
   apiResponseSchema,
   oaiSchemaSchema,
-} from "../types/schema.js";
-import { db } from "../db/index.js";
+} from "../schemas/index";
 import { oaiSchema } from "../db/schema.js";
 import { eq } from "drizzle-orm";
-import { validate } from "@scalar/openapi-parser";
+import type { Variables } from "../schemas/index";
 
-const router = new OpenAPIHono();
+const router = new OpenAPIHono<{
+  Bindings: CloudflareBindings;
+  Variables: Variables;
+}>();
 
 // GET /oai_schema
 router.openapi(
@@ -39,21 +41,14 @@ router.openapi(
     },
   },
   async (c) => {
-    try {
-      const schemas = await db.select().from(oaiSchema);
-      
-      const response = {
-        success: true as const,
-        data: schemas,
-      };
-      return c.json(response, 200);
-    } catch (error) {
-      const response = {
-        success: false as const,
-        error: { message: "Internal server error" },
-      };
-      return c.json(response, 500);
-    }
+    const db = c.get("db");
+    const schemas = await db.select().from(oaiSchema);
+
+    const response = {
+      success: true as const,
+      data: schemas,
+    } satisfies { success: true; data: typeof schemas };
+    return c.json(response, 200);
   },
 );
 
@@ -101,39 +96,26 @@ router.openapi(
     },
   },
   async (c) => {
-    try {
-      const id = c.req.param("id");
-      if (!id) {
-        throw new Error("Not found");
-      }
-
-      const schema = await db.query.oaiSchema.findFirst({
-        where: eq(oaiSchema.id, id)
-      });
-      
-      if (!schema) {
-        throw new Error("Not found");
-      }
-
-      const response = {
-        success: true as const,
-        data: schema,
-      };
-      return c.json(response, 200);
-    } catch (error) {
-      if (error instanceof Error && error.message === "Not found") {
-        const response = {
-          success: false as const,
-          error: { message: "Schema not found" },
-        };
-        return c.json(response, 404);
-      }
-      const response = {
-        success: false as const,
-        error: { message: "Internal server error" },
-      };
-      return c.json(response, 500);
+    const id = c.req.param("id");
+    const db = c.get("db");
+    if (!id) {
+      throw new Error("Not found");
     }
+
+    const [schema] = await db
+      .select()
+      .from(oaiSchema)
+      .where(eq(oaiSchema.id, id));
+
+    if (!schema) {
+      throw new Error("Not found");
+    }
+
+    const response = {
+      success: true as const,
+      data: schema,
+    } satisfies { success: true; data: typeof schema };
+    return c.json(response, 200);
   },
 );
 
@@ -181,47 +163,28 @@ router.openapi(
     },
   },
   async (c) => {
-    try {
-      const { content, name } = await c.req.valid("json");
+    const { content, name } = c.req.valid("json");
 
-			// Validate the submitted schema
-      const { valid, errors } = await validate(content);
+    // Generate a unique ID
+    const id = crypto.randomUUID();
 
-      if (!valid) {
-        const errorMessages = errors
-          ? errors.map((e) => e.message).join(", ")
-          : "Unknown error";
-        throw new Error(errorMessages);
-      }
+    const db = c.get("db");
 
-      // Generate a unique ID
-      const id = crypto.randomUUID();
+    const newSchema = {
+      id,
+      name,
+      content,
+    };
 
-      const newSchema = {
-        id,
-        name,
-        content,
-      };
+    // Insert into database
+    await db.insert(oaiSchema).values(newSchema);
 
-      // Insert into database
-      await db.insert(oaiSchema).values(newSchema);
+    const response = {
+      success: true as const,
+      data: newSchema,
+    } satisfies { success: true; data: typeof newSchema };
 
-      const response = {
-        success: true as const,
-        data: newSchema,
-      };
-
-      return c.json(response, 201);
-    } catch (error) {
-      const response = {
-        success: false as const,
-        error: {
-          message:
-            error instanceof Error ? error.message : "Internal server error",
-        },
-      };
-      return c.json(response, error instanceof Error ? 400 : 500);
-    }
+    return c.json(response, 201);
   },
 );
 

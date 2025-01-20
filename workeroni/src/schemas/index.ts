@@ -1,5 +1,10 @@
 import { z } from "zod";
 import type { Step } from "./arazzo.js";
+import type { DrizzleD1Database } from "drizzle-orm/d1";
+
+export interface Variables {
+  db: DrizzleD1Database;
+}
 
 // OAI Schema types
 export const oaiSchemaSchema = z.object({
@@ -14,7 +19,7 @@ export type OAISchema = z.infer<typeof oaiSchemaSchema>;
 export const workflowCreateSchema = z.object({
   prompt: z.string(),
   oaiSchemaId: z.string(),
-  name: z.string(),
+  name: z.string().optional(),
   summary: z.string().optional(),
   description: z.string().optional(),
 });

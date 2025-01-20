@@ -3,11 +3,21 @@ import { z } from "zod";
 import {
   apiErrorSchema,
   apiResponseSchema,
+  type Variables,
   workflowCreateSchema,
   workflowSchema,
-} from "../types/schema.js";
+} from "../schemas/index.js";
+import { oaiSchema } from "../db/schema.js";
+import { eq } from "drizzle-orm";
+import { generateWorkflow } from "../ai/index.js";
 
-const router = new OpenAPIHono();
+const router = new OpenAPIHono<{
+  Bindings: CloudflareBindings;
+  Variables: Variables;
+}>();
+
+// Data store
+const mockWorkflows = new Map<string, z.infer<typeof workflowSchema>>();
 
 // GET /workflow
 router.openapi(
@@ -36,20 +46,12 @@ router.openapi(
     },
   },
   async (c) => {
-    try {
-      // Implementation will be added later
-      const response = {
-        success: true as const,
-        data: [] as Array<z.infer<typeof workflowSchema>>,
-      };
-      return c.json(response, 200);
-    } catch (error) {
-      const response = {
-        success: false as const,
-        error: { message: "Internal server error" },
-      };
-      return c.json(response, 500);
-    }
+    const workflows = Array.from(mockWorkflows.values());
+    const response = {
+      success: true as const,
+      data: workflows,
+    };
+    return c.json(response, 200);
   },
 );
 
@@ -98,23 +100,52 @@ router.openapi(
   },
   async (c) => {
     try {
-      const body = await c.req.json();
-      // Implementation will be added later
+      const body = await c.req.valid("json");
+      const newId = crypto.randomUUID();
+      const db = c.get("db");
+      const oaiSchemaId = body.oaiSchemaId;
+      const oaiSchemaContent = await db
+        .select()
+        .from(oaiSchema)
+        .where(eq(oaiSchema.id, oaiSchemaId))
+        .limit(1);
+
+      if (!oaiSchemaContent) {
+        throw new Error("OAI schema not found");
+      }
+
+      // Generate workflow using AI
+      const generatedWorkflow = await generateWorkflow({
+        userStory: body.prompt,
+        oaiSchema: oaiSchemaContent[0].content,
+      });
+
+      const workflow = {
+        id: newId,
+        name: body.name,
+        prompt: body.prompt,
+        oaiSchemaId: oaiSchemaContent[0].id,
+        summary: generatedWorkflow.summary,
+        description: generatedWorkflow.description,
+        steps: generatedWorkflow.steps,
+        lastRunStatus: "pending" as const,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockWorkflows.set(newId, workflow);
+
       const response = {
         success: true as const,
-        data: {
-          ...body,
-          id: "new-id",
-          steps: [],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } satisfies z.infer<typeof workflowSchema>,
+        data: workflow,
       };
       return c.json(response, 201);
     } catch (error) {
       const response = {
         success: false as const,
-        error: { message: "Internal server error" },
+        error: {
+          message: "Failed to generate workflow",
+        },
       };
       return c.json(response, 500);
     }
@@ -146,6 +177,14 @@ router.openapi(
           },
         },
       },
+      400: {
+        description: "Invalid workflow ID",
+        content: {
+          "application/json": {
+            schema: apiErrorSchema,
+          },
+        },
+      },
       404: {
         description: "Workflow not found",
         content: {
@@ -165,40 +204,34 @@ router.openapi(
     },
   },
   async (c) => {
-    try {
-      const id = c.req.param("id");
-      if (!id) {
-        throw new Error("Not found");
-      }
-
-      // Implementation will be added later
-      const response = {
-        success: true as const,
-        data: {
-          id,
-          name: "",
-          prompt: "",
-          oaiSchemaId: "",
-          steps: [],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } satisfies z.infer<typeof workflowSchema>,
-      };
-      return c.json(response, 200);
-    } catch (error) {
-      if (error instanceof Error && error.message === "Not found") {
-        const response = {
-          success: false as const,
-          error: { message: "Workflow not found" },
-        };
-        return c.json(response, 404);
-      }
-      const response = {
+    const id = c.req.param("id");
+    if (!id) {
+      const error = {
         success: false as const,
-        error: { message: "Internal server error" },
+        error: {
+          message: "Invalid workflow ID",
+        },
       };
-      return c.json(response, 500);
+      return c.json(error, 400);
     }
+
+    const workflow = mockWorkflows.get(id);
+
+    if (!workflow) {
+      const error = {
+        success: false as const,
+        error: {
+          message: "Workflow not found",
+        },
+      };
+      return c.json(error, 404);
+    }
+
+    const response = {
+      success: true as const,
+      data: workflow,
+    };
+    return c.json(response, 200);
   },
 );
 
@@ -236,83 +269,11 @@ router.openapi(
           },
         },
       },
-      404: {
-        description: "Workflow not found",
+      400: {
+        description: "Invalid workflow ID",
         content: {
           "application/json": {
             schema: apiErrorSchema,
-          },
-        },
-      },
-      500: {
-        description: "Server error",
-        content: {
-          "application/json": {
-            schema: apiErrorSchema,
-          },
-        },
-      },
-    },
-  },
-  async (c) => {
-    try {
-      const id = c.req.param("id");
-      if (!id) {
-        throw new Error("Not found");
-      }
-
-      const body = await c.req.json();
-      // Implementation will be added later
-      const response = {
-        success: true as const,
-        data: {
-          ...body,
-          id,
-          steps: [],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } satisfies z.infer<typeof workflowSchema>,
-      };
-      return c.json(response, 200);
-    } catch (error) {
-      if (error instanceof Error && error.message === "Not found") {
-        const response = {
-          success: false as const,
-          error: { message: "Workflow not found" },
-        };
-        return c.json(response, 404);
-      }
-      const response = {
-        success: false as const,
-        error: { message: "Internal server error" },
-      };
-      return c.json(response, 500);
-    }
-  },
-);
-
-// POST /workflow/:id
-router.openapi(
-  {
-    method: "post",
-    path: "/workflow/:id",
-    tags: ["Workflow"],
-    summary: "Execute workflow",
-    parameters: [
-      {
-        name: "id",
-        in: "path",
-        required: true,
-        schema: { type: "string" },
-        description: "Workflow ID",
-      },
-    ],
-    responses: {
-      200: {
-        description: "Workflow execution started",
-        content: {
-          "application/json": {
-            schema: apiResponseSchema(workflowSchema),
           },
         },
       },
@@ -335,41 +296,43 @@ router.openapi(
     },
   },
   async (c) => {
-    try {
-      const id = c.req.param("id");
-      if (!id) {
-        throw new Error("Not found");
-      }
-
-      // Implementation will be added later
-      const response = {
-        success: true as const,
-        data: {
-          id,
-          name: "",
-          prompt: "",
-          oaiSchemaId: "",
-          steps: [],
-          lastRunStatus: "pending",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } satisfies z.infer<typeof workflowSchema>,
-      };
-      return c.json(response, 200);
-    } catch (error) {
-      if (error instanceof Error && error.message === "Not found") {
-        const response = {
-          success: false as const,
-          error: { message: "Workflow not found" },
-        };
-        return c.json(response, 404);
-      }
-      const response = {
+    const id = c.req.param("id");
+    if (!id) {
+      const error = {
         success: false as const,
-        error: { message: "Internal server error" },
+        error: {
+          message: "Invalid workflow ID",
+        },
       };
-      return c.json(response, 500);
+      return c.json(error, 400);
     }
+
+    const existingWorkflow = mockWorkflows.get(id);
+
+    if (!existingWorkflow) {
+      const error = {
+        success: false as const,
+        error: {
+          message: "Workflow not found",
+        },
+      };
+      return c.json(error, 404);
+    }
+
+    const body = await c.req.json();
+    const updatedWorkflow = {
+      ...existingWorkflow,
+      ...body,
+      updatedAt: new Date(),
+    };
+
+    mockWorkflows.set(id, updatedWorkflow);
+
+    const response = {
+      success: true as const,
+      data: updatedWorkflow,
+    };
+    return c.json(response, 200);
   },
 );
 
@@ -393,6 +356,14 @@ router.openapi(
       204: {
         description: "Workflow deleted",
       },
+      400: {
+        description: "Invalid workflow ID",
+        content: {
+          "application/json": {
+            schema: apiErrorSchema,
+          },
+        },
+      },
       404: {
         description: "Workflow not found",
         content: {
@@ -412,29 +383,32 @@ router.openapi(
     },
   },
   async (c) => {
-    try {
-      const id = c.req.param("id");
-      if (!id) {
-        throw new Error("Not found");
-      }
-
-      // Implementation will be added later
-      return new Response(null, { status: 204 });
-    } catch (error) {
-      if (error instanceof Error && error.message === "Not found") {
-        const response = {
-          success: false as const,
-          error: { message: "Workflow not found" },
-        };
-        return c.json(response, 404);
-      }
-      const response = {
+    const id = c.req.param("id");
+    if (!id) {
+      const error = {
         success: false as const,
-        error: { message: "Internal server error" },
+        error: {
+          message: "Invalid workflow ID",
+        },
       };
-      return c.json(response, 500);
+      return c.json(error, 400);
     }
+
+    const exists = mockWorkflows.has(id);
+
+    if (!exists) {
+      const error = {
+        success: false as const,
+        error: {
+          message: "Workflow not found",
+        },
+      };
+      return c.json(error, 404);
+    }
+
+    mockWorkflows.delete(id);
+    return new Response(null, { status: 204 });
   },
 );
 
-export default router; 
+export default router;

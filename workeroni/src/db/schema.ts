@@ -1,5 +1,5 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import type { Step } from "../workflows/arazzo.js";
+import type { Step } from "../schemas/arazzo";
 
 export const oaiSchema = sqliteTable("oai_schema", {
   id: text("id").primaryKey(),

@@ -1,0 +1,38 @@
+{
+  "name": "workeroni",
+  "scripts": {
+    "format": "biome format --write .",
+    "dev": "wrangler dev src/app.ts",
+    "deploy": "wrangler deploy src/app.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^1.1.0",
+    "@cloudflare/ai-utils": "^1.0.1",
+    "@hono/zod-openapi": "^0.18.0",
+    "@fiberplane/hono-otel": "workspace:*",
+    "@hono/zod-validator": "^0.4.2",
+    "@scalar/hono-api-reference": "^0.5.166",
+    "@scalar/openapi-parser": "^0.10.3",
+    "ai": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.38.4",
+    "hono": "^4.6.17",
+    "nanoid": "^5.0.9",
+    "workers-ai-provider": "link:../../workers-ai-provider/packages/ai-provider",
+    "zod": "^3.24.1",
+    "zod-to-json-schema": "^3.24.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250109.0",
+    "@types/json-schema": "^7.0.15",
+    "@types/node": "^22.10.7",
+    "drizzle-kit": "^0.30.2",
+    "json-schema": "^0.4.0",
+    "wrangler": "^3.103.1"
+  }
+}
