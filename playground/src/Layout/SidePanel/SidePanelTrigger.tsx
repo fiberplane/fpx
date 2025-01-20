@@ -32,7 +32,7 @@ export function SidePanelTrigger() {
         </Button>
       </TooltipTrigger>
       <TooltipContent
-        className="bg-slate-900 px-2 py-1.5 text-white flex gap-1.5"
+        className=" px-2 py-1.5 flex gap-1.5"
         align="start"
       >
         Open Side Panel
