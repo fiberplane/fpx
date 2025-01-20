@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { FpService } from "../../services.js";
+import { FpService } from "../../services/index.js";
 import { z } from "zod";
 
 // Temporary implementation

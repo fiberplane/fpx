@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BaseService } from "./index.js";
+import { BaseService } from "./base.js";
 
 const CreateTokenResponseSchema = z.object({ token: z.string() });
 const VerifyTokenResponseSchema = z.object({ valid: z.boolean() });
