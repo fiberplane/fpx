@@ -7,12 +7,14 @@ import type { Step, ApiError, ApiResponse, Workflow } from "@/types";
 export const Route = createFileRoute("/workflow/$workflowId")({
   component: WorkflowDetail,
   loader: async ({ context: { queryClient }, params: { workflowId } }) => {
-    const response = await queryClient.ensureQueryData(workflowQueryOptions(workflowId)) as ApiResponse<Workflow> | ApiError;
+    const response = (await queryClient.ensureQueryData(
+      workflowQueryOptions(workflowId),
+    )) as ApiResponse<Workflow> | ApiError;
     if (!response.success) {
       throw new Error(response.error.message);
     }
     return { workflow: response.data };
-  }
+  },
 });
 
 function WorkflowDetail() {
@@ -45,6 +47,11 @@ function WorkflowDetail() {
             <CardContent>
               <div className="text-sm text-muted-foreground">
                 Operation: {step.operationPath || "No operation path"}
+                <br />
+                Debug: {JSON.stringify(step)}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Parameters: {JSON.stringify(step.parameters)}
               </div>
             </CardContent>
           </Card>

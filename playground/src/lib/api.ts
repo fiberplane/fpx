@@ -24,7 +24,6 @@ export const api = {
   },
 
   createWorkflow: async (data: {
-    name: string;
     prompt: string;
     oaiSchemaId: string;
     summary?: string;

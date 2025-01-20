@@ -31,7 +31,6 @@ export function useCreateWorkflow() {
   const navigate = useNavigate();
   return useMutation({
     mutationFn: (data: {
-      name: string;
       prompt: string;
       oaiSchemaId: string;
       summary?: string;

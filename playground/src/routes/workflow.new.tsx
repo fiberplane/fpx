@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCreateWorkflow } from "@/lib/hooks/useWorkflows";
 import { useState } from "react";
 import { WorkflowPrompt } from "@/components/WorkflowPrompt";
+import { useSchemas } from "@/lib/hooks/useSchemas";
 
 export const Route = createFileRoute("/workflow/new")({
   component: NewWorkflow,
@@ -9,13 +10,19 @@ export const Route = createFileRoute("/workflow/new")({
 
 function NewWorkflow() {
   const [userStory, setUserStory] = useState("");
-  const { mutate: createWorkflow, isPending, error } = useCreateWorkflow()
+  const { mutate: createWorkflow, isPending, error } = useCreateWorkflow();
+  const { data: schemas } = useSchemas();
+  const firstSchema = schemas?.[0];
 
   const handleSubmit = () => {
+    if (!firstSchema) {
+      console.error("No schema found");
+      return;
+    }
+
     createWorkflow({
-      name: "New Workflow",
       prompt: userStory,
-      oaiSchemaId: "123",
+      oaiSchemaId: firstSchema.id,
     });
   };
 
