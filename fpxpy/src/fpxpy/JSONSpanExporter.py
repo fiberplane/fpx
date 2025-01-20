@@ -177,7 +177,7 @@ class ReadableSpanData:
     trace_id: str
     span_id: str
     name: str
-    kind: SpanKind
+    kind: int
     start_time_unix_nano: float
     end_time_unix_nano: float
     attributes: List[KeyValueData]
@@ -197,7 +197,7 @@ class ReadableSpanData:
             trace_id=int_to_hex_str(span.context.trace_id or 0),
             span_id=int_to_hex_str(span.context.span_id or 0),
             name=span.name,
-            kind=SpanKind[span.kind.name],
+            kind=convert_span_kind(span.kind),
             start_time_unix_nano=(
                 float(span.start_time) if span.start_time is not None else 0.0
             ),
@@ -216,6 +216,21 @@ class ReadableSpanData:
             trace_state=None,
             parent_span_id=int_to_hex_str(span.parent.span_id) if span.parent else None,
         )
+
+
+def convert_span_kind(span_kind: SpanKind) -> int:
+    # function convertToSpanKind(spanKind: ESpanKind): string {
+    if span_kind == SpanKind.INTERNAL:
+        return 1
+    if span_kind == SpanKind.SERVER:
+        return 2
+    if span_kind == SpanKind.CLIENT:
+        return 3
+    if span_kind == SpanKind.PRODUCER:
+        return 4
+    if span_kind == SpanKind.CONSUMER:
+        return 5
+    return 0
 
 
 def to_key_values(attributes: Attributes):

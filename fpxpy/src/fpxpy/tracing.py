@@ -1,13 +1,13 @@
 import random
 from contextlib import asynccontextmanager
-from typing import cast
+from typing import cast, Optional
 from urllib.parse import ParseResult as ParsedUrl
 from urllib.parse import urlunparse
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import Response
 from opentelemetry import context
-from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.resources import Attributes, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import (
     SimpleSpanProcessor,
@@ -18,6 +18,7 @@ from opentelemetry.trace import (
     Span,
     SpanContext,
     SpanKind,
+    StatusCode,
     TraceFlags,
     get_tracer_provider,
     set_span_in_context,
@@ -104,8 +105,10 @@ async def middleware(request: Request, call_next):
             on_start=set_request_attributes,
             on_success=on_success,
             check_result=check_result,
+            on_error=on_error,
         )
-        return await measured_next(request)
+        result = await measured_next(request)
+        return result
     finally:
         if token is not None:
             context.detach(token)
@@ -146,6 +149,7 @@ def __internal_setup_span_instrumentation(
     instance.router.lifespan_context = lifespan
 
     instance.middleware("http")(middleware)
+
     return instance
 
 
@@ -153,13 +157,14 @@ async def on_success(span: Span, response: Response) -> None:
     """Handle successful response with span updates"""
     span.add_event("first-response")
 
-    attributes = await get_response_attributes(response)
+    attributes = get_response_attributes(response)
     span.set_attributes(dict(attributes))
     return None
 
 
 async def check_result(response: Response) -> None:
     """Check the result of the response"""
+    print("Check result", response.status_code)
     if response.status_code >= 500:
         raise StatusCodeException("Status code is 500 or greater")
     return None
@@ -169,3 +174,20 @@ class StatusCodeException(Exception):
     """Check exception class"""
 
     pass
+
+
+def on_error(span: Span, exc: Exception, response: Optional[Response]) -> None:
+    """Handle error with span updates"""
+
+    print("With response?", response)
+    if response:
+        attributes = get_response_attributes(response)
+        print("Attributes", attributes)
+        span.set_attributes(dict(attributes))
+        # span.set_status(StatusCode.ERROR)
+    else:
+        span.set_attribute(
+            "http.response.status_code",
+            "500",
+        )
+    return None

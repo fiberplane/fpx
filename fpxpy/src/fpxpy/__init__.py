@@ -16,7 +16,7 @@ __all__ = ["setup", "measure"]
 __teardown_capture_logs: Optional[Callable[[], None]] = None
 
 
-def setup(app: FastAPI) -> None:
+def setup(app: FastAPI, capture_stdout_stderr=True) -> None:
     """
     Setup the FPX integration with FastAPI
 
@@ -36,7 +36,10 @@ def setup(app: FastAPI) -> None:
     url = urlparse(endpoint)
     # setup span instrumentation
     setup_span_instrumentation(app, url)
-    setup_capture_print_middleware(app)
+
+    if capture_stdout_stderr:
+        # Capture prints to stdout/stderr
+        setup_capture_print_middleware(app)
 
     # Avoid capturing logs multiple times
     global __teardown_capture_logs

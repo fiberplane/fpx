@@ -44,6 +44,7 @@ Initializes FPX instrumentation for a FastAPI application by configuring route d
 
 #### Parameters
 - **app** (`FastAPI`): The FastAPI application instance that was instrumented
+- **capture_stdout_stderr** (`Boolean` defaults to true): Whether to capture output to stderr/stdout as log messages. Set this to false if you use a `logger` and don't want any print statements to end up as log events.
 
 #### Returns
 - `FastAPI`: The instrumented application instance
@@ -117,7 +118,7 @@ def on_start_cb(span, *args, **kwargs):
     name="monitored-function",
     on_start=on_start_cb,
     on_success=lambda span, result: span.set_attribute("result.value", str(result)),
-    on_error=lambda span, exc: span.set_attribute("error.message", str(exc))
+    on_error=lambda span, exc, result: span.set_attribute("error.message", str(exc))
 )
 def monitored_function():
     pass
@@ -130,7 +131,7 @@ def monitored_function():
 - **span_kind** (`SpanKind`): Kind of span to create. Defaults to `SpanKind.INTERNAL`
 - **on_start** (`Optional[Callable]`): Callback executed when span starts. Receives span and function arguments.
 - **on_success**(`Optional[Callable]`): Callback executed on successful completion. Receives span and function result.
-- **on_error** (`Optional[Callable]`): Callback executed on error. Receives span and exception.
+- **on_error** (`Optional[Callable]`): Callback executed on error. Receives span and exception and (if possible the result).
 - **check_result** (`Optional[Callable]`): Optional validation function for the result.
 - **attributes** (`Optional[Dict]`): Initial attributes to set on the span.
 

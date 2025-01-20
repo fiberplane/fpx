@@ -2,6 +2,7 @@ import logging
 from typing import Callable, Optional
 
 from opentelemetry.trace import get_current_span
+from .utils import safely_serialize_json, extract_extra_params
 
 logger = logging.getLogger("fpxpy")
 
@@ -13,11 +14,18 @@ class LogSnooper(logging.Handler):
         span = get_current_span()
 
         if span and span.is_recording():
+            message = record.getMessage()
             span.add_event(
                 "log",
                 {
-                    "message": record.getMessage(),
+                    "message": message,
                     "level": convert_log_level(record.levelname.lower()),
+                    "arguments": safely_serialize_json([extract_extra_params(record)]),
+                    "module": record.module,
+                    "filename": record.filename,
+                    "lineno": record.lineno,
+                    "source": "logging",
+                    # "arguments": [message],
                 },
             )
 

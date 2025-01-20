@@ -1,5 +1,6 @@
 import json
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
+import logging
 
 from fastapi import Request, Response
 from opentelemetry.sdk.resources import Attributes
@@ -50,7 +51,7 @@ def set_request_attributes(
     span.set_attributes(request_attributes)
 
 
-async def get_response_attributes(response: Response) -> Attributes:
+def get_response_attributes(response: Response) -> Attributes:
     """Extract OpenTelemetry attributes from FastAPI response"""
     attributes: Attributes = {
         "http.response.status_code": str(response.status_code),
@@ -85,3 +86,81 @@ async def get_response_attributes(response: Response) -> Attributes:
         attributes[f"http.response.header.{key.lower()}"] = value
 
     return attributes
+
+
+def is_uint_array(value: Any) -> bool:
+    """Determine if a value is a Uint array equivalent in Python."""
+    return isinstance(value, (bytes, bytearray, memoryview))
+
+
+def safely_serialize_json(obj: Any) -> str:
+    """
+    Safely serializes an object to JSON, handling circular references and binary data.
+    """
+    seen = set()
+
+    def custom_serializer(value):
+        # HACK - Do not serialize binary data
+        if is_uint_array(value):
+            return "BINARY"
+        if isinstance(value, dict):
+            if id(value) in seen:
+                return "[Circular]"
+            seen.add(id(value))
+        elif isinstance(value, list):
+            for item in value:
+                if id(item) in seen:
+                    return "[Circular]"
+                seen.add(id(item))
+        return value
+
+    def default_serializer(obj):
+        try:
+            return custom_serializer(obj)
+        except TypeError:
+            return str(obj)  # Fallback for non-serializable types
+
+    return json.dumps(obj, default=default_serializer)
+
+
+def extract_extra_params(record: logging.LogRecord) -> dict:
+    """
+    Extract only the extra parameters from a logging.LogRecord.
+
+    :param record: The LogRecord object.
+    :return: A dictionary of extra parameters.
+    """
+    # Standard attributes of LogRecord (as defined in logging documentation)
+    standard_attrs = {
+        "args",
+        "asctime",
+        "created",
+        "exc_info",
+        "exc_text",
+        "filename",
+        "funcName",
+        "levelname",
+        "levelno",
+        "lineno",
+        "module",
+        "msecs",
+        "message",
+        "msg",
+        "name",
+        "pathname",
+        "process",
+        "processName",
+        "relativeCreated",
+        "stack_info",
+        "thread",
+        "threadName",
+    }
+
+    # Use a dictionary comprehension to filter out standard attributes
+    extra = {
+        key: value
+        for key, value in record.__dict__.items()
+        if key not in standard_attrs
+    }
+
+    return extra

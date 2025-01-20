@@ -8,7 +8,9 @@ from fpxpy import measure, setup
 
 
 app = FastAPI()
-setup(app)
+# Set capture_stdout_stderr to False to avoid capturing prints/terminal output
+# as if they were logs
+setup(app, capture_stdout_stderr=True)
 
 # Example logger
 logger = logging.getLogger(__name__)
@@ -27,13 +29,17 @@ def read_root():
 
 @measure()
 def loop(n: int = 10) -> None:
+    logger.info("Loop started with extra", extra={"n": n})
     for i in range(n):
         sleep(0.1)
         # Log the loop number
         # This will be captured by FPX
         # Unfortunately this will not appear in the terminal console
         # When using `FPX_ENDPOINT=http://localhost:8788/v1/traces  uv run fastapi dev ./main.py`
-        print(f"Loop number: %i" % i)
+
+        # When using `uv run fastapi dev ./main.py` this logger statement
+        # will only appear as events of the span in the Fiberplane UI
+        logger.info(f"Loop number: {i}")
 
 
 @app.get("/hello")

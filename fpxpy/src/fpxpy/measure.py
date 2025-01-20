@@ -33,7 +33,7 @@ def measure(
     span_kind: SpanKind = SpanKind.INTERNAL,
     on_start: Optional[OnStartCallback[Any]] = None,
     on_success: Optional[Callable[[Span, Any], None]] = None,
-    on_error: Optional[Callable[[Span, Exception], None]] = None,
+    on_error: Optional[Callable[[Span, Exception, Union[None, Any]], None]] = None,
     check_result: Optional[Callable[[Any], None]] = None,
     attributes: Optional[Attributes] = None,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]: ...
@@ -45,7 +45,7 @@ def measure(
     span_kind: SpanKind = SpanKind.INTERNAL,
     on_start: Optional[OnStartCallback[Any]] = None,
     on_success: Optional[Callable[[Span, Any], None]] = None,
-    on_error: Optional[Callable[[Span, Exception], None]] = None,
+    on_error: Optional[Callable[[Span, Exception, Union[None, Any]], None]] = None,
     check_result: Optional[Callable[[Any], None]] = None,
     attributes: Optional[Attributes] = None,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]: ...
@@ -60,7 +60,7 @@ def measure(
     on_success: Optional[
         Callable[[Span, R], Union[None, Coroutine[Any, Any, None]]]
     ] = None,
-    on_error: Optional[Callable[[Span, Exception], None]] = None,
+    on_error: Optional[Callable[[Span, Exception, Union[None, Any]], None]] = None,
     check_result: Optional[
         Callable[[R], Union[None, Coroutine[Any, Any, None]]]
     ] = None,
@@ -75,7 +75,7 @@ def measure(
     span_kind: SpanKind = SpanKind.INTERNAL,
     on_start: Optional[OnStartCallback[P]] = None,
     on_success: Optional[Callable[[Span, R], None]] = None,
-    on_error: Optional[Callable[[Span, Exception], None]] = None,
+    on_error: Optional[Callable[[Span, Exception, Union[None, Any]], None]] = None,
     check_result: Optional[Callable[[R], None]] = None,
     attributes: Optional[Attributes] = None,
 ) -> Callable[P, R]: ...
@@ -91,7 +91,7 @@ def measure(
     on_success: Optional[
         Callable[[Span, R], Union[None, Coroutine[Any, Any, None]]]
     ] = None,
-    on_error: Optional[Callable[[Span, Exception], None]] = None,
+    on_error: Optional[Callable[[Span, Exception, Union[None, Any]], None]] = None,
     check_result: Optional[
         Callable[[R], Union[None, Coroutine[Any, Any, None]]]
     ] = None,
@@ -107,7 +107,7 @@ def measure(
     on_success: Optional[
         Callable[[Span, R], Union[None, Coroutine[Any, Any, None]]]
     ] = None,
-    on_error: Optional[Callable[[Span, Exception], None]] = None,
+    on_error: Optional[Callable[[Span, Exception, Union[None, Any]], None]] = None,
     check_result: Optional[
         Callable[[R], Union[None, Coroutine[Any, Any, None]]]
     ] = None,
@@ -158,15 +158,18 @@ def measure(
                             check = check_result(value)
                             if inspect.iscoroutine(check):
                                 await check
-                        except Exception as e:
-                            span.set_status(Status(StatusCode.ERROR, str(e)))
-                            span.record_exception(e)
-                            if on_error:
-                                on_error(span, e)
 
+                        except Exception as e:
+                            print("Handle exception from check_result")
+                            if on_error:
+                                on_error(span, e, value)
+
+                            span.set_status(
+                                StatusCode.ERROR, "Exception triggered by check_result"
+                            )
+                            span.record_exception(e)
                             return value
 
-                    span.set_status(Status(StatusCode.OK))
                     if on_success:
                         success = on_success(span, value)
                         if inspect.iscoroutine(success):
@@ -174,15 +177,15 @@ def measure(
                     return value
 
                 except Exception as e:
-                    span.set_status(Status(StatusCode.ERROR, str(e)))
-                    span.record_exception(e)
                     if on_error:
-                        on_error(span, e)
+                        on_error(span, e, None)
+
                     raise e
 
         @functools.wraps(fn)
         def sync_wrapper(*args: P.args, **kwargs: P.kwargs):
             tracer = trace.get_tracer("fpx-tracer")
+
             with tracer.start_as_current_span(
                 name=current_name,
                 kind=span_kind,
@@ -204,13 +207,14 @@ def measure(
                                 loop = asyncio.get_event_loop()
                                 loop.run_until_complete(check)
                         except Exception as e:
-                            span.set_status(Status(StatusCode.ERROR, str(e)))
-                            span.record_exception(e)
                             if on_error:
-                                on_error(span, e)
+                                on_error(span, e, value)
+                            span.set_status(
+                                StatusCode.ERROR, "Exception triggered by check_result"
+                            )
+                            span.record_exception(e)
                             return value
 
-                    span.set_status(Status(StatusCode.OK))
                     if on_success:
                         success = on_success(span, value)
                         if inspect.isawaitable(success):
@@ -219,10 +223,8 @@ def measure(
                     return value
 
                 except Exception as e:
-                    span.set_status(Status(StatusCode.ERROR, str(e)))
-                    span.record_exception(e)
                     if on_error:
-                        on_error(span, e)
+                        on_error(span, e, None)
                     raise e
 
         return async_wrapper if is_coroutine else sync_wrapper
