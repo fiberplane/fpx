@@ -4,17 +4,20 @@
 //! api module. But for now this is only used within our own code, so it is
 //! fine.
 
-use super::errors::ApiClientError;
+use super::errors::CommonError;
+use super::handlers::spans::SpanGetError;
+use super::handlers::traces::TraceGetError;
+use super::models;
+use crate::otel::HeaderMapInjector;
 use anyhow::Result;
-use fpx_lib::api::handlers::spans::SpanGetError;
-use fpx_lib::api::handlers::traces::TraceGetError;
-use fpx_lib::api::models;
-use fpx_lib::otel::HeaderMapInjector;
+use bytes::Bytes;
 use http::{HeaderMap, Method, StatusCode};
 use opentelemetry::propagation::TextMapPropagator;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use std::error::Error;
 use std::future::Future;
+use thiserror::Error;
+use tracing::error;
 use tracing::trace;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 use url::Url;
@@ -171,6 +174,54 @@ impl ApiClient {
     }
 }
 
+#[allow(dead_code)]
+#[derive(Debug, Error)]
+pub enum ApiClientError<E> {
+    /// This can only occur when a invalid base URL was provided.
+    #[error("An invalid URL was provided: {0}")]
+    ParseError(#[from] url::ParseError),
+
+    /// An error occurred in reqwest.
+    #[error("An error occurred while making the request: {0}")]
+    ClientError(#[from] reqwest::Error),
+
+    /// An error returned from the service. These errors are specific to the
+    /// endpoint that was called.
+    #[error(transparent)]
+    ServiceError(E),
+
+    #[error(transparent)]
+    CommonError(#[from] CommonError),
+
+    /// A response was received, but we were unable to deserialize it. The
+    /// status code and the receive body are returned.
+    #[error("API returned an unknown response: Status: {0}, Body: {1:?}")]
+    InvalidResponse(StatusCode, Bytes),
+}
+
+impl<E> ApiClientError<E>
+where
+    E: serde::de::DeserializeOwned,
+{
+    /// Try to parse the result as a ServiceError or a CommonError. If both
+    /// fail, return the status_code and body.
+    pub fn from_response(status_code: StatusCode, body: Bytes) -> Self {
+        // Try to parse the result as a ServiceError.
+        if let Ok(result) = serde_json::from_slice::<E>(&body) {
+            return ApiClientError::ServiceError(result);
+        }
+
+        // Try to parse the result as CommonError.
+        if let Ok(result) = serde_json::from_slice::<CommonError>(&body) {
+            return ApiClientError::CommonError(result);
+        }
+
+        // If both failed, return the status_code and the body for the user to
+        // debug.
+        ApiClientError::InvalidResponse(status_code, body)
+    }
+}
+
 /// Check whether the response is a 204 No Content response, if it is return
 /// Ok(()). Otherwise try to parse the response as a ApiError.
 async fn no_body<E>(response: reqwest::Response) -> Result<(), ApiClientError<E>>
@@ -212,5 +263,81 @@ where
             );
             Err(ApiClientError::from_response(status_code, body))
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::api::errors::ApiServerError;
+    use axum::response::IntoResponse;
+    use fpx_macros::ApiError;
+    use http::StatusCode;
+    use http_body_util::BodyExt;
+    use serde::{Deserialize, Serialize};
+    use thiserror::Error;
+    use tracing::error;
+
+    #[derive(Debug, Serialize, Deserialize, Error, ApiError)]
+    #[serde(tag = "error", content = "details", rename_all = "camelCase")]
+    #[non_exhaustive]
+    pub enum TestError {
+        #[api_error(status_code = StatusCode::NOT_FOUND)]
+        #[error("Request not found")]
+        RequestNotFound,
+
+        #[api_error(status_code = StatusCode::BAD_REQUEST)]
+        #[error("Provided ID is invalid")]
+        InvalidId,
+    }
+
+    /// Test to convert Service Error in a ApiServerError to a ApiClientError.
+    #[tokio::test]
+    async fn api_server_error_to_api_client_error_service_error() {
+        let response = ApiServerError::ServiceError(TestError::RequestNotFound).into_response();
+
+        let (parts, body) = response.into_parts();
+        let body = body
+            .collect()
+            .await
+            .expect("Should be able to read body")
+            .to_bytes();
+
+        let api_client_error = ApiClientError::from_response(parts.status, body);
+
+        assert!(
+            matches!(
+                api_client_error,
+                ApiClientError::ServiceError(TestError::RequestNotFound)
+            ),
+            "returned error does not match expected error; got: {:?}",
+            api_client_error
+        );
+    }
+
+    /// Test to convert Common Error in a ApiServerError to a ApiClientError.
+    #[tokio::test]
+    async fn api_server_error_to_api_client_error_common_error() {
+        let response = ApiServerError::CommonError::<TestError>(CommonError::InternalServerError)
+            .into_response();
+
+        let (parts, body) = response.into_parts();
+        let body = body
+            .collect()
+            .await
+            .expect("Should be able to read body")
+            .to_bytes();
+
+        let api_client_error: ApiClientError<TestError> =
+            ApiClientError::from_response(parts.status, body);
+
+        assert!(
+            matches!(
+                api_client_error,
+                ApiClientError::CommonError(CommonError::InternalServerError),
+            ),
+            "returned error does not match expected error; got: {:?}",
+            api_client_error
+        )
     }
 }
