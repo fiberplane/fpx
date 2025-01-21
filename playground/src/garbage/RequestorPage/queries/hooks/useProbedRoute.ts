@@ -152,7 +152,7 @@ async function transformOpenApiToProbedRoutes(
 
   if (result.type === "empty") {
     return {
-      baseUrl: "http://localhost:8787",
+      baseUrl: window.location.origin,
       routes: [],
     };
   }
@@ -168,7 +168,7 @@ function parseThatSpec(
   routes: ProbedRoute[];
 } {
   const routes: ProbedRoute[] = [];
-  const baseUrl = spec.servers?.[0]?.url ?? "http://localhost:8787";
+  const baseUrl = spec.servers?.[0]?.url ?? window.location.origin;
 
   // Iterate through paths and methods to create ProbedRoute objects
   for (const [path, pathItem] of Object.entries(spec.paths)) {
