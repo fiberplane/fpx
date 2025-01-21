@@ -58,20 +58,22 @@
 
   --sl-color-black: #ffffff;
   --sl-color-black: var(--bg-background);
-  
+
   --sl-color-hairline-shade: var(--border-default);
-  
+
   --sl-color-bg-nav: var(--sl-color-black);
 
-  .expressive-code:not([data-theme="dark"]) {
-    --ec-frm-trmTtbBg: var(--bg-emphasis) !important;
-
-    --code-background: green !important;
-
-  }
-
+  /* Example code blocks */
   .expressive-code .frame pre {
-    background-color: var(--bg-input) !important;
+    background-color: var(--bg-input);
+
+    .ec-line.highlight {
+      --tmLineBgCol: var(--bg-success);
+
+      &.ins.tm-label .code::before {
+        --ecLineBrdCol: var(--fg-success);
+      }
+    }
   }
 }
 

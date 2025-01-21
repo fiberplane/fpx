@@ -215,8 +215,46 @@
   --font-tabs-unselected: 400 14px / 20px Geist;
   --focus: drop-shadow(0px 0px 0px 4px #afaeaa)
     drop-shadow(0px 0px 0px 2px #f7f6f3);
-}
 
+  &[data-theme="dark"] {
+    --bg-background: var(--neutral-900);
+    --bg-brand-muted: var(--flame-alpha-15);
+    --bg-brand: var(--flame-500);
+    --bg-danger: var(--danger-alpha-15);
+    --bg-destructive-hover: var(--danger-500);
+    --bg-destructive: var(--danger-600);
+    --bg-emphasis: var(--neutral-800);
+    --bg-info: var(--info-alpha-15);
+    --bg-input: var(--neutral-800);
+    --bg-popover-hover: var(--neutral-800);
+    --bg-popover: var(--neutral-950);
+    --bg-primary-hover: var(--flame-500);
+    --bg-primary: var(--flame-600);
+    --bg-secondary-hover: var(--neutral-700);
+    --bg-secondary: var(--neutral-800);
+    --bg-success: var(--success-alpha-15);
+    --bg-warning: var(--warning-alpha-15);
+    --border-accent-on-primary: var(--neutral-600);
+    --border-brand: var(--flame-500);
+    --border-default: var(--neutral-700);
+    --border-focus: var(--neutral-500);
+    --border-primary: var(--flame-600);
+    --border-secondary: var(--neutral-700);
+    --fg-accent-1: var(--mint-500);
+    --fg-accent-2: var(--purple-500);
+    --fg-accent-3: var(--pink-500);
+    --fg-brand: var(--flame-500);
+    --fg-danger: var(--danger-500);
+    --fg-default: var(--neutral-50);
+    --fg-info: var(--info-500);
+    --fg-muted: var(--neutral-300);
+    --fg-on-primary: var(--neutral-white);
+    --fg-subtle: var(--neutral-500);
+    --fg-success: var(--success-500);
+    --fg-warning: var(--warning-500);
+  }
+}
+/* 
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-background: var(--neutral-900);
@@ -255,4 +293,4 @@
     --fg-success: var(--success-500);
     --fg-warning: var(--warning-500);
   }
-}
+} */
