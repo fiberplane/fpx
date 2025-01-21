@@ -72,3 +72,32 @@ export const useTheme = () => {
 
   return context;
 };
+
+export const useThemeMode = () => {
+  const { theme } = useTheme();
+  const [mode, setMode] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    const updateMode = () => {
+      if (theme === "system") {
+        setMode(
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light",
+        );
+      } else {
+        setMode(theme);
+      }
+    };
+
+    updateMode();
+
+    if (theme === "system") {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      mediaQuery.addEventListener("change", updateMode);
+      return () => mediaQuery.removeEventListener("change", updateMode);
+    }
+  }, [theme]);
+
+  return mode;
+};

@@ -100,7 +100,7 @@ export function RequestBodyTypeDropdown({
                 <CommandItem
                   key={type.value}
                   value={type.value}
-                  className="text-xs"
+                  className="text-xs data-[selected=true]:bg-secondary"
                   onSelect={(currentValue: string) => {
                     handleRequestBodyTypeChange(
                       currentValue as RequestorBodyType,

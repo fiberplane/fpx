@@ -1,9 +1,11 @@
 import "./CodeMirrorEditorCssOverrides.css";
 
 import { json } from "@codemirror/lang-json";
+import { basicDark } from "@uiw/codemirror-theme-basic";
 import { duotoneLight } from "@uiw/codemirror-theme-duotone";
 import CodeMirror, { basicSetup, EditorView } from "@uiw/react-codemirror";
 import { useMemo } from "react";
+import { useThemeMode } from "../theme-provider";
 import { createOnSubmitKeymap, escapeKeymap } from "./keymaps";
 import { customTheme } from "./themes";
 
@@ -29,6 +31,8 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
     onSubmit,
   } = props;
 
+  const mode = useThemeMode();
+
   const extensions = useMemo(
     () => [
       createOnSubmitKeymap(onSubmit, false),
@@ -51,7 +55,7 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
       minHeight={minHeight}
       extensions={extensions}
       onChange={onChange}
-      theme={[duotoneLight, customTheme]}
+      theme={[mode === "light" ? duotoneLight : basicDark, customTheme]}
       readOnly={readOnly}
       // Turn off basic setup here, but then use it as an extension instead (in the extension array),
       // AFTER using a keymap that allows us to conditionally intercept the "Mod+Enter" combo

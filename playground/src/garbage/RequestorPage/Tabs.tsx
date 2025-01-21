@@ -35,7 +35,6 @@ export function CustomTabTrigger(props: ComponentProps<typeof TabsTrigger>) {
         "font-normal",
         "border-b",
         "border-transparent",
-        "data-[state=active]:font-medium",
         "data-[state=active]:text-foreground",
         "data-[state=active]:shadow-none",
         "data-[state=active]:bg-inherit",

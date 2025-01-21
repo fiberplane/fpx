@@ -11,6 +11,7 @@ import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
 import {
+  ENV_FPX_AUTH_TOKEN,
   ENV_FPX_ENDPOINT,
   ENV_FPX_LOG_LEVEL,
   ENV_FPX_SERVICE_NAME,
@@ -115,6 +116,8 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           const endpoint = getFromEnv(env, ENV_FPX_ENDPOINT);
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
+          const authToken = getFromEnv(env, ENV_FPX_AUTH_TOKEN);
+
           const FPX_LOG_LEVEL = libraryDebugMode
             ? "debug"
             : getFromEnv(env, ENV_FPX_LOG_LEVEL);
@@ -166,6 +169,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           const provider = setupTracerProvider({
             serviceName,
             endpoint,
+            authToken: authToken || undefined,
           });
 
           const promiseStore = new PromiseStore();
@@ -292,6 +296,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
 function setupTracerProvider(options: {
   serviceName: string;
   endpoint: string;
+  authToken?: string;
 }) {
   // We need to use async hooks to be able to propagate context
   const asyncHooksContextManager = new AsyncLocalStorageContextManager();
@@ -303,8 +308,13 @@ function setupTracerProvider(options: {
     }),
   });
 
+  const headers: Record<string, string> = options.authToken
+    ? { Authorization: `Bearer ${options.authToken}` }
+    : {};
+
   const exporter = new OTLPTraceExporter({
     url: options.endpoint,
+    headers,
   });
   provider.addSpanProcessor(
     new SimpleSpanProcessor(exporter),
