@@ -34,7 +34,8 @@
     "react-dom": "^18.2.0"
   },
   "peerDependencies": {
-    "hono": "^4.0"
+    "hono": "^4.0",
+    "zod": "^3.23.8"
   },
   "dependencies": {
     "openapi-types": "^12.1.3"

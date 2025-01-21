@@ -1,53 +1,26 @@
 /** @jsx jsx */
 /** @jsxImportSource hono/jsx */
-
 import { jsx } from "hono/jsx";
 
-import { type Env, Hono } from "hono";
-import { html, raw } from "hono/html";
+import { Hono } from "hono";
+import type { EmbeddedRouterOptions, RouterSpec } from "../router.js";
 import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
+import { html, raw } from "hono/html";
 
-export type RouterSpec =
-  | {
-      type: "url";
-      value: string;
-      origin: string;
-    }
-  | {
-      type: "path";
-      value: string;
-      origin: string;
-    }
-  | {
-      type: "raw";
-      value: OpenAPIV3_1.Document | OpenAPIV3.Document;
-      origin: string;
-    }
-  | {
-      type: "empty";
-      value: undefined;
-      origin: string;
-    };
-
-export type RouterOptions = {
-  mountedPath: string;
-  cdn: string;
-  spec: RouterSpec;
-};
-
-export function createRouter<E extends Env>({
+export default function createPlayground({
   cdn,
-  spec,
   mountedPath,
-}: RouterOptions): Hono<E> {
-  const router = new Hono<E>();
+  spec,
+}: EmbeddedRouterOptions) {
+  const app = new Hono();
 
   const cssBundleUrl = new URL("index.css", cdn).href;
 
   const jsBundleUrl = new URL("index.js", cdn).href;
 
-  router.get("/*", async (c) => {
+  app.get("/*", async (c) => {
     const resolvedSpec = await resolveSpec(spec, new URL(c.req.url).origin);
+
     return c.html(
       <html lang="en">
         <head>
@@ -75,7 +48,7 @@ export function createRouter<E extends Env>({
     );
   });
 
-  return router;
+  return app;
 }
 
 /**
@@ -111,17 +84,17 @@ function ensureOriginServer(
 
 export type ResolvedSpec =
   | {
-      type: "success";
-      spec: OpenAPIV3_1.Document | OpenAPIV3.Document | undefined;
-      source: RouterSpec["type"];
-    }
+    type: "success";
+    spec: OpenAPIV3_1.Document | OpenAPIV3.Document | undefined;
+    source: RouterSpec["type"];
+  }
   | {
-      type: "error";
-      error: string;
-      source: RouterSpec["type"];
-      retryable: boolean;
-      attemptedUrl?: string;
-    };
+    type: "error";
+    error: string;
+    source: RouterSpec["type"];
+    retryable: boolean;
+    attemptedUrl?: string;
+  };
 
 async function resolveSpec(
   spec?: RouterSpec,
