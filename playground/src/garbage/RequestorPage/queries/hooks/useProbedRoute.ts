@@ -147,6 +147,12 @@ async function transformOpenApiToProbedRoutes(
       const spec = await fetch(result.attemptedUrl).then((res) => res.json());
       return parseThatSpec(spec, generateId);
     }
+
+    console.warn(
+      "Fetching the spec failed on the server, and the error is not retryable",
+      result,
+    );
+
     throw new Error(result.error);
   }
 
