@@ -1,18 +1,39 @@
 @import "./variables.css";
 
+:root {
+  --border-radius: 10px;
+}
+
 /*
   NOTE: As Starlight overrides theme values by a [data-theme] selector that is
   either "light" or "dark", we use a general selector so we can override with
   semantic values.
 */
 :root[data-theme] {
-  --sl-color-accent: var(--fg-brand);
+  --sl-color-gray-1: limegreen; /* DEV INDICATOR */
   --sl-color-gray-2: var(--fg-default);
+  --sl-color-gray-3: var(--fg-muted);
+  --sl-color-gray-4: pink; /* DEV INDICATOR */
   --sl-color-gray-6: var(--bg-emphasis);
   --sl-color-gray-7: var(--bg-emphasis);
+  
+  --sl-color-accent: var(--fg-brand);
+  --sl-color-white: var(--fg-default);
   --sl-color-black: var(--bg-background);
   --sl-color-hairline-shade: var(--border-default);
   --sl-color-bg-nav: var(--sl-color-black);
+
+  --sl-color-bg: var(--bg-background);
+
+  --sl-color-text-accent: var(--fg-brand);
+
+  /* Banner WIP */
+  --sl-color-banner-bg: var(--flame-400);
+  --__sl-banner-text: black;
+
+  a.site-title {
+    color: var(--sl-color-text);
+  }
 
   /* Example code blocks */
   .expressive-code .frame pre {
