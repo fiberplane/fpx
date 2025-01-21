@@ -144,14 +144,27 @@ async function transformOpenApiToProbedRoutes(
         "Fetching the spec failed on the server, let's retry here",
         result.attemptedUrl,
       );
-      const spec = await fetch(result.attemptedUrl).then((res) => res.json());
-      return parseThatSpec(spec, generateId);
+      try {
+        const spec = await fetch(result.attemptedUrl).then((res) => res.json());
+        return parseThatSpec(spec, generateId);
+      } catch (_err) {
+        console.warn(
+          "Fetching the spec failed on the server, and the retry failed",
+          result,
+        );
+
+        window.alert("Fetching the OpenAPI spec failed!");
+
+        throw new Error(result.error);
+      }
     }
 
     console.warn(
       "Fetching the spec failed on the server, and the error is not retryable",
       result,
     );
+
+    window.alert("Fetching the OpenAPI spec failed!");
 
     throw new Error(result.error);
   }
