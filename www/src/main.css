@@ -1,66 +1,17 @@
 @import "./variables.css";
 
-/* For global overrides */
-:root {
-  --border-radius: 0.5rem;
-  --image-border-radius: 0.25rem;
-
-  --bg-primary: hsl(217.2 91.2% 59.8%);
-  --bg-secondary: hsl(217.2 32.6% 17.5%);
-}
-
-/* Dark mode colors. */
-:root {
-  --sl-color-accent-low: #102246; /* foreground banner */
-  --sl-color-accent-low: var(--fg-default);
-  --sl-color-accent: #1e5be3;
+/*
+  NOTE: As Starlight overrides theme values by a [data-theme] selector that is
+  either "light" or "dark", we use a general selector so we can override with
+  semantic values.
+*/
+:root[data-theme] {
   --sl-color-accent: var(--fg-brand);
-  --sl-color-accent-high: #b0c9f8;
-  --sl-color-accent-high: var(--bg-brand-muted);
-  --sl-color-white: #ffffff;
-  --sl-color-gray-1: #eceef2;
-  --sl-color-gray-2: #c0c2c7;
-  --sl-color-gray-3: #888b96;
-  --sl-color-gray-4: #545861;
-  --sl-color-gray-5: #353841;
-
-  --sl-color-gray-6: #24272f;
-  --sl-color-gray-6: var(--bg-emphasis);
-
-  --sl-color-black: #17181c;
-
-  --sl-color-bg-nav: var(--sl-color-black);
-}
-
-/* Light mode colors. */
-:root[data-theme="light"] {
-  --sl-color-accent-low: #c4d8fb;
-
-  --sl-color-accent: #205ee5;
-  --sl-color-accent: var(--fg-brand);
-
-  --sl-color-accent-high: #122e68;
-  --sl-color-white: #17181c;
-  --sl-color-gray-1: #24272f;
-
-  --sl-color-gray-2: #353841;
   --sl-color-gray-2: var(--fg-default);
-
-  --sl-color-gray-3: #545861;
-  --sl-color-gray-4: #888b96;
-  --sl-color-gray-5: #c0c2c7;
-
-  --sl-color-gray-6: #eceef2;
   --sl-color-gray-6: var(--bg-emphasis);
-
-  --sl-color-gray-7: #f5f6f8;
   --sl-color-gray-7: var(--bg-emphasis);
-
-  --sl-color-black: #ffffff;
   --sl-color-black: var(--bg-background);
-
   --sl-color-hairline-shade: var(--border-default);
-
   --sl-color-bg-nav: var(--sl-color-black);
 
   /* Example code blocks */
