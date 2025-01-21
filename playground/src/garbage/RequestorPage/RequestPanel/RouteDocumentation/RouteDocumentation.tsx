@@ -188,6 +188,143 @@ export const RouteDocumentation = memo(function RouteDocumentation({
   );
 });
 
+// Helper functions for type checking
+const isArraySchema = (schema: OpenAPISchema): boolean => 
+  schema.type === "array" && !!schema.items;
+
+const isObjectSchema = (schema: OpenAPISchema): boolean => 
+  schema.type === "object" && !!schema.properties;
+
+const isPrimitiveArrayItems = (schema: OpenAPISchema): boolean =>
+  isArraySchema(schema) && 
+  (schema.items as OpenAPISchema).type !== "object";
+
+// Component for rendering array type schemas
+type ArraySchemaProps = {
+  schema: OpenAPISchema;
+};
+
+function ArraySchemaViewer({ schema }: ArraySchemaProps) {
+  const itemSchema = schema.items as OpenAPISchema;
+  
+  return (
+    <div className="space-y-2">
+      {/* Array type header */}
+      <div className="flex items-center gap-2">
+        <TypeBadge type="array" />
+        <span className="text-gray-400 text-xs">of</span>
+        <TypeBadge type={itemSchema.type ?? "object"} />
+      </div>
+
+      {/* Array items content */}
+      <div className="pl-4 border-l-2 mt-2">
+        {isPrimitiveArrayItems(schema) ? (
+          // Primitive array items (strings, numbers, etc)
+          <>
+            {itemSchema.description && (
+              <ParameterDescription 
+                description={itemSchema.description as string} 
+              />
+            )}
+            {itemSchema.example !== undefined && (
+              <ParameterExample example={itemSchema.example} />
+            )}
+          </>
+        ) : (
+          // Object array items
+          <>
+            <div className="text-muted-foreground text-xs mb-2">
+              Array items:
+            </div>
+            <SchemaViewer schema={itemSchema} />
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Component for rendering object type schemas
+type ObjectSchemaProps = {
+  schema: OpenAPISchema;
+};
+
+function ObjectSchemaViewer({ schema }: ObjectSchemaProps) {
+  return (
+    <div className="space-y-4">
+      {Object.entries(
+        schema.properties as Record<string, OpenAPISchema>,
+      ).map(([key, prop]) => (
+        <div key={key} className="space-y-1">
+          {/* Property name and type */}
+          <DocsParameter
+            name={key}
+            type={prop.type === "array" 
+              ? `array of ${(prop.items as OpenAPISchema)?.type ?? "object"}` 
+              : prop.type ?? "string"}
+            required={schema.required?.includes(key) ?? false}
+          />
+          
+          {/* Property details */}
+          <div className="flex flex-col space-y-1">
+            {prop.description && (
+              <ParameterDescription description={prop.description} />
+            )}
+            {/* Handle nested arrays */}
+            {prop.type === "array" && prop.items && (
+              isArraySchema(prop) && isPrimitiveArrayItems(prop) ? (
+                <ParameterExample example={prop.example} />
+              ) : (
+                <SchemaViewer schema={prop} />
+              )
+            )}
+            {/* Handle non-array properties */}
+            {prop.type !== "array" && prop.example !== undefined && (
+              <ParameterExample example={prop.example} />
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Component for rendering primitive type schemas
+type PrimitiveSchemaProps = {
+  schema: OpenAPISchema;
+};
+
+function PrimitiveSchemaViewer({ schema }: PrimitiveSchemaProps) {
+  return (
+    <div className="text-muted-foreground px-3 py-2 text-sm">
+      {/* Type and enum information */}
+      <div className="flex items-center gap-2">
+        <code className="text-xs px-1.5 py-0.5 rounded-md bg-primary/75 text-primary-foreground">
+          {schema.type}
+        </code>
+        {schema.enum && (
+          <span className="text-gray-500 text-xs">
+            enum: [{schema.enum.join(", ")}]
+          </span>
+        )}
+      </div>
+
+      {/* Description and example */}
+      {(schema.description || schema.example !== undefined) && (
+        <div className="mt-2 text-xs">
+          {schema.description && (
+            <ParameterDescription description={schema.description} />
+          )}
+          {schema.example !== undefined && (
+            <ParameterExample example={schema.example} />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Main schema viewer component that routes to the appropriate sub-component
 type SchemaViewerProps = {
   schema: OpenAPISchema;
   className?: string;
@@ -200,72 +337,12 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
 
   return (
     <div className={cn("font-mono text-sm", className)}>
-      {schema.type === "array" ? (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <TypeBadge type="array" />
-            <span className="text-gray-400 text-xs">of</span>
-            {schema.items && (
-              <TypeBadge
-                type={(schema.items as OpenAPISchema).type ?? "object"}
-              />
-            )}
-          </div>
-          {schema.items && (
-            <div className="pl-4 border-l-2 mt-2">
-              <div className="text-muted-foreground text-xs mb-2">
-                Array items:
-              </div>
-              <SchemaViewer schema={schema.items as OpenAPISchema} />
-            </div>
-          )}
-        </div>
-      ) : schema.type === "object" && schema.properties ? (
-        <div className="space-y-4">
-          {Object.entries(
-            schema.properties as Record<string, OpenAPISchema>,
-          ).map(([key, prop]) => (
-            <div key={key} className="space-y-1">
-              <DocsParameter
-                name={key}
-                type={prop.type ?? "string"}
-                required={schema.required?.includes(key) ?? false}
-              />
-              <div className="flex flex-col space-y-1">
-                {prop.description && (
-                  <ParameterDescription description={prop.description} />
-                )}
-                {prop.example !== undefined && (
-                  <ParameterExample example={prop.example} />
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+      {isArraySchema(schema) ? (
+        <ArraySchemaViewer schema={schema} />
+      ) : isObjectSchema(schema) ? (
+        <ObjectSchemaViewer schema={schema} />
       ) : (
-        <div className="text-muted-foreground px-3 py-2 text-sm">
-          <div className="flex items-center gap-2">
-            <code className="text-xs px-1.5 py-0.5 rounded-md bg-black text-gray-400">
-              {schema.type}
-            </code>
-            {schema.enum && (
-              <span className="text-gray-500 text-xs">
-                enum: [{schema.enum.join(", ")}]
-              </span>
-            )}
-          </div>
-
-          {(schema.description || schema.example !== undefined) && (
-            <div className="mt-2 text-xs">
-              {schema.description && (
-                <ParameterDescription description={schema.description} />
-              )}
-              {schema.example !== undefined && (
-                <ParameterExample example={schema.example} />
-              )}
-            </div>
-          )}
-        </div>
+        <PrimitiveSchemaViewer schema={schema} />
       )}
     </div>
   );
