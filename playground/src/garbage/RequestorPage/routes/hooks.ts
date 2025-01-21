@@ -29,8 +29,17 @@ const filterActive = (routesAndMiddleware: ProbedRoute[]) => {
 };
 
 export function useRoutes() {
-  const { setRoutes, setServiceBaseUrl, setRoutesAndMiddleware } =
-    useStudioStore("setRoutes", "setServiceBaseUrl", "setRoutesAndMiddleware");
+  const {
+    setRoutes,
+    setActiveRoute,
+    setServiceBaseUrl,
+    setRoutesAndMiddleware,
+  } = useStudioStore(
+    "setRoutes",
+    "setActiveRoute",
+    "setServiceBaseUrl",
+    "setRoutesAndMiddleware",
+  );
 
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
 
@@ -46,11 +55,9 @@ export function useRoutes() {
   }, [routesAndMiddleware]);
 
   // HACK - Antipattern, add serviceBaseUrl to the reducer based off of external changes
-  // HACK - Defaults to localhost:8787 if not set
-  const serviceBaseUrl =
-    routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
+  //        Defaults to window.location.origin if not set
+  const serviceBaseUrl = routesAndMiddleware?.baseUrl ?? window.location.origin;
   useEffect(() => {
-    console.debug("setting serviceBaseUrl", serviceBaseUrl);
     setServiceBaseUrl(serviceBaseUrl);
   }, [serviceBaseUrl, setServiceBaseUrl]);
 
@@ -58,7 +65,10 @@ export function useRoutes() {
   // NOTE - This will only add routes if they don't exist
   useEffect(() => {
     setRoutes(routes);
-  }, [routes, setRoutes]);
+    if (routes[0]) {
+      setActiveRoute(routes[0]);
+    }
+  }, [routes, setRoutes, setActiveRoute]);
 
   // HACK - Antipattern, add routes and middleware to the reducer based off of external changes
   useEffect(() => {

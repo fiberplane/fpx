@@ -23,8 +23,7 @@ function getMainSectionWidth() {
 
 export const RequestorPage = () => {
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
-  const { isLoading, isError } = useRoutes();
-  console.log("hi i am routes", { isLoading, isError });
+  const { isLoading: _isLoading, isError: _isError } = useRoutes();
 
   const { sidePanel, settingsOpen } = useStudioStore(
     "sidePanel",

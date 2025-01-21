@@ -1,8 +1,13 @@
+import { StatusCode } from "@/components/StatusCode";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/utils";
+import { cn, getHttpMethodTextColor } from "@/utils";
 import { memo } from "react";
 import type { OpenAPIOperation, OpenAPISchema } from "./openapi";
+
+type OpenAPIParameter = NonNullable<
+  NonNullable<OpenAPIOperation["parameters"]>[number]
+>;
 
 type RouteDocumentationProps = {
   openApiSpec: OpenAPIOperation;
@@ -19,7 +24,20 @@ const getTitleWithFallback = (
   if (!route) {
     return "Untitled";
   }
-  return `${route.method} ${route.path}`;
+  return (
+    <>
+      <span
+        className={cn(
+          "font-mono",
+          // "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
+          getHttpMethodTextColor(route.method?.toUpperCase?.()),
+        )}
+      >
+        {route.method}
+      </span>
+      <span className="ml-1.5">{route.path}</span>
+    </>
+  );
 };
 
 export const RouteDocumentation = memo(function RouteDocumentation({
@@ -30,33 +48,33 @@ export const RouteDocumentation = memo(function RouteDocumentation({
     openApiSpec;
 
   const modTitle = getTitleWithFallback(title, route);
-  console.log("openApiSpec", openApiSpec);
+
   return (
     <ScrollArea className="h-full pb-8">
       <div className="p-2">
         {(modTitle || summary || description) && (
-          <section className="mb-4">
+          <DocsSection>
             {modTitle && (
-              <h3 className="text-xl font-semibold text-foreground mb-1">
+              <h3 className="text-lg font-semibold text-foreground pb-1 mb-2 border-b">
                 {modTitle}
               </h3>
             )}
-            {description && (
-              <p className="text-base leading-relaxed text-muted-foreground mb-1">
-                {description}
-              </p>
-            )}
             {summary && (
-              <h3 className="text-lg font-semibold text-muted-foreground mb-2">
+              <h3 className="text-lg font-normal text-foreground mb-1">
                 {summary}
               </h3>
             )}
-          </section>
+            {description && (
+              <p className="text-base text-muted-foreground mb-1">
+                {description}
+              </p>
+            )}
+          </DocsSection>
         )}
 
         {/* URL Parameters Section */}
         {parameters && parameters.length > 0 && (
-          <section className="">
+          <DocsSection>
             <SectionHeader>Parameters</SectionHeader>
             <div className="space-y-2">
               {parameters.map((param, idx) => (
@@ -64,30 +82,23 @@ export const RouteDocumentation = memo(function RouteDocumentation({
                   key={`${param.name}-${idx}`}
                   className="flex flex-col space-y-2"
                 >
-                  <div className="flex items-baseline gap-3">
-                    <ParameterName name={param.name} />
-                    <TypeBadge
-                      type={
-                        (param.schema &&
-                          "type" in param.schema &&
-                          param.schema.type) ||
-                        "string"
-                      }
-                    />
-                    {param.required && <RequiredBadge />}
-                  </div>
+                  <DocsParameter
+                    name={param?.name}
+                    type={getTypeFromParameter(param)}
+                    required={param.required ?? false}
+                  />
                   {param.description && (
                     <ParameterDescription description={param.description} />
                   )}
                 </div>
               ))}
             </div>
-          </section>
+          </DocsSection>
         )}
 
         {/* Request Body Section */}
         {requestBody && (
-          <section className="">
+          <DocsSection>
             {Object.entries(requestBody.content).map(([mediaType, content]) => (
               <div key={mediaType}>
                 <SectionHeader>
@@ -103,25 +114,25 @@ export const RouteDocumentation = memo(function RouteDocumentation({
                 </div>
               </div>
             ))}
-          </section>
+          </DocsSection>
         )}
 
         {/* Responses Section */}
         {responses && (
-          <section className="mt-6">
+          <DocsSection>
             <SectionHeader>Responses</SectionHeader>
             <div className="space-y-4 ">
               {Object.entries(responses).map(([status, response]) => (
                 <div
                   key={status}
-                  className="space-y-2 border-b border-primary/20 pb-4 border-dashed"
+                  className="space-y-2 border-b-2 pb-4 border-dashed"
                 >
                   {!response.content && (
                     <div className="">
                       <div className="mt-2">
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
-                            <StatusBadge status={status} />
+                            <StatusCode status={status} isFailure={false} />
                           </div>
                           <ContentTypeBadge mediaType={"—"} />
                         </div>
@@ -145,7 +156,7 @@ export const RouteDocumentation = memo(function RouteDocumentation({
                           <div key={mediaType} className="mt-2">
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <StatusBadge status={status} />
+                                <StatusCode status={status} isFailure={false} />
                               </div>
                               <ContentTypeBadge mediaType={mediaType} />
                             </div>
@@ -170,7 +181,7 @@ export const RouteDocumentation = memo(function RouteDocumentation({
                 </div>
               ))}
             </div>
-          </section>
+          </DocsSection>
         )}
       </div>
     </ScrollArea>
@@ -215,11 +226,11 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
             schema.properties as Record<string, OpenAPISchema>,
           ).map(([key, prop]) => (
             <div key={key} className="space-y-1">
-              <div className="flex items-baseline gap-2">
-                <ParameterName name={key} />
-                <TypeBadge type={prop.type ?? "string"} />
-                {schema.required?.includes(key) && <RequiredBadge />}
-              </div>
+              <DocsParameter
+                name={key}
+                type={prop.type ?? "string"}
+                required={schema.required?.includes(key) ?? false}
+              />
               <div className="flex flex-col space-y-1">
                 {prop.description && (
                   <ParameterDescription description={prop.description} />
@@ -260,23 +271,33 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const variant: "default" | "destructive" | "outline" = "outline";
-  let statusClass = "text-gray-400 border-gray-700";
-
-  if (status.startsWith("2")) {
-    statusClass = "bg-green-500/10 text-green-400 border-green-800";
-  } else if (status.startsWith("4")) {
-    statusClass = "bg-orange-500/10 text-orange-400 border-orange-800";
-  } else if (status.startsWith("5")) {
-    statusClass = "bg-red-500/10 text-red-400 border-red-800";
-  }
-
+function DocsParameter({
+  name,
+  type,
+  required,
+}: { name: string; type: string; required: boolean }) {
   return (
-    <Badge variant={variant} className={cn("text-xs", statusClass)}>
-      {status}
-    </Badge>
+    <div className="flex items-baseline justify-between">
+      <ParameterName name={name} />
+      <div className="flex items-baseline gap-3">
+        <TypeBadge type={type} />
+        {required && <RequiredBadge />}
+      </div>
+    </div>
   );
+}
+
+/**
+ * Get the type (string, int, etc) from a parameter.
+ */
+function getTypeFromParameter(param: OpenAPIParameter) {
+  return (
+    (param.schema && "type" in param.schema && param.schema.type) || "string"
+  );
+}
+
+function DocsSection({ children }: { children: React.ReactNode }) {
+  return <section className="mb-6">{children}</section>;
 }
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
@@ -289,7 +310,7 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
 
 function RequiredBadge() {
   return (
-    <span className="px-0.5 py-0 text-xs text-orange-700 border-none font-normal font-sans">
+    <span className="px-0.5 py-0 text-xs text-warning border-none font-normal font-sans">
       required
     </span>
   );
@@ -305,9 +326,7 @@ function TypeBadge({ type }: { type: string }) {
 
 function ParameterName({ name }: { name: string }) {
   return (
-    <code className="mr-2 py-0.5 rounded-md text-sm font-sans tracking-wide text-muted-foreground">
-      {name}
-    </code>
+    <code className="mr-2 py-0.5 rounded-md text-sm font-sans">{name}</code>
   );
 }
 
@@ -329,7 +348,7 @@ function ParameterExample({ example }: ParameterExampleProps) {
   return (
     <div className="text-xs">
       <span className="text-muted-foreground">Example: </span>
-      <code className="font-sans text-muted-foreground px-1.5 py-0.5 rounded">
+      <code className="font-sans px-1.5 py-0.5 rounded">
         {typeof example === "string" ? `"${example}"` : JSON.stringify(example)}
       </code>
     </div>
