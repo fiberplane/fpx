@@ -87,12 +87,11 @@ pub enum CommonError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use http_body_util::BodyExt;
 
     #[derive(Debug, Serialize, Deserialize, Error, ApiError)]
     #[serde(tag = "error", content = "details", rename_all = "camelCase")]
     #[non_exhaustive]
-    pub enum RequestGetError {
+    pub enum TestError {
         #[api_error(status_code = StatusCode::NOT_FOUND)]
         #[error("Request not found")]
         RequestNotFound,
@@ -102,63 +101,20 @@ mod tests {
         InvalidId,
     }
 
-    /// Test to convert Service Error in a ApiServerError to a ApiClientError.
-    #[tokio::test]
-    async fn api_server_error_to_api_client_error_service_error() {
-        let response =
-            ApiServerError::ServiceError(RequestGetError::RequestNotFound).into_response();
-
-        let (parts, body) = response.into_parts();
-        let body = body
-            .collect()
-            .await
-            .expect("Should be able to read body")
-            .to_bytes();
-
-        let api_client_error = ApiClientError::from_response(parts.status, body);
-
-        match api_client_error {
-            ApiClientError::ServiceError(err) => match err {
-                RequestGetError::RequestNotFound => (),
-                err => panic!("Unexpected service error: {:?}", err),
-            },
-            err => panic!("Unexpected error: {:?}", err),
-        }
-    }
-
-    /// Test to convert Common Error in a ApiServerError to a ApiClientError.
-    #[tokio::test]
-    async fn api_server_error_to_api_client_error_common_error() {
-        let response =
-            ApiServerError::CommonError::<RequestGetError>(CommonError::InternalServerError)
-                .into_response();
-
-        let (parts, body) = response.into_parts();
-        let body = body
-            .collect()
-            .await
-            .expect("Should be able to read body")
-            .to_bytes();
-
-        let api_client_error: ApiClientError<RequestGetError> =
-            ApiClientError::from_response(parts.status, body);
-
-        match api_client_error {
-            ApiClientError::CommonError(CommonError::InternalServerError) => (),
-            err => panic!("Unexpected error: {:?}", err),
-        }
-    }
-
     /// Test to confirm that a anyhow::Error can be converted into a
     /// ApiServerError.
     #[tokio::test]
     async fn anyhow_error_into_api_server_error() {
         let anyhow_error = anyhow::Error::msg("some random anyhow error");
-        let api_server_error: ApiServerError<RequestGetError> = anyhow_error.into();
+        let api_server_error: ApiServerError<TestError> = anyhow_error.into();
 
-        match api_server_error {
-            ApiServerError::CommonError(CommonError::InternalServerError) => (),
-            err => panic!("Unexpected error: {:?}", err),
-        };
+        assert!(
+            matches!(
+                api_server_error,
+                ApiServerError::CommonError(CommonError::InternalServerError)
+            ),
+            "returned error does not match expected error; got: {:?}",
+            api_server_error
+        );
     }
 }

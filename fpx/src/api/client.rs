@@ -265,3 +265,79 @@ where
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::api::errors::ApiServerError;
+    use axum::response::IntoResponse;
+    use fpx_macros::ApiError;
+    use http::StatusCode;
+    use http_body_util::BodyExt;
+    use serde::{Deserialize, Serialize};
+    use thiserror::Error;
+    use tracing::error;
+
+    #[derive(Debug, Serialize, Deserialize, Error, ApiError)]
+    #[serde(tag = "error", content = "details", rename_all = "camelCase")]
+    #[non_exhaustive]
+    pub enum TestError {
+        #[api_error(status_code = StatusCode::NOT_FOUND)]
+        #[error("Request not found")]
+        RequestNotFound,
+
+        #[api_error(status_code = StatusCode::BAD_REQUEST)]
+        #[error("Provided ID is invalid")]
+        InvalidId,
+    }
+
+    /// Test to convert Service Error in a ApiServerError to a ApiClientError.
+    #[tokio::test]
+    async fn api_server_error_to_api_client_error_service_error() {
+        let response = ApiServerError::ServiceError(TestError::RequestNotFound).into_response();
+
+        let (parts, body) = response.into_parts();
+        let body = body
+            .collect()
+            .await
+            .expect("Should be able to read body")
+            .to_bytes();
+
+        let api_client_error = ApiClientError::from_response(parts.status, body);
+
+        assert!(
+            matches!(
+                api_client_error,
+                ApiClientError::ServiceError(TestError::RequestNotFound)
+            ),
+            "returned error does not match expected error; got: {:?}",
+            api_client_error
+        );
+    }
+
+    /// Test to convert Common Error in a ApiServerError to a ApiClientError.
+    #[tokio::test]
+    async fn api_server_error_to_api_client_error_common_error() {
+        let response = ApiServerError::CommonError::<TestError>(CommonError::InternalServerError)
+            .into_response();
+
+        let (parts, body) = response.into_parts();
+        let body = body
+            .collect()
+            .await
+            .expect("Should be able to read body")
+            .to_bytes();
+
+        let api_client_error: ApiClientError<TestError> =
+            ApiClientError::from_response(parts.status, body);
+
+        assert!(
+            matches!(
+                api_client_error,
+                ApiClientError::CommonError(CommonError::InternalServerError),
+            ),
+            "returned error does not match expected error; got: {:?}",
+            api_client_error
+        )
+    }
+}
