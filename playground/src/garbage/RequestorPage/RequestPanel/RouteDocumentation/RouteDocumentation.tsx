@@ -4,6 +4,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn, getHttpMethodTextColor } from "@/utils";
 import { memo } from "react";
 import type { OpenAPIOperation, OpenAPISchema } from "./openapi";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { ChevronRight } from "lucide-react";
 
 type OpenAPIParameter = NonNullable<
   NonNullable<OpenAPIOperation["parameters"]>[number]
@@ -48,6 +50,8 @@ export const RouteDocumentation = memo(function RouteDocumentation({
     openApiSpec;
 
   const modTitle = getTitleWithFallback(title, route);
+
+  console.log("hIII", openApiSpec);
 
   return (
     <ScrollArea className="h-full pb-8">
@@ -190,14 +194,15 @@ export const RouteDocumentation = memo(function RouteDocumentation({
 
 // Helper functions for type checking
 const isArraySchema = (schema: OpenAPISchema): boolean => 
-  schema.type === "array" && !!schema.items;
+  schema?.type === "array";
 
 const isObjectSchema = (schema: OpenAPISchema): boolean => 
-  schema.type === "object" && !!schema.properties;
+  schema?.type === "object" || !!schema?.properties;
 
 const isPrimitiveArrayItems = (schema: OpenAPISchema): boolean =>
   isArraySchema(schema) && 
-  (schema.items as OpenAPISchema).type !== "object";
+  (schema.items as OpenAPISchema)?.type !== "object" &&
+  !(schema.items as OpenAPISchema)?.properties;
 
 // Component for rendering array type schemas
 type ArraySchemaProps = {
@@ -209,37 +214,57 @@ function ArraySchemaViewer({ schema }: ArraySchemaProps) {
   
   return (
     <div className="space-y-2">
-      {/* Array type header */}
-      <div className="flex items-center gap-2">
-        <TypeBadge type="array" />
-        <span className="text-gray-400 text-xs">of</span>
-        <TypeBadge type={itemSchema.type ?? "object"} />
-      </div>
+      <Collapsible>
+        {/* Array type header - acts as trigger */}
+        <CollapsibleTrigger className="flex items-center gap-2 w-full hover:bg-muted/50 rounded px-2 py-1 group">
+          <ChevronRight className="h-4 w-4 text-muted-foreground group-data-[state=open]:rotate-90 transition-transform" />
+          <TypeBadge type="array" />
+          <span className="text-muted-foreground text-xs">of</span>
+          <TypeBadge type={itemSchema.type ?? "object"} />
+        </CollapsibleTrigger>
 
-      {/* Array items content */}
-      <div className="pl-4 border-l-2 mt-2">
-        {isPrimitiveArrayItems(schema) ? (
-          // Primitive array items (strings, numbers, etc)
-          <>
-            {itemSchema.description && (
-              <ParameterDescription 
-                description={itemSchema.description as string} 
-              />
+        {/* Array items content - collapsible */}
+        <CollapsibleContent>
+          <div className="pl-4 border-l-2 mt-2">
+            {/* Show array example if it exists */}
+            {schema.example && (
+              <div className="mb-2">
+                <ParameterExample example={schema.example} />
+              </div>
             )}
-            {itemSchema.example !== undefined && (
-              <ParameterExample example={itemSchema.example} />
+            
+            {isPrimitiveArrayItems(schema) ? (
+              // Primitive array items (strings, numbers, etc)
+              <>
+                {itemSchema.description && (
+                  <ParameterDescription 
+                    description={itemSchema.description as string} 
+                  />
+                )}
+                {/* Show item example if no array example exists */}
+                {!schema.example && itemSchema.example !== undefined && (
+                  <ParameterExample example={itemSchema.example} />
+                )}
+              </>
+            ) : (
+              // Object array items
+              <>
+                <div className="text-muted-foreground text-xs mb-2">
+                  Array items:
+                </div>
+                <SchemaViewer schema={itemSchema} />
+                {/* Show item example if no array example exists */}
+                {!schema.example && itemSchema.example !== undefined && (
+                  <div className="mt-2">
+                    <div className="text-muted-foreground text-xs mb-1">Example item:</div>
+                    <ParameterExample example={itemSchema.example} />
+                  </div>
+                )}
+              </>
             )}
-          </>
-        ) : (
-          // Object array items
-          <>
-            <div className="text-muted-foreground text-xs mb-2">
-              Array items:
-            </div>
-            <SchemaViewer schema={itemSchema} />
-          </>
-        )}
-      </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 }
@@ -250,11 +275,41 @@ type ObjectSchemaProps = {
 };
 
 function ObjectSchemaViewer({ schema }: ObjectSchemaProps) {
+  // Handle objects with additionalProperties but no defined properties
+  if (!schema.properties && schema.additionalProperties) {
+    return (
+      <div className="space-y-4">
+        <div className="text-muted-foreground text-xs">
+          Object with additional properties of type: {
+            typeof schema.additionalProperties === 'object' 
+              ? (schema.additionalProperties as OpenAPISchema).type ?? 'any'
+              : 'any'
+          }
+        </div>
+        {schema.example && (
+          <ParameterExample example={schema.example} />
+        )}
+      </div>
+    );
+  }
+
+  // Handle objects with no properties defined
+  if (!schema.properties) {
+    return (
+      <div className="space-y-4">
+        <div className="text-muted-foreground text-xs">
+          Object type
+        </div>
+        {schema.example && (
+          <ParameterExample example={schema.example} />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      {Object.entries(
-        schema.properties as Record<string, OpenAPISchema>,
-      ).map(([key, prop]) => (
+      {Object.entries(schema.properties).map(([key, prop]) => (
         <div key={key} className="space-y-1">
           {/* Property name and type */}
           <DocsParameter
@@ -303,7 +358,7 @@ function PrimitiveSchemaViewer({ schema }: PrimitiveSchemaProps) {
           {schema.type}
         </code>
         {schema.enum && (
-          <span className="text-gray-500 text-xs">
+          <span className="text-foreground text-xs">
             enum: [{schema.enum.join(", ")}]
           </span>
         )}
@@ -334,6 +389,9 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
   if (!schema || typeof schema !== "object") {
     return null;
   }
+
+  // Debug logging to help diagnose schema type issues
+  console.log("Schema type:", schema.type, "Has properties:", !!schema.properties, "Is array:", isArraySchema(schema));
 
   return (
     <div className={cn("font-mono text-sm", className)}>
