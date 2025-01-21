@@ -736,7 +736,7 @@ importers:
         specifier: ^12.1.3
         version: 12.1.3
       zod:
-        specifier: '*'
+        specifier: ^3.23.8
         version: 3.24.1
     devDependencies:
       '@types/node':
