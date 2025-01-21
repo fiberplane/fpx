@@ -820,8 +820,41 @@ dependencies = [
  "async-trait",
  "axum 0.7.9",
  "bytes",
+ "fpx-macros",
+ "futures-util",
+ "hex",
+ "http 1.2.0",
+ "http-body-util",
+ "libsql",
+ "opentelemetry",
+ "opentelemetry-proto",
+ "opentelemetry_sdk",
+ "prost 0.13.4",
+ "schemars",
+ "serde",
+ "serde_json",
+ "strum",
+ "thiserror 2.0.11",
+ "time",
+ "tokio",
+ "tower 0.4.13",
+ "tower-http 0.5.2",
+ "tracing",
+ "tracing-opentelemetry",
+ "url",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "fpx-cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum 0.7.9",
+ "bytes",
  "clap",
- "fpx-lib",
+ "fpx",
  "fpx-macros",
  "futures-util",
  "hex",
@@ -857,39 +890,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fpx-lib"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "axum 0.7.9",
- "bytes",
- "fpx-macros",
- "futures-util",
- "hex",
- "http 1.2.0",
- "http-body-util",
- "libsql",
- "opentelemetry",
- "opentelemetry-proto",
- "opentelemetry_sdk",
- "prost 0.13.4",
- "schemars",
- "serde",
- "serde_json",
- "strum",
- "thiserror 2.0.11",
- "time",
- "tokio",
- "tower 0.4.13",
- "tower-http 0.5.2",
- "tracing",
- "tracing-opentelemetry",
- "url",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "fpx-macros"
 version = "0.1.0"
 dependencies = [
@@ -905,7 +905,7 @@ version = "0.1.0"
 dependencies = [
  "axum 0.7.9",
  "console_error_panic_hook",
- "fpx-lib",
+ "fpx",
  "getrandom",
  "serde",
  "serde_json",
@@ -3899,7 +3899,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
- "fpx-lib",
+ "fpx",
  "schemars",
  "serde",
  "serde_json",

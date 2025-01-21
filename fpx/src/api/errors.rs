@@ -84,10 +84,9 @@ pub enum ApiClientError<E> {
     #[error("An invalid URL was provided: {0}")]
     ParseError(#[from] url::ParseError),
 
-    /// An error occurred in reqwest.
-    #[error("An error occurred while making the request: {0}")]
-    ClientError(#[from] reqwest::Error),
-
+    // /// An error occurred in reqwest.
+    // #[error("An error occurred while making the request: {0}")]
+    // ClientError(#[from] reqwest::Error),
     /// An error returned from the service. These errors are specific to the
     /// endpoint that was called.
     #[error(transparent)]
