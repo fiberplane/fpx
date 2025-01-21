@@ -1,12 +1,11 @@
+import { safeParseJson } from "@/utils";
+import { z } from "zod";
 import type { StateCreator } from "zustand";
 import { enforceTerminalDraftParameter } from "../../KeyValueForm";
 import type { KeyValueParameter } from "../types";
 import type { StudioState } from "./types";
-import { z } from "zod";
-import { safeParseJson } from "@/utils";
 
 const SETTINGS_STORAGE_KEY = "playground_settings";
-
 
 const AuthorizationBaseSchema = z.object({
   id: z.string(),
@@ -26,7 +25,10 @@ const AuthorizationBasicSchema = AuthorizationBaseSchema.extend({
 });
 export type AuthorizationBasic = z.infer<typeof AuthorizationBasicSchema>;
 
-export const AuthorizationSchema = z.union([AuthorizationBasicSchema, AuthorizationBearerSchema]);
+export const AuthorizationSchema = z.union([
+  AuthorizationBasicSchema,
+  AuthorizationBearerSchema,
+]);
 export type Authorization = z.infer<typeof AuthorizationSchema>;
 const AuthorizationsSchema = z.array(AuthorizationSchema);
 
@@ -84,7 +86,9 @@ export interface SettingsSlice {
   useMockApiSpec: boolean;
 
   // Actions
-  addAuthorization: (authorization: Authorization & Pick<Partial<Authorization>, "id">) => void;
+  addAuthorization: (
+    authorization: Authorization & Pick<Partial<Authorization>, "id">,
+  ) => void;
   updateAuthorization: (authorization: Authorization) => void;
   removeAuthorization: (id: string) => void;
   setPersistentAuthHeaders: (headers: KeyValueParameter[]) => void;
@@ -101,7 +105,9 @@ export const settingsSlice: StateCreator<
 
   return {
     ...initialState,
-    addAuthorization: (authorization: Authorization & Pick<Partial<Authorization>, "id">) => {
+    addAuthorization: (
+      authorization: Authorization & Pick<Partial<Authorization>, "id">,
+    ) => {
       const { id = crypto.randomUUID() } = authorization;
       const newAuthorization = { ...authorization, id };
       set((state) => {
@@ -117,7 +123,9 @@ export const settingsSlice: StateCreator<
     },
     updateAuthorization: (authorization: Authorization) => {
       set((state) => {
-        const index = state.authorizations.findIndex((auth) => auth.id === authorization.id);
+        const index = state.authorizations.findIndex(
+          (auth) => auth.id === authorization.id,
+        );
         if (index === -1) {
           return;
         }
@@ -134,7 +142,9 @@ export const settingsSlice: StateCreator<
     },
     removeAuthorization: (id: string) => {
       set((state) => {
-        state.authorizations = state.authorizations.filter((auth) => auth.id !== id);
+        state.authorizations = state.authorizations.filter(
+          (auth) => auth.id !== id,
+        );
         localStorage.setItem(
           SETTINGS_STORAGE_KEY,
           JSON.stringify({

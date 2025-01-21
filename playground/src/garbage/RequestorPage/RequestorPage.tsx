@@ -10,7 +10,7 @@ import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { NavigationFrame, NavigationPanel } from "./NavigationPanel";
 import { RequestorPageContent } from "./RequestorPageContent";
-import { SettingsPage } from "./Settings/SettingsPage";
+// import { SettingsPage } from "./Settings/SettingsPage";
 import { useRoutes } from "./routes";
 import { useStudioStore } from "./store";
 
