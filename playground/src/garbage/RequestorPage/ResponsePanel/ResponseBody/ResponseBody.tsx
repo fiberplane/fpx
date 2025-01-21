@@ -111,9 +111,9 @@ function UnknownResponse({
   return (
     <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
       <CollapsibleBodyContainer>
-        <div className="text-gray-400 py-20 flex flex-col items-center justify-center gap-4">
+        <div className="text-muted-foreground py-20 flex flex-col items-center justify-center gap-4">
           <QuestionMarkIcon className="h-8 w-8" />
-          <span className="text-gray-200 italic">
+          <span className="text-muted-foreground italic">
             Unknown response type, cannot render body
           </span>
         </div>
