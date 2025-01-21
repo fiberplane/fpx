@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/utils";
+import { cn, getHttpMethodTextColor } from "@/utils";
 import { memo } from "react";
 import type { OpenAPIOperation, OpenAPISchema } from "./openapi";
 
@@ -19,7 +19,20 @@ const getTitleWithFallback = (
   if (!route) {
     return "Untitled";
   }
-  return `${route.method} ${route.path}`;
+  return (
+    <>
+      <span
+        className={cn(
+          "font-mono",
+          // "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
+          getHttpMethodTextColor(route.method?.toUpperCase?.()),
+        )}
+      >
+        {route.method}
+      </span>
+      <span className="ml-1.5">{route.path}</span>
+    </>
+  );
 };
 
 export const RouteDocumentation = memo(function RouteDocumentation({
@@ -30,26 +43,26 @@ export const RouteDocumentation = memo(function RouteDocumentation({
     openApiSpec;
 
   const modTitle = getTitleWithFallback(title, route);
-  console.log("openApiSpec", openApiSpec);
+
   return (
     <ScrollArea className="h-full pb-8">
       <div className="p-2">
         {(modTitle || summary || description) && (
           <section className="mb-4">
             {modTitle && (
-              <h3 className="text-xl font-semibold text-foreground mb-1">
+              <h3 className="text-lg font-semibold text-foreground pb-1 mb-2 border-b">
                 {modTitle}
+              </h3>
+            )}
+            {summary && (
+              <h3 className="text-lg font-semibold text-muted-foreground mb-2">
+                {summary}
               </h3>
             )}
             {description && (
               <p className="text-base leading-relaxed text-muted-foreground mb-1">
                 {description}
               </p>
-            )}
-            {summary && (
-              <h3 className="text-lg font-semibold text-muted-foreground mb-2">
-                {summary}
-              </h3>
             )}
           </section>
         )}
