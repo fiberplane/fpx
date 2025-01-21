@@ -8,6 +8,8 @@ export default function createTokensApiRoute(apiKey: string) {
 
   const service = new FpService({ apiKey });
 
+  app.get("/", async (c) => c.json({ lol: "broek" }));
+
   app.put("/", async (c) => {
     const requestBody = await c.req.json();
     const { metadata } = z.object({ metadata: z.string() }).parse(requestBody);

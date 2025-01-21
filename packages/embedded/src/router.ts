@@ -6,28 +6,29 @@ import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 
 export type RouterSpec =
   | {
-      type: "url";
-      value: string;
-      origin: string;
-    }
+    type: "url";
+    value: string;
+    origin: string;
+  }
   | {
-      type: "path";
-      value: string;
-      origin: string;
-    }
+    type: "path";
+    value: string;
+    origin: string;
+  }
   | {
-      type: "raw";
-      value: OpenAPIV3_1.Document | OpenAPIV3.Document;
-      origin: string;
-    }
+    type: "raw";
+    value: OpenAPIV3_1.Document | OpenAPIV3.Document;
+    origin: string;
+  }
   | {
-      type: "empty";
-      value: undefined;
-      origin: string;
-    };
+    type: "empty";
+    value: undefined;
+    origin: string;
+  };
 
 export interface EmbeddedRouterOptions
-  extends Omit<EmbeddedMiddlewareOptions, "spec"> {
+  extends Omit<EmbeddedMiddlewareOptions, "cdn" | "spec"> {
+  cdn: string;
   mountedPath: string;
   spec: RouterSpec;
 }
