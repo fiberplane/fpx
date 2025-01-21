@@ -4,6 +4,10 @@ export default {
   content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["Geist", "sans-serif"],
+        mono: ["Geist Mono", "monospace"],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -50,6 +54,10 @@ export default {
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
         },
+        info: "hsl(var(--info))",
+        success: "hsl(var(--success))",
+        danger: "hsl(var(--danger))",
+        warning: "hsl(var(--warning))",
       },
     },
   },

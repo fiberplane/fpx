@@ -1,6 +1,6 @@
 {
   "name": "@fiberplane/embedded",
-  "version": "0.0.10",
+  "version": "0.0.15",
   "type": "module",
   "exports": {
     ".": {
@@ -25,20 +25,19 @@
     "lint": "biome lint .",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "@hono/node-server": "^1.13.7",
-    "hono": "^4.6.12"
-  },
   "devDependencies": {
     "@types/node": "*",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "hono": "^4.6.12",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
+  "peerDependencies": {
+    "hono": "^4.0",
+    "zod": "*"
+  },
   "dependencies": {
-    "@fiberplane/fpx-types": "workspace:*",
-    "@fiberplane/playground": "workspace:*",
-    "zod": "^3.24.1"
+    "openapi-types": "^12.1.3"
   }
 }

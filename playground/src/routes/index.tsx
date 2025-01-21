@@ -1,4 +1,5 @@
-import { Playground } from "@/components/playground";
+import { Layout } from "@/Layout";
+import { RequestorPage } from "@/garbage/RequestorPage";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
@@ -6,5 +7,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  return <Playground />;
+  return (
+    <Layout>
+      <RequestorPage />
+    </Layout>
+  );
 }
