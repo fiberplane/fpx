@@ -57,14 +57,14 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
             )}
           </CustomTabTrigger>
 
-          <CustomTabTrigger value="headers">
+          {responseToRender && <CustomTabTrigger value="headers">
             Headers
             {responseHeaders && Object.keys(responseHeaders).length > 1 && (
               <span className="ml-1 text-gray-400 font-mono text-xs">
                 ({Object.keys(responseHeaders).length})
               </span>
             )}
-          </CustomTabTrigger>
+          </CustomTabTrigger>}
         </CustomTabsList>
         <CustomTabsContent value="response" className="h-full">
           <TabContentInner
@@ -144,9 +144,9 @@ function ResponseSummary({
   const url = isRequestorActiveResponse(response)
     ? response?.requestUrl
     : parsePathFromRequestUrl(
-        response?.app_requests?.requestUrl ?? "",
-        response?.app_requests?.requestQueryParams ?? undefined,
-      );
+      response?.app_requests?.requestUrl ?? "",
+      response?.app_requests?.requestQueryParams ?? undefined,
+    );
   return (
     <div className="flex items-center space-x-2 text-sm">
       <StatusCode status={status ?? "—"} isFailure={!status} />

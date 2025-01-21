@@ -41,9 +41,9 @@ export const RequestorPage = () => {
     minimalGroupSize: 944,
   });
 
-  if (settingsOpen) {
-    return <SettingsPage />;
-  }
+  // if (settingsOpen) {
+  //   return <SettingsPage />;
+  // }
 
   return (
     <div
