@@ -9,7 +9,10 @@ interface FpServiceOptions {
 export class FpService {
   readonly tokens: TokenService;
 
-  constructor({ apiKey, baseUrl = "http://localhost:1234/api" }: FpServiceOptions) {
+  constructor({
+    apiKey,
+    baseUrl = "http://localhost:1234/api",
+  }: FpServiceOptions) {
     this.tokens = new TokenService(apiKey, baseUrl);
   }
-} 
+}

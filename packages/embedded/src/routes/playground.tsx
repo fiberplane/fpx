@@ -3,9 +3,9 @@
 import { jsx } from "hono/jsx";
 
 import { Hono } from "hono";
-import type { EmbeddedRouterOptions, RouterSpec } from "../router.js";
-import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 import { html, raw } from "hono/html";
+import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
+import type { EmbeddedRouterOptions, RouterSpec } from "../router.js";
 
 export default function createPlayground({
   cdn,
@@ -84,17 +84,17 @@ function ensureOriginServer(
 
 export type ResolvedSpec =
   | {
-    type: "success";
-    spec: OpenAPIV3_1.Document | OpenAPIV3.Document | undefined;
-    source: RouterSpec["type"];
-  }
+      type: "success";
+      spec: OpenAPIV3_1.Document | OpenAPIV3.Document | undefined;
+      source: RouterSpec["type"];
+    }
   | {
-    type: "error";
-    error: string;
-    source: RouterSpec["type"];
-    retryable: boolean;
-    attemptedUrl?: string;
-  };
+      type: "error";
+      error: string;
+      source: RouterSpec["type"];
+      retryable: boolean;
+      attemptedUrl?: string;
+    };
 
 async function resolveSpec(
   spec?: RouterSpec,

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { FpService } from "../../services/index.js";
 import { z } from "zod";
+import { FpService } from "../../services/index.js";
 
 // Temporary implementation
 export default function createTokensApiRoute(apiKey: string) {

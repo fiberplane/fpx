@@ -1,11 +1,15 @@
 import { StatusCode } from "@/components/StatusCode";
 import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn, getHttpMethodTextColor } from "@/utils";
+import { ChevronRight } from "lucide-react";
 import { memo } from "react";
 import type { OpenAPIOperation, OpenAPISchema } from "./openapi";
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
-import { ChevronRight } from "lucide-react";
 
 type OpenAPIParameter = NonNullable<
   NonNullable<OpenAPIOperation["parameters"]>[number]
@@ -51,8 +55,6 @@ export const RouteDocumentation = memo(function RouteDocumentation({
 
   const modTitle = getTitleWithFallback(title, route);
 
-  console.log("hIII", openApiSpec);
-
   return (
     <ScrollArea className="h-full pb-8">
       <div className="p-2">
@@ -90,10 +92,10 @@ export const RouteDocumentation = memo(function RouteDocumentation({
                     name={param?.name}
                     type={getTypeFromParameter(param)}
                     required={param.required ?? false}
+                    schema={param.schema}
+                    showExample
+                    description={param.description}
                   />
-                  {param.description && (
-                    <ParameterDescription description={param.description} />
-                  )}
                 </div>
               ))}
             </div>
@@ -193,14 +195,14 @@ export const RouteDocumentation = memo(function RouteDocumentation({
 });
 
 // Helper functions for type checking
-const isArraySchema = (schema: OpenAPISchema): boolean => 
+const isArraySchema = (schema: OpenAPISchema): boolean =>
   schema?.type === "array";
 
-const isObjectSchema = (schema: OpenAPISchema): boolean => 
+const isObjectSchema = (schema: OpenAPISchema): boolean =>
   schema?.type === "object" || !!schema?.properties;
 
 const isPrimitiveArrayItems = (schema: OpenAPISchema): boolean =>
-  isArraySchema(schema) && 
+  isArraySchema(schema) &&
   (schema.items as OpenAPISchema)?.type !== "object" &&
   !(schema.items as OpenAPISchema)?.properties;
 
@@ -211,7 +213,7 @@ type ArraySchemaProps = {
 
 function ArraySchemaViewer({ schema }: ArraySchemaProps) {
   const itemSchema = schema.items as OpenAPISchema;
-  
+
   return (
     <div className="space-y-2">
       <Collapsible>
@@ -232,13 +234,13 @@ function ArraySchemaViewer({ schema }: ArraySchemaProps) {
                 <ParameterExample example={schema.example} />
               </div>
             )}
-            
+
             {isPrimitiveArrayItems(schema) ? (
               // Primitive array items (strings, numbers, etc)
               <>
                 {itemSchema.description && (
-                  <ParameterDescription 
-                    description={itemSchema.description as string} 
+                  <ParameterDescription
+                    description={itemSchema.description as string}
                   />
                 )}
                 {/* Show item example if no array example exists */}
@@ -256,7 +258,9 @@ function ArraySchemaViewer({ schema }: ArraySchemaProps) {
                 {/* Show item example if no array example exists */}
                 {!schema.example && itemSchema.example !== undefined && (
                   <div className="mt-2">
-                    <div className="text-muted-foreground text-xs mb-1">Example item:</div>
+                    <div className="text-muted-foreground text-xs mb-1">
+                      Example item:
+                    </div>
                     <ParameterExample example={itemSchema.example} />
                   </div>
                 )}
@@ -280,15 +284,12 @@ function ObjectSchemaViewer({ schema }: ObjectSchemaProps) {
     return (
       <div className="space-y-4">
         <div className="text-muted-foreground text-xs">
-          Object with additional properties of type: {
-            typeof schema.additionalProperties === 'object' 
-              ? (schema.additionalProperties as OpenAPISchema).type ?? 'any'
-              : 'any'
-          }
+          Object with additional properties of type:{" "}
+          {typeof schema.additionalProperties === "object"
+            ? ((schema.additionalProperties as OpenAPISchema).type ?? "any")
+            : "any"}
         </div>
-        {schema.example && (
-          <ParameterExample example={schema.example} />
-        )}
+        {schema.example && <ParameterExample example={schema.example} />}
       </div>
     );
   }
@@ -297,12 +298,8 @@ function ObjectSchemaViewer({ schema }: ObjectSchemaProps) {
   if (!schema.properties) {
     return (
       <div className="space-y-4">
-        <div className="text-muted-foreground text-xs">
-          Object type
-        </div>
-        {schema.example && (
-          <ParameterExample example={schema.example} />
-        )}
+        <div className="text-muted-foreground text-xs">Object type</div>
+        {schema.example && <ParameterExample example={schema.example} />}
       </div>
     );
   }
@@ -314,25 +311,29 @@ function ObjectSchemaViewer({ schema }: ObjectSchemaProps) {
           {/* Property name and type */}
           <DocsParameter
             name={key}
-            type={prop.type === "array" 
-              ? `array of ${(prop.items as OpenAPISchema)?.type ?? "object"}` 
-              : prop.type ?? "string"}
+            type={
+              prop.type === "array"
+                ? `array of ${(prop.items as OpenAPISchema)?.type ?? "object"}`
+                : (prop.type ?? "string")
+            }
             required={schema.required?.includes(key) ?? false}
+            schema={prop}
+            showExample={false}
           />
-          
+
           {/* Property details */}
           <div className="flex flex-col space-y-1">
             {prop.description && (
               <ParameterDescription description={prop.description} />
             )}
             {/* Handle nested arrays */}
-            {prop.type === "array" && prop.items && (
-              isArraySchema(prop) && isPrimitiveArrayItems(prop) ? (
+            {prop.type === "array" &&
+              prop.items &&
+              (isArraySchema(prop) && isPrimitiveArrayItems(prop) ? (
                 <ParameterExample example={prop.example} />
               ) : (
                 <SchemaViewer schema={prop} />
-              )
-            )}
+              ))}
             {/* Handle non-array properties */}
             {prop.type !== "array" && prop.example !== undefined && (
               <ParameterExample example={prop.example} />
@@ -391,7 +392,14 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
   }
 
   // Debug logging to help diagnose schema type issues
-  console.log("Schema type:", schema.type, "Has properties:", !!schema.properties, "Is array:", isArraySchema(schema));
+  console.log(
+    "Schema type:",
+    schema.type,
+    "Has properties:",
+    !!schema.properties,
+    "Is array:",
+    isArraySchema(schema),
+  );
 
   return (
     <div className={cn("font-mono text-sm", className)}>
@@ -410,14 +418,64 @@ function DocsParameter({
   name,
   type,
   required,
-}: { name: string; type: string; required: boolean }) {
+  schema,
+  showExample,
+  description,
+}: {
+  name: string;
+  type: string;
+  required: boolean;
+  schema?: OpenAPIParameter["schema"];
+  showExample?: boolean;
+  description?: string;
+}) {
   return (
-    <div className="flex items-baseline justify-between">
-      <ParameterName name={name} />
-      <div className="flex items-baseline gap-3">
-        <TypeBadge type={type} />
-        {required && <RequiredBadge />}
+    <div className="flex flex-col gap-2">
+      {/* Parameter name and type */}
+      <div className="flex items-baseline justify-between">
+        <ParameterName name={name} />
+        <div className="flex items-baseline gap-3">
+          <TypeBadge type={type} />
+          {required && <RequiredBadge />}
+        </div>
       </div>
+
+      {description && <ParameterDescription description={description} />}
+
+      {/* Enum values */}
+      {schema && "enum" in schema && schema.enum && (
+        <div className="flex flex-col gap-1">
+          <div className="text-xs text-muted-foreground">Allowed values:</div>
+          <div className="flex flex-wrap gap-1.5">
+            {schema.enum.map((value) => (
+              <code
+                key={value}
+                className={cn(
+                  "text-xs px-1.5 py-0.5 rounded bg-muted",
+                  value === schema.default && "ring-1 ring-primary/30",
+                )}
+              >
+                {value}
+                {value === schema.default && (
+                  <span className="ml-1 text-[10px] text-muted-foreground">
+                    (default)
+                  </span>
+                )}
+              </code>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Example value */}
+      {showExample &&
+        schema &&
+        "example" in schema &&
+        schema.example !== undefined && (
+          <div className="mt-1">
+            <ParameterExample example={schema.example} />
+          </div>
+        )}
     </div>
   );
 }

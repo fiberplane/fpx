@@ -7,22 +7,22 @@ const RevokeTokenResponseSchema = z.object({ success: z.boolean() });
 
 export class TokenService extends BaseService {
   async createToken(metadata: string) {
-    return this.request(CreateTokenResponseSchema, '/tokens', {
-      method: 'PUT',
-      body: JSON.stringify({metadata}),
+    return this.request(CreateTokenResponseSchema, "/tokens", {
+      method: "PUT",
+      body: JSON.stringify({ metadata }),
     });
   }
 
   async verifyToken(token: string) {
-    return this.request(VerifyTokenResponseSchema, '/tokens/verify', {
-      method: 'POST',
-      body: JSON.stringify({token}),
+    return this.request(VerifyTokenResponseSchema, "/tokens/verify", {
+      method: "POST",
+      body: JSON.stringify({ token }),
     });
   }
 
   async revokeToken(token: string) {
     return this.request(RevokeTokenResponseSchema, `/tokens/revoke/${token}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
-} 
+}

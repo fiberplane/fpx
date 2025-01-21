@@ -9,11 +9,15 @@ export class BaseService {
     this.baseUrl = baseUrl;
   }
 
-  protected async request<ResponseSchema>(schema: z.ZodType<ResponseSchema>, endpoint: string, options: RequestInit = {}): Promise<ResponseSchema> {
-    const url = `${this.baseUrl}${endpoint}`
+  protected async request<ResponseSchema>(
+    schema: z.ZodType<ResponseSchema>,
+    endpoint: string,
+    options: RequestInit = {},
+  ): Promise<ResponseSchema> {
+    const url = `${this.baseUrl}${endpoint}`;
     const headers = {
-      'Authorization': `Bearer ${this.apiKey}`,
-      'Content-Type': 'application/json',
+      Authorization: `Bearer ${this.apiKey}`,
+      "Content-Type": "application/json",
       ...options.headers,
     };
 
