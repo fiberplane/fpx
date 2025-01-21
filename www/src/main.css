@@ -26,6 +26,30 @@
       }
     }
   }
+
+  .starlight-aside.starlight-aside--note {
+    --sl-color-asides-text-accent: var(--fg-info);
+    --sl-color-asides-border: var(--fg-info);
+    background-color: var(--bg-info);
+  }
+
+  .starlight-aside.starlight-aside--caution {
+    --sl-color-asides-text-accent: var(--fg-warning);
+    --sl-color-asides-border: var(--fg-warning);
+    background-color: var(--bg-warning);
+  }
+
+  .starlight-aside.starlight-aside--danger {
+    --sl-color-asides-text-accent: var(--fg-danger);
+    --sl-color-asides-border: var(--fg-danger);
+    background-color: var(--bg-danger);
+  }
+
+  .starlight-aside.starlight-aside--tip {
+    --sl-color-asides-text-accent: var(--fg-tip);
+    --sl-color-asides-border: var(--fg-tip);
+    background-color: var(--bg-tip);
+  }
 }
 
 .sl-markdown-content h1,

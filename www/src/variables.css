@@ -114,6 +114,7 @@
   --bg-secondary-hover: var(--shell-200);
   --bg-secondary: var(--shell-100);
   --bg-success: var(--success-alpha-15);
+  --bg-tip: hsl(from var(--purple-600) h s l / 0.15);
   --bg-warning: var(--warning-alpha-15);
   --border-accent-on-primary: var(--neutral-500);
   --border-brand: var(--flame-500);
@@ -132,6 +133,7 @@
   --fg-on-primary: var(--neutral-white);
   --fg-subtle: var(--neutral-400);
   --fg-success: var(--success-600);
+  --fg-tip: var(--purple-600);
   --fg-warning: var(--warning-600);
 }
 
@@ -152,6 +154,7 @@
   --bg-secondary-hover: var(--neutral-700);
   --bg-secondary: var(--neutral-800);
   --bg-success: var(--success-alpha-15);
+  --bg-tip: hsl(from var(--purple-600) h s l / 0.15);
   --bg-warning: var(--warning-alpha-15);
   --border-accent-on-primary: var(--neutral-600);
   --border-brand: var(--flame-500);
@@ -170,5 +173,6 @@
   --fg-on-primary: var(--neutral-white);
   --fg-subtle: var(--neutral-500);
   --fg-success: var(--success-500);
+  --fg-tip: var(--purple-500);
   --fg-warning: var(--warning-500);
 }
