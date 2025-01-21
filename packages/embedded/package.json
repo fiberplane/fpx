@@ -23,7 +23,8 @@
     "build": "tsc",
     "format": "biome check . --write",
     "lint": "biome lint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "*",
@@ -34,8 +35,7 @@
     "react-dom": "^18.2.0"
   },
   "peerDependencies": {
-    "hono": "^4.0",
-    "zod": "^3.23.8"
+    "hono": "^4.0"
   },
   "dependencies": {
     "openapi-types": "^12.1.3"
