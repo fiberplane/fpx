@@ -26,5 +26,11 @@ export const uiSlice: StateCreator<
         state[panelName] = state[panelName] === "open" ? "closed" : "open";
         return;
       }),
+
+    shortcutsOpen: false,
+    setShortcutsOpen: (open: boolean) =>
+      set((state) => {
+        state.shortcutsOpen = open;
+      }),
   };
 };

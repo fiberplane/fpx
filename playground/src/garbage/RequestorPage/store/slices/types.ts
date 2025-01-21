@@ -88,6 +88,8 @@ export interface UISlice {
   setSettingsOpen: (open: boolean, defaultSettingsTab?: string | null) => void;
   sidePanel: PanelState;
   togglePanel: (panelName: "sidePanel") => void;
+  shortcutsOpen: boolean;
+  setShortcutsOpen: (open: boolean) => void;
 }
 
 export type StudioState = RequestResponseSlice &

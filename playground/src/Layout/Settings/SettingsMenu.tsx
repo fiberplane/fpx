@@ -1,5 +1,5 @@
+import { useStudioStore } from "@/garbage/RequestorPage/store";
 import { Icon } from "@iconify/react";
-import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import {
   Menubar,
   MenubarContent,
@@ -10,12 +10,17 @@ import {
 } from "@radix-ui/react-menubar";
 import { useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { KeyboardShortcutsModal } from "./KeyboardShortcutsModal";
 
 export function SettingsMenu({
   setSettingsOpen,
 }: { setSettingsOpen: (open: boolean) => void }) {
   const menuBarTriggerRef = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState<true | undefined>(undefined);
+  const { shortcutsOpen, setShortcutsOpen } = useStudioStore(
+    "shortcutsOpen",
+    "setShortcutsOpen",
+  );
 
   useHotkeys("shift+?", () => {
     setMenuOpen(true);
@@ -39,24 +44,15 @@ export function SettingsMenu({
           forceMount={menuOpen}
           className="z-50 min-w-[200px] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md grid gap-1 data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
         >
-          <MenuItemLink
-            href="https://fiberplane.com/docs/get-started"
-            icon={<Icon icon="lucide:book-open" />}
+          <MenubarItem
+            className="pointer-cursor-auto px-2 py-1 select-none focus:bg-secondary focus:text-secondary-foreground cursor-pointer focus:outline-none focus:ring-1 rounded-lg"
+            onClick={() => setShortcutsOpen(true)}
           >
-            Docs
-          </MenuItemLink>
-          <MenuItemLink
-            href="https://github.com/fiberplane/fpx"
-            icon={<GitHubLogoIcon className="w-3.5 h-3.5" />}
-          >
-            GitHub
-          </MenuItemLink>
-          <MenuItemLink
-            href="https://discord.com/invite/cqdY6SpfVR"
-            icon={<DiscordLogoIcon className="w-3.5 h-3.5" />}
-          >
-            Discord
-          </MenuItemLink>
+            <div className="flex items-center gap-2">
+              <Icon icon="lucide:book-open" />
+              Keyboard Shortcuts
+            </div>
+          </MenubarItem>
           <MenubarSeparator className="h-px bg-muted" />
           <MenubarItem
             className="pointer-cursor-auto px-2 py-1 select-none focus:bg-secondary focus:text-secondary-foreground cursor-pointer focus:outline-none focus:ring-1 rounded-lg"
@@ -69,6 +65,9 @@ export function SettingsMenu({
           </MenubarItem>
         </MenubarContent>
       </MenubarMenu>
+      {shortcutsOpen && (
+        <KeyboardShortcutsModal onClose={() => setShortcutsOpen(false)} />
+      )}
     </Menubar>
   );
 }
