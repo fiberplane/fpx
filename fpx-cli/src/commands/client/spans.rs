@@ -1,6 +1,6 @@
-use crate::api::client::ApiClient;
 use anyhow::Result;
 use clap::Subcommand;
+use fpx::api::client::ApiClient;
 use std::io::stdout;
 use url::Url;
 

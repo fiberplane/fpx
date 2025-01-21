@@ -21,7 +21,10 @@ axum = { workspace = true, default-features = false, features = [
 ] }
 bytes = { version = "1.6" }
 clap = { workspace = true, features = ["derive", "env"] }
-fpx = { version = "0.1.0", path = "../fpx", features = ["libsql"] }
+fpx = { version = "0.1.0", path = "../fpx", features = [
+    "libsql",
+    "fpx_client",
+] }
 fpx-macros = { version = "0.1.0", path = "../fpx-macros" }
 futures-util = { version = "0.3" }
 hex = { version = "0.4" }
@@ -47,12 +50,6 @@ opentelemetry-proto = { version = "0.27", features = [
 ] }
 prost = { version = "0.13" }
 rand = { version = "0.8.5" }
-reqwest = { version = "0.12", default-features = false, features = [
-    "charset",
-    "http2",
-    "rustls-tls",
-    "json",
-] }
 schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

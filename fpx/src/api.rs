@@ -7,6 +7,8 @@ use http::StatusCode;
 use tower_http::compression::CompressionLayer;
 use tower_http::decompression::RequestDecompressionLayer;
 
+#[cfg(feature = "fpx_client")]
+pub mod client;
 pub mod errors;
 pub mod handlers;
 pub mod models;
