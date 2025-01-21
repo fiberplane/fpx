@@ -74,6 +74,8 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
                   setUseMockApiSpec(!useMockApiSpec);
                   setOpen(false);
                 }}
+                //  The cmdk library has built-in fuzzy search, but we can improve the matching priority by adding a value prop to the CommandItems like this
+                value="mock api spec toggle"
               >
                 <Icon
                   icon="lucide:toggle-left"
@@ -124,6 +126,7 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
                       setActiveRequestsPanelTab(tabName);
                       setOpen(false);
                     }}
+                    value={`request ${tabName}`}
                   >
                     <Icon icon="lucide:file-text" className="h-4 w-4" />
                     <span>
