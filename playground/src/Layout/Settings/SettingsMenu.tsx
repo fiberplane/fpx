@@ -72,7 +72,9 @@ export function SettingsMenu({
   );
 }
 
-function MenuItemLink({
+// NOTE - IF we want to link to the Slack community or another doc page for the external api, this would be a good place to do it
+//        Or we can link to Fiberplane stuff...
+export function _MenuItemLinkOld({
   href,
   icon,
   children,

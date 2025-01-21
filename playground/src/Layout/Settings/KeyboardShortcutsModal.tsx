@@ -1,6 +1,5 @@
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Icon } from "@iconify/react";
 
 type ShortcutSection = {
   title: string;
