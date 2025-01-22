@@ -1,5 +1,5 @@
 import { useHandler } from "@fiberplane/hooks";
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import { getPanelGroupElement } from "react-resizable-panels";
 
 type PanelConstraintOptions = {
@@ -68,6 +68,10 @@ export function usePanelConstraints(
     }
   });
 
+  const debouncedUpdateCurrent = useMemo(() => {
+    return debounce(updateCurrent, (1 / 30) * 1000);
+  }, [updateCurrent]);
+
   useLayoutEffect(() => {
     const group = getPanelGroupElement(groupId);
     if (!group) {
@@ -80,7 +84,7 @@ export function usePanelConstraints(
     }
     const observer = new ResizeObserver((entries) => {
       const size = entries[0].contentRect[dimension];
-      updateCurrent(size);
+      debouncedUpdateCurrent(size);
     });
     observer.observe(group);
 
@@ -90,7 +94,22 @@ export function usePanelConstraints(
     return () => {
       observer.disconnect();
     };
-  }, [groupId, updateCurrent, dimension]);
+  }, [groupId, updateCurrent, debouncedUpdateCurrent, dimension]);
 
   return current;
+}
+
+function debounce<T extends (...args: Parameters<T>) => void>(
+  func: T,
+  wait: number,
+) {
+  let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
+  return (...args: Parameters<T>) => {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+    }
+    debounceTimeout = setTimeout(() => {
+      func(...args);
+    }, wait);
+  };
 }

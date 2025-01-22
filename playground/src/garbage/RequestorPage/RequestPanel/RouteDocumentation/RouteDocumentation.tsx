@@ -34,8 +34,6 @@ const getTitleWithFallback = (
     <>
       <span
         className={cn(
-          "font-mono",
-          // "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
           getHttpMethodTextColor(route.method?.toUpperCase?.()),
         )}
       >

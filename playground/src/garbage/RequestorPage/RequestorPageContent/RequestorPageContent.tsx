@@ -13,11 +13,13 @@ import { RequestPanel } from "../RequestPanel";
 import { RequestorInput } from "../RequestorInput";
 import { ResponsePanel } from "../ResponsePanel";
 import { useMakeProxiedRequest } from "../queries";
+import { useStudioStore } from "../store";
 import { useRequestorSubmitHandler } from "../useRequestorSubmitHandler";
 import { getMainSectionWidth } from "./util";
 
 export const RequestorPageContent: React.FC = (_props) => {
   // const appRouteRef = useLatest<ProbedRoute | undefined>(appRoute);
+  const { setShortcutsOpen } = useStudioStore("setShortcutsOpen");
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
     useMakeProxiedRequest();
@@ -50,6 +52,16 @@ export const RequestorPageContent: React.FC = (_props) => {
     (e) => {
       e.preventDefault();
       setCommandBarOpen(true);
+    },
+    {
+      enableOnFormTags: ["input"],
+    },
+  );
+
+  useHotkeys(
+    "mod+/",
+    () => {
+      setShortcutsOpen(true);
     },
     {
       enableOnFormTags: ["input"],
