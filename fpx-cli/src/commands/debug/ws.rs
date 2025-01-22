@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use fpx_lib::api::models::FPX_WEBSOCKET_ID_HEADER;
+use fpx::api::models::FPX_WEBSOCKET_ID_HEADER;
 use futures_util::{SinkExt, StreamExt};
 use std::sync::Arc;
 use tokio::sync::Mutex;
