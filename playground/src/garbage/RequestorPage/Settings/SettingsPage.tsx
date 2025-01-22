@@ -19,8 +19,6 @@ export function SettingsPage() {
 
         <Separator />
 
-        <Separator />
-
         <div className="space-y-4">
           <div>
             <h2 className="text-lg font-semibold">API Specification</h2>
