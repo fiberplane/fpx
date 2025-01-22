@@ -330,10 +330,18 @@ function ObjectSchemaViewer({ schema }: ObjectSchemaProps) {
               ) : (
                 <SchemaViewer schema={prop} />
               ))}
-            {/* Handle non-array properties */}
-            {prop.type !== "array" && prop.example !== undefined && (
-              <ParameterExample example={prop.example} />
+            {/* Handle nested objects */}
+            {prop.type === "object" && prop.properties && (
+              <div className="pl-4 border-l-2 mt-2">
+                <SchemaViewer schema={prop} />
+              </div>
             )}
+            {/* Handle non-array, non-object properties */}
+            {prop.type !== "array" &&
+              prop.type !== "object" &&
+              prop.example !== undefined && (
+                <ParameterExample example={prop.example} />
+              )}
           </div>
         </div>
       ))}
@@ -395,6 +403,8 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
     !!schema.properties,
     "Is array:",
     isArraySchema(schema),
+    "Is object:",
+    isObjectSchema(schema),
   );
 
   return (
