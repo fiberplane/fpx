@@ -20,7 +20,6 @@ export function BearerForm(props: {
     "removeAuthorization",
   );
 
-  // const ref = useRef<HTMLInputElement|null>(null)
   const ref = useHandler((node: HTMLInputElement | null) => {
     if (node) {
       node.focus();
@@ -62,7 +61,6 @@ export function BearerForm(props: {
         <div className="col-start-2 text-xs text-muted-foreground px-4">
           Results in: <code className="font-mono">Authorization: Bearer {token || "your_token_here"}</code>
         </div>
-
       </div>
       <Dialog onOpenChange={setConfirmDelete} open={confirmDelete}>
         <ConfirmationDialog

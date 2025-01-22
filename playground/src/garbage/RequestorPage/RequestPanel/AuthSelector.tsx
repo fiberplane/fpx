@@ -142,7 +142,7 @@ const BearerAuthorizationItem = (
 ) => {
   return (
     <div className="grid grid-cols-[auto_1fr] gap-2 items-center">
-      <KeyRoundIcon size={16} className="text-muted-foreground" />
+      Bearer
       <div className="font-mono">
         <MaskedText text={props.token} />
       </div>
