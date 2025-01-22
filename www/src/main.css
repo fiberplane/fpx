@@ -27,9 +27,8 @@
 
   --sl-color-text-accent: var(--fg-brand);
 
-  /* Banner WIP */
-  --sl-color-banner-bg: var(--flame-500);
-  --__sl-banner-text: black;
+  /* Banner WIP, might go for separate component */
+  --sl-color-banner-bg: var(--fg-brand);
 
   a.site-title {
     color: var(--sl-color-text);

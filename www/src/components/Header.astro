@@ -22,9 +22,11 @@ const navEntries = nav?.entries || [];
   <div class="title-wrapper sl-flex">
     <SiteTitle {...Astro.props} />
   </div>
-  <div class="sl-flex print:hidden">
+
+  <div class="sl-flex">
     <Search {...Astro.props} />
   </div>
+
   <div class="sl-hidden md:sl-flex right-group">
     <nav class="sl-flex nav-links">
       {
@@ -40,9 +42,11 @@ const navEntries = nav?.entries || [];
           ))
       }
     </nav>
-    <div class="sl-hidden md:sl-flex social-icons">
+
+    <div class="sl-flex social-icons">
       <SocialIcons {...Astro.props} />
     </div>
+
     <ThemeSelect {...Astro.props} />
   </div>
 </div>

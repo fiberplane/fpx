@@ -6,9 +6,12 @@ import type { Props } from "@astrojs/starlight/props";
 const { data } = Astro.props.entry;
 const { title = data.title, tagline, image, actions = [] } = data.hero || {};
 
-let heroImage: ImageMetadata | undefined;
-if (image && "file" in image) {
-  heroImage = image.file;
+const alt = image?.alt ?? "";
+let heroImageLight: ImageMetadata | undefined;
+let heroImageDark: ImageMetadata | undefined;
+if (image && "light" in image && "dark" in image) {
+  heroImageLight = image.light;
+  heroImageDark = image.dark;
 }
 ---
 
@@ -47,14 +50,27 @@ if (image && "file" in image) {
 
     <figure>
       {
-        heroImage && (
+        heroImageLight && (
           <Image
-            src={heroImage}
-            alt="Screenshot of FPX Studio"
+            src={heroImageLight}
+            alt={alt}
             height="736"
             widths={[1024, 1248]}
             sizes="(max-width: 1024px) 1024px, 1248px"
-            data-hero-image
+            class="hero-image hero-image--light"
+          />
+        )
+      }
+
+      {
+        heroImageDark && (
+          <Image
+            src={heroImageDark}
+            alt={alt}
+            height="736"
+            widths={[1024, 1248]}
+            sizes="(max-width: 1024px) 1024px, 1248px"
+            class="hero-image hero-image--dark"
           />
         )
       }
@@ -63,12 +79,11 @@ if (image && "file" in image) {
 </section>
 
 <script is:inline>
-  const heroImage = document.querySelector("[data-hero-image]");
-  if (heroImage && heroImage instanceof HTMLImageElement) {
-    heroImage.onload = () => {
-      console.log("Hero image loaded");
-      heroImage.classList.add("is-loaded");
-    };
+  const heroImages = document.querySelectorAll(".hero-image");
+  if (heroImages) {
+    for (const heroImage of heroImages) {
+      heroImage.onload = () => heroImage.classList.add("is-loaded");
+    }
   }
 </script>
 
@@ -79,6 +94,14 @@ if (image && "file" in image) {
     *:has(* > [data-hero]) {
       overflow-x: clip;
     }
+  }
+
+  html[data-theme="light"] .hero-image--dark {
+    display: none;
+  }
+
+  html[data-theme="dark"] .hero-image--light {
+    display: none;
   }
 
   section {
@@ -143,7 +166,7 @@ if (image && "file" in image) {
       position: relative;
       padding-block: var(--figure-block-padding);
 
-      img {
+      img.hero-image {
         position: absolute;
         left: 0;
         height: calc(100% - var(--figure-block-padding) * 2);
