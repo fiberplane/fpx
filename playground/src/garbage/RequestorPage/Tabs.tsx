@@ -58,7 +58,7 @@ export const CustomTabsContent = React.forwardRef<
     tabIndex={-1}
     className={cn(
       "px-3 py-2 data-[state=active]:h-full data-[state=inactive]:hidden",
-      "md:overflow-y-auto max-h-full",
+      "overflow-y-auto max-h-full",
       className,
     )}
   />

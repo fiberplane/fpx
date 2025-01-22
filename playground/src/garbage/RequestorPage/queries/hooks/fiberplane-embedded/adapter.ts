@@ -1,4 +1,4 @@
-// import PLACEGOOSE_API_SPEC from "@/lib/placegoose.json";
+import PLACEGOOSE_API_SPEC from "@/lib/placegoose.json";
 import TIGHTKNIT_API_SPEC from "@/lib/tightknit.json";
 
 import { specToProbedRoutes } from "./spec-to-probed-routes";
@@ -47,7 +47,8 @@ function getOpenApiSpec(useMockApiSpec: boolean): ResolvedSpecResult {
   if (useMockApiSpec) {
     return {
       type: "success",
-      spec: TIGHTKNIT_API_SPEC as unknown as OpenAPISpec,
+      spec: (TIGHTKNIT_API_SPEC ||
+        PLACEGOOSE_API_SPEC) as unknown as OpenAPISpec,
     };
   }
 
