@@ -73,10 +73,11 @@ export default defineConfig({
         }
       ],
       components: {
+        Banner: "@/components/Banner.astro",
         Header: "@/components/Header.astro",
+        Hero: "@/components/Hero.astro",
         Pagination: "@/components/Pagination.astro",
-        Sidebar: "@/components/Sidebar.astro",
-        Hero: "@/components/Hero.astro"
+        Sidebar: "@/components/Sidebar.astro"
       },
       customCss: ["@/main.css"],
       expressiveCode: {
