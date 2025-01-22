@@ -10,7 +10,6 @@ import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { NavigationFrame, NavigationPanel } from "./NavigationPanel";
 import { RequestorPageContent } from "./RequestorPageContent";
-// import { SettingsPage } from "./Settings/SettingsPage";
 import { useRoutes } from "./routes";
 import { useStudioStore } from "./store";
 
@@ -25,10 +24,7 @@ export const RequestorPage = () => {
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   const { isLoading: _isLoading, isError: _isError } = useRoutes();
 
-  const { sidePanel, settingsOpen } = useStudioStore(
-    "sidePanel",
-    "settingsOpen",
-  );
+  const { sidePanel } = useStudioStore("sidePanel");
 
   const width = getMainSectionWidth();
   const isLgScreen = useIsLgScreen();
@@ -39,10 +35,6 @@ export const RequestorPage = () => {
     minPixelSize: 320,
     minimalGroupSize: 944,
   });
-
-  // if (settingsOpen) {
-  //   return <SettingsPage />;
-  // }
 
   return (
     <div

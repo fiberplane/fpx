@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
+import { useRef } from "react";
 import { useStudioStore } from "../../store";
 import { AuthForm } from "./AuthForm";
-import { useRef } from "react";
 
 export function Auths() {
   const { authorizations, addAuthorization } = useStudioStore(
@@ -18,7 +18,8 @@ export function Auths() {
           <div>
             <h2 className="text-lg font-semibold">Auth</h2>
             <p className="text-sm text-muted-foreground">
-              These auth configurations will be persisted across sessions. So you may want to manually clear these values after use.
+              These auth configurations will be persisted across sessions. So
+              you may want to manually clear these values after use.
             </p>
           </div>
           <Button
@@ -39,7 +40,7 @@ export function Auths() {
           </Button>
         </div>
       </div>
-      <div className="p-4 border rounded-lg flex gap-2 flex-col">
+      <div className="p-4 border rounded-lg flex gap-6 flex-col">
         {authorizations.length === 0 && (
           <div className="text-sm text-muted-foreground flex gap-2 items-center justify-center">
             No auth configurations found.

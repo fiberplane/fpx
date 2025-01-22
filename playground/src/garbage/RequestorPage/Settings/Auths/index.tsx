@@ -1,1 +1,1 @@
-export { Auths } from "./Auths"
+export { Auths } from "./Auths";

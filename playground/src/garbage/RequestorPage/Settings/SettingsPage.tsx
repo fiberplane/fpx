@@ -5,10 +5,7 @@ import { useStudioStore } from "../store";
 import { Auths } from "./Auths";
 
 export function SettingsPage() {
-  const {
-    useMockApiSpec,
-    setUseMockApiSpec,
-  } = useStudioStore(
+  const { useMockApiSpec, setUseMockApiSpec } = useStudioStore(
     "useMockApiSpec",
     "setUseMockApiSpec",
   );

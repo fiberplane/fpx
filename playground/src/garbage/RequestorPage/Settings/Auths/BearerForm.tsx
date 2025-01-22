@@ -1,11 +1,11 @@
-import { Input } from "@/components/ui/input";
-import { useStudioStore } from "../../store";
+import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useHandler } from "@fiberplane/hooks";
 import { TrashIcon } from "lucide-react";
 import { useRef, useState } from "react";
-import { Dialog } from "@/components/ui/dialog";
-import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog";
-import { useHandler } from "@fiberplane/hooks";
+import { useStudioStore } from "../../store";
 
 export function BearerForm(props: {
   id: string;
@@ -32,8 +32,7 @@ export function BearerForm(props: {
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-[auto_1fr_32px] gap-2">
         {/* biome-ignore lint/a11y/noLabelWithoutControl: Input is also an input */}
-        <label className="flex items-center space-x-2">
-          Bearer</label>
+        <label className="flex items-center space-x-2">Bearer</label>
         <Input
           type="text"
           id={`token-${id}`}
@@ -59,7 +58,10 @@ export function BearerForm(props: {
           <TrashIcon />
         </Button>
         <div className="col-start-2 text-xs text-muted-foreground px-4">
-          Results in: <code className="font-mono">Authorization: Bearer {token || "your_token_here"}</code>
+          Results in:{" "}
+          <code className="font-mono">
+            Authorization: Bearer {token || "your_token_here"}
+          </code>
         </div>
       </div>
       <Dialog onOpenChange={setConfirmDelete} open={confirmDelete}>
