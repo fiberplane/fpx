@@ -4,7 +4,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useHandler } from "@fiberplane/hooks";
 import { TrashIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useStudioStore } from "../../store";
 
 export function BearerForm(props: {
@@ -32,13 +32,13 @@ export function BearerForm(props: {
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-[auto_1fr_32px] gap-2">
         {/* biome-ignore lint/a11y/noLabelWithoutControl: Input is also an input */}
-        <label className="flex items-center space-x-2">Bearer</label>
+        <label className="flex items-center space-x-2 text-sm">Bearer</label>
         <Input
           type="text"
           id={`token-${id}`}
           ref={isNew ? ref : undefined}
           value={token}
-          className="font-mono"
+          className="font-mono "
           placeholder="token"
           autoFocus={isNew}
           onChange={(event) =>
@@ -57,10 +57,10 @@ export function BearerForm(props: {
         >
           <TrashIcon />
         </Button>
-        <div className="col-start-2 text-xs text-muted-foreground px-4">
+        <div className="col-start-2 text-xs text-muted-foreground px-3 max-w-[400px] md:max-w-[500px] flex items-center gap-1">
           Results in:{" "}
-          <code className="font-mono">
-            Authorization: Bearer {token || "your_token_here"}
+          <code className="font-mono border text-foreground px-1 py-0.5 rounded-sm whitespace-nowrap overflow-hidden text-ellipsis flex-1">
+            Authorization: Bearer {token || "<token>"}
           </code>
         </div>
       </div>
