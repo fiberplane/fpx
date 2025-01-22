@@ -97,6 +97,19 @@ export const RequestorPageContent: React.FC = (_props) => {
   );
 
   useKeySequence(
+    ["g", "a"],
+    () => {
+      if (visibleRequestsPanelTabs.includes("auth")) {
+        setActiveRequestsPanelTab("auth");
+      }
+    },
+    {
+      description: "View Request Auth",
+      ignoreSelector: "[contenteditable]",
+    },
+  );
+
+  useKeySequence(
     ["g", "h"],
     () => {
       if (visibleRequestsPanelTabs.includes("headers")) {

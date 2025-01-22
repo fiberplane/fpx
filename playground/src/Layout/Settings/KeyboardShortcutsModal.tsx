@@ -22,6 +22,7 @@ const KEYBOARD_SHORTCUTS: ShortcutSection[] = [
     title: "Request Panel",
     shortcuts: [
       { label: "View Request Params", keys: ["g", "then", "p"] },
+      { label: "View Request Auth", keys: ["g", "then", "a"] },
       { label: "View Request Headers", keys: ["g", "then", "h"] },
       { label: "View Request Body", keys: ["g", "then", "b"] },
       { label: "View Route Docs", keys: ["g", "then", "d"] },

@@ -61,7 +61,11 @@ export function Auths() {
               size="sm"
               variant={"secondary"}
             >
-              <PlusIcon size="12" style={{ height: "0.75rem", width: "0.75rem" }} /> Add
+              <PlusIcon
+                size="12"
+                style={{ height: "0.75rem", width: "0.75rem" }}
+              />{" "}
+              Add
             </Button>
             your first one.
           </div>

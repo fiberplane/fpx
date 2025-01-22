@@ -9,7 +9,7 @@ export const tabsSlice: StateCreator<
   TabsSlice
 > = (set) => ({
   activeRequestsPanelTab: "params",
-  visibleRequestsPanelTabs: ["params", "headers"],
+  visibleRequestsPanelTabs: ["params", "headers", "auth"],
   activeResponsePanelTab: "response",
   visibleResponsePanelTabs: ["response", "headers"],
 
