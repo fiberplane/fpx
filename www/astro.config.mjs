@@ -73,9 +73,8 @@ export default defineConfig({
         }
       ],
       components: {
-        Header: "@/components/Header.astro",
+        Header: "@/components/NewHeader.astro",
         Pagination: "@/components/Pagination.astro",
-        ThemeProvider: "@/components/ThemeProvider.astro",
         Sidebar: "@/components/Sidebar.astro",
         Hero: "@/components/Hero.astro"
       },
