@@ -8,7 +8,7 @@ export const WORKFLOWS_KEY = "workflows";
 export const workflowsQueryOptions = () => ({
   queryKey: [WORKFLOWS_KEY],
   queryFn: () => api.getWorkflows(),
-  select: (data: ApiResponse<Workflow[]>) => data.data,
+  select: (response: ApiResponse<Workflow[]>) => response.data,
 });
 
 export function useWorkflows() {
@@ -18,7 +18,7 @@ export function useWorkflows() {
 export const workflowQueryOptions = (id: string) => ({
   queryKey: [WORKFLOWS_KEY, id],
   queryFn: () => api.getWorkflow(id),
-  select: (data: ApiResponse<Workflow>) => data.data,
+  select: (response: ApiResponse<Workflow>) => response.data,
   enabled: !!id,
 });
 
@@ -30,15 +30,10 @@ export function useCreateWorkflow() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   return useMutation({
-    mutationFn: (data: {
-      prompt: string;
-      oaiSchemaId: string;
-      summary?: string;
-      description?: string;
-    }) => api.createWorkflow(data),
-    onSuccess: (response) => {
+    mutationFn: api.createWorkflow,
+    onSuccess: (response: ApiResponse<Workflow>) => {
       queryClient.invalidateQueries({ queryKey: [WORKFLOWS_KEY] });
-      navigate({ to: "/workflow/$workflowId", params: { workflowId: response.data.workflowId } });
+      navigate({ to: "/workflow/$workflowId", params: { workflowId: response.data.id } });
     },
   });
 }
@@ -47,9 +42,8 @@ export function useUpdateWorkflow(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: {
-      name: string;
       prompt: string;
-      oaiSchemaId: string;
+      openApiSchemaId: string;
       summary?: string;
       description?: string;
     }) => api.updateWorkflow(id, data),
@@ -64,7 +58,7 @@ export function useDeleteWorkflow() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   return useMutation({
-    mutationFn: (id: string) => api.deleteWorkflow(id),
+    mutationFn: api.deleteWorkflow,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [WORKFLOWS_KEY] });
       navigate({ to: "/" });

@@ -1,34 +1,30 @@
 import type { Workflow, ApiResponse } from "@/types";
 
 export const api = {
-  getWorkflows: async () => {
+  getWorkflows: async (): Promise<ApiResponse<Workflow[]>> => {
     const response = await fetch("/api/workflow");
-    const data = await response.json();
-    
     if (!response.ok) {
-      throw new Error(JSON.stringify(data));
+      const error = await response.json();
+      throw new Error(error.message);
     }
-    
-    return data as ApiResponse<Workflow[]>;
+    return response.json();
   },
 
-  getWorkflow: async (id: string) => {
+  getWorkflow: async (id: string): Promise<ApiResponse<Workflow>> => {
     const response = await fetch(`/api/workflow/${id}`);
-    const data = await response.json();
-    
     if (!response.ok) {
-      throw new Error(JSON.stringify(data));
+      const error = await response.json();
+      throw new Error(error.message);
     }
-    
-    return data as ApiResponse<Workflow>;
+    return response.json();
   },
 
   createWorkflow: async (data: {
     prompt: string;
-    oaiSchemaId: string;
+    openApiSchemaId: string;
     summary?: string;
     description?: string;
-  }) => {
+  }): Promise<ApiResponse<Workflow>> => {
     const response = await fetch("/api/workflow/create", {
       method: "POST",
       headers: {
@@ -37,22 +33,20 @@ export const api = {
       body: JSON.stringify(data),
     });
     
-    const responseData = await response.json();
-    
     if (!response.ok) {
-      throw new Error(JSON.stringify(responseData));
+      const error = await response.json();
+      throw new Error(error.message);
     }
     
-    return responseData as ApiResponse<Workflow>;
+    return response.json();
   },
 
   updateWorkflow: async (id: string, data: {
-    name: string;
     prompt: string;
-    oaiSchemaId: string;
+    openApiSchemaId: string;
     summary?: string;
     description?: string;
-  }) => {
+  }): Promise<ApiResponse<Workflow>> => {
     const response = await fetch(`/api/workflow/${id}`, {
       method: "PUT",
       headers: {
@@ -61,45 +55,40 @@ export const api = {
       body: JSON.stringify(data),
     });
     
-    const responseData = await response.json();
-    
     if (!response.ok) {
-      throw new Error(JSON.stringify(responseData));
+      const error = await response.json();
+      throw new Error(error.message);
     }
     
-    return responseData as ApiResponse<Workflow>;
+    return response.json();
   },
 
-  deleteWorkflow: async (id: string) => {
+  deleteWorkflow: async (id: string): Promise<void> => {
     const response = await fetch(`/api/workflow/${id}`, {
       method: "DELETE",
     });
     
     if (!response.ok) {
-      const data = await response.json();
-      throw new Error(JSON.stringify(data));
+      const error = await response.json();
+      throw new Error(error.message);
     }
   },
 
   getSchemas: async () => {
     const response = await fetch("/api/oai_schema");
-    const data = await response.json();
-    
     if (!response.ok) {
-      throw new Error(JSON.stringify(data));
+      const error = await response.json();
+      throw new Error(error.message);
     }
-    
-    return data;
+    return response.json();
   },
 
   getSchema: async (id: string) => {
     const response = await fetch(`/api/oai_schema/${id}`);
-    const data = await response.json();
-    
     if (!response.ok) {
-      throw new Error(JSON.stringify(data));
+      const error = await response.json();
+      throw new Error(error.message);
     }
-    
-    return data;
+    return response.json();
   },
 };

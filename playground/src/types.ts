@@ -63,11 +63,22 @@ export interface Parameter {
   value: string;
 }
 
+export interface SuccessCriteria {
+  condition: string;
+}
+
+export interface StepOutput {
+  key: string;
+  value: string;
+}
+
 export interface WorkflowStep {
   stepId: string;
   description: string;
   operation: string;
   parameters: Parameter[];
+  successCriteria: SuccessCriteria[];
+  outputs: StepOutput[];
 }
 
 export interface OAISchema {
@@ -77,19 +88,21 @@ export interface OAISchema {
 }
 
 export interface Workflow {
-  workflowId: string;
+  id: string;
+  prompt: string;
   summary: string;
   description: string;
+  openApiSchemaId: string;
   steps: WorkflowStep[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ApiResponse<T> {
-  success: true;
   data: T;
 }
 
 export interface ApiError {
-  success: false;
   error: {
     message: string;
     code?: string;
