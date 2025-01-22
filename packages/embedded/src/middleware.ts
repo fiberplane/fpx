@@ -5,7 +5,7 @@ import { type RouterSpec, createRouter } from "./router.js";
 
 // HACK - We need to manually update the version in the CDN URL when you release a new version
 //        Eventually we should do this automagically when building the package (and derive the version from the package.json)
-const VERSION = "0.0.17";
+const VERSION = "0.0.18";
 const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/embedded@${VERSION}/dist/playground/`;
 
 export interface EmbeddedMiddlewareOptions {
