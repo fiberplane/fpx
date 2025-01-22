@@ -1,7 +1,7 @@
 use axum::async_trait;
-use fpx_lib::data::models::HexEncodedId;
-use fpx_lib::data::sql::SqlBuilder;
-use fpx_lib::data::{models, DbError, Result, Store, Transaction};
+use fpx::data::models::HexEncodedId;
+use fpx::data::sql::SqlBuilder;
+use fpx::data::{models, DbError, Result, Store, Transaction};
 use serde::Deserialize;
 use std::sync::Arc;
 use wasm_bindgen::JsValue;

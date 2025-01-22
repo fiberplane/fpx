@@ -193,6 +193,8 @@ export const RequestPanel = memo(function RequestPanel(
         className={cn(
           // Need a lil bottom padding to avoid clipping the inputs of the last row in the form
           "pb-16",
+          // NOTE - This overflow-auto is necessary to allow the tabs to scroll
+          "overflow-auto",
         )}
       >
         <AIGeneratedInputsBanner
