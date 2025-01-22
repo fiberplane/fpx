@@ -4,6 +4,12 @@
     "version": "0.0.0",
     "title": "Tightknit OpenAPI"
   },
+  "servers": [
+    {
+      "url": "https://tightknit-mock.fp.dev",
+      "description": "Mock production server"
+    }
+  ],
   "security": [
     {
       "Bearer": []
