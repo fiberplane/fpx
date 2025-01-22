@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
+import { InfoIcon, PlusIcon } from "lucide-react";
 import { useRef } from "react";
 import { useStudioStore } from "../../store";
 import { AuthForm } from "./AuthForm";
@@ -42,7 +42,7 @@ export function Auths() {
           </div>
         </div>
       </div>
-      <div className="p-4 border rounded-lg flex gap-6 flex-col">
+      <div className="p-4 border rounded-lg">
         {authorizations.length === 0 && (
           <div className="text-sm text-muted-foreground flex gap-2 items-center justify-center">
             No auth configurations found.
@@ -66,13 +66,21 @@ export function Auths() {
             your first one.
           </div>
         )}
-        {authorizations.map((auth) => (
-          <AuthForm
-            auth={auth}
-            key={auth.id}
-            isNew={auth.id === newRef.current}
-          />
-        ))}
+        {authorizations.length > 0 && (
+          <div className="text-xs text-muted-foreground/70 -mt-2 mb-3 border-b pb-0.5 flex items-center gap-1">
+            Changes to auth tokens are instantly saved to your browser's local
+            storage
+          </div>
+        )}
+        <div className="flex gap-6 flex-col">
+          {authorizations.map((auth) => (
+            <AuthForm
+              auth={auth}
+              key={auth.id}
+              isNew={auth.id === newRef.current}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
