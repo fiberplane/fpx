@@ -33,9 +33,9 @@ ${workflowPlan}
 
 The output must follow this structure:
 {
-  "workflowId": "unique-id",
-  "summary": "Brief summary",
-  "description": "Detailed description"
+  "id": "loginUserAndCreateWorkflow",
+  "summary": "Login user and create workflow",
+  "description": "Handles user login and workflow creation"
 }
 
 REMEMBER:
@@ -45,7 +45,7 @@ REMEMBER:
 `;
 }
 
-export function createStructuredWorkflowPrompt(openApiSpec: string, workflowPlan: string, workflowHeader: { workflowId: string; summary: string; description: string }) {
+export function createStructuredWorkflowPrompt(openApiSpec: string, workflowPlan: string, workflowHeader: { id: string; summary: string; description: string }) {
   return `Generate workflow steps based on this plan and workflow header. Only output valid JSON - no explanations or additional text.
 
 OpenAPI Specification for reference:
@@ -56,14 +56,14 @@ ${workflowPlan}
 
 Workflow Header:
 {
-  "workflowId": "${workflowHeader.workflowId}",
+  "id": "${workflowHeader.id}",
   "summary": "${workflowHeader.summary}",
   "description": "${workflowHeader.description}"
 }
 
 Each step must follow this structure:
 {
-  "stepId": "step-name",
+  "stepId": "stepName",
   "description": "What this step does",
   "operation": "operationId-or-path-from-spec",
   "parameters": [

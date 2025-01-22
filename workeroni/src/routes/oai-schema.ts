@@ -3,7 +3,7 @@ import { z } from "zod";
 import {
   apiErrorSchema,
   apiResponseSchema,
-  oaiSchemaSchema,
+  openApiSchema,
 } from "../schemas/index";
 import { oaiSchema } from "../db/schema.js";
 import { eq } from "drizzle-orm";
@@ -26,7 +26,7 @@ router.openapi(
         description: "List of OAI schemas",
         content: {
           "application/json": {
-            schema: apiResponseSchema(z.array(oaiSchemaSchema)),
+            schema: apiResponseSchema(z.array(openApiSchema)),
           },
         },
       },
@@ -43,12 +43,7 @@ router.openapi(
   async (c) => {
     const db = c.get("db");
     const schemas = await db.select().from(oaiSchema);
-
-    const response = {
-      success: true as const,
-      data: schemas,
-    } satisfies { success: true; data: typeof schemas };
-    return c.json(response, 200);
+    return c.json({ data: schemas }, 200);
   },
 );
 
@@ -73,7 +68,7 @@ router.openapi(
         description: "OAI schema",
         content: {
           "application/json": {
-            schema: apiResponseSchema(oaiSchemaSchema),
+            schema: apiResponseSchema(openApiSchema),
           },
         },
       },
@@ -99,7 +94,7 @@ router.openapi(
     const id = c.req.param("id");
     const db = c.get("db");
     if (!id) {
-      throw new Error("Not found");
+      return c.json({ error: { message: "Not found" } }, 404);
     }
 
     const [schema] = await db
@@ -108,14 +103,10 @@ router.openapi(
       .where(eq(oaiSchema.id, id));
 
     if (!schema) {
-      throw new Error("Not found");
+      return c.json({ error: { message: "Not found" } }, 404);
     }
 
-    const response = {
-      success: true as const,
-      data: schema,
-    } satisfies { success: true; data: typeof schema };
-    return c.json(response, 200);
+    return c.json({ data: schema }, 200);
   },
 );
 
@@ -130,7 +121,7 @@ router.openapi(
       body: {
         content: {
           "application/json": {
-            schema: oaiSchemaSchema.omit({ id: true }),
+            schema: openApiSchema.omit({ id: true }),
           },
         },
       },
@@ -140,7 +131,7 @@ router.openapi(
         description: "OAI schema created successfully",
         content: {
           "application/json": {
-            schema: apiResponseSchema(oaiSchemaSchema),
+            schema: apiResponseSchema(openApiSchema),
           },
         },
       },
@@ -179,12 +170,7 @@ router.openapi(
     // Insert into database
     await db.insert(oaiSchema).values(newSchema);
 
-    const response = {
-      success: true as const,
-      data: newSchema,
-    } satisfies { success: true; data: typeof newSchema };
-
-    return c.json(response, 201);
+    return c.json({ data: newSchema }, 201);
   },
 );
 

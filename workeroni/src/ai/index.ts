@@ -1,7 +1,7 @@
 import { generateObject, generateText, JSONParseError } from "ai";
 import { getContext } from "hono/context-storage";
 import { createWorkersAI } from "workers-ai-provider";
-import { workflowSchema, type Workflow } from "../schemas/arazzo.js";
+import { workflowSchema, type Workflow } from "../schemas/index.js";
 import {
   createWorkflowPlanPrompt,
   createWorkflowHeaderPrompt,
@@ -13,7 +13,7 @@ interface GenerateWorkflowProps {
   oaiSchema: string;
 }
 
-type WorkflowHeader = Pick<Workflow, "workflowId" | "summary" | "description">;
+type WorkflowHeader = Pick<Workflow, "id" | "summary" | "description">;
 
 const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 
@@ -113,7 +113,7 @@ export async function generateWorkflow({
             gateway: { id: "lau-fp" },
           }),
           schema: workflowSchema.pick({
-            workflowId: true,
+            id: true,
             summary: true,
             description: true,
           }),

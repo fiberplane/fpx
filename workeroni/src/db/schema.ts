@@ -1,5 +1,5 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import type { WorkflowStep } from "../schemas/arazzo";
+import type { Step } from "../schemas/index.js";
 
 export const oaiSchema = sqliteTable("oai_schema", {
   id: text("id").primaryKey(),
@@ -8,9 +8,12 @@ export const oaiSchema = sqliteTable("oai_schema", {
 });
 
 export const workflow = sqliteTable("workflow", {
-  workflowId: text("workflow_id").primaryKey(),
+  id: text("id").primaryKey(),
+  prompt: text("prompt").notNull(),
   summary: text("summary").notNull(),
   description: text("description").notNull(),
   oaiSchemaId: text("oai_schema_id").references(() => oaiSchema.id).notNull(),
-  steps: text("steps", { mode: "json" }).$type<WorkflowStep[]>().notNull(),
+  steps: text("steps", { mode: "json" }).$type<Step[]>().notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
