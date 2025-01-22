@@ -39,12 +39,6 @@ export const requestResponseSlice: StateCreator<
   queryParams: enforceTerminalDraftParameter([]),
   requestHeaders: enforceTerminalDraftParameter([]),
 
-  showViewLogsBanner: false,
-  setShowViewLogsBanner: (showViewLogsBanner) =>
-    set((state) => {
-      state.showViewLogsBanner = showViewLogsBanner;
-    }),
-
   setServiceBaseUrl: (serviceBaseUrl) =>
     set((state) => {
       state.serviceBaseUrl = serviceBaseUrl;

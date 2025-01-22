@@ -18,13 +18,11 @@ import {
 import { isWsRequest } from "../types";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { FailedRequest, ResponseBody } from "./ResponseBody";
-import { ViewLogsBanner } from "./ViewLogsBanner";
 import {
   FailedWebsocket,
   NoWebsocketConnection,
   WebsocketMessages,
 } from "./Websocket";
-import { useIgnoreViewLogsBanner } from "./useViewLogsBanner";
 
 type Props = {
   tracedResponse?: ProxiedRequestResponse;
@@ -42,24 +40,12 @@ export const ResponsePanel = memo(function ResponsePanel({
     visibleResponsePanelTabs,
     activeResponsePanelTab,
     setActiveResponsePanelTab,
-    showViewLogsBanner,
-    setShowViewLogsBanner,
   } = useStudioStore(
     "activeResponse",
     "visibleResponsePanelTabs",
     "activeResponsePanelTab",
     "setActiveResponsePanelTab",
-    "showViewLogsBanner",
-    "setShowViewLogsBanner",
   );
-
-  // NOTE - This is kind of annoying so I commented it out for now
-  //
-  // useEffect(() => {
-  //   if (tracedResponse) {
-  //     setShowViewLogsBanner(true);
-  //   }
-  // }, [tracedResponse, setShowViewLogsBanner]);
 
   const shouldShowResponseTab = (tab: ResponsePanelTab): boolean => {
     return visibleResponsePanelTabs.includes(tab);
@@ -82,101 +68,88 @@ export const ResponsePanel = memo(function ResponsePanel({
 
   const shouldShowMessages = shouldShowResponseTab("messages");
 
-  const { ignoreViewLogsBanner, setIgnoreViewLogsBanner } =
-    useIgnoreViewLogsBanner();
-
   return (
-    <div className="overflow-x-hidden overflow-y-auto h-full relative">
-      <Tabs
-        value={activeResponsePanelTab}
-        onValueChange={setActiveResponsePanelTab}
-        className="grid grid-rows-[auto_1fr] overflow-hidden h-full"
-      >
-        <CustomTabsList>
-          <CustomTabTrigger value="response" className="flex items-center">
-            {responseToRender ? (
-              <ResponseSummary
-                response={responseToRender}
-                transformUrl={removeServiceUrlFromPath}
-              />
+    <Tabs
+      value={activeResponsePanelTab}
+      onValueChange={setActiveResponsePanelTab}
+      className="grid grid-rows-[auto_1fr] max-h-full"
+    >
+      <CustomTabsList>
+        <CustomTabTrigger value="response" className="flex items-center">
+          {responseToRender ? (
+            <ResponseSummary
+              response={responseToRender}
+              transformUrl={removeServiceUrlFromPath}
+            />
+          ) : (
+            "Response"
+          )}
+        </CustomTabTrigger>
+        {shouldShowMessages && (
+          <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
+        )}
+        <CustomTabTrigger value="headers">
+          Headers
+          {responseHeaders && Object.keys(responseHeaders).length > 1 && (
+            <span className="ml-1 text-gray-400 font-mono text-xs">
+              ({Object.keys(responseHeaders).length})
+            </span>
+          )}
+        </CustomTabTrigger>
+      </CustomTabsList>
+      <CustomTabsContent value="messages">
+        <TabContentInner
+          isLoading={websocketState.isConnecting}
+          isEmpty={!websocketState.isConnected && !websocketState.isConnecting}
+          isFailure={websocketState.hasError}
+          LoadingState={<LoadingResponseBody />}
+          FailState={<FailedWebsocket />}
+          EmptyState={<NoWebsocketConnection />}
+        >
+          <WebsocketMessages websocketState={websocketState} />
+        </TabContentInner>
+      </CustomTabsContent>
+      <CustomTabsContent value="response" className="h-full">
+        <TabContentInner
+          isLoading={isLoading}
+          isEmpty={!responseToRender}
+          isFailure={
+            isWsRequest(requestType) ? websocketState.hasError : !!isFailure
+          }
+          LoadingState={<LoadingResponseBody />}
+          FailState={
+            isWsRequest(requestType) ? (
+              <FailedWebsocket />
             ) : (
-              "Response"
-            )}
-          </CustomTabTrigger>
-          {shouldShowMessages && (
-            <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
-          )}
-          <CustomTabTrigger value="headers">
-            Headers
-            {responseHeaders && Object.keys(responseHeaders).length > 1 && (
-              <span className="ml-1 text-gray-400 font-mono text-xs">
-                ({Object.keys(responseHeaders).length})
-              </span>
-            )}
-          </CustomTabTrigger>
-        </CustomTabsList>
-        <CustomTabsContent value="messages">
-          <TabContentInner
-            isLoading={websocketState.isConnecting}
-            isEmpty={
-              !websocketState.isConnected && !websocketState.isConnecting
-            }
-            isFailure={websocketState.hasError}
-            LoadingState={<LoadingResponseBody />}
-            FailState={<FailedWebsocket />}
-            EmptyState={<NoWebsocketConnection />}
-          >
-            <WebsocketMessages websocketState={websocketState} />
-          </TabContentInner>
-        </CustomTabsContent>
-        <CustomTabsContent value="response" className="h-full">
-          <TabContentInner
-            isLoading={isLoading}
-            isEmpty={!responseToRender}
-            isFailure={
-              isWsRequest(requestType) ? websocketState.hasError : !!isFailure
-            }
-            LoadingState={<LoadingResponseBody />}
-            FailState={
-              isWsRequest(requestType) ? (
-                <FailedWebsocket />
-              ) : (
-                <FailedRequest response={tracedResponse} />
-              )
-            }
-            EmptyState={
-              isWsRequest(requestType) ? (
-                <NoWebsocketConnection />
-              ) : (
-                <NoResponse />
-              )
-            }
-          >
-            {/** NOT IN USE YET */}
-            <ViewLogsBanner
-              showViewLogsBanner={!ignoreViewLogsBanner && !!showViewLogsBanner}
-              setShowViewLogsBanner={setShowViewLogsBanner}
-              setIgnoreViewLogsBanner={setIgnoreViewLogsBanner}
+              <FailedRequest response={tracedResponse} />
+            )
+          }
+          EmptyState={
+            isWsRequest(requestType) ? (
+              <NoWebsocketConnection />
+            ) : (
+              <NoResponse />
+            )
+          }
+        >
+          <div className={cn("grid grid-rows-[auto_1fr]")}>
+            <ResponseBody
+              response={responseToRender}
+              // HACK - To support absolutely positioned bottom toolbar
+              className={cn(showBottomToolbar && "pb-2")}
             />
-            <div className={cn("grid grid-rows-[auto_1fr]")}>
-              <ResponseBody
-                response={responseToRender}
-                // HACK - To support absolutely positioned bottom toolbar
-                className={cn(showBottomToolbar && "pb-2")}
-              />
-            </div>
-          </TabContentInner>
-        </CustomTabsContent>
-        <CustomTabsContent value="headers">
-          {responseHeaders && (
-            <KeyValueTable
-              sensitiveKeys={SENSITIVE_HEADERS}
-              keyValue={responseHeaders}
-            />
-          )}
-        </CustomTabsContent>
-      </Tabs>
-    </div>
+          </div>
+        </TabContentInner>
+      </CustomTabsContent>
+      <CustomTabsContent value="headers">
+        {responseHeaders && (
+          <KeyValueTable
+            sensitiveKeys={SENSITIVE_HEADERS}
+            keyValue={responseHeaders}
+          />
+        )}
+      </CustomTabsContent>
+    </Tabs>
   );
 });
 
@@ -233,20 +206,20 @@ function ResponseSummary({
   return (
     <div className="flex items-center space-x-2 text-sm">
       <StatusCode status={status ?? "—"} isFailure={!status} />
-      <div>
+      <div className="grid grid-cols-[auto_1fr] items-center">
         <Method method={method ?? "—"} />
-        <span
+        <div
           className={cn(
             "font-mono",
             "whitespace-nowrap",
-            "overflow-ellipsis",
+            "truncate",
             "text-xs",
             "ml-2",
             "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
           )}
         >
           {transformUrl(url ?? "")}
-        </span>
+        </div>
       </div>
     </div>
   );
