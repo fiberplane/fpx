@@ -31,8 +31,8 @@ function WorkflowLayout() {
   const width = getMainSectionWidth();
 
   // Panel constraints for responsive layout
-  const minSize = Math.max(320, (320 / width) * 100);
-  const maxSize = Math.min(50, (500 / width) * 100);
+  const minSize = (320 / width) * 100;
+  // const maxSize = Math.min(50, (500 / width) * 100);
 
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
@@ -45,7 +45,7 @@ function WorkflowLayout() {
                   id="sidebar"
                   order={0}
                   minSize={minSize}
-                  maxSize={maxSize}
+                  // maxSize={maxSize}
                   defaultSize={(320 / width) * 100}
                 >
                   <div

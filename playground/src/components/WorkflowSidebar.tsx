@@ -10,7 +10,7 @@ interface WorkflowSidebarProps {
 }
 
 export function WorkflowSidebar({ workflows }: WorkflowSidebarProps) {
-  console.log(workflows)
+  console.log(workflows);
   const [filterValue, setFilterValue] = useState("");
 
   // Filter workflows based on search
@@ -30,7 +30,9 @@ export function WorkflowSidebar({ workflows }: WorkflowSidebarProps) {
       <div className="">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <span className="text-foreground">Workflows</span>
+            <Link to="/workflow">
+              <span className="text-foreground">Workflows</span>
+            </Link>
           </div>
         </div>
 

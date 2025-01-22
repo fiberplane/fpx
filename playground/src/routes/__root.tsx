@@ -12,8 +12,8 @@ function RootComponent() {
       <div className="flex-1">
         <Outlet />
       </div>
-      <ReactQueryDevtools />
-      <TanStackRouterDevtools />
+        <TanStackRouterDevtools position="bottom-right" />
+        <ReactQueryDevtools />
     </div>
   );
 }

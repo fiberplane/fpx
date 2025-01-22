@@ -27,33 +27,28 @@ function NewWorkflow() {
   };
 
   return (
-    <div className="flex-1 overflow-auto">
-      <div className="h-full p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-semibold">Create Workflow</h2>
-        </div>
-        
-        <div className="max-w-[800px] mx-auto">
-          <div className="mb-8">
-            <h3 className="mb-2 text-lg font-medium">What do you want to build?</h3>
-            <p className="text-sm text-muted-foreground">
-              Describe your integration, and we'll generate a workflow for you using our API
-            </p>
+    <div className="flex flex-col justify-center h-full p-4 overflow-auto border rounded-md">
+      <div className="grid gap-4 text-center max-w-[800px] mx-auto">
+        <h3 className="text-lg font-medium">What do you want to build?</h3>
+        <p className="text-sm text-foreground">
+          Describe your integration, and we'll generate a workflow for you using
+          our API
+        </p>
+
+        <WorkflowPrompt
+          userStory={userStory}
+          setUserStory={setUserStory}
+          handleSubmit={handleSubmit}
+          isPending={isPending}
+        />
+
+        {error && (
+          <div className="p-4 mt-4 border rounded-lg border-destructive/50 bg-destructive/10 text-destructive">
+            {error instanceof Error
+              ? error.message
+              : "Failed to create workflow"}
           </div>
-
-          <WorkflowPrompt
-            userStory={userStory}
-            setUserStory={setUserStory}
-            handleSubmit={handleSubmit}
-            isPending={isPending}
-          />
-
-          {error && (
-            <div className="p-4 mt-4 border rounded-lg border-destructive/50 bg-destructive/10 text-destructive">
-              {error instanceof Error ? error.message : "Failed to create workflow"}
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
