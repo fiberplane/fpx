@@ -61,7 +61,7 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
             <CustomTabTrigger value="headers">
               Headers
               {responseHeaders && Object.keys(responseHeaders).length > 1 && (
-                <span className="ml-1 text-gray-400 font-mono text-xs">
+                <span className="ml-1 text-muted-foreground font-mono text-xs">
                   ({Object.keys(responseHeaders).length})
                 </span>
               )}

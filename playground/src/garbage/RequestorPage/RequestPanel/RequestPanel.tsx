@@ -94,7 +94,7 @@ export const RequestPanel = memo(function RequestPanel(
         <CustomTabTrigger value="params">
           Params
           {queryParams?.length > 1 && (
-            <span className="ml-1 font-mono text-xs text-gray-400">
+            <span className="ml-1 font-mono text-xs text-muted-foreground">
               ({queryParams.length - 1})
             </span>
           )}
@@ -111,7 +111,7 @@ export const RequestPanel = memo(function RequestPanel(
         <CustomTabTrigger value="headers">
           Headers
           {requestHeaders?.length > 1 && (
-            <span className="ml-1 font-mono text-xs text-gray-400">
+            <span className="ml-1 font-mono text-xs text-muted-foreground">
               ({requestHeaders.length - 1})
             </span>
           )}
