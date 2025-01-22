@@ -74,88 +74,86 @@ export const ResponsePanel = memo(function ResponsePanel({
 
   return (
     <Tabs
-        value={activeResponsePanelTab}
-        onValueChange={setActiveResponsePanelTab}
-        className="grid grid-rows-[auto_1fr] max-h-full"
-      >
-        <CustomTabsList>
-          <CustomTabTrigger value="response" className="flex items-center">
-            {responseToRender ? (
-              <ResponseSummary
-                response={responseToRender}
-                transformUrl={removeServiceUrlFromPath}
-              />
-            ) : (
-              "Response"
-            )}
-          </CustomTabTrigger>
-          {shouldShowMessages && (
-            <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
-          )}
-          <CustomTabTrigger value="headers">
-            Headers
-            {responseHeaders && Object.keys(responseHeaders).length > 1 && (
-              <span className="ml-1 text-gray-400 font-mono text-xs">
-                ({Object.keys(responseHeaders).length})
-              </span>
-            )}
-          </CustomTabTrigger>
-        </CustomTabsList>
-        <CustomTabsContent value="messages">
-          <TabContentInner
-            isLoading={websocketState.isConnecting}
-            isEmpty={
-              !websocketState.isConnected && !websocketState.isConnecting
-            }
-            isFailure={websocketState.hasError}
-            LoadingState={<LoadingResponseBody />}
-            FailState={<FailedWebsocket />}
-            EmptyState={<NoWebsocketConnection />}
-          >
-            <WebsocketMessages websocketState={websocketState} />
-          </TabContentInner>
-        </CustomTabsContent>
-        <CustomTabsContent value="response" className="h-full">
-          <TabContentInner
-            isLoading={isLoading}
-            isEmpty={!responseToRender}
-            isFailure={
-              isWsRequest(requestType) ? websocketState.hasError : !!isFailure
-            }
-            LoadingState={<LoadingResponseBody />}
-            FailState={
-              isWsRequest(requestType) ? (
-                <FailedWebsocket />
-              ) : (
-                <FailedRequest response={tracedResponse} />
-              )
-            }
-            EmptyState={
-              isWsRequest(requestType) ? (
-                <NoWebsocketConnection />
-              ) : (
-                <NoResponse />
-              )
-            }
-          >
-            <div className={cn("grid grid-rows-[auto_1fr]")}>
-              <ResponseBody
-                response={responseToRender}
-                // HACK - To support absolutely positioned bottom toolbar
-                className={cn(showBottomToolbar && "pb-2")}
-              />
-            </div>
-          </TabContentInner>
-        </CustomTabsContent>
-        <CustomTabsContent value="headers">
-          {responseHeaders && (
-            <KeyValueTable
-              sensitiveKeys={SENSITIVE_HEADERS}
-              keyValue={responseHeaders}
+      value={activeResponsePanelTab}
+      onValueChange={setActiveResponsePanelTab}
+      className="grid grid-rows-[auto_1fr] max-h-full"
+    >
+      <CustomTabsList>
+        <CustomTabTrigger value="response" className="flex items-center">
+          {responseToRender ? (
+            <ResponseSummary
+              response={responseToRender}
+              transformUrl={removeServiceUrlFromPath}
             />
+          ) : (
+            "Response"
           )}
-        </CustomTabsContent>
-      </Tabs>
+        </CustomTabTrigger>
+        {shouldShowMessages && (
+          <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
+        )}
+        <CustomTabTrigger value="headers">
+          Headers
+          {responseHeaders && Object.keys(responseHeaders).length > 1 && (
+            <span className="ml-1 text-gray-400 font-mono text-xs">
+              ({Object.keys(responseHeaders).length})
+            </span>
+          )}
+        </CustomTabTrigger>
+      </CustomTabsList>
+      <CustomTabsContent value="messages">
+        <TabContentInner
+          isLoading={websocketState.isConnecting}
+          isEmpty={!websocketState.isConnected && !websocketState.isConnecting}
+          isFailure={websocketState.hasError}
+          LoadingState={<LoadingResponseBody />}
+          FailState={<FailedWebsocket />}
+          EmptyState={<NoWebsocketConnection />}
+        >
+          <WebsocketMessages websocketState={websocketState} />
+        </TabContentInner>
+      </CustomTabsContent>
+      <CustomTabsContent value="response" className="h-full">
+        <TabContentInner
+          isLoading={isLoading}
+          isEmpty={!responseToRender}
+          isFailure={
+            isWsRequest(requestType) ? websocketState.hasError : !!isFailure
+          }
+          LoadingState={<LoadingResponseBody />}
+          FailState={
+            isWsRequest(requestType) ? (
+              <FailedWebsocket />
+            ) : (
+              <FailedRequest response={tracedResponse} />
+            )
+          }
+          EmptyState={
+            isWsRequest(requestType) ? (
+              <NoWebsocketConnection />
+            ) : (
+              <NoResponse />
+            )
+          }
+        >
+          <div className={cn("grid grid-rows-[auto_1fr]")}>
+            <ResponseBody
+              response={responseToRender}
+              // HACK - To support absolutely positioned bottom toolbar
+              className={cn(showBottomToolbar && "pb-2")}
+            />
+          </div>
+        </TabContentInner>
+      </CustomTabsContent>
+      <CustomTabsContent value="headers">
+        {responseHeaders && (
+          <KeyValueTable
+            sensitiveKeys={SENSITIVE_HEADERS}
+            keyValue={responseHeaders}
+          />
+        )}
+      </CustomTabsContent>
+    </Tabs>
   );
 });
 
