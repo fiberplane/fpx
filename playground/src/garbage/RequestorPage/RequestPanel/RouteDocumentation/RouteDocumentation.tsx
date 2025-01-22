@@ -33,9 +33,7 @@ const getTitleWithFallback = (
   return (
     <>
       <span
-        className={cn(
-          getHttpMethodTextColor(route.method?.toUpperCase?.()),
-        )}
+        className={cn(getHttpMethodTextColor(route.method?.toUpperCase?.()))}
       >
         {route.method}
       </span>

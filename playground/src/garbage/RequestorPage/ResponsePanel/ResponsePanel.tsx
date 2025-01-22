@@ -85,11 +85,13 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
           </TabContentInner>
         </CustomTabsContent>
         <CustomTabsContent value="headers">
-          {responseHeaders && (
+          {responseHeaders ? (
             <KeyValueTable
               sensitiveKeys={SENSITIVE_HEADERS}
               keyValue={responseHeaders}
             />
+          ) : (
+            !responseToRender && <NoResponse />
           )}
         </CustomTabsContent>
       </Tabs>
