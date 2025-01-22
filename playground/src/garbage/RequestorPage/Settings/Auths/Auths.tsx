@@ -57,11 +57,11 @@ export function Auths() {
                   token: "",
                 });
               }}
-              className="h-6 text-xs p-1 text-foreground/70"
+              className="h-6 text-xs p-1 text-foreground/70 inline-flex items-center gap-1"
               size="sm"
               variant={"secondary"}
             >
-              <PlusIcon size="12" className="h-4 w-4" /> Add
+              <PlusIcon size="12" style={{ height: "0.75rem", width: "0.75rem" }} /> Add
             </Button>
             your first one.
           </div>
