@@ -26,7 +26,7 @@ const navEntries = nav?.entries || [];
     <Search {...Astro.props} />
   </div>
   <div class="sl-hidden md:sl-flex right-group">
-    <nav class="sl-flex social-icons">
+    <nav class="sl-flex nav-links">
       {
         navEntries.length > 0 &&
           navEntries.map((entry) => (
@@ -39,8 +39,10 @@ const navEntries = nav?.entries || [];
             </LinkButton>
           ))
       }
-      <SocialIcons {...Astro.props} />
     </nav>
+    <div class="sl-hidden md:sl-flex social-icons">
+      <SocialIcons {...Astro.props} />
+    </div>
     <ThemeSelect {...Astro.props} />
   </div>
 </div>
@@ -63,11 +65,18 @@ const navEntries = nav?.entries || [];
   }
 
   .right-group,
-  .social-icons {
+  .social-icons,
+  .nav-links {
     gap: 1rem;
     align-items: center;
   }
-  .social-icons::after {
+
+  .nav-links {
+    gap: 1.5rem;
+  }
+
+  .social-icons::after,
+  .nav-links::after {
     content: "";
     height: 2rem;
     border-inline-end: 1px solid var(--sl-color-gray-5);
