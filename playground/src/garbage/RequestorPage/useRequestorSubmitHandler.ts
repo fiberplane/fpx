@@ -1,7 +1,13 @@
 import { useHandler } from "@fiberplane/hooks";
+import { useShallow } from "zustand/react/shallow";
 import type { MakeProxiedRequestQueryFn } from "./queries";
 import type { KeyValueParameter, RequestorBody } from "./store";
-import { useServiceBaseUrl, useStudioStore } from "./store";
+import {
+  getPreferredAuthorizationId,
+  useServiceBaseUrl,
+  useStudioStore,
+  useStudioStoreRaw,
+} from "./store";
 
 export function useRequestorSubmitHandler({
   makeRequest,
@@ -18,8 +24,6 @@ export function useRequestorSubmitHandler({
     pathParams,
     queryParams,
     requestHeaders,
-    // requestType,
-    // recordRequestInSessionHistory,
   } = useStudioStore(
     "activeRoute",
     "body",
@@ -28,8 +32,23 @@ export function useRequestorSubmitHandler({
     "pathParams",
     "queryParams",
     "requestHeaders",
-    "requestType",
-    "recordRequestInSessionHistory",
+  );
+
+  const authorization = useStudioStoreRaw(
+    useShallow((state) => {
+      const authorizationId = getPreferredAuthorizationId(
+        state.authorizationId,
+        state.authorizations,
+      );
+
+      if (authorizationId === "none") {
+        return null;
+      }
+
+      return (
+        state.authorizations.find((auth) => auth.id === authorizationId) || null
+      );
+    }),
   );
 
   // NOTE - We make the submit handler optional to make it easier to call this as a standalone function
@@ -60,6 +79,15 @@ export function useRequestorSubmitHandler({
     ].filter(
       (element) => element && element.key.toLowerCase() !== "x-fpx-trace-id",
     ) as KeyValueParameter[];
+
+    if (authorization && authorization.type === "bearer") {
+      modifiedHeaders.push({
+        id: authorization.id,
+        key: "Authorization",
+        enabled: true,
+        value: `Bearer ${authorization.token}`,
+      });
+    }
 
     makeRequest(
       {

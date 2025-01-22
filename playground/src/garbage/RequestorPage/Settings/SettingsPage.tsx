@@ -1,19 +1,11 @@
 import { ModeToggle } from "@/components/mode-toggle";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { KeyValueForm } from "../KeyValueForm";
-import { enforceTerminalDraftParameter } from "../KeyValueForm";
 import { useStudioStore } from "../store";
+import { Auths } from "./Auths";
 
 export function SettingsPage() {
-  const {
-    persistentAuthHeaders,
-    setPersistentAuthHeaders,
-    useMockApiSpec,
-    setUseMockApiSpec,
-  } = useStudioStore(
-    "persistentAuthHeaders",
-    "setPersistentAuthHeaders",
+  const { useMockApiSpec, setUseMockApiSpec } = useStudioStore(
     "useMockApiSpec",
     "setUseMockApiSpec",
   );
@@ -22,26 +14,10 @@ export function SettingsPage() {
     <div className="p-8 max-w-2xl space-y-12">
       <div className="space-y-6">
         <div className="space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold">Authentication Headers</h2>
-            <p className="text-sm text-muted-foreground">
-              These headers will be included in every request.
-            </p>
-          </div>
-          <div className="p-4 border rounded-lg ">
-            <KeyValueForm
-              keyValueParameters={persistentAuthHeaders}
-              onChange={(headers) => {
-                setPersistentAuthHeaders(
-                  enforceTerminalDraftParameter(headers),
-                );
-              }}
-              keyPlaceholder="Authorization"
-              keyInputType="header-key"
-              valueInputType="header-value"
-            />
-          </div>
+          <Auths />
         </div>
+
+        <Separator />
 
         <Separator />
 

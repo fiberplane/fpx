@@ -25,6 +25,7 @@ export interface RequestResponseSlice {
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
   requestHeaders: KeyValueParameter[];
+  authorizationId: "none" | string | null;
   setServiceBaseUrl: (serviceBaseUrl: string) => void;
   updatePath: (path: string) => void;
   updateMethod: (methodInputValue: RequestMethodInputValue) => void;
@@ -33,6 +34,7 @@ export interface RequestResponseSlice {
   clearPathParams: () => void;
   setQueryParams: (queryParams: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
+  setAuthorizationId: (authorizationId: string | null) => void;
   setBody: (body: undefined | string | RequestorBody) => void;
   handleRequestBodyTypeChange: (
     requestBodyType: RequestorBodyType,

@@ -964,6 +964,9 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.15)
+      type-fest:
+        specifier: ^4.33.0
+        version: 4.33.0
       zod:
         specifier: ^3.24.1
         version: 3.24.1
@@ -10816,6 +10819,10 @@ packages:
 
   type-fest@4.30.0:
     resolution: {integrity: sha512-G6zXWS1dLj6eagy6sVhOMQiLtJdxQBHIA9Z6HFUNLOlr6MFOgzV8wvmidtPONfPtEUv0uZsy77XJNzTAfwPDaA==}
+    engines: {node: '>=16'}
+
+  type-fest@4.33.0:
+    resolution: {integrity: sha512-s6zVrxuyKbbAsSAD5ZPTB77q4YIdRctkTbJ2/Dqlinwz+8ooH2gd+YA7VA6Pa93KML9GockVvoxjZ2vHP+mu8g==}
     engines: {node: '>=16'}
 
   typed-emitter@2.1.0:
@@ -22991,6 +22998,8 @@ snapshots:
   type-fest@4.29.0: {}
 
   type-fest@4.30.0: {}
+
+  type-fest@4.33.0: {}
 
   typed-emitter@2.1.0:
     optionalDependencies:
