@@ -16,10 +16,10 @@ import {
   CodeMirrorTextEditor,
 } from "@/components/CodeMirrorEditor";
 import { useStudioStore } from "../store";
-import { AuthForm } from "./AuthForm";
 import { Faker } from "./Faker";
 import { RouteDocumentation } from "./RouteDocumentation/RouteDocumentation";
 import { isOpenApiOperation } from "./RouteDocumentation/openapi";
+import { AuthSelector } from "./AuthSelector";
 
 type RequestPanelProps = {
   onSubmit: () => void;
@@ -107,7 +107,9 @@ export const RequestPanel = memo(function RequestPanel(
             )}
           </CustomTabTrigger>
         )}
-        <CustomTabTrigger value="auth">Auth</CustomTabTrigger>
+        <CustomTabTrigger value="auth">
+          Auth
+        </CustomTabTrigger>
         <CustomTabTrigger value="headers">
           Headers
           {requestHeaders?.length > 1 && (
@@ -164,7 +166,7 @@ export const RequestPanel = memo(function RequestPanel(
         ) : null}
       </CustomTabsContent>
       <CustomTabsContent value="auth">
-        <AuthForm />
+        <AuthSelector />
       </CustomTabsContent>
       <CustomTabsContent value="headers">
         <PanelSectionHeader

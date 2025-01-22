@@ -14,3 +14,4 @@ export {
   useStudioStoreRaw,
   useServiceBaseUrl,
 } from "./hooks";
+export { getPreferredAuthorizationId } from "./utils";

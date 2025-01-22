@@ -38,6 +38,12 @@ export const requestResponseSlice: StateCreator<
   pathParams: [],
   queryParams: enforceTerminalDraftParameter([]),
   requestHeaders: enforceTerminalDraftParameter([]),
+  authorizationId: null,
+
+  setAuthorizationId: (authorizationId: string | null) =>
+    set((state) => {
+      state.authorizationId = authorizationId;
+    }),
 
   setServiceBaseUrl: (serviceBaseUrl) =>
     set((state) => {
