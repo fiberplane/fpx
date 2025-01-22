@@ -40,6 +40,7 @@ export function BearerForm(props: {
           id={`token-${id}`}
           ref={isNew ? ref : undefined}
           value={token}
+          className="font-mono"
           placeholder="token"
           autoFocus={isNew}
           onChange={(event) =>
@@ -58,8 +59,8 @@ export function BearerForm(props: {
         >
           <TrashIcon />
         </Button>
-        <div className="col-start-2 text-xs text-muted-foreground">
-          Results in: <code>Authorization: Bearer {token || "your_token_here"}</code>
+        <div className="col-start-2 text-xs text-muted-foreground px-4">
+          Results in: <code className="font-mono">Authorization: Bearer {token || "your_token_here"}</code>
         </div>
 
       </div>
