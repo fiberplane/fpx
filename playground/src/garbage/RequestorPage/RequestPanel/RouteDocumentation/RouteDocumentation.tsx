@@ -517,7 +517,7 @@ function RequiredBadge() {
 
 function TypeBadge({ type }: { type: string }) {
   return (
-    <span className="px-0.5 py-0 text-xs text-muted-foreground border-none font-normal font-sans ">
+    <span className="px-0.5 py-0 text-xs text-foreground/65 border-none font-normal font-sans ">
       {type}
     </span>
   );
@@ -546,8 +546,8 @@ type ParameterExampleProps = {
 function ParameterExample({ example }: ParameterExampleProps) {
   return (
     <div className="text-xs">
-      <span className="text-muted-foreground">Example: </span>
-      <code className="font-sans px-1.5 py-0.5 rounded">
+      <span className="font-sans text-muted-foreground">Example: </span>
+      <code className="font-mono text-foreground/65 px-1.5 py-0.5 rounded">
         {typeof example === "string" ? `"${example}"` : JSON.stringify(example)}
       </code>
     </div>

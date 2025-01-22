@@ -19,6 +19,15 @@ const KEYBOARD_SHORTCUTS: ShortcutSection[] = [
     ],
   },
   {
+    title: "Request Panel",
+    shortcuts: [
+      { label: "View Request Params", keys: ["g", "then", "p"] },
+      { label: "View Request Headers", keys: ["g", "then", "h"] },
+      { label: "View Request Body", keys: ["g", "then", "b"] },
+      { label: "View Route Docs", keys: ["g", "then", "d"] },
+    ],
+  },
+  {
     title: "Sidebar Navigation",
     shortcuts: [
       { label: "Toggle Sidebar", keys: ["⌘", "B"] },
@@ -59,11 +68,13 @@ export function KeyboardShortcutsModal({
                       <div className="flex items-center gap-1">
                         {shortcut.keys.map((key, index) => (
                           <span key={`${shortcut.label}-${key}-${index}`}>
-                            {index > 0 && key !== "then" && (
-                              <span className="text-muted-foreground text-sm mx-1">
-                                +
-                              </span>
-                            )}
+                            {index > 0 &&
+                              key !== "then" &&
+                              index !== shortcut.keys.indexOf("then") + 1 && (
+                                <span className="text-muted-foreground text-sm mx-1">
+                                  +
+                                </span>
+                              )}
                             {key === "then" ? (
                               <span className="text-xs text-muted-foreground mx-1">
                                 then

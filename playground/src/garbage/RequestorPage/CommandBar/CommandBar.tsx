@@ -76,10 +76,11 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
                   setShortcutsOpen(true);
                   setOpen(false);
                 }}
-                value="keyboard shortcuts hotkeys"
+                // HACK - I excluded the phrase "shortcuts" from the value here because it made the term "docs" match this menu item and i didn't like that
+                value="show keyboard hotkeys"
               >
                 <Icon icon="lucide:book-open" className="h-4 w-4 mr-2" />
-                <span>View Keyboard Shortcuts</span>
+                <span>Show Keyboard Shortcuts</span>
               </CustomCommandItem>
               <CustomCommandItem
                 onSelect={() => {
