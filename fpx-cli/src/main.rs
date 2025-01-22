@@ -12,7 +12,6 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, Registry};
 
-mod api;
 mod commands;
 pub mod data;
 pub mod events;

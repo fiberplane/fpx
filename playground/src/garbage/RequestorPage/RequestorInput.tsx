@@ -33,7 +33,9 @@ export function RequestorInput({
     <form
       ref={formRef}
       onSubmit={onSubmit}
-      className="flex items-center justify-between bg-input border rounded-xl"
+      // NOTE - For some reason, in prod (not locally), we get a `margin-block-end: 1rem` on the form element from the user-agent-stylesheet
+      //        That's why we add `m-0` to the form element.
+      className="flex items-center justify-between bg-input border rounded-lg m-0"
     >
       <div className="flex flex-grow items-center space-x-0">
         <RequestMethodCombobox

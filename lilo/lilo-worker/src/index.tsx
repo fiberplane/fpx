@@ -47,6 +47,7 @@ app.doc("/doc", (c) => ({
 app.use(
   "/fp/*",
   createMiddleware({
+    apiKey: "12345",
     spec: "/doc",
   }),
 );

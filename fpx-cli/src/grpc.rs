@@ -1,4 +1,4 @@
-use fpx_lib::service::Service;
+use fpx::service::Service;
 use opentelemetry_proto::tonic::collector::trace::v1::trace_service_server::TraceService;
 use opentelemetry_proto::tonic::collector::trace::v1::{
     ExportTraceServiceRequest, ExportTraceServiceResponse,

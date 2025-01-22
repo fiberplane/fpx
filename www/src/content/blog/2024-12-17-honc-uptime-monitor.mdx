@@ -16,20 +16,21 @@ In this tutorial, we'll build a serverless website uptime monitoring application
 Overview of the Application
 Our uptime monitor will:
 
-* Monitor multiple websites simultaneously
-* Allow configurable check intervals per website
-* Track response times and HTTP status codes
-* Calculate uptime percentages
-* Provide a RESTful API for managing monitored sites
-* Include a simple web interface to view results
+- Monitor multiple websites simultaneously
+- Allow configurable check intervals per website
+- Track response times and HTTP status codes
+- Calculate uptime percentages
+- Provide a RESTful API for managing monitored sites
+- Include a simple web interface to view results
 
 ## The Technology Stack
+
 Let's break down the key technologies we're using:
 
-* [Hono](https://hono.dev/): A lightweight web framework specifically designed for edge computing platforms like Cloudflare Workers
-* [D1](https://developers.cloudflare.com/d1/): Cloudflare's serverless SQL database, perfect for storing our monitoring results
-* [Drizzle ORM](https://orm.drizzle.team/): A TypeScript-first ORM that provides type safety and a great developer experience
-* [Durable Objects](https://developers.cloudflare.com/durable-objects/): Cloudflare's solution for maintaining state and coordinating our monitoring schedules
+- [Hono](https://hono.dev/): A lightweight web framework specifically designed for edge computing platforms like Cloudflare Workers
+- [D1](https://developers.cloudflare.com/d1/): Cloudflare's serverless SQL database, perfect for storing our monitoring results
+- [Drizzle ORM](https://orm.drizzle.team/): A TypeScript-first ORM that provides type safety and a great developer experience
+- [Durable Objects](https://developers.cloudflare.com/durable-objects/): Cloudflare's solution for maintaining state and coordinating our monitoring schedules
 
 <LinkCard
   title="Follow along on GitHub"
@@ -47,23 +48,23 @@ First, let's define our database schema using Drizzle ORM. We need two main tabl
 ```ts title="schema.tsx"
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export const websites = sqliteTable('websites', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  url: text('url').notNull(),
-  name: text('name').notNull(),
-  checkInterval: integer('checkInterval').notNull(),
-  createdAt: text('createdAt').notNull()
+export const websites = sqliteTable("websites", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  url: text("url").notNull(),
+  name: text("name").notNull(),
+  checkInterval: integer("checkInterval").notNull(),
+  createdAt: text("createdAt").notNull()
 });
 
-export const uptimeChecks = sqliteTable('uptime_checks', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  websiteId: integer('websiteId')
+export const uptimeChecks = sqliteTable("uptime_checks", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  websiteId: integer("websiteId")
     .notNull()
     .references(() => websites.id),
-  timestamp: text('timestamp').notNull(),
-  status: integer('status'),
-  responseTime: integer('responseTime'),
-  isUp: integer('isUp', { mode: 'boolean' }).notNull()
+  timestamp: text("timestamp").notNull(),
+  status: integer("status"),
+  responseTime: integer("responseTime"),
+  isUp: integer("isUp", { mode: "boolean" }).notNull()
 });
 ```
 
@@ -81,7 +82,8 @@ export class Monitor {
 
   async scheduleChecks(websiteId: number) {
     const db = drizzle(this.env.DB);
-    const website = await db.select()
+    const website = await db
+      .select()
       .from(schema.websites)
       .where(eq(schema.websites.id, websiteId))
       .get();
@@ -99,8 +101,8 @@ export class Monitor {
 
     try {
       const response = await fetch(website.url, {
-        method: 'GET',
-        redirect: 'follow',
+        method: "GET",
+        redirect: "follow",
         cf: {
           cacheTTL: 0,
           cacheEverything: false
@@ -129,7 +131,7 @@ export class Monitor {
 
 ## Creating the API Endpoints
 
-We use Hono to create our REST API endpoints.  The interesting part about these endpoints is how they integrate with both D1 (for data persistence) and Durable Objects (for monitoring).
+We use Hono to create our REST API endpoints. The interesting part about these endpoints is how they integrate with both D1 (for data persistence) and Durable Objects (for monitoring).
 When you create a new website through the POST endpoint, it doesn't just store the website data - it also creates a new Monitor instance for that site.
 This is done by generating a unique Durable Object ID based on the website's ID, ensuring a 1:1 relationship between websites and their monitors.
 The GET endpoints are designed to be efficient, using Drizzle ORM's type-safe queries to fetch exactly the data needed without overfetching.
@@ -150,12 +152,13 @@ app.post("/api/website", async (c) => {
   const db = drizzle(c.env.DB);
   const data = await c.req.json();
 
-  const [newWebsite] = await db.insert(schema.websites)
+  const [newWebsite] = await db
+    .insert(schema.websites)
     .values({
       url: data.url,
       name: data.name,
       checkInterval: data.checkInterval,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toISOString()
     })
     .returning();
 
@@ -163,11 +166,14 @@ app.post("/api/website", async (c) => {
   const monitor = c.env.SCHEDULED_MONITOR.get(
     c.env.SCHEDULED_MONITOR.idFromName(newWebsite.id.toString())
   );
-  await monitor.fetch(new Request('https://monitor/schedule?websiteId=' + newWebsite.id));
+  await monitor.fetch(
+    new Request("https://monitor/schedule?websiteId=" + newWebsite.id)
+  );
 
   return c.json(newWebsite);
 });
 ```
+
 ## Calculating Uptime Percentages
 
 We also implement an endpoint to calculate uptime percentages for any given website.
@@ -179,15 +185,16 @@ What's clever about this approach is that it automatically accounts for varying 
 The results are rounded to two decimal places to provide meaningful precision without false accuracy.
 
 ```ts title="index.tsx"
-app.get('/websites/:id/uptime', async (c) => {
+app.get("/websites/:id/uptime", async (c) => {
   const { id } = c.req.param();
-  const days = c.req.query('days') ?? 7;
+  const days = c.req.query("days") ?? 7;
   const db = drizzle(c.env.DB);
 
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
 
-  const checks = await db.select()
+  const checks = await db
+    .select()
     .from(schema.uptimeChecks)
     .where(
       and(
@@ -196,7 +203,7 @@ app.get('/websites/:id/uptime', async (c) => {
       )
     );
 
-  const upCount = checks.filter(check => check.isUp).length;
+  const upCount = checks.filter((check) => check.isUp).length;
   const uptimePercentage = (upCount / checks.length) * 100;
 
   return c.json({
@@ -222,12 +229,12 @@ If you want to read more about how to build a frontend in combination with Hono,
 This serverless uptime monitor demonstrates the power of Cloudflare's edge computing platform. By leveraging Durable Objects for state management, D1 for data storage, and Hono for routing, we've created a scalable and efficient monitoring solution.
 Some potential improvements could include:
 
-* Adding authentication for API endpoints
-* Implementing real-time updates using WebSocket connections
-* Creating more detailed reporting and analytics
-* Adding notification systems for downtime alerts
-* Implementing custom check parameters (timeout, expected status codes, etc.)
-* Furthermore a more robust approach might be to use a cron trigger that runs every few seconds, looks for records that haven't had a recent uptime check (according to their interval) and then making the check, such that when the Worker is redeployed, it doesn't miss any existing checks.
+- Adding authentication for API endpoints
+- Implementing real-time updates using WebSocket connections
+- Creating more detailed reporting and analytics
+- Adding notification systems for downtime alerts
+- Implementing custom check parameters (timeout, expected status codes, etc.)
+- Furthermore a more robust approach might be to use a cron trigger that runs every few seconds, looks for records that haven't had a recent uptime check (according to their interval) and then making the check, such that when the Worker is redeployed, it doesn't miss any existing checks.
 
 <LinkCard
   title="Get the code on GitHub"
