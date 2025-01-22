@@ -47,9 +47,6 @@ export interface RequestResponseSlice {
   /** Response related state */
 
   activeResponse: RequestorActiveResponse | null;
-  /** A banner that tells the user they can view logs for a request */
-  showViewLogsBanner: boolean;
-  setShowViewLogsBanner: (showViewLogsBanner: boolean) => void;
 
   showResponseBodyFromHistory: (traceId: string) => void;
   setActiveResponse: (response: RequestorActiveResponse | null) => void;
