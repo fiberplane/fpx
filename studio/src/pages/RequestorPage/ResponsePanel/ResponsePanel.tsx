@@ -40,15 +40,11 @@ export const ResponsePanel = memo(function ResponsePanel({
     visibleResponsePanelTabs,
     activeResponsePanelTab,
     setActiveResponsePanelTab,
-    showViewLogsBanner,
-    setShowViewLogsBanner,
   } = useStudioStore(
     "activeResponse",
     "visibleResponsePanelTabs",
     "activeResponsePanelTab",
     "setActiveResponsePanelTab",
-    "showViewLogsBanner",
-    "setShowViewLogsBanner",
   );
 
   const shouldShowResponseTab = (tab: ResponsePanelTab): boolean => {
