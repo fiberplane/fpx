@@ -18,13 +18,11 @@ import {
 import { isWsRequest } from "../types";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { FailedRequest, ResponseBody } from "./ResponseBody";
-import { ViewLogsBanner } from "./ViewLogsBanner";
 import {
   FailedWebsocket,
   NoWebsocketConnection,
   WebsocketMessages,
 } from "./Websocket";
-import { useIgnoreViewLogsBanner } from "./useViewLogsBanner";
 
 type Props = {
   tracedResponse?: ProxiedRequestResponse;
@@ -74,15 +72,11 @@ export const ResponsePanel = memo(function ResponsePanel({
 
   const shouldShowMessages = shouldShowResponseTab("messages");
 
-  const { ignoreViewLogsBanner, setIgnoreViewLogsBanner } =
-    useIgnoreViewLogsBanner();
-
   return (
-    <div className="overflow-x-hidden overflow-y-auto h-full relative">
-      <Tabs
+    <Tabs
         value={activeResponsePanelTab}
         onValueChange={setActiveResponsePanelTab}
-        className="grid grid-rows-[auto_1fr] overflow-hidden h-full"
+        className="grid grid-rows-[auto_1fr] max-h-full"
       >
         <CustomTabsList>
           <CustomTabTrigger value="response" className="flex items-center">
@@ -144,12 +138,6 @@ export const ResponsePanel = memo(function ResponsePanel({
               )
             }
           >
-            {/** NOT IN USE YET */}
-            <ViewLogsBanner
-              showViewLogsBanner={!ignoreViewLogsBanner && !!showViewLogsBanner}
-              setShowViewLogsBanner={setShowViewLogsBanner}
-              setIgnoreViewLogsBanner={setIgnoreViewLogsBanner}
-            />
             <div className={cn("grid grid-rows-[auto_1fr]")}>
               <ResponseBody
                 response={responseToRender}
@@ -168,7 +156,6 @@ export const ResponsePanel = memo(function ResponsePanel({
           )}
         </CustomTabsContent>
       </Tabs>
-    </div>
   );
 });
 

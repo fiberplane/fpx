@@ -373,7 +373,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
               id="response-panel"
               order={4}
               minSize={isLgScreen ? 10 : 15}
-              className={cn(BACKGROUND_LAYER)}
+              className={cn(BACKGROUND_LAYER, "relative")}
             >
               <ResponsePanel
                 tracedResponse={mostRecentProxiedRequestResponseForRoute}
