@@ -15,7 +15,7 @@ export function MaskedText({ text }: { text: string }) {
         size="icon"
         variant={"ghost"}
         onClick={() => setIsVisible(!isVisible)}
-        className="h-auto p-2"
+        className="h-auto p-2 hover:bg-transparent text-foreground/70 hover:text-foreground"
       >
         {isVisible ? <Eye size={16} /> : <EyeOff size={16} />}
       </Button>

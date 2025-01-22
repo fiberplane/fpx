@@ -1,4 +1,4 @@
-import type { ReactNode } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 
 export const AuthorizationOption = ({
   children,
@@ -12,7 +12,7 @@ export const AuthorizationOption = ({
   checked?: boolean;
 }) => {
   return (
-    <label className="grid grid-cols-[auto_1fr] gap-2 items-center cursor-pointer overflow-hidden text-muted-foreground hover:text-foreground">
+    <label className="grid grid-cols-[auto_1fr] gap-2 items-center cursor-pointer overflow-hidden text-muted-foreground hover:text-foreground min-h-9">
       <input
         id={value}
         type="radio"

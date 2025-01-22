@@ -1,8 +1,8 @@
-import type { BearerAuthorization } from "../../store/slices/settingsSlice";
+import type { AuthorizationBearer } from "../../store/slices/settingsSlice";
 import { MaskedText } from "./MaskedText";
 
 export const BearerAuthorizationItem = (
-  props: Pick<BearerAuthorization, "id" | "name" | "token">,
+  props: Pick<AuthorizationBearer, "id" | "name" | "token">,
 ) => {
   return (
     <div className="grid grid-cols-[auto_1fr] gap-2 items-center">

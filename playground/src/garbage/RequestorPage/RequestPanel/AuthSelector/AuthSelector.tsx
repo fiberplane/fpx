@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { KeyRoundIcon, Settings2Icon } from "lucide-react";
+import { KeyRoundIcon } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import {
   getPreferredAuthorizationId,
@@ -26,32 +26,32 @@ export function AuthSelector() {
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-muted-foreground text-xs font-thin">
+      <div className="text-muted-foreground text-xs">
         Select your preferred auth method/option for this request. You can
         manage your auth configurations on the &nbsp;
-        <Button
-          variant="secondary"
-          size="sm"
+        <button
+          type="button"
+          className="text-info/70 hover:text-info transition-colors"
           onClick={() => setSettingsOpen(true)}
         >
-          <Settings2Icon size={16} />
           settings
-        </Button>{" "}
+        </button>{" "}
         page.
-      </p>
+      </div>
       <div className="grid text-xs">
         {authorizations.length === 0 ? (
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-start">
             <div className="text-xs text-center text-muted-foreground border rounded-md flex flex-col p-2 gap-2">
               <h4 className="flex items-center gap-2 font-semibold">
                 <KeyRoundIcon size="16" />
-                No additional auth configurations defined
+                No auth configurations defined
               </h4>
               <p>
                 You may want to
                 <Button
                   variant="secondary"
                   size="sm"
+                  className="text-xs mx-1 py-0.5 px-1.5 h-6"
                   onClick={() => setSettingsOpen(true)}
                 >
                   Add
@@ -61,7 +61,7 @@ export function AuthSelector() {
             </div>
           </div>
         ) : (
-          <div className="border rounded-md p-4 grid gap-4">
+          <div className="border rounded-md p-4 grid gap-2">
             {authorizations.map((authorization) => {
               return (
                 <AuthorizationItem

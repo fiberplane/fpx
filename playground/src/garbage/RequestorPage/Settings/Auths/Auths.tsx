@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { InfoIcon, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { useRef } from "react";
 import { useStudioStore } from "../../store";
 import { AuthForm } from "./AuthForm";
