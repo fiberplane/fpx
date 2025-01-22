@@ -30,12 +30,14 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
     setSettingsOpen,
     useMockApiSpec,
     setUseMockApiSpec,
+    setShortcutsOpen,
   } = useStudioStore(
     "visibleRequestsPanelTabs",
     "setActiveRequestsPanelTab",
     "setSettingsOpen",
     "useMockApiSpec",
     "setUseMockApiSpec",
+    "setShortcutsOpen",
   );
 
   const { setTheme } = useTheme();
@@ -68,6 +70,16 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
               >
                 <Icon icon="lucide:settings" className="h-4 w-4 mr-2" />
                 <span>Open Settings</span>
+              </CustomCommandItem>
+              <CustomCommandItem
+                onSelect={() => {
+                  setShortcutsOpen(true);
+                  setOpen(false);
+                }}
+                value="keyboard shortcuts hotkeys"
+              >
+                <Icon icon="lucide:book-open" className="h-4 w-4 mr-2" />
+                <span>View Keyboard Shortcuts</span>
               </CustomCommandItem>
               <CustomCommandItem
                 onSelect={() => {
