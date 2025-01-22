@@ -13,6 +13,16 @@ if (image && "light" in image && "dark" in image) {
   heroImageLight = image.light;
   heroImageDark = image.dark;
 }
+
+const imageAttrs = {
+  loading: "eager" as const,
+  decoding: "async" as const,
+  widths: [1024, 1248],
+  height: 736,
+  sizes: "(max-width: 1024px) 1024px, 1248px",
+  "data-hero-image": "",
+  alt
+};
 ---
 
 <section data-hero>
@@ -51,27 +61,12 @@ if (image && "light" in image && "dark" in image) {
     <figure>
       {
         heroImageLight && (
-          <Image
-            src={heroImageLight}
-            alt={alt}
-            height="736"
-            widths={[1024, 1248]}
-            sizes="(max-width: 1024px) 1024px, 1248px"
-            class="hero-image hero-image--light"
-          />
+          <Image src={heroImageLight} class="dark:sl-hidden" {...imageAttrs} />
         )
       }
-
       {
         heroImageDark && (
-          <Image
-            src={heroImageDark}
-            alt={alt}
-            height="736"
-            widths={[1024, 1248]}
-            sizes="(max-width: 1024px) 1024px, 1248px"
-            class="hero-image hero-image--dark"
-          />
+          <Image src={heroImageDark} class="light:sl-hidden" {...imageAttrs} />
         )
       }
     </figure>
@@ -79,7 +74,7 @@ if (image && "light" in image && "dark" in image) {
 </section>
 
 <script is:inline>
-  const heroImages = document.querySelectorAll(".hero-image");
+  const heroImages = document.querySelectorAll("[data-hero-image]");
   for (const heroImage of heroImages) {
     heroImage.onload = () => heroImage.classList.add("is-loaded");
   }
@@ -92,14 +87,6 @@ if (image && "light" in image && "dark" in image) {
     *:has(* > [data-hero]) {
       overflow-x: clip;
     }
-  }
-
-  html[data-theme="light"] .hero-image--dark {
-    display: none;
-  }
-
-  html[data-theme="dark"] .hero-image--light {
-    display: none;
   }
 
   section {
@@ -156,9 +143,9 @@ if (image && "light" in image && "dark" in image) {
       p {
         /* TODO: Add Inter-Tight font & update font size & line height */
         /* fontsource.com */
-        font-size: 32px;
-        line-height: 1.2;
-        font-weight: 500;
+        font-size: 28px;
+        line-height: 1.3;
+        font-weight: 400;
         text-wrap: pretty;
         color: var(--fg-muted);
       }
@@ -170,7 +157,7 @@ if (image && "light" in image && "dark" in image) {
       position: relative;
       padding-block: var(--figure-block-padding);
 
-      img.hero-image {
+      img {
         position: absolute;
         left: 0;
         height: calc(100% - var(--figure-block-padding) * 2);
