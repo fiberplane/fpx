@@ -4,7 +4,6 @@ packages:
   - "fp-services"
   - "honc-code-gen"
   - "playground"
-  - "workeroni"
   - "lilo/*"
   - "packages/*"
   - "examples/*"
