@@ -21,7 +21,7 @@ export const api = {
 
   createWorkflow: async (data: {
     prompt: string;
-    openApiSchemaId: string;
+    openApiSchema: string;
     summary?: string;
     description?: string;
   }): Promise<ApiResponse<Workflow>> => {
@@ -72,23 +72,5 @@ export const api = {
       const error = await response.json();
       throw new Error(error.message);
     }
-  },
-
-  getSchemas: async () => {
-    const response = await fetch("/api/oai_schema");
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
-    }
-    return response.json();
-  },
-
-  getSchema: async (id: string) => {
-    const response = await fetch(`/api/oai_schema/${id}`);
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
-    }
-    return response.json();
   },
 };
