@@ -29,6 +29,14 @@
 
   --sl-color-text-accent: var(--fg-brand);
 
+  /*
+    Overrides for only the note badge on the Changelog page, add more if
+    necessary
+  */
+  --sl-badge-note-bg: var(--bg-info);
+  --sl-badge-note-border: var(--fg-info);
+  --sl-badge-note-text: var(--fg-info);
+
   a.site-title {
     color: var(--sl-color-text);
   }
