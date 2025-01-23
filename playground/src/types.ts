@@ -81,21 +81,14 @@ export interface WorkflowStep {
   outputs: StepOutput[];
 }
 
-export interface OAISchema {
-  id: string;
-  name: string;
-  content: string;
-}
-
 export interface Workflow {
   id: string;
   prompt: string;
   summary: string;
   description: string;
-  openApiSchemaId: string;
   steps: WorkflowStep[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ApiResponse<T> {
