@@ -44,9 +44,8 @@ const imageAttrs = {
               <LinkButton
                 {href}
                 {variant}
-                class="link-button"
                 icon={icon?.name}
-                class:list={[className]}
+                class:list={["link-button", className]}
                 {...attrs}
               >
                 {text}
@@ -100,9 +99,13 @@ const imageAttrs = {
 
   .link-button {
     --sl-color-text-accent: var(--bg-brand-muted);
-    --sl-color-black: var(--bg-brand);
+    --sl-color-text-accent: var(--bg-brand);
+    --sl-color-black: var(--fg-on-primary);
     border-radius: var(--border-radius);
-    padding: 0.75rem;
+
+    /* Overwrite the -block & -inline values as cascade differs in prod */
+    padding-block: 0.5rem;
+    padding-inline: 0.75rem;
 
     &.secondary {
       background-color: white;

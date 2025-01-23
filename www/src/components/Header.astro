@@ -93,10 +93,11 @@ const navEntries = nav?.entries || [];
   .nav-links {
     gap: 0.5rem;
 
-    .nav-link {
+    /* Padding was overridden in prod, hence the specifity */
+    .nav-link.sl-link-button.not-content.minimal {
       border-radius: var(--border-radius);
-      padding: 6px 10px;
-      height: 100%;
+      padding-inline: 0.625rem;
+      padding-block: 0.375rem;
 
       &:hover {
         background-color: var(--bg-secondary-hover);
