@@ -4,7 +4,7 @@ import {
   ResizablePanelGroup,
   usePanelConstraints,
 } from "@/components/ui/resizable";
-import { useIsLgScreen } from "@/hooks";
+import { useIsLgScreen, useKeySequence } from "@/hooks";
 import { cn } from "@/utils";
 import { useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -19,7 +19,15 @@ import { getMainSectionWidth } from "./util";
 
 export const RequestorPageContent: React.FC = (_props) => {
   // const appRouteRef = useLatest<ProbedRoute | undefined>(appRoute);
-  const { setShortcutsOpen } = useStudioStore("setShortcutsOpen");
+  const {
+    setShortcutsOpen,
+    setActiveRequestsPanelTab,
+    visibleRequestsPanelTabs,
+  } = useStudioStore(
+    "setShortcutsOpen",
+    "setActiveRequestsPanelTab",
+    "visibleRequestsPanelTabs",
+  );
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
     useMakeProxiedRequest();
@@ -66,6 +74,73 @@ export const RequestorPageContent: React.FC = (_props) => {
     {
       enableOnFormTags: ["input"],
     },
+  );
+
+  useKeySequence(
+    ["g", "d"],
+    () => {
+      if (visibleRequestsPanelTabs.includes("docs")) {
+        setActiveRequestsPanelTab("docs");
+      }
+    },
+    { description: "View Route Docs", ignoreSelector: "[contenteditable]" },
+  );
+
+  useKeySequence(
+    ["g", "p"],
+    () => {
+      if (visibleRequestsPanelTabs.includes("params")) {
+        setActiveRequestsPanelTab("params");
+      }
+    },
+    { description: "View Request Params", ignoreSelector: "[contenteditable]" },
+  );
+
+  useKeySequence(
+    ["g", "a"],
+    () => {
+      if (visibleRequestsPanelTabs.includes("auth")) {
+        setActiveRequestsPanelTab("auth");
+      }
+    },
+    {
+      description: "View Request Auth",
+      ignoreSelector: "[contenteditable]",
+    },
+  );
+
+  useKeySequence(
+    ["g", "h"],
+    () => {
+      if (visibleRequestsPanelTabs.includes("headers")) {
+        setActiveRequestsPanelTab("headers");
+      }
+    },
+    {
+      description: "View Request Headers",
+      ignoreSelector: "[contenteditable]",
+    },
+  );
+
+  useKeySequence(
+    ["g", "b"],
+    () => {
+      // TODO - Focus the body input after this
+      if (visibleRequestsPanelTabs.includes("body")) {
+        setActiveRequestsPanelTab("body");
+      }
+    },
+    { description: "View Request Body", ignoreSelector: "[contenteditable]" },
+  );
+
+  useKeySequence(
+    ["g", "d"],
+    () => {
+      if (visibleRequestsPanelTabs.includes("docs")) {
+        setActiveRequestsPanelTab("docs");
+      }
+    },
+    { description: "View Route Docs", ignoreSelector: "[contenteditable]" },
   );
 
   const requestContent = <RequestPanel onSubmit={onSubmit} />;

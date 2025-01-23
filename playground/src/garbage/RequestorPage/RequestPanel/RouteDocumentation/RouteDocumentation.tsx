@@ -33,9 +33,7 @@ const getTitleWithFallback = (
   return (
     <>
       <span
-        className={cn(
-          getHttpMethodTextColor(route.method?.toUpperCase?.()),
-        )}
+        className={cn(getHttpMethodTextColor(route.method?.toUpperCase?.()))}
       >
         {route.method}
       </span>
@@ -332,10 +330,18 @@ function ObjectSchemaViewer({ schema }: ObjectSchemaProps) {
               ) : (
                 <SchemaViewer schema={prop} />
               ))}
-            {/* Handle non-array properties */}
-            {prop.type !== "array" && prop.example !== undefined && (
-              <ParameterExample example={prop.example} />
+            {/* Handle nested objects */}
+            {prop.type === "object" && prop.properties && (
+              <div className="pl-4 border-l-2 mt-2">
+                <SchemaViewer schema={prop} />
+              </div>
             )}
+            {/* Handle non-array, non-object properties */}
+            {prop.type !== "array" &&
+              prop.type !== "object" &&
+              prop.example !== undefined && (
+                <ParameterExample example={prop.example} />
+              )}
           </div>
         </div>
       ))}
@@ -397,6 +403,8 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
     !!schema.properties,
     "Is array:",
     isArraySchema(schema),
+    "Is object:",
+    isObjectSchema(schema),
   );
 
   return (
@@ -509,7 +517,7 @@ function RequiredBadge() {
 
 function TypeBadge({ type }: { type: string }) {
   return (
-    <span className="px-0.5 py-0 text-xs text-muted-foreground border-none font-normal font-sans ">
+    <span className="px-0.5 py-0 text-xs text-foreground/65 border-none font-normal font-sans ">
       {type}
     </span>
   );
@@ -538,8 +546,8 @@ type ParameterExampleProps = {
 function ParameterExample({ example }: ParameterExampleProps) {
   return (
     <div className="text-xs">
-      <span className="text-muted-foreground">Example: </span>
-      <code className="font-sans px-1.5 py-0.5 rounded">
+      <span className="font-sans text-muted-foreground">Example: </span>
+      <code className="font-mono text-foreground/65 px-1.5 py-0.5 rounded">
         {typeof example === "string" ? `"${example}"` : JSON.stringify(example)}
       </code>
     </div>

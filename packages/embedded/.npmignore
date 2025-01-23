@@ -1,4 +1,5 @@
 node_modules
+tsconfig.json
 .dev.vars
 .dev.vars.example
 
@@ -7,9 +8,6 @@ src/
 
 # do not publish biome config
 biome.jsonc
-
-# do not publish migrate typescript file
-migrate.ts
 
 # Change them to your taste:
 package-lock.json
@@ -62,8 +60,6 @@ yarn-error.log
 .nx/cache
 *.tsbuildinfo
 
+# Version control
 .git/*
 
-# Personal files
-mizu.boots.code-workspace
-start-dev.sh

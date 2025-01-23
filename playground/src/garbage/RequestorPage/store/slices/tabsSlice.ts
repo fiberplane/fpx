@@ -9,7 +9,7 @@ export const tabsSlice: StateCreator<
   TabsSlice
 > = (set) => ({
   activeRequestsPanelTab: "params",
-  visibleRequestsPanelTabs: ["params", "headers"],
+  visibleRequestsPanelTabs: ["params", "headers", "auth"],
   activeResponsePanelTab: "response",
   visibleResponsePanelTabs: ["response", "headers"],
 
@@ -29,7 +29,7 @@ export const tabsSlice: StateCreator<
 
 // Helper functions
 function isRequestsPanelTab(tab: string): tab is RequestsPanelTab {
-  return ["params", "headers", "body", "docs"].includes(tab);
+  return ["params", "headers", "auth", "body", "docs"].includes(tab);
 }
 
 function isResponsePanelTab(tab: string): tab is ResponsePanelTab {

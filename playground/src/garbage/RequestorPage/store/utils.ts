@@ -1,6 +1,7 @@
 import type { findMatchedRoute } from "../routes";
 import type { ProbedRoute } from "../types";
 import type { RequestMethod, RequestType } from "../types";
+import type { Authorization } from "./slices/settingsSlice";
 import type { RequestorState } from "./types";
 
 export const _getActiveRoute = (state: RequestorState): ProbedRoute => {
@@ -166,4 +167,26 @@ export function pathHasValidBaseUrl(path: string) {
   } catch {
     return false;
   }
+}
+
+export function getPreferredAuthorizationId(
+  authorizationId: null | string,
+  authorizations: Array<Authorization>,
+): string {
+  // If the authorizationId is "none" or matches an id in the authorizations list, return it
+  if (
+    authorizationId === "none" ||
+    (authorizationId &&
+      authorizations.some((auth) => auth.id === authorizationId))
+  ) {
+    return authorizationId;
+  }
+
+  // Otherwise return the first authorization id in the list
+  if (authorizations.length > 0) {
+    return authorizations[0].id;
+  }
+
+  // If there are no authorizations, return "none"
+  return "none";
 }

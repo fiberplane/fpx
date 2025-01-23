@@ -23,7 +23,11 @@ export function SettingsScreen({
               <div className="flex justify-between items-center px-8 pt-6">
                 <DialogTitle>Settings</DialogTitle>
                 <DialogClose asChild>
-                  <Button variant="ghost" size="icon" className="w-6 h-6 p-0.5">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-6 h-6 p-0.5 text-foreground/70 hover:text-foreground hover:bg-transparent transition-colors"
+                  >
                     <Icon icon="lucide:x" />
                   </Button>
                 </DialogClose>

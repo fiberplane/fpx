@@ -16,6 +16,19 @@ const KEYBOARD_SHORTCUTS: ShortcutSection[] = [
       { label: "Open Command Menu", keys: ["⌘", "K"] },
       { label: "Send Request", keys: ["⌘", "Enter"] },
       { label: "Use Example Data", keys: ["⌘", "G"] },
+      // TODO - Find a better name for the Help menu, all it has right now are a link to Settings and the keyboard shortcuts
+      { label: "Open Help Menu", keys: ["shift", "?"] },
+      { label: "Open Keyboard Shortcuts", keys: ["⌘", "/"] },
+    ],
+  },
+  {
+    title: "Request Panel",
+    shortcuts: [
+      { label: "View Request Params", keys: ["g", "then", "p"] },
+      { label: "View Request Auth", keys: ["g", "then", "a"] },
+      { label: "View Request Headers", keys: ["g", "then", "h"] },
+      { label: "View Request Body", keys: ["g", "then", "b"] },
+      { label: "View Route Docs", keys: ["g", "then", "d"] },
     ],
   },
   {
@@ -38,32 +51,38 @@ export function KeyboardShortcutsModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold">Keyboard Shortcuts</h2>
+        <div className="p-8">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold tracking-tight">
+              Keyboard Shortcuts
+            </h2>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-6">
             {KEYBOARD_SHORTCUTS.map((section) => (
               <div key={section.title}>
-                <h3 className="text-sm font-medium text-foreground mb-4">
+                <h3 className="text-base text-foreground/70 mb-2">
                   {section.title}
                 </h3>
                 <div className="space-y-1">
                   {section.shortcuts.map((shortcut) => (
                     <div
                       key={shortcut.label}
-                      className="flex items-center justify-between py-1"
+                      className="flex items-center justify-between py-1 group hover:bg-muted/50 rounded-md px-2 transition-colors"
                     >
-                      <span className="text-sm">{shortcut.label}</span>
+                      <span className="text-sm text-foreground/90 group-hover:text-foreground">
+                        {shortcut.label}
+                      </span>
                       <div className="flex items-center gap-1">
                         {shortcut.keys.map((key, index) => (
                           <span key={`${shortcut.label}-${key}-${index}`}>
-                            {index > 0 && key !== "then" && (
-                              <span className="text-muted-foreground text-sm mx-1">
-                                +
-                              </span>
-                            )}
+                            {index > 0 &&
+                              key !== "then" &&
+                              index !== shortcut.keys.indexOf("then") + 1 && (
+                                <span className="text-muted-foreground text-sm mx-1">
+                                  +
+                                </span>
+                              )}
                             {key === "then" ? (
                               <span className="text-xs text-muted-foreground mx-1">
                                 then
@@ -71,7 +90,7 @@ export function KeyboardShortcutsModal({
                             ) : (
                               <KeyboardShortcutKey
                                 key={key}
-                                className="inline-flex"
+                                className="inline-flex min-w-[1.75rem] justify-center"
                               >
                                 {key}
                               </KeyboardShortcutKey>

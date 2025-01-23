@@ -274,7 +274,7 @@ export function Faker() {
       </TooltipTrigger>
       <TooltipContent side="left">
         Use sample data
-        <div className="flex gap-0.5">
+        <div className="inline-flex ml-1 gap-0.5">
           <KeyboardShortcutKey>{isMac ? "⌘" : "Ctrl"}</KeyboardShortcutKey>{" "}
           <KeyboardShortcutKey>G</KeyboardShortcutKey>
         </div>

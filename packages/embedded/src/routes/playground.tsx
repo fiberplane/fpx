@@ -27,7 +27,7 @@ export default function createPlayground({
           <title>
             {(resolvedSpec.type === "success" &&
               resolvedSpec.spec?.info?.title) ??
-              "FPX Playground"}
+              "API Playground"}
           </title>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -124,7 +124,6 @@ async function resolveSpec(
     case "path": {
       const url = spec.type === "url" ? spec.value : `${origin}${spec.value}`;
       try {
-        console.log("Fetching spec from", url);
         const response = await fetch(url);
 
         if (!response.ok) {

@@ -3,9 +3,7 @@ shared/dist
 .env
 .envrc
 
-# temp for my branch
-lilo/lilo-worker/.prod.vars
-lilo/lilo-worker/.dev.vars
+# personal script to purge all node modules
 remove_node_modules.sh
 
 # Cursor

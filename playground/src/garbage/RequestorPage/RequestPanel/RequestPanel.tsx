@@ -16,6 +16,7 @@ import {
   CodeMirrorTextEditor,
 } from "@/components/CodeMirrorEditor";
 import { useStudioStore } from "../store";
+import { AuthSelector } from "./AuthSelector";
 import { Faker } from "./Faker";
 import { RouteDocumentation } from "./RouteDocumentation/RouteDocumentation";
 import { isOpenApiOperation } from "./RouteDocumentation/openapi";
@@ -93,16 +94,8 @@ export const RequestPanel = memo(function RequestPanel(
         <CustomTabTrigger value="params">
           Params
           {queryParams?.length > 1 && (
-            <span className="ml-1 font-mono text-xs text-gray-400">
+            <span className="ml-1 font-mono text-xs text-muted-foreground">
               ({queryParams.length - 1})
-            </span>
-          )}
-        </CustomTabTrigger>
-        <CustomTabTrigger value="headers">
-          Headers
-          {requestHeaders?.length > 1 && (
-            <span className="ml-1 font-mono text-xs text-gray-400">
-              ({requestHeaders.length - 1})
             </span>
           )}
         </CustomTabTrigger>
@@ -114,6 +107,15 @@ export const RequestPanel = memo(function RequestPanel(
             )}
           </CustomTabTrigger>
         )}
+        <CustomTabTrigger value="auth">Auth</CustomTabTrigger>
+        <CustomTabTrigger value="headers">
+          Headers
+          {requestHeaders?.length > 1 && (
+            <span className="ml-1 font-mono text-xs text-muted-foreground">
+              ({requestHeaders.length - 1})
+            </span>
+          )}
+        </CustomTabTrigger>
         {shouldShowDocs && (
           <CustomTabTrigger value="docs">Docs</CustomTabTrigger>
         )}
@@ -160,6 +162,9 @@ export const RequestPanel = memo(function RequestPanel(
             />
           </>
         ) : null}
+      </CustomTabsContent>
+      <CustomTabsContent value="auth">
+        <AuthSelector />
       </CustomTabsContent>
       <CustomTabsContent value="headers">
         <PanelSectionHeader

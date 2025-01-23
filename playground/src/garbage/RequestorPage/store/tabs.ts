@@ -4,6 +4,7 @@ import type { RequestMethod, RequestType } from "../types";
 export const RequestsPanelTabSchema = z.enum([
   "params",
   "headers",
+  "auth",
   "body",
   "docs",
 ]);
@@ -19,7 +20,7 @@ export const getVisibleRequestPanelTabs = (route: {
   method: RequestMethod;
   openApiSpec: unknown | undefined;
 }): RequestsPanelTab[] => {
-  const result: RequestsPanelTab[] = ["params", "headers"];
+  const result: RequestsPanelTab[] = ["params", "headers", "auth"];
 
   const canHaveBody = route.method !== "GET" && route.method !== "HEAD";
   if (canHaveBody) {

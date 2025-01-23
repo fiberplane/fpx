@@ -22,7 +22,7 @@
   "dependencies": {
     "@ai-sdk/google": "^1.0.9",
     "@ai-sdk/openai": "^1.0.8",
-    "@fiberplane/embedded": "^0.0.17",
+    "@fiberplane/embedded": "^0.0.19",
     "@hono/oauth-providers": "^0.6.2",
     "@hono/zod-openapi": "^0.18.0",
     "@hono/zod-validator": "^0.4.1",

@@ -5,6 +5,11 @@ import { specToProbedRoutes } from "./spec-to-probed-routes";
 import type { OpenAPISpec, ProbedRoutesResponse } from "./types";
 import type { ResolvedSpecResult } from "./types";
 
+const MOCK_API_SPEC =
+  process.env.NODE_ENV === "production"
+    ? PLACEGOOSE_API_SPEC // Render placegoose as mock api spec in production
+    : TIGHTKNIT_API_SPEC; // Render tightknit as mock api spec in development
+
 /**
  * Adapter module for converting OpenAPI specs into ProbedRoutesResponse format.
  *
@@ -47,8 +52,7 @@ function getOpenApiSpec(useMockApiSpec: boolean): ResolvedSpecResult {
   if (useMockApiSpec) {
     return {
       type: "success",
-      spec: (TIGHTKNIT_API_SPEC ||
-        PLACEGOOSE_API_SPEC) as unknown as OpenAPISpec,
+      spec: MOCK_API_SPEC as unknown as OpenAPISpec,
     };
   }
 

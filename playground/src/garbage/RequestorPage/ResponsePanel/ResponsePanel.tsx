@@ -57,14 +57,16 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
             )}
           </CustomTabTrigger>
 
-          <CustomTabTrigger value="headers">
-            Headers
-            {responseHeaders && Object.keys(responseHeaders).length > 1 && (
-              <span className="ml-1 text-gray-400 font-mono text-xs">
-                ({Object.keys(responseHeaders).length})
-              </span>
-            )}
-          </CustomTabTrigger>
+          {responseToRender && (
+            <CustomTabTrigger value="headers">
+              Headers
+              {responseHeaders && Object.keys(responseHeaders).length > 1 && (
+                <span className="ml-1 text-muted-foreground font-mono text-xs">
+                  ({Object.keys(responseHeaders).length})
+                </span>
+              )}
+            </CustomTabTrigger>
+          )}
         </CustomTabsList>
         <CustomTabsContent value="response" className="h-full">
           <TabContentInner
@@ -85,11 +87,13 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
           </TabContentInner>
         </CustomTabsContent>
         <CustomTabsContent value="headers">
-          {responseHeaders && (
+          {responseHeaders ? (
             <KeyValueTable
               sensitiveKeys={SENSITIVE_HEADERS}
               keyValue={responseHeaders}
             />
+          ) : (
+            !responseToRender && <NoResponse />
           )}
         </CustomTabsContent>
       </Tabs>
