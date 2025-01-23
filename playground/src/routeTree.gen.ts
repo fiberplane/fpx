@@ -12,7 +12,6 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as WorkflowImport } from './routes/workflow'
-import { Route as TesterImport } from './routes/tester'
 import { Route as IndexImport } from './routes/index'
 import { Route as WorkflowIndexImport } from './routes/workflow.index'
 import { Route as WorkflowNewImport } from './routes/workflow.new'
@@ -23,12 +22,6 @@ import { Route as WorkflowWorkflowIdImport } from './routes/workflow.$workflowId
 const WorkflowRoute = WorkflowImport.update({
   id: '/workflow',
   path: '/workflow',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const TesterRoute = TesterImport.update({
-  id: '/tester',
-  path: '/tester',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -65,13 +58,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/tester': {
-      id: '/tester'
-      path: '/tester'
-      fullPath: '/tester'
-      preLoaderRoute: typeof TesterImport
       parentRoute: typeof rootRoute
     }
     '/workflow': {
@@ -125,7 +111,6 @@ const WorkflowRouteWithChildren = WorkflowRoute._addFileChildren(
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/tester': typeof TesterRoute
   '/workflow': typeof WorkflowRouteWithChildren
   '/workflow/$workflowId': typeof WorkflowWorkflowIdRoute
   '/workflow/new': typeof WorkflowNewRoute
@@ -134,7 +119,6 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/tester': typeof TesterRoute
   '/workflow/$workflowId': typeof WorkflowWorkflowIdRoute
   '/workflow/new': typeof WorkflowNewRoute
   '/workflow': typeof WorkflowIndexRoute
@@ -143,7 +127,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/tester': typeof TesterRoute
   '/workflow': typeof WorkflowRouteWithChildren
   '/workflow/$workflowId': typeof WorkflowWorkflowIdRoute
   '/workflow/new': typeof WorkflowNewRoute
@@ -154,17 +137,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/tester'
     | '/workflow'
     | '/workflow/$workflowId'
     | '/workflow/new'
     | '/workflow/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/tester' | '/workflow/$workflowId' | '/workflow/new' | '/workflow'
+  to: '/' | '/workflow/$workflowId' | '/workflow/new' | '/workflow'
   id:
     | '__root__'
     | '/'
-    | '/tester'
     | '/workflow'
     | '/workflow/$workflowId'
     | '/workflow/new'
@@ -174,13 +155,11 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  TesterRoute: typeof TesterRoute
   WorkflowRoute: typeof WorkflowRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  TesterRoute: TesterRoute,
   WorkflowRoute: WorkflowRouteWithChildren,
 }
 
@@ -195,15 +174,11 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/tester",
         "/workflow"
       ]
     },
     "/": {
       "filePath": "index.tsx"
-    },
-    "/tester": {
-      "filePath": "tester.tsx"
     },
     "/workflow": {
       "filePath": "workflow.tsx",
