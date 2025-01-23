@@ -16,6 +16,9 @@ const KEYBOARD_SHORTCUTS: ShortcutSection[] = [
       { label: "Open Command Menu", keys: ["⌘", "K"] },
       { label: "Send Request", keys: ["⌘", "Enter"] },
       { label: "Use Example Data", keys: ["⌘", "G"] },
+      // TODO - Find a better name for the Help menu, all it has right now are a link to Settings and the keyboard shortcuts
+      { label: "Open Help Menu", keys: ["shift", "?"] },
+      { label: "Open Keyboard Shortcuts", keys: ["⌘", "/"] },
     ],
   },
   {
