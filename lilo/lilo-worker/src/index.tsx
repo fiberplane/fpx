@@ -43,7 +43,6 @@ app.doc("/doc", (c) => ({
 }));
 
 // Mount the Fiberplane playground to play with the API
-// Mount the Fiberplane playground to play with the API
 app.use(
   "/fp/*",
   createMiddleware({
