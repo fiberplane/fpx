@@ -29,6 +29,9 @@
 
   --sl-color-text-accent: var(--fg-brand);
 
+  /* Fix for misaligned elements in nav/header */
+  --sl-nav-pad-y: .625rem;
+
   /*
     Overrides for only the note badge on the Changelog page, add more if
     necessary
