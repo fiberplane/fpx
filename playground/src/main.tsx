@@ -19,7 +19,7 @@ const basepath = rootElement.dataset.mountedPath;
 const router = createRouter({ routeTree, basepath });
 const queryClient = new QueryClient();
 
-// Register your router for maximum type safety
+// Provide type safety for the router
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;

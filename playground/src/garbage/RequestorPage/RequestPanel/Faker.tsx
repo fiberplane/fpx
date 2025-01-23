@@ -15,7 +15,7 @@ import {
   type OpenAPIOperation,
   type OpenAPISchema,
   isOpenApiOperation,
-} from "./RouteDocumentation/openapi";
+} from "./RouteDocumentation";
 
 type FakeDataOutput = {
   queryParams: Record<string, string>;

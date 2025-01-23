@@ -18,8 +18,7 @@ import {
 import { useStudioStore } from "../store";
 import { AuthSelector } from "./AuthSelector";
 import { Faker } from "./Faker";
-import { RouteDocumentation } from "./RouteDocumentation/RouteDocumentation";
-import { isOpenApiOperation } from "./RouteDocumentation/openapi";
+import { RouteDocumentation, isOpenApiOperation } from "./RouteDocumentation";
 
 type RequestPanelProps = {
   onSubmit: () => void;

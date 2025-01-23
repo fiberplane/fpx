@@ -6,6 +6,9 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+/**
+ * The main page of the playground, a Fiberplane Studio-like interface for interacting with the API.
+ */
 function Index() {
   return (
     <Layout>
