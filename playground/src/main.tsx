@@ -31,7 +31,7 @@ const router = createRouter({
   context: { queryClient, openapi },
 });
 
-// Register your router for maximum type safety
+// Provide type safety for the router
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;

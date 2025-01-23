@@ -15,11 +15,11 @@ import {
   CodeMirrorJsonEditor,
   CodeMirrorTextEditor,
 } from "@/components/CodeMirrorEditor";
+import { useHandler } from "@fiberplane/hooks";
 import { useStudioStore } from "../store";
 import { AuthSelector } from "./AuthSelector";
 import { Faker } from "./Faker";
-import { RouteDocumentation } from "./RouteDocumentation/RouteDocumentation";
-import { isOpenApiOperation } from "./RouteDocumentation/openapi";
+import { RouteDocumentation, isOpenApiOperation } from "./RouteDocumentation";
 
 type RequestPanelProps = {
   onSubmit: () => void;
@@ -47,6 +47,8 @@ export const RequestPanel = memo(function RequestPanel(
     setActiveRequestsPanelTab,
     visibleRequestsPanelTabs,
     activeRoute,
+    togglePanel,
+    fillInFakeData,
   } = useStudioStore(
     "path",
     "body",
@@ -64,7 +66,18 @@ export const RequestPanel = memo(function RequestPanel(
     "setActiveRequestsPanelTab",
     "visibleRequestsPanelTabs",
     "activeRoute",
+    "togglePanel",
+    "fillInFakeData",
   );
+
+  const toggleSideBar = useHandler(() => {
+    togglePanel("sidePanel");
+  });
+
+  const setBodyValue = useHandler((bodyValue: string | undefined) => {
+    const requestBody = { type: "json" as const, value: bodyValue };
+    setBody(requestBody);
+  });
 
   const shouldShowRequestTab = (tab: RequestsPanelTab): boolean => {
     return visibleRequestsPanelTabs.includes(tab);
@@ -144,6 +157,8 @@ export const RequestPanel = memo(function RequestPanel(
             setQueryParams(params);
           }}
           onSubmit={onSubmit}
+          handleCmdG={fillInFakeData}
+          handleCmdB={toggleSideBar}
         />
         {pathParams.length > 0 ? (
           <>
@@ -159,6 +174,8 @@ export const RequestPanel = memo(function RequestPanel(
                 setPathParams(params);
               }}
               onSubmit={onSubmit}
+              handleCmdG={fillInFakeData}
+              handleCmdB={toggleSideBar}
             />
           </>
         ) : null}
@@ -180,6 +197,8 @@ export const RequestPanel = memo(function RequestPanel(
             setRequestHeaders(headers);
           }}
           onSubmit={onSubmit}
+          handleCmdG={fillInFakeData}
+          handleCmdB={toggleSideBar}
           keyInputType="header-key"
           valueInputType="header-value"
         />
@@ -205,17 +224,18 @@ export const RequestPanel = memo(function RequestPanel(
               value={body.value}
               maxHeight="800px"
               onSubmit={onSubmit}
+              handleCmdG={fillInFakeData}
+              handleCmdB={toggleSideBar}
             />
           )}
           {body.type === "json" && (
             <CodeMirrorJsonEditor
-              onChange={(bodyValue) => {
-                const requestBody = { type: "json" as const, value: bodyValue };
-                setBody(requestBody);
-              }}
+              onChange={setBodyValue}
               value={body.value}
               maxHeight="800px"
               onSubmit={onSubmit}
+              handleCmdG={fillInFakeData}
+              handleCmdB={toggleSideBar}
             />
           )}
           {body.type === "form-data" && (
@@ -230,6 +250,8 @@ export const RequestPanel = memo(function RequestPanel(
                 setBody(requestBody);
               }}
               onSubmit={onSubmit}
+              handleCmdG={fillInFakeData}
+              handleCmdB={toggleSideBar}
             />
           )}
           {body.type === "file" && (

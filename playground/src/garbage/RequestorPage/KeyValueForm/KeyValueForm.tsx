@@ -20,6 +20,8 @@ type Props = {
   keyPlaceholder?: string;
   keyInputType?: CodeMirrorInputType;
   valueInputType?: CodeMirrorInputType;
+  handleCmdG?: () => void;
+  handleCmdB?: () => void;
 };
 
 type KeyValueRowProps = {
@@ -30,6 +32,8 @@ type KeyValueRowProps = {
   onChangeValue: (value: string) => void;
   removeValue?: () => void;
   onSubmit?: () => void;
+  handleCmdG?: () => void;
+  handleCmdB?: () => void;
   keyPlaceholder?: string;
   keyInputType?: CodeMirrorInputType;
   valueInputType?: CodeMirrorInputType;
@@ -44,6 +48,8 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
     removeValue,
     parameter,
     onSubmit,
+    handleCmdG,
+    handleCmdB,
     keyPlaceholder = "name",
     keyInputType,
     valueInputType,
@@ -73,6 +79,8 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
         onChange={(value) => onChangeKey?.(value ?? "")}
         onSubmit={onSubmit}
         inputType={keyInputType}
+        handleCmdG={handleCmdG}
+        handleCmdB={handleCmdB}
       />
       <CodeMirrorInput
         className="w-[calc(100%-140px)]"
@@ -81,6 +89,8 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
         onChange={(value) => onChangeValue(value ?? "")}
         onSubmit={onSubmit}
         inputType={valueInputType}
+        handleCmdG={handleCmdG}
+        handleCmdB={handleCmdB}
       />
       <div
         className={cn("ml-1 flex invisible", {
@@ -106,6 +116,8 @@ export const KeyValueForm = (props: Props) => {
     keyPlaceholder,
     keyInputType,
     valueInputType,
+    handleCmdG,
+    handleCmdB,
   } = props;
 
   return (
@@ -141,6 +153,8 @@ export const KeyValueForm = (props: Props) => {
             keyPlaceholder={keyPlaceholder}
             keyInputType={keyInputType}
             valueInputType={valueInputType}
+            handleCmdG={handleCmdG}
+            handleCmdB={handleCmdB}
           />
         );
       })}

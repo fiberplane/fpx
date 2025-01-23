@@ -3,7 +3,12 @@ import "./CodeMirrorEditorCssOverrides.css";
 import { duotoneLight } from "@uiw/codemirror-theme-duotone";
 import CodeMirror, { basicSetup, EditorView } from "@uiw/react-codemirror";
 import { useMemo } from "react";
-import { createOnSubmitKeymap, escapeKeymap } from "./keymaps";
+import {
+  createCmdBKeymap,
+  createCmdGKeymap,
+  createOnSubmitKeymap,
+  escapeKeymap,
+} from "./keymaps";
 import { customTheme, duotonePlaintextOverride } from "./themes";
 
 type CodeMirrorEditorProps = {
@@ -15,6 +20,8 @@ type CodeMirrorEditorProps = {
   value?: string;
   onChange: (value?: string) => void;
   onSubmit?: () => void;
+  handleCmdG?: () => void;
+  handleCmdB?: () => void;
 };
 
 export function CodeMirrorTextEditor(props: CodeMirrorEditorProps) {
@@ -26,18 +33,22 @@ export function CodeMirrorTextEditor(props: CodeMirrorEditorProps) {
     minHeight = "200px",
     maxHeight,
     onSubmit,
+    handleCmdG,
+    handleCmdB,
   } = props;
 
   const extensions = useMemo(
     () => [
       createOnSubmitKeymap(onSubmit, false),
+      createCmdGKeymap(handleCmdG, false, false),
+      createCmdBKeymap(handleCmdB, false, false),
       basicSetup({
         searchKeymap: false,
       }),
       EditorView.lineWrapping,
       escapeKeymap,
     ],
-    [onSubmit],
+    [onSubmit, handleCmdG, handleCmdB],
   );
 
   return (

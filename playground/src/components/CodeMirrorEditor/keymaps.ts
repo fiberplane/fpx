@@ -1,4 +1,4 @@
-import { keymap } from "@uiw/react-codemirror";
+import { Prec, keymap } from "@uiw/react-codemirror";
 
 // Extension that blurs the editor when the user presses "Escape"
 export const escapeKeymap = keymap.of([
@@ -37,3 +37,62 @@ export const createOnSubmitKeymap = (
       },
     },
   ]);
+
+/**
+ * Creates a keymap that calls the given (optional) handler function when the user presses "Mod-G"
+ *
+ * Useful for propagating the keyboard shortcut for the "Generate Data" command
+ *
+ * Will only work if you've disabled the Search keymaps in a codemirror component
+ */
+export const createCmdGKeymap = (
+  handler: (() => void) | undefined,
+  bubbleWhenNoHandler = true,
+  blurWhenHandler = true,
+) =>
+  Prec.highest(
+    keymap.of([
+      {
+        key: "Mod-g",
+        run: (view) => {
+          if (handler) {
+            handler();
+            if (blurWhenHandler) {
+              view.contentDOM.blur();
+            }
+            return true;
+          }
+          return bubbleWhenNoHandler;
+        },
+      },
+    ]),
+  );
+
+/**
+ * Creates a keymap that calls the given (optional) handler function when the user presses "Mod-B"
+ *
+ * Useful for propagating the keyboard shortcut for the "Toggle Sidebar" command
+ */
+export const createCmdBKeymap = (
+  handler: (() => void) | undefined,
+  bubbleWhenNoHandler = true,
+  blurWhenHandler = true,
+) => {
+  return Prec.highest(
+    keymap.of([
+      {
+        key: "Mod-b",
+        run: (view) => {
+          if (handler) {
+            handler();
+            if (blurWhenHandler) {
+              view.contentDOM.blur();
+            }
+            return true;
+          }
+          return bubbleWhenNoHandler;
+        },
+      },
+    ]),
+  );
+};

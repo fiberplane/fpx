@@ -54,6 +54,11 @@ export default {
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
         },
+        // NOTE - These are custom colors for our designs.
+        //        As of writing, we use these tokens for:
+        //        - http method colors (e.g. GET, POST, etc.)
+        //        - http status code styles (e.g. 200, 404, etc.)
+        //        - syntax highlighting (showing json bodies and responses)
         info: "hsl(var(--info))",
         success: "hsl(var(--success))",
         danger: "hsl(var(--danger))",

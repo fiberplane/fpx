@@ -9,6 +9,8 @@ type Props = {
   onChange: ChangeKeyValueParametersHandler;
   onSubmit?: () => void;
   keyPlaceholder?: string;
+  handleCmdG?: () => void;
+  handleCmdB?: () => void;
 };
 
 /**
@@ -18,7 +20,14 @@ type Props = {
  * Remember: Path params are *computed* from the route pattern.
  */
 export const PathParamForm = (props: Props) => {
-  const { onChange, keyValueParameters, onSubmit, keyPlaceholder } = props;
+  const {
+    onChange,
+    keyValueParameters,
+    onSubmit,
+    keyPlaceholder,
+    handleCmdG,
+    handleCmdB,
+  } = props;
 
   return (
     <div className="space-y-2">
@@ -41,6 +50,8 @@ export const PathParamForm = (props: Props) => {
             )}
             onSubmit={onSubmit}
             keyPlaceholder={keyPlaceholder}
+            handleCmdG={handleCmdG}
+            handleCmdB={handleCmdB}
           />
         );
       })}

@@ -25,7 +25,7 @@ export default defineConfig({
       "/api": "http://localhost:8787/fp",
     },
   },
-  // TODO: Temporary to make sure we can load the assets from the fs using it's chunk name without a hash
+  // NOTE: Consistent filenames (without hashes) make sure we can load the assets via cdn (from @fiberplane/embedded)
   build: {
     rollupOptions: {
       output: {
