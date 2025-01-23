@@ -15,11 +15,11 @@ export function useWorkflows() {
   return useQuery(workflowsQueryOptions());
 }
 
-export const workflowQueryOptions = (id: string) => ({
-  queryKey: [WORKFLOWS_KEY, id],
-  queryFn: () => api.getWorkflow(id),
+export const workflowQueryOptions = (workflowId: string) => ({
+  queryKey: [WORKFLOWS_KEY, workflowId],
+  queryFn: () => api.getWorkflow(workflowId),
   select: (response: ApiResponse<Workflow>) => response.data,
-  enabled: !!id,
+  enabled: !!workflowId,
 });
 
 export function useWorkflow(id: string) {
@@ -33,7 +33,10 @@ export function useCreateWorkflow() {
     mutationFn: api.createWorkflow,
     onSuccess: (response: ApiResponse<Workflow>) => {
       queryClient.invalidateQueries({ queryKey: [WORKFLOWS_KEY] });
-      navigate({ to: "/workflow/$workflowId", params: { workflowId: response.data.id } });
+      navigate({
+        to: "/workflow/$workflowId",
+        params: { workflowId: response.data.workflowId },
+      });
     },
   });
 }
@@ -61,7 +64,7 @@ export function useDeleteWorkflow() {
     mutationFn: api.deleteWorkflow,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [WORKFLOWS_KEY] });
-      navigate({ to: "/" });
+      navigate({ to: "/workflow" });
     },
   });
 }

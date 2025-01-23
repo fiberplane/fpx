@@ -1,16 +1,18 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusIcon } from "@radix-ui/react-icons";
+import { PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 import type { Workflow } from "@/types";
 import { useState } from "react";
+import { useDeleteWorkflow } from "@/lib/hooks/useWorkflows";
 
 interface WorkflowSidebarProps {
   workflows: Workflow[];
 }
 
 export function WorkflowSidebar({ workflows }: WorkflowSidebarProps) {
-  console.log(workflows);
+  workflows.reverse();
+  const deleteWorkflow = useDeleteWorkflow();
   const [filterValue, setFilterValue] = useState("");
 
   // Filter workflows based on search
@@ -58,19 +60,33 @@ export function WorkflowSidebar({ workflows }: WorkflowSidebarProps) {
             </div>
           ) : (
             filteredWorkflows.map((workflow) => (
-              <Link
-                key={workflow.id}
-                to="/workflow/$workflowId"
-                params={{ workflowId: workflow.id }}
-                className="flex items-start justify-between p-2 text-sm rounded cursor-pointer hover:bg-muted"
-              >
-                <div className="grid gap-1">
-                  <div className="font-medium truncate">{workflow.summary}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {workflow.steps.length} steps
+              <div key={workflow.workflowId} className="relative group">
+                <Link
+                  to="/workflow/$workflowId"
+                  params={{ workflowId: workflow.workflowId }}
+                  className="flex items-start justify-between p-2 text-sm rounded cursor-pointer hover:bg-muted"
+                >
+                  <div className="grid gap-1">
+                    <div className="font-medium truncate">
+                      {workflow.summary}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {workflow.steps.length} steps
+                    </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute hidden group-hover:flex top-1 right-1"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    deleteWorkflow.mutate(workflow.workflowId);
+                  }}
+                >
+                  <TrashIcon className="w-4 h-4" />
+                </Button>
+              </div>
             ))
           )}
         </div>

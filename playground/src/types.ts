@@ -67,7 +67,7 @@ export interface SuccessCriteria {
   condition: string;
 }
 
-export interface StepOutput {
+export interface Output {
   key: string;
   value: string;
 }
@@ -78,15 +78,24 @@ export interface WorkflowStep {
   operation: string;
   parameters: Parameter[];
   successCriteria: SuccessCriteria[];
-  outputs: StepOutput[];
+  outputs: Output[];
 }
 
 export interface Workflow {
-  id: string;
+  workflowId: string;
   prompt: string;
   summary: string;
   description: string;
   steps: WorkflowStep[];
+  inputs: {
+    type: "string" | "number" | "integer" | "boolean" | "object" | "array";
+    description: string;
+    title?: string;
+    default?: unknown;
+    examples?: unknown[];
+    [key: string]: unknown;
+  };
+  outputs: Output[];
   createdAt: Date;
   updatedAt: Date;
 }
