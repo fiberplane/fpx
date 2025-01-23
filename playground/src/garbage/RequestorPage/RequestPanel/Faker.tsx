@@ -10,7 +10,6 @@ import { SparklesIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useStudioStore } from "../store";
-// TODO - Use barrel file
 import {
   type OpenAPIOperation,
   type OpenAPISchema,
