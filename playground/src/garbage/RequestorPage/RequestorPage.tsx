@@ -60,12 +60,12 @@ export const RequestorPage = () => {
             </ResizablePanel>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}
-              className="mr-2 w-0"
+              className="w-0 mr-2"
             />
           </>
         )}
         <ResizablePanel id="main" order={1}>
-          <div className="h-full flex flex-col min-h-0">
+          <div className="flex flex-col h-full min-h-0">
             <RequestorPageContent />
           </div>
         </ResizablePanel>

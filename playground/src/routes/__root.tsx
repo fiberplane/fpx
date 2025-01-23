@@ -2,8 +2,26 @@ import type { QueryClient } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import React from "react";
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export const Route = createRootRouteWithContext<{
+  queryClient: QueryClient;
+  openapi:
+    | {
+        url?: string;
+        content?: string;
+      }
+    | undefined;
+}>()({
   component: RootComponent,
+  beforeLoad: async ({ context }) => {
+    if (context.openapi?.url) {
+      const content = await fetch(context.openapi.url).then((res) =>
+        res.text(),
+      );
+      if (context.openapi) {
+        context.openapi.content = content;
+      }
+    }
+  },
 });
 
 function RootComponent() {
@@ -12,8 +30,8 @@ function RootComponent() {
       <div className="flex-1">
         <Outlet />
       </div>
-        <TanStackRouterDevtools position="bottom-right" />
-        <ReactQueryDevtools />
+      <TanStackRouterDevtools position="bottom-right" />
+      <ReactQueryDevtools />
     </div>
   );
 }

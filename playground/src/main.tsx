@@ -14,10 +14,22 @@ if (rootElement === null) {
 
 // NOTE: Mounted path defines which path the whole playground is mounted on. The
 // client router needs to know this so it can generate correct links
-const basepath = rootElement.dataset.mountedPath;
+const { mountedPath, openapi } = JSON.parse(
+  rootElement.dataset.options as string,
+) as {
+  mountedPath: string;
+  openapi?: {
+    url?: string;
+    content?: string;
+  };
+};
 
 const queryClient = new QueryClient();
-const router = createRouter({ routeTree, basepath, context: { queryClient } });
+const router = createRouter({
+  routeTree,
+  basepath: mountedPath,
+  context: { queryClient, openapi },
+});
 
 // Register your router for maximum type safety
 declare module "@tanstack/react-router" {
