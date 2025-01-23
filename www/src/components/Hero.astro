@@ -97,7 +97,8 @@ const imageAttrs = {
     gap: 1rem;
   }
 
-  .link-button {
+  /* Padding was overridden in prod, hence the specifity */
+  .sl-link-button.link-button.not-content.primary {
     --sl-color-text-accent: var(--bg-brand-muted);
     --sl-color-text-accent: var(--bg-brand);
     --sl-color-black: var(--fg-on-primary);
