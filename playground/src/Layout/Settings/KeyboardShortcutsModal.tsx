@@ -1,5 +1,6 @@
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { isMac } from "@/utils";
 
 type ShortcutSection = {
   title: string;
@@ -9,16 +10,18 @@ type ShortcutSection = {
   }[];
 };
 
+const CMD_KEY = isMac ? "⌘" : "Ctrl";
+
 const KEYBOARD_SHORTCUTS: ShortcutSection[] = [
   {
     title: "General",
     shortcuts: [
-      { label: "Open Command Menu", keys: ["⌘", "K"] },
-      { label: "Send Request", keys: ["⌘", "Enter"] },
-      { label: "Use Example Data", keys: ["⌘", "G"] },
+      { label: "Open Command Menu", keys: [CMD_KEY, "K"] },
+      { label: "Send Request", keys: [CMD_KEY, "Enter"] },
+      { label: "Use Example Data", keys: [CMD_KEY, "G"] },
       // TODO - Find a better name for the Help menu, all it has right now are a link to Settings and the keyboard shortcuts
       { label: "Open Help Menu", keys: ["shift", "?"] },
-      { label: "Open Keyboard Shortcuts", keys: ["⌘", "/"] },
+      { label: "Open Keyboard Shortcuts", keys: [CMD_KEY, "/"] },
     ],
   },
   {
@@ -34,7 +37,7 @@ const KEYBOARD_SHORTCUTS: ShortcutSection[] = [
   {
     title: "Sidebar Navigation",
     shortcuts: [
-      { label: "Toggle Sidebar", keys: ["⌘", "B"] },
+      { label: "Toggle Sidebar", keys: [CMD_KEY, "B"] },
       { label: "Go to Next Route", keys: ["j"] },
       { label: "Go to Previous Route", keys: ["k"] },
       { label: "Select Focused Route", keys: ["Enter"] },
