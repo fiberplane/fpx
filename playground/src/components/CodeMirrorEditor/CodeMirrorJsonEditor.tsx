@@ -6,7 +6,12 @@ import { duotoneLight } from "@uiw/codemirror-theme-duotone";
 import CodeMirror, { basicSetup, EditorView } from "@uiw/react-codemirror";
 import { useMemo } from "react";
 import { useThemeMode } from "../theme-provider";
-import { createOnSubmitKeymap, escapeKeymap } from "./keymaps";
+import {
+  createCmdBKeymap,
+  createCmdGKeymap,
+  createOnSubmitKeymap,
+  escapeKeymap,
+} from "./keymaps";
 import { customTheme } from "./themes";
 
 type CodeMirrorEditorProps = {
@@ -18,6 +23,8 @@ type CodeMirrorEditorProps = {
   value?: string;
   onChange: (value?: string) => void;
   onSubmit?: () => void;
+  handleCmdG?: () => void;
+  handleCmdB?: () => void;
 };
 
 export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
@@ -29,6 +36,8 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
     minHeight = "200px",
     maxHeight,
     onSubmit,
+    handleCmdG,
+    handleCmdB,
   } = props;
 
   const mode = useThemeMode();
@@ -36,6 +45,8 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
   const extensions = useMemo(
     () => [
       createOnSubmitKeymap(onSubmit, false),
+      createCmdGKeymap(handleCmdG, false, false),
+      createCmdBKeymap(handleCmdB, false, false),
       basicSetup({
         // Turn off searching the input via cmd+g and cmd+f
         searchKeymap: false,
@@ -44,7 +55,7 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
       json(),
       escapeKeymap,
     ],
-    [onSubmit],
+    [onSubmit, handleCmdG, handleCmdB],
   );
 
   return (

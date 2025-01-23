@@ -37,3 +37,58 @@ export const createOnSubmitKeymap = (
       },
     },
   ]);
+
+/**
+ * Creates a keymap that calls the given (optional) handler function when the user presses "Mod-G"
+ *
+ * Useful for propagating the keyboard shortcut for the "Generate Data" command
+ *
+ * Will only work if you've disabled the Search keymaps in a codemirror component
+ */
+export const createCmdGKeymap = (
+  handler: (() => void) | undefined,
+  bubbleWhenNoHandler = true,
+  blurWhenHandler = true,
+) =>
+  keymap.of([
+    {
+      key: "Mod-G",
+      run: (view) => {
+        if (handler) {
+          handler();
+          if (blurWhenHandler) {
+            view.contentDOM.blur();
+          }
+          return true;
+        }
+        return bubbleWhenNoHandler;
+      },
+    },
+  ]);
+
+/**
+ * Creates a keymap that calls the given (optional) handler function when the user presses "Mod-B"
+ *
+ * Useful for propagating the keyboard shortcut for the "Toggle Sidebar" command
+ */
+export const createCmdBKeymap = (
+  handler: (() => void) | undefined,
+  bubbleWhenNoHandler = true,
+  blurWhenHandler = true,
+) =>
+  keymap.of([
+    {
+      key: "Mod-B",
+      run: (view) => {
+        console.log("cmd b");
+        if (handler) {
+          handler();
+          if (blurWhenHandler) {
+            view.contentDOM.blur();
+          }
+          return true;
+        }
+        return bubbleWhenNoHandler;
+      },
+    },
+  ]);
