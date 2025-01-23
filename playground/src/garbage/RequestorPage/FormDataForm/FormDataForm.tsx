@@ -19,6 +19,8 @@ type Props = {
   keyValueParameters: FormDataParameter[];
   onChange: ChangeFormDataParametersHandler;
   onSubmit?: () => void;
+  handleCmdG?: () => void;
+  handleCmdB?: () => void;
 };
 
 type FormDataRowProps = {
@@ -29,6 +31,8 @@ type FormDataRowProps = {
   onChangeValue: (value: FormDataParameter["value"]) => void;
   removeValue?: () => void;
   onSubmit?: () => void;
+  handleCmdG?: () => void;
+  handleCmdB?: () => void;
 };
 
 const FormDataFormRow = (props: FormDataRowProps) => {
@@ -40,6 +44,8 @@ const FormDataFormRow = (props: FormDataRowProps) => {
     removeValue,
     parameter,
     onSubmit,
+    handleCmdG,
+    handleCmdB,
   } = props;
   const { enabled, key, value } = parameter;
   const [isHovering, setIsHovering] = useState(false);
@@ -77,6 +83,8 @@ const FormDataFormRow = (props: FormDataRowProps) => {
         readOnly={!onChangeKey}
         onChange={(value) => onChangeKey?.(value ?? "")}
         onSubmit={onSubmit}
+        handleCmdG={handleCmdG}
+        handleCmdB={handleCmdB}
       />
       {value.type === "text" && (
         <CodeMirrorInput
@@ -87,6 +95,8 @@ const FormDataFormRow = (props: FormDataRowProps) => {
             onChangeValue({ value: value ?? "", type: "text" })
           }
           onSubmit={onSubmit}
+          handleCmdG={handleCmdG}
+          handleCmdB={handleCmdB}
         />
       )}
       {value.type === "file" && (
@@ -132,7 +142,8 @@ const FormDataFormRow = (props: FormDataRowProps) => {
 };
 
 export const FormDataForm = (props: Props) => {
-  const { onChange, keyValueParameters, onSubmit } = props;
+  const { onChange, keyValueParameters, onSubmit, handleCmdG, handleCmdB } =
+    props;
 
   return (
     <div className="flex flex-col gap-0">
@@ -164,6 +175,8 @@ export const FormDataForm = (props: Props) => {
               );
             }}
             onSubmit={onSubmit}
+            handleCmdG={handleCmdG}
+            handleCmdB={handleCmdB}
           />
         );
       })}

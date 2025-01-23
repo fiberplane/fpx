@@ -26,6 +26,7 @@ export interface RequestResponseSlice {
   queryParams: KeyValueParameter[];
   requestHeaders: KeyValueParameter[];
   authorizationId: "none" | string | null;
+  fillInFakeData: () => void;
   setServiceBaseUrl: (serviceBaseUrl: string) => void;
   updatePath: (path: string) => void;
   updateMethod: (methodInputValue: RequestMethodInputValue) => void;

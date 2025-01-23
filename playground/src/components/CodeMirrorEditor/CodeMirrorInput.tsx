@@ -5,7 +5,12 @@ import { cn } from "@/utils";
 import { autocompletion } from "@codemirror/autocomplete";
 import CodeMirror, { EditorView, gutter, keymap } from "@uiw/react-codemirror";
 import { useMemo, useState } from "react";
-import { createOnSubmitKeymap, escapeKeymap } from "./keymaps";
+import {
+  createCmdBKeymap,
+  createCmdGKeymap,
+  createOnSubmitKeymap,
+  escapeKeymap,
+} from "./keymaps";
 
 const inputTheme = EditorView.theme({
   "&": {
@@ -157,6 +162,8 @@ type CodeMirrorInputProps = {
   onChange: (value?: string) => void;
   placeholder?: string;
   onSubmit?: () => void;
+  handleCmdG?: () => void;
+  handleCmdB?: () => void;
   // A marker to add header completions: in the future other string enum values are possible
   inputType?: CodeMirrorInputType;
 };
@@ -173,7 +180,16 @@ const preventNewlineInFirefox = keymap.of([
 ]);
 
 export function CodeMirrorInput(props: CodeMirrorInputProps) {
-  const { value, onChange, placeholder, className, readOnly, onSubmit } = props;
+  const {
+    value,
+    onChange,
+    placeholder,
+    className,
+    readOnly,
+    onSubmit,
+    handleCmdG,
+    handleCmdB,
+  } = props;
 
   const [isFocused, setIsFocused] = useState(false);
 
@@ -199,12 +215,14 @@ export function CodeMirrorInput(props: CodeMirrorInputProps) {
       readOnly ? readonlyExtension : noopExtension,
       isFocused ? noopExtension : inputTrucateExtension,
       createOnSubmitKeymap(onSubmit),
+      createCmdGKeymap(handleCmdG, false, false),
+      createCmdBKeymap(handleCmdB, false, false),
       // Add header key completions and its theme if this is a header key input
       props.inputType === "header-key"
         ? [headerKeyCompletions, autocompletionTheme]
         : noopExtension,
     ];
-  }, [isFocused, readOnly, onSubmit, props.inputType]);
+  }, [isFocused, readOnly, onSubmit, props.inputType, handleCmdG, handleCmdB]);
 
   return (
     <div

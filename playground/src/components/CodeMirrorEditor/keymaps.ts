@@ -1,4 +1,4 @@
-import { keymap } from "@uiw/react-codemirror";
+import { Prec, keymap } from "@uiw/react-codemirror";
 
 // Extension that blurs the editor when the user presses "Escape"
 export const escapeKeymap = keymap.of([
@@ -50,21 +50,23 @@ export const createCmdGKeymap = (
   bubbleWhenNoHandler = true,
   blurWhenHandler = true,
 ) =>
-  keymap.of([
-    {
-      key: "Mod-G",
-      run: (view) => {
-        if (handler) {
-          handler();
-          if (blurWhenHandler) {
-            view.contentDOM.blur();
+  Prec.highest(
+    keymap.of([
+      {
+        key: "Mod-g",
+        run: (view) => {
+          if (handler) {
+            handler();
+            if (blurWhenHandler) {
+              view.contentDOM.blur();
+            }
+            return true;
           }
-          return true;
-        }
-        return bubbleWhenNoHandler;
+          return bubbleWhenNoHandler;
+        },
       },
-    },
-  ]);
+    ]),
+  );
 
 /**
  * Creates a keymap that calls the given (optional) handler function when the user presses "Mod-B"
@@ -75,20 +77,22 @@ export const createCmdBKeymap = (
   handler: (() => void) | undefined,
   bubbleWhenNoHandler = true,
   blurWhenHandler = true,
-) =>
-  keymap.of([
-    {
-      key: "Mod-B",
-      run: (view) => {
-        console.log("cmd b");
-        if (handler) {
-          handler();
-          if (blurWhenHandler) {
-            view.contentDOM.blur();
+) => {
+  return Prec.highest(
+    keymap.of([
+      {
+        key: "Mod-b",
+        run: (view) => {
+          if (handler) {
+            handler();
+            if (blurWhenHandler) {
+              view.contentDOM.blur();
+            }
+            return true;
           }
-          return true;
-        }
-        return bubbleWhenNoHandler;
+          return bubbleWhenNoHandler;
+        },
       },
-    },
-  ]);
+    ]),
+  );
+};

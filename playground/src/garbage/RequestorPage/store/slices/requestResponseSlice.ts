@@ -5,6 +5,7 @@ import {
 import type { StateCreator } from "zustand";
 import { enforceFormDataTerminalDraftParameter } from "../../FormDataForm";
 import { enforceTerminalDraftParameter } from "../../KeyValueForm";
+import { isOpenApiOperation } from "../../RequestPanel/RouteDocumentation";
 import type { ProxiedRequestResponse } from "../../queries";
 import { findMatchedRoute } from "../../routes";
 import { isRequestMethod } from "../../types";
@@ -19,6 +20,11 @@ import {
   mapPathParamKey,
   removeBaseUrl,
 } from "../utils";
+import {
+  generateFakeData,
+  transformToFormBody,
+  transformToFormParams,
+} from "../utils-faker";
 import type { RequestResponseSlice, StudioState } from "./types";
 
 export const requestResponseSlice: StateCreator<
@@ -39,6 +45,51 @@ export const requestResponseSlice: StateCreator<
   queryParams: enforceTerminalDraftParameter([]),
   requestHeaders: enforceTerminalDraftParameter([]),
   authorizationId: null,
+
+  // HACK - This setter has a bunch of side effects (logs, alerts)
+  //        I moved it to the store so that it'd be a static handler.
+  fillInFakeData: () => {
+    const state = get();
+    const { activeRoute } = state;
+    if (!activeRoute?.openApiSpec) {
+      console.error("No route spec found or parseable");
+      window.alert("No route spec found or parseable");
+      return;
+    }
+
+    try {
+      const openApiSpec = JSON.parse(activeRoute.openApiSpec);
+      if (!isOpenApiOperation(openApiSpec)) {
+        console.error("Invalid OpenAPI spec");
+        window.alert("Invalid OpenAPI spec");
+        return;
+      }
+
+      const fakeData = generateFakeData(openApiSpec, activeRoute.path);
+
+      // Transform data to match form state types
+      set((state) => {
+        state.body = transformToFormBody(fakeData.body);
+        const fakeQueryParams = transformToFormParams(fakeData.queryParams);
+        if (fakeQueryParams.length > 0) {
+          state.queryParams = enforceTerminalDraftParameter(
+            transformToFormParams(fakeData.queryParams),
+          );
+        }
+        const fakeHeaders = transformToFormParams(fakeData.headers);
+        if (fakeHeaders.length > 0) {
+          state.requestHeaders = enforceTerminalDraftParameter(fakeHeaders);
+        }
+        const fakePathParams = transformToFormParams(fakeData.pathParams);
+        if (fakePathParams.length > 0) {
+          state.pathParams = fakePathParams;
+        }
+      });
+    } catch (e) {
+      console.error("Error parsing OpenAPI spec:", e);
+      window.alert("Error parsing OpenAPI spec");
+    }
+  },
 
   setAuthorizationId: (authorizationId: string | null) =>
     set((state) => {

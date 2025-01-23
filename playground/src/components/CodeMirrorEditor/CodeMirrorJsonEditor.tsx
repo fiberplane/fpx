@@ -42,8 +42,8 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
 
   const mode = useThemeMode();
 
-  const extensions = useMemo(
-    () => [
+  const extensions = useMemo(() => {
+    return [
       createOnSubmitKeymap(onSubmit, false),
       createCmdGKeymap(handleCmdG, false, false),
       createCmdBKeymap(handleCmdB, false, false),
@@ -54,9 +54,8 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
       EditorView.lineWrapping,
       json(),
       escapeKeymap,
-    ],
-    [onSubmit, handleCmdG, handleCmdB],
-  );
+    ];
+  }, [onSubmit, handleCmdG, handleCmdB]);
 
   return (
     <CodeMirror
