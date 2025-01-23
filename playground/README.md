@@ -1,50 +1,38 @@
-# React + TypeScript + Vite
+# Fiberplane API Playground
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a single page application with the UI for Fiberplane's embedded api playground.
 
-Currently, two official plugins are available:
+It requires an OpenAPI spec to power the UI.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+It is similar to Fiberplane Studio, except it does **NOT** have the following features:
 
-## Expanding the ESLint configuration
+- Traces
+- Logs
+- AI Request Generations
+- Request History
+- Collections
+- Code Intelligence
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Running
 
-- Configure the top-level `parserOptions` property like this:
+The playground is served/built with Vite and runs on port 6660
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+pnpm run dev
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+When you're running things locally, you can go to settings and enable a mock API spec for development. This allows you to test the playground with an OpenAPI spec without having to host one yourself.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## How we parse api specifications in production
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+When this UI is served in production, it attempts to parse an OpenAPI spec from the DOM, which should be embedded in a script tag as JSON.
+
+See: `src/garbage/RequestorPage/queries/hooks/fiberplane-embedded/*` for the code that does this.
+
+## Deploying
+
+The built assets for the playground are ultimately copied over to `@fiberplane/embedded`'s `dist` folder, and then served from there when that package is published. (See: `packages/embedded` in this monorepo.)
+
+In this monorepo's root, run `pnpm build:embedded` to build the playground and copy the assets over to `@fiberplane/embedded`'s `dist` folder.
+
+Note that the `index.html` file in this package is not actually used in production. `@fiberplane/embedded` renders script tags that point to the playground `js` and `css` files in its own html document.
