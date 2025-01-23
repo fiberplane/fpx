@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { workflowQueryOptions } from "@/lib/hooks/useWorkflows";
 import type { WorkflowStep, Parameter } from "@/types";
-import { Route as WorkflowRoute } from "./workflow";
+import { getRouteApi } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/workflow/$workflowId")({
   component: WorkflowDetail,
@@ -16,9 +16,7 @@ export const Route = createFileRoute("/workflow/$workflowId")({
 
 function WorkflowDetail() {
   const { workflow } = Route.useLoaderData();
-  const { openApiSpec } = WorkflowRoute.useLoaderData();
-
-  console.log("openApiSpec", openApiSpec);
+  const { openApiSpec } = getRouteApi("/workflow").useLoaderData();
 
   return (
     <div className="h-full p-4 overflow-auto border rounded-md">

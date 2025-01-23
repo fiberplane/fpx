@@ -11,7 +11,8 @@ import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Layout } from "@/Layout";
-import type { OpenAPISpec } from "@/types";
+// TODO: change this once we have a better type
+import type { OpenAPISpec } from "@/garbage/RequestorPage/queries/hooks/fiberplane-embedded/types";
 
 export const Route = createFileRoute("/workflow")({
   component: WorkflowLayout,
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/workflow")({
       workflowsQueryOptions(),
     );
     const openApiSpec = getOpenApiSpec();
+    console.log("openApiSpec", openApiSpec);
     return {
       workflows: workflowsResponse.data,
       openApiSpec,

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCreateWorkflow } from "@/lib/hooks/useWorkflows";
 import { useState } from "react";
 import { WorkflowPrompt } from "@/components/WorkflowPrompt";
-import { useSchemas } from "@/lib/hooks/useSchemas";
+import { getRouteApi } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/workflow/new")({
   component: NewWorkflow,
@@ -11,18 +11,17 @@ export const Route = createFileRoute("/workflow/new")({
 function NewWorkflow() {
   const [userStory, setUserStory] = useState("");
   const { mutate: createWorkflow, isPending, error } = useCreateWorkflow();
-  const { data: schemas } = useSchemas();
-  const firstSchema = schemas?.[0];
+  const { openApiSpec } = getRouteApi("/workflow").useLoaderData();
 
   const handleSubmit = () => {
-    if (!firstSchema) {
-      console.error("No schema found");
+    if (openApiSpec.type !== "success") {
+      console.error("No valid OpenAPI spec found");
       return;
     }
 
     createWorkflow({
       prompt: userStory,
-      openApiSchemaId: firstSchema.id,
+      openApiSchema: JSON.stringify(openApiSpec.spec),
     });
   };
 
