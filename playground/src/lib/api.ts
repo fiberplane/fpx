@@ -19,6 +19,16 @@ function getBasePrefix(): string {
 }
 
 export const api = {
+  getWorkflows: async () => {
+    const basePrefix = getBasePrefix();
+    const response = await fetch(`${basePrefix}/api/workflow`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+    return response.json();
+  },
+
   getWorkflow: async (id: string): Promise<ApiResponse<Workflow>> => {
     const basePrefix = getBasePrefix();
     const response = await fetch(`${basePrefix}/api/workflow/${id}`);
