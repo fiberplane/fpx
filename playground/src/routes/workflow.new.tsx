@@ -7,7 +7,7 @@ export const Route = createFileRoute("/workflow/new")({
   component: NewWorkflow,
 });
 
-function NewWorkflow() {
+export function NewWorkflow() {
   const [userStory, setUserStory] = useState("");
   const { mutate: createWorkflow, isPending, error } = useCreateWorkflow();
   const { openapi } = useRouteContext({ from: "__root__" });
@@ -26,10 +26,10 @@ function NewWorkflow() {
   return (
     <div className="flex flex-col justify-center h-full p-4 overflow-auto border rounded-md">
       <div className="grid gap-4 text-center max-w-[800px] mx-auto">
-        <h3 className="text-lg font-medium">What do you want to build?</h3>
+        <h3 className="text-lg font-medium">Create Your API Workflow</h3>
         <p className="text-sm text-foreground">
-          Describe your integration, and we'll generate a workflow for you using
-          our API
+          Describe your HTTP request chain in natural language and we'll
+          generate it.
         </p>
 
         <WorkflowPrompt

@@ -1,3 +1,4 @@
+import { WorkflowCommand } from "@/components/WorkflowCommand";
 import type { QueryClient } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import React from "react";
@@ -28,10 +29,12 @@ function RootComponent() {
   return (
     <div className="min-h-screen bg-background">
       <div className="flex-1">
+        <WorkflowCommand />
         <Outlet />
       </div>
-      <TanStackRouterDevtools position="bottom-right" />
-      <ReactQueryDevtools />
+      {/*  Commented out because they're annoying but leaving them here in case you need them */}
+      {/* <TanStackRouterDevtools position="bottom-right" /> */}
+      {/* <ReactQueryDevtools /> */}
     </div>
   );
 }
