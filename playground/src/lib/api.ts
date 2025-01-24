@@ -1,17 +1,27 @@
 import type { ApiResponse, Workflow } from "@/types";
 
-export const api = {
-  getWorkflows: async (): Promise<ApiResponse<Workflow[]>> => {
-    const response = await fetch("/api/workflow");
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
-    }
-    return response.json();
-  },
+function getBasePrefix(): string {
+  // if we're running on localhost directly - skip this
+  if (import.meta.env.DEV) {
+    return "";
+  }
 
+  const rootElement = document.getElementById("root");
+  if (!rootElement?.dataset.options) {
+    return "";
+  }
+
+  const { mountedPath } = JSON.parse(rootElement.dataset.options) as {
+    mountedPath: string;
+  };
+
+  return mountedPath;
+}
+
+export const api = {
   getWorkflow: async (id: string): Promise<ApiResponse<Workflow>> => {
-    const response = await fetch(`/api/workflow/${id}`);
+    const basePrefix = getBasePrefix();
+    const response = await fetch(`${basePrefix}/api/workflow/${id}`);
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message);
@@ -25,7 +35,8 @@ export const api = {
     summary?: string;
     description?: string;
   }): Promise<ApiResponse<Workflow>> => {
-    const response = await fetch("/api/workflow/create", {
+    const basePrefix = getBasePrefix();
+    const response = await fetch(`${basePrefix}/api/workflow/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -50,7 +61,8 @@ export const api = {
       description?: string;
     },
   ): Promise<ApiResponse<Workflow>> => {
-    const response = await fetch(`/api/workflow/${id}`, {
+    const basePrefix = getBasePrefix();
+    const response = await fetch(`${basePrefix}/api/workflow/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -67,7 +79,8 @@ export const api = {
   },
 
   deleteWorkflow: async (id: string): Promise<void> => {
-    const response = await fetch(`/api/workflow/${id}`, {
+    const basePrefix = getBasePrefix();
+    const response = await fetch(`${basePrefix}/api/workflow/${id}`, {
       method: "DELETE",
     });
 
