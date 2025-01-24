@@ -2,10 +2,9 @@ import type { Context } from "hono";
 import type { Env, MiddlewareHandler } from "hono/types";
 import { createRouter } from "./router.js";
 import type { EmbeddedOptions, ResolvedEmbeddedOptions } from "./types.js";
+import packageJson from "../package.json" assert { type: "json" };
 
-// HACK - We need to manually update the version in the CDN URL when you release a new version
-//        Eventually we should do this automagically when building the package (and derive the version from the package.json)
-const VERSION = "0.0.24";
+const VERSION = packageJson.version;
 const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/embedded@${VERSION}/dist/playground/`;
 
 export const createMiddleware =
