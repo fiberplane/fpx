@@ -5,7 +5,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Link, useMatches, useRouter } from "@tanstack/react-router";
+import {
+  Link,
+  // useMatches,
+  useRouter,
+} from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { ModeToggle } from "../mode-toggle";
 // import { Navigation } from "./Navigation";
@@ -13,8 +17,8 @@ import { ModeToggle } from "../mode-toggle";
 
 export function Sidebar() {
   const router = useRouter();
-  const matches = useMatches();
-  const isIndexRoute = matches.some((match) => match.routeId === "/");
+  // const matches = useMatches();
+  // const isIndexRoute = matches.some((match) => match.routeId === "/");
 
   const routes = [
     { path: "/", label: "API Docs" },
