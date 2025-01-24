@@ -38,7 +38,7 @@ export const RequestorPage = () => {
 
   return (
     <div
-      className={cn("h-[calc(100vh-40px)]", "flex", "flex-col", "gap-2", "p-2")}
+      className={cn("h-[calc(100vh-70px)]", "flex", "flex-col", "gap-2", "p-2")}
     >
       <ResizablePanelGroup
         direction="horizontal"

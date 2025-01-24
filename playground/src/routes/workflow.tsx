@@ -47,7 +47,7 @@ function WorkflowLayout() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <Layout>
-        <div className={cn("h-[calc(100vh-40px)]", "grid", "gap-2", "p-2")}>
+        <div className={cn("h-[calc(100vh-70px)]", "grid", "gap-2", "p-2")}>
           <CommandBar open={commandBarOpen} setOpen={setCommandBarOpen} />
           <ResizablePanelGroup direction="horizontal" className="w-full">
             {isLgScreen && sidePanel === "open" && (
