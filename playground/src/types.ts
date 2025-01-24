@@ -87,17 +87,31 @@ export interface Workflow {
   summary: string;
   description: string;
   steps: WorkflowStep[];
-  inputs: {
-    type: "string" | "number" | "integer" | "boolean" | "object" | "array";
-    description: string;
-    title?: string;
-    default?: unknown;
-    examples?: unknown[];
-    [key: string]: unknown;
-  };
+  inputs: JSONSchema;
   outputs: Output[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface JSONSchema {
+  type: "object";
+  properties: {
+    [key: string]: {
+      type: "string" | "number" | "integer" | "boolean" | "object" | "array";
+      description: string;
+      title?: string;
+      default?: unknown;
+      examples?: unknown[];
+      items?: JSONSchema;  // For array types
+      properties?: {       // For object types
+        [key: string]: JSONSchema;
+      };
+      required?: string[];
+      [key: string]: unknown;  // For other valid JSON Schema properties
+    };
+  };
+  required?: string[];
+  additionalProperties?: boolean;
 }
 
 export interface ApiResponse<T> {
