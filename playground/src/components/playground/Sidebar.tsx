@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Link, useMatches, useRouter } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { ModeToggle } from "../mode-toggle";
-import { Navigation } from "./Navigation";
-import { getNavigationData } from "./navigation-data";
+// import { Navigation } from "./Navigation";
+// import { getNavigationData } from "./navigation-data";
 
 export function Sidebar() {
   const router = useRouter();
@@ -24,7 +24,7 @@ export function Sidebar() {
   const currentRoute =
     routes.find((route) => route.path === router.state.location.pathname) ??
     routes[0];
-  const navigationItems = isIndexRoute ? getNavigationData() : [];
+  // const navigationItems = isIndexRoute ? getNavigationData() : [];
 
   return (
     <aside className="grid min-h-screen grid-rows-[auto_1fr] gap-6 p-4 border-r border-border">
@@ -66,7 +66,7 @@ export function Sidebar() {
           </kbd>
         </div>
 
-        {isIndexRoute && <Navigation items={navigationItems} />}
+        {/* {isIndexRoute && <Navigation items={navigationItems} />} */}
       </div>
     </aside>
   );

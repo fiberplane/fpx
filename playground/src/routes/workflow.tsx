@@ -32,7 +32,7 @@ function getMainSectionWidth() {
 }
 
 function WorkflowLayout() {
-  const [sidePanel, setSidePanel] = useState<"open" | "closed">("open");
+  const [sidePanel] = useState<"open" | "closed">("open");
   const isLgScreen = useIsLgScreen();
   const width = getMainSectionWidth();
   const [commandBarOpen, setCommandBarOpen] = useState(false);

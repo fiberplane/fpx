@@ -43,7 +43,7 @@ function WorkflowDetail() {
   const { setInputValue, inputValues } = useWorkflowStore();
   const selectedStep = workflow.steps.find((step) => step.stepId === stepId);
 
-  const { data: validatedOpenApi } = useQuery({
+  const { data: _validatedOpenApi } = useQuery({
     queryKey: ["openapi", openapi?.content],
     queryFn: async () => {
       if (!openapi?.content) {
