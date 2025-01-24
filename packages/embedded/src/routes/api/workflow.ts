@@ -1,15 +1,21 @@
 import { Hono } from "hono";
 
+const FP_SERVICES_URL = "https://playground-services.mies.workers.dev";
+
 const workflows = new Hono();
 // Proxy all requests to fp-services but attach a token
-workflows.all("*", (c) => {
+workflows.all("*", async (c) => {
   const token = "only-auth";
-  // FIXME: probably don't want to hardcode this
-  const url = `http://localhost:7676${c.req.path}`;
+  const url = `${FP_SERVICES_URL}${c.req.path}`;
 
-  const headers = new Headers(c.req.raw.headers);
+  const contentType = c.req.header("content-type");
+  const headers = new Headers();
+  // Only include the bare minimum authentication and content-type headers
   headers.set("Authorization", `Bearer ${token}`);
   headers.set("x-fpx-token", token);
+  if (contentType) {
+    headers.set("content-type", contentType);
+  }
 
   return fetch(url, {
     method: c.req.method,
