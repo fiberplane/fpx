@@ -18,10 +18,8 @@ export function Spinner(props: { spinning: boolean; className?: string }) {
   const sticky = useStickyLoading(spinning, rotationDuration - fadeOutDuration);
   const fadeOutAnimation = useChangedSticky(sticky, fadeOutDuration);
 
-  // const transitionDuration = `duration-${fadeOutDuration}`;
   const className = cn(
     "transition-opacity",
-    // transitionDuration,
     `[transition-duration:${fadeOutDuration}ms]`,
     sticky ? "opacity-100" : "opacity-0",
     "hover:opacity-100",

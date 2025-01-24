@@ -30,12 +30,10 @@ export function AuthSelector() {
         <div className="flex items-center justify-start">
           <div className="text-xs text-center text-muted-foreground flex flex-col p-2 gap-2">
             <div className="flex flex-col gap-4 items-center justify-center">
-              {/* <div className="text-foreground-muted bg-muted p-2 aspect-square rounded-md "> */}
               <div className="p-2 mb-2 rounded-lg">
 
                 <KeyRoundIcon size="40" className="block" />
               </div>
-              {/* </div> */}
               <h4 className="text-lg font-normal mb-2">
                 No additional auth configurations defined.
               </h4>
@@ -89,7 +87,6 @@ export function AuthSelector() {
             type="button"
             variant={"link"}
             className="text-inherit font-normal cursor-pointer grid gap-2 grid-cols-[auto_auto] px-0"
-            // className="text-info/70 hover:text-info transition-colors"
             onClick={() => setSettingsOpen(true)}
           >
             <PlusIcon />
