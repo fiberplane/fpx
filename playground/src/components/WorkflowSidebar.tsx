@@ -1,19 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useDeleteWorkflow } from "@/lib/hooks/useWorkflows";
-import type { Workflow } from "@/types";
+import { useDeleteWorkflow, useWorkflows } from "@/lib/hooks/useWorkflows";
 import { PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
-interface WorkflowSidebarProps {
-  workflows: Workflow[];
-}
-
-export function WorkflowSidebar({ workflows }: WorkflowSidebarProps) {
-  workflows.reverse();
+export function WorkflowSidebar() {
+  const { data: workflows, isLoading } = useWorkflows();
   const deleteWorkflow = useDeleteWorkflow();
   const [filterValue, setFilterValue] = useState("");
+
+  if (!workflows) {
+    return null;
+  }
+
+  workflows.reverse();
 
   // Filter workflows based on search
   const filteredWorkflows = workflows.filter((workflow) => {
@@ -54,7 +55,11 @@ export function WorkflowSidebar({ workflows }: WorkflowSidebarProps) {
         </div>
 
         <div className="grid gap-2">
-          {filteredWorkflows.length === 0 ? (
+          {isLoading ? (
+            <div className="my-4 text-xs italic text-center text-muted-foreground">
+              Loading workflows...
+            </div>
+          ) : filteredWorkflows.length === 0 ? (
             <div className="my-4 text-xs italic text-center text-muted-foreground">
               No workflows match filter criteria
             </div>

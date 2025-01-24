@@ -6,11 +6,13 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { CommandBar } from "@/garbage/RequestorPage/CommandBar/CommandBar";
 import { useIsLgScreen } from "@/hooks";
 import { workflowsQueryOptions } from "@/lib/hooks/useWorkflows";
 import { cn } from "@/lib/utils";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 // TODO: change this once we have a better type
 
 export const Route = createFileRoute("/workflow")({
@@ -30,11 +32,14 @@ function getMainSectionWidth() {
 }
 
 function WorkflowLayout() {
-  const { workflows } = Route.useLoaderData();
   const [sidePanel, setSidePanel] = useState<"open" | "closed">("open");
   const isLgScreen = useIsLgScreen();
   const width = getMainSectionWidth();
+  const [commandBarOpen, setCommandBarOpen] = useState(false);
 
+  useHotkeys("meta+k", () => {
+    setCommandBarOpen(true);
+  });
   // Panel constraints for responsive layout
   const minSize = (320 / width) * 100;
   // const maxSize = Math.min(50, (500 / width) * 100);
@@ -43,6 +48,7 @@ function WorkflowLayout() {
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <Layout>
         <div className={cn("h-[calc(100vh-40px)]", "grid", "gap-2", "p-2")}>
+          <CommandBar open={commandBarOpen} setOpen={setCommandBarOpen} />
           <ResizablePanelGroup direction="horizontal" className="w-full">
             {isLgScreen && sidePanel === "open" && (
               <>
@@ -62,7 +68,7 @@ function WorkflowLayout() {
                       "pt-4",
                     )}
                   >
-                    <WorkflowSidebar workflows={workflows} />
+                    <WorkflowSidebar />
                   </div>
                 </ResizablePanel>
                 <ResizableHandle
