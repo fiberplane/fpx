@@ -1,6 +1,7 @@
 import { cn, getHttpMethodTextColor } from "@/utils";
 import { memo, useEffect, useRef } from "react";
 import type { ProbedRoute } from "../../types";
+import { Link } from "@tanstack/react-router";
 
 type RoutesItemProps = {
   index: number;
@@ -29,19 +30,21 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
   const isActive =
     activeRoute === route ||
     (route.path === activeRoute?.path && route.method === activeRoute.method);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const buttonRef = useRef<typeof Link>(null);
 
   useEffect(() => {
     if (isSelected && buttonRef.current) {
-      buttonRef.current.focus();
+      // buttonRef.current.focus();
     }
   }, [isSelected]);
 
   return (
-    <button
+    <Link
       ref={buttonRef}
+      to="."
+      search={{ method, uri: route.path }}
       type="button"
-      onClick={() => handleRouteClick(route)}
+      // onClick={() => handleRouteClick(route)}
       onFocus={() => setSelectedRouteIndex(index)}
       onBlur={() => setSelectedRouteIndex(null)}
       onMouseEnter={() => setSelectedRouteIndex(null)}
@@ -54,7 +57,7 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
         "w-full items-center px-2 py-1 rounded cursor-pointer font-mono text-sm text-left gap-2",
         "focus:outline-none min-w-0",
         {
-          "bg-muted": isActive,
+          "bg-slate-700": isActive,
           "hover:bg-muted": !isActive,
           "focus:ring-inset focus:ring-1 focus:ring-blue-500 focus:ring-opacity-25 bg-muted":
             isSelected,
@@ -70,6 +73,6 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
       <span className="overflow-hidden text-ellipsis whitespace-nowrap block">
         {route.path}
       </span>
-    </button>
+    </Link>
   );
 });
