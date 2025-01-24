@@ -9,22 +9,24 @@ interface WorkflowPromptProps {
   isPending: boolean;
 }
 
-export function WorkflowPrompt({ userStory, setUserStory, handleSubmit, isPending }: WorkflowPromptProps) {
+export function WorkflowPrompt({
+  userStory,
+  setUserStory,
+  handleSubmit,
+  isPending,
+}: WorkflowPromptProps) {
   return (
     <div className="relative">
       <Textarea
         value={userStory}
         onChange={(e) => setUserStory(e.target.value)}
         placeholder="Enter a user story or description..."
-        className={cn(
-          "w-full bg-input text-foreground",
-          "p-4"
-        )}
+        className={cn("w-full bg-input text-foreground", "p-4")}
         rows={4}
       />
-      <Button 
-        onClick={handleSubmit} 
-        disabled={isPending} 
+      <Button
+        onClick={handleSubmit}
+        disabled={isPending}
         size="sm"
         className="absolute bottom-4 right-4"
       >

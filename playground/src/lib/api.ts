@@ -1,4 +1,4 @@
-import type { Workflow, ApiResponse } from "@/types";
+import type { ApiResponse, Workflow } from "@/types";
 
 export const api = {
   getWorkflows: async (): Promise<ApiResponse<Workflow[]>> => {
@@ -32,21 +32,24 @@ export const api = {
       },
       body: JSON.stringify(data),
     });
-    
+
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message);
     }
-    
+
     return response.json();
   },
 
-  updateWorkflow: async (id: string, data: {
-    prompt: string;
-    openApiSchemaId: string;
-    summary?: string;
-    description?: string;
-  }): Promise<ApiResponse<Workflow>> => {
+  updateWorkflow: async (
+    id: string,
+    data: {
+      prompt: string;
+      openApiSchemaId: string;
+      summary?: string;
+      description?: string;
+    },
+  ): Promise<ApiResponse<Workflow>> => {
     const response = await fetch(`/api/workflow/${id}`, {
       method: "PUT",
       headers: {
@@ -54,12 +57,12 @@ export const api = {
       },
       body: JSON.stringify(data),
     });
-    
+
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message);
     }
-    
+
     return response.json();
   },
 
@@ -67,7 +70,7 @@ export const api = {
     const response = await fetch(`/api/workflow/${id}`, {
       method: "DELETE",
     });
-    
+
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message);

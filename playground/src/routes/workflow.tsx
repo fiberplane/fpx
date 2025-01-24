@@ -1,16 +1,16 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { ThemeProvider } from "@/components/theme-provider";
+import { Layout } from "@/Layout";
 import { WorkflowSidebar } from "@/components/WorkflowSidebar";
-import { workflowsQueryOptions } from "@/lib/hooks/useWorkflows";
+import { ThemeProvider } from "@/components/theme-provider";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useIsLgScreen } from "@/hooks";
+import { workflowsQueryOptions } from "@/lib/hooks/useWorkflows";
 import { cn } from "@/lib/utils";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Layout } from "@/Layout";
 // TODO: change this once we have a better type
 
 export const Route = createFileRoute("/workflow")({

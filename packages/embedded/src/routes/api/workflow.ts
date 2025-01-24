@@ -4,7 +4,7 @@ const workflows = new Hono();
 // Proxy all requests to fp-services but attach a token
 workflows.all("*", (c) => {
   const token = "only-auth";
-	// FIXME: probably don't want to hardcode this
+  // FIXME: probably don't want to hardcode this
   const url = `http://localhost:7676${c.req.path}`;
 
   const headers = new Headers(c.req.raw.headers);

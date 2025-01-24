@@ -1,10 +1,10 @@
-import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusIcon, TrashIcon } from "@radix-ui/react-icons";
-import type { Workflow } from "@/types";
-import { useState } from "react";
 import { useDeleteWorkflow } from "@/lib/hooks/useWorkflows";
+import type { Workflow } from "@/types";
+import { PlusIcon, TrashIcon } from "@radix-ui/react-icons";
+import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 
 interface WorkflowSidebarProps {
   workflows: Workflow[];

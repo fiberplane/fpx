@@ -9,5 +9,15 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      const options = {
+        mountedPath: "/",
+        openapi: {
+          url: "http://localhost:8787/openapi.json",
+        },
+      };
+      document.getElementById("root").dataset.options = JSON.stringify(options);
+    </script>
   </body>
 </html>
+

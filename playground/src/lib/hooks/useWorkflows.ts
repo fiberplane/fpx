@@ -1,7 +1,7 @@
+import type { ApiResponse, Workflow } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "../api";
-import type { Workflow, ApiResponse } from "@/types";
 import { useNavigate } from "@tanstack/react-router";
+import { api } from "../api";
 
 export const WORKFLOWS_KEY = "workflows";
 

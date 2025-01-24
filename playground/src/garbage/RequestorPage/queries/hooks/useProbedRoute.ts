@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import { useRouteContext } from "@tanstack/react-router";
 import { useStudioStore } from "../../store";
 import { getProbedRoutesFromOpenApiSpec } from "./fiberplane-embedded";
-import { useRouteContext } from "@tanstack/react-router";
 
 const PROBED_ROUTES_KEY = "probed-routes";
 

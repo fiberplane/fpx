@@ -1,15 +1,15 @@
-import { Input } from "@/components/ui/input";
-import { Navigation } from "./Navigation";
-import { getNavigationData } from "./navigation-data";
-import { ModeToggle } from "../mode-toggle";
-import { Link, useMatches, useRouter } from "@tanstack/react-router";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Link, useMatches, useRouter } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
+import { ModeToggle } from "../mode-toggle";
+import { Navigation } from "./Navigation";
+import { getNavigationData } from "./navigation-data";
 
 export function Sidebar() {
   const router = useRouter();

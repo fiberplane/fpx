@@ -102,12 +102,13 @@ export interface JSONSchema {
       title?: string;
       default?: unknown;
       examples?: unknown[];
-      items?: JSONSchema;  // For array types
-      properties?: {       // For object types
+      items?: JSONSchema; // For array types
+      properties?: {
+        // For object types
         [key: string]: JSONSchema;
       };
       required?: string[];
-      [key: string]: unknown;  // For other valid JSON Schema properties
+      [key: string]: unknown; // For other valid JSON Schema properties
     };
   };
   required?: string[];
