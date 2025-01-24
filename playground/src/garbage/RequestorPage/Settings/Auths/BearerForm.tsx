@@ -1,11 +1,11 @@
 import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { useHandler } from "@fiberplane/hooks";
 import { TrashIcon } from "lucide-react";
 import { useState } from "react";
 import { useStudioStore } from "../../store";
+import { BusyInput } from "./BusyInput";
 
 export function BearerForm(props: {
   id: string;
@@ -31,9 +31,9 @@ export function BearerForm(props: {
   return (
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-[auto_1fr_32px] gap-2">
-        {/* biome-ignore lint/a11y/noLabelWithoutControl: Input is also an input */}
-        <label className="flex items-center space-x-2 text-sm">Bearer</label>
-        <Input
+        {/* biome-ignore lint/a11y/noLabelWithoutControl: BusyInput is also an input */}
+        <label className="flex items-center space-x-2">Bearer</label>
+        <BusyInput
           type="text"
           id={`token-${id}`}
           ref={isNew ? ref : undefined}
