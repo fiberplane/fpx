@@ -18,6 +18,8 @@ import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
+import { CodeMirrorInput } from "@/components/CodeMirrorEditor/CodeMirrorInput";
+import { useState } from "react";
 
 export const Route = createFileRoute("/workflow/$workflowId")({
   validateSearch: z.object({
@@ -55,6 +57,15 @@ function WorkflowDetail() {
     enabled: !!openapi?.content,
   });
 
+  const [inputValues, setInputValues] = useState<Record<string, string>>({});
+
+  const handleInputChange = (key: string, value?: string) => {
+    setInputValues((prev) => ({
+      ...prev,
+      [key]: value || "",
+    }));
+  };
+
   if (!openapi) {
     console.error("No OpenAPI spec found");
   }
@@ -77,6 +88,54 @@ function WorkflowDetail() {
         </div>
 
         <div className="grid gap-6">
+          <div>
+            <h3 className="mb-4 text-lg font-medium">Inputs</h3>
+            <div className="grid gap-4">
+              {Object.entries(workflow.inputs.properties).map(
+                ([key, schema]) => (
+                  <div key={key} className="grid grid-cols-2 gap-1 max-w-[800px] items-end">
+                    <div className="grid items-center gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">
+                          {schema.title || key}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          ({schema.type})
+                        </span>
+                        {workflow.inputs.required?.includes(key) && (
+                          <span className="text-xs text-destructive">
+                            *required
+                          </span>
+                        )}
+                      </div>
+
+                      {schema.description && (
+                        <p className="text-sm text-muted-foreground">
+                          {schema.description}
+                        </p>
+                      )}
+                      {schema.examples && schema.examples.length > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Example: {JSON.stringify(schema.examples[0])}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <CodeMirrorInput
+                        value={inputValues[key] || ""}
+                        onChange={(value) => handleInputChange(key, value)}
+                      placeholder={
+                        schema.examples?.[0]?.toString() ||
+                        `Enter ${schema.type}`
+                      }
+                      className="mt-1"
+                    />
+                    </div>
+                  </div>
+                ),
+              )}
+            </div>
+          </div>
           <div>
             <h3 className="mb-4 text-lg font-medium">Steps</h3>
             <div className="grid gap-4">
