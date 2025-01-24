@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Keeps track if value has changed and if so, return true for `duration` amount of time (ms)
@@ -17,7 +17,6 @@ export function useChangedSticky<T>(value: T, duration = 300) {
       valueRef.current = value;
       return () => clearTimeout(timeout);
     }
-
   }, [value, duration]);
 
   return changed;

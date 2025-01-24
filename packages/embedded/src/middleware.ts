@@ -1,8 +1,8 @@
 import type { Context } from "hono";
 import type { Env, MiddlewareHandler } from "hono/types";
+import packageJson from "../package.json" assert { type: "json" };
 import { createRouter } from "./router.js";
 import type { EmbeddedOptions, ResolvedEmbeddedOptions } from "./types.js";
-import packageJson from "../package.json" assert { type: "json" };
 
 const VERSION = packageJson.version;
 const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/embedded@${VERSION}/dist/playground/`;

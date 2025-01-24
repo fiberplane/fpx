@@ -1,13 +1,10 @@
 import { useStickyLoading } from "@/hooks";
+import { cn } from "@/utils";
 import { LoaderCircle } from "lucide-react";
 import { useChangedSticky } from "./useChangedSticky";
-import { cn } from "@/utils";
 
 export function Spinner(props: { spinning: boolean; className?: string }) {
-  const {
-    spinning,
-    className: extraClassName,
-  } = props;
+  const { spinning, className: extraClassName } = props;
 
   // sticky is used for how long the spinner should be full visible
   const rotationDuration = 1000;

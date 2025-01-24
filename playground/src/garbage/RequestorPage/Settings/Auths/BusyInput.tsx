@@ -1,8 +1,8 @@
 import { Input } from "@/components/ui/input";
-import type { ComponentProps } from "react";
-import { useChangedSticky } from "./useChangedSticky";
 import { cn } from "@/utils";
+import type { ComponentProps } from "react";
 import { Spinner } from "./Spinner";
+import { useChangedSticky } from "./useChangedSticky";
 
 export function BusyInput(originalProps: ComponentProps<typeof Input>) {
   const { className = "", ...props } = originalProps;
@@ -18,4 +18,4 @@ export function BusyInput(originalProps: ComponentProps<typeof Input>) {
       </div>
     </div>
   );
-};
+}

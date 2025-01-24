@@ -1,18 +1,21 @@
-import type React from "react";
-import { cn } from "../utils";
-import { BottomBar } from "./BottomBar";
 import { Button } from "@/components/ui/button";
 import { Link, useMatches } from "@tanstack/react-router";
 import { UserCircle } from "lucide-react";
+import type React from "react";
+import { cn } from "../utils";
+import { BottomBar } from "./BottomBar";
 
-function NavButton({ to, children }: { to: string; children: React.ReactNode }) {
+function NavButton({
+  to,
+  children,
+}: { to: string; children: React.ReactNode }) {
   const matches = useMatches();
-  const isActive = matches.some(match => match.routeId === to);
+  const isActive = matches.some((match) => match.routeId === to);
 
   return (
-    <Button 
-      variant="ghost" 
-      size="sm" 
+    <Button
+      variant="ghost"
+      size="sm"
       className={cn("h-6 hover:bg-input", isActive && "bg-input")}
       asChild
     >

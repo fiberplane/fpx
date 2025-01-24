@@ -31,7 +31,6 @@ export function AuthSelector() {
           <div className="text-xs text-center text-muted-foreground flex flex-col p-2 gap-2">
             <div className="flex flex-col gap-4 items-center justify-center">
               <div className="p-2 mb-2 rounded-lg">
-
                 <KeyRoundIcon size="40" className="block" />
               </div>
               <h4 className="text-lg font-normal mb-2">
@@ -43,13 +42,10 @@ export function AuthSelector() {
                 variant="link"
                 size="sm"
                 className="text-inherit font-normal cursor-pointer grid gap-2 grid-cols-[auto_auto]"
-
                 onClick={() => setSettingsOpen(true)}
               >
                 <PlusIcon />
-                <span>
-                  Add in settings
-                </span>
+                <span>Add in settings</span>
               </Button>
             </p>
           </div>
@@ -90,9 +86,7 @@ export function AuthSelector() {
             onClick={() => setSettingsOpen(true)}
           >
             <PlusIcon />
-            <span>
-              Add in settings
-            </span>
+            <span>Add in settings</span>
           </Button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { workflowsQueryOptions } from "@/lib/hooks/useWorkflows";
 import { PlusIcon } from "@radix-ui/react-icons";
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { NewWorkflow } from "./workflow.new";
 
@@ -26,8 +26,5 @@ function WorkflowOverview() {
       </div>
     );
   }
-  return (
-    <NewWorkflow />
-  )
-
+  return <NewWorkflow />;
 }
