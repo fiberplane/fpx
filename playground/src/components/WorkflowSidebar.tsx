@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Search } from "@/garbage/RequestorPage/NavigationPanel/Search";
 import { useDeleteWorkflow, useWorkflows } from "@/lib/hooks/useWorkflows";
 import { PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
@@ -13,7 +13,6 @@ export function WorkflowSidebar() {
   if (!workflows) {
     return null;
   }
-
   workflows.reverse();
 
   // Filter workflows based on search
@@ -30,28 +29,19 @@ export function WorkflowSidebar() {
 
   return (
     <div className="min-h-full overflow-auto">
-      <div className="">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <Link to="/workflow">
-              <span className="text-foreground">Workflows</span>
-            </Link>
-          </div>
-        </div>
-
-        <div className="relative mb-6 grid grid-cols-[1fr_auto] gap-2">
-          <Input
-            type="search"
-            placeholder="Search workflows..."
+      <div>
+        <div className="relative mb-6 grid grid-cols-[1fr_auto] gap-2 items-center">
+          <Search
             value={filterValue}
-            onChange={(e) => setFilterValue(e.target.value)}
-            className="w-full pr-12 bg-background"
+            onChange={setFilterValue}
+            placeholder="workflows"
+            itemCount={filteredWorkflows.length}
           />
-          <Link to="/workflow/new">
-            <Button variant="default" size="icon">
-              <PlusIcon className="w-4 h-4" />
-            </Button>
-          </Link>
+          <Button variant="ghost" size="icon" asChild>
+            <Link to="/workflow/new">
+              <PlusIcon className="w-3 h-3" />
+            </Link>
+          </Button>
         </div>
 
         <div className="grid gap-2">

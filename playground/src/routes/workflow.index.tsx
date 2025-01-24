@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { workflowsQueryOptions } from "@/lib/hooks/useWorkflows";
 import { PlusIcon } from "@radix-ui/react-icons";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
+import { NewWorkflow } from "./workflow.new";
 
 export const Route = createFileRoute("/workflow/")({
   component: WorkflowOverview,
@@ -25,20 +26,8 @@ function WorkflowOverview() {
       </div>
     );
   }
-
   return (
-    <div className="grid h-full overflow-auto">
-      <div className="grid p-6 place-items-center">
-        <div className="grid gap-4 text-center">
-          <p>Select a workflow or create a new one to get started</p>
-          <Button asChild>
-            <Link to="/workflow/new">
-              <PlusIcon className="w-4 h-4 mr-2" />
-              New Workflow
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
+    <NewWorkflow />
+  )
+
 }
