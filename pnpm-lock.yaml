@@ -608,8 +608,8 @@ importers:
         specifier: ^1.0.8
         version: 1.0.20(zod@3.24.1)
       '@fiberplane/embedded':
-        specifier: ^0.0.17
-        version: 0.0.17(hono@4.6.16)
+        specifier: ^0.0.19
+        version: 0.0.19(hono@4.6.16)
       '@hono/oauth-providers':
         specifier: ^0.6.2
         version: 0.6.2(hono@4.6.16)
@@ -964,6 +964,9 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.15)
+      type-fest:
+        specifier: ^4.33.0
+        version: 4.33.0
       zod:
         specifier: ^3.24.1
         version: 3.24.1
@@ -974,9 +977,6 @@ importers:
       '@biomejs/biome':
         specifier: ^1.9.4
         version: 1.9.4
-      '@eslint/js':
-        specifier: ^9.17.0
-        version: 9.18.0
       '@types/node':
         specifier: ^22.10.5
         version: 22.10.5
@@ -1262,73 +1262,6 @@ importers:
         specifier: ^3.91.0
         version: 3.91.0(@cloudflare/workers-types@4.20241112.0)
 
-  workeroni:
-    dependencies:
-      '@ai-sdk/openai':
-        specifier: ^1.1.0
-        version: 1.1.0(zod@3.24.1)
-      '@cloudflare/ai-utils':
-        specifier: ^1.0.1
-        version: 1.0.1
-      '@fiberplane/hono-otel':
-        specifier: workspace:*
-        version: link:../packages/client-library-otel
-      '@hono/zod-openapi':
-        specifier: ^0.18.0
-        version: 0.18.3(hono@4.6.17)(zod@3.24.1)
-      '@hono/zod-validator':
-        specifier: ^0.4.2
-        version: 0.4.2(hono@4.6.17)(zod@3.24.1)
-      '@scalar/hono-api-reference':
-        specifier: ^0.5.166
-        version: 0.5.166(hono@4.6.17)
-      '@scalar/openapi-parser':
-        specifier: ^0.10.3
-        version: 0.10.3
-      ai:
-        specifier: ^4.1.0
-        version: 4.1.0(react@19.0.0)(zod@3.24.1)
-      dotenv:
-        specifier: ^16.4.7
-        version: 16.4.7
-      drizzle-orm:
-        specifier: ^0.38.4
-        version: 0.38.4(@cloudflare/workers-types@4.20250109.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.18)(react@19.0.0)
-      hono:
-        specifier: ^4.6.17
-        version: 4.6.17
-      nanoid:
-        specifier: ^5.0.9
-        version: 5.0.9
-      workers-ai-provider:
-        specifier: link:../../workers-ai-provider/packages/ai-provider
-        version: link:../../workers-ai-provider/packages/ai-provider
-      zod:
-        specifier: ^3.24.1
-        version: 3.24.1
-      zod-to-json-schema:
-        specifier: ^3.24.1
-        version: 3.24.1(zod@3.24.1)
-    devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20250109.0
-        version: 4.20250109.0
-      '@types/json-schema':
-        specifier: ^7.0.15
-        version: 7.0.15
-      '@types/node':
-        specifier: ^22.10.7
-        version: 22.10.7
-      drizzle-kit:
-        specifier: ^0.30.2
-        version: 0.30.2
-      json-schema:
-        specifier: ^0.4.0
-        version: 0.4.0
-      wrangler:
-        specifier: ^3.103.1
-        version: 3.103.1(@cloudflare/workers-types@4.20250109.0)
-
   www:
     dependencies:
       '@astrojs/check':
@@ -1437,12 +1370,6 @@ packages:
     peerDependencies:
       zod: ^3.0.0
 
-  '@ai-sdk/openai@1.1.0':
-    resolution: {integrity: sha512-D2DaGMK89yYgO32n4Gr7gBJeJGGGS27gdfzYFMRDXlZmKh7VW1WXBp3FXxDwpmt0CgLoVI4qV8lf+gslah+kWw==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.0.0
-
   '@ai-sdk/provider-utils@1.0.20':
     resolution: {integrity: sha512-ngg/RGpnA00eNOWEtXHenpX1MsM2QshQh4QJFjUfwcqHpM5kTfG7je7Rc3HcEDP+OkRVv2GF+X4fC1Vfcnl8Ow==}
     engines: {node: '>=18'}
@@ -1472,15 +1399,6 @@ packages:
 
   '@ai-sdk/provider-utils@2.0.8':
     resolution: {integrity: sha512-R/wsIqx7Lwhq+ogzkqSOek8foj2wOnyBSGW/CH8IPBla0agbisIE9Ug7R9HDTNiBbIIKVhduB54qQSMPFw0MZA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.0.0
-    peerDependenciesMeta:
-      zod:
-        optional: true
-
-  '@ai-sdk/provider-utils@2.1.0':
-    resolution: {integrity: sha512-rBUabNoyB25PBUjaiMSk86fHNSCqTngNZVvXxv8+6mvw47JX5OexW+ZHRsEw8XKTE8+hqvNFVzctaOrRZ2i9Zw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -1540,18 +1458,6 @@ packages:
       zod:
         optional: true
 
-  '@ai-sdk/react@1.1.0':
-    resolution: {integrity: sha512-U5lBbLyf1pw79xsk5dgHSkBv9Jta3xzWlOLpxsmHlxh1X94QOH3e1gm+nioQ/JvTuHLm23j2tz3i4MpMdchwXQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      react: ^18 || ^19 || ^19.0.0-rc
-      zod: ^3.0.0
-    peerDependenciesMeta:
-      react:
-        optional: true
-      zod:
-        optional: true
-
   '@ai-sdk/solid@0.0.54':
     resolution: {integrity: sha512-96KWTVK+opdFeRubqrgaJXoNiDP89gNxFRWUp0PJOotZW816AbhUf4EnDjBjXTLjXL1n0h8tGSE9sZsRkj9wQQ==}
     engines: {node: '>=18'}
@@ -1590,15 +1496,6 @@ packages:
 
   '@ai-sdk/ui-utils@1.0.2':
     resolution: {integrity: sha512-hHrUdeThGHu/rsGZBWQ9PjrAU9Htxgbo9MFyR5B/aWoNbBeXn1HLMY1+uMEnXL5pRPlmyVRjgIavWg7UgeNDOw==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.0.0
-    peerDependenciesMeta:
-      zod:
-        optional: true
-
-  '@ai-sdk/ui-utils@1.1.0':
-    resolution: {integrity: sha512-ETXwdHaHwzC7NIehbthDFGwsTFk+gNtRL/lm85nR4WDFvvYQptoM/7wTANs0p0H7zumB3Ep5hKzv0Encu8vSRw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -2114,9 +2011,6 @@ packages:
     resolution: {integrity: sha512-A9U+4PREWcS+CCYzKGIPovtGB/PBgnH/8oQyCE6Nr9drDJk6cMPpLQIEajpGPmG9tYF7N3FkRvhXm/AS9+0iKg==}
     engines: {node: '>=18.0.0'}
     hasBin: true
-
-  '@cloudflare/ai-utils@1.0.1':
-    resolution: {integrity: sha512-gmn16AvVqtMLcaBYvPkwEWui39E4hlcFPqXuVamKbGleIDO6hVpvAy3KCvbnoPVT7KqRcfdLLpHRIBQDwI9tWQ==}
 
   '@cloudflare/kv-asset-handler@0.3.4':
     resolution: {integrity: sha512-YLPHc8yASwjNkmcDMQMY35yiWjoKAKnhUbPRszBRS0YgH+IXtsMp61j+yTcnCE3oO2DgP0U3iejLC8FTtKDC8Q==}
@@ -3373,10 +3267,6 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@eslint/js@9.18.0':
-    resolution: {integrity: sha512-fK6L7rxcq6/z+AaQMtiFTkvbHkBLNlwyRxHpKawP0x3u9+NC6MQTnFW+AdpwC6gfHTW0051cokQgtTN2FqlxQA==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
   '@expressive-code/core@0.35.6':
     resolution: {integrity: sha512-xGqCkmfkgT7lr/rvmfnYdDSeTdCSp1otAHgoFS6wNEeO7wGDPpxdosVqYiIcQ8CfWUABh/pGqWG90q+MV3824A==}
 
@@ -3393,8 +3283,8 @@ packages:
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
 
-  '@fiberplane/embedded@0.0.17':
-    resolution: {integrity: sha512-GZDoT1oYw/GKc5DD1dW3AnIJv3nF+eBTgOEq7HRgb7I/MFVHKLroMZCbaapAcS17cVXMtAqaTJY3rodk74+EBQ==}
+  '@fiberplane/embedded@0.0.19':
+    resolution: {integrity: sha512-X9eKb3/0kFL5RmnipojorNBVBo7yp1Nljyf7lmQClUpzLv4LoH2pD4vXY4piH65Xt3OH2r8cZM4tSfRDkWqoHw==}
     peerDependencies:
       hono: ^4.0
 
@@ -5249,12 +5139,6 @@ packages:
     peerDependencies:
       hono: ^4.0.0
 
-  '@scalar/hono-api-reference@0.5.166':
-    resolution: {integrity: sha512-Vxcu7IugI/mpUYkLa8p1iUoUMyNgHfKVHFxFD9YMcb4ugDMSGSikvp0397qUj2o0sBLb6GIOCCADn/Jw3KQ3Kw==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      hono: ^4.0.0
-
   '@scalar/openapi-parser@0.10.3':
     resolution: {integrity: sha512-H8kf03e7ScaCZMYSsBsYcu/2ypxzwpxwnAaEmNAATwrfsfMU6M3iEBshy+RL2JjqlRSBQ6zhc9EUOhpZlvRjSw==}
     engines: {node: '>=18'}
@@ -5263,16 +5147,8 @@ packages:
     resolution: {integrity: sha512-6geH9ehvQ/sG/xUyy3e0lyOw3BaY5s6nn22wHjEJhcobdmWyFER0O6m7AU0ZN4QTjle/gYvFJOjj552l/rsNSw==}
     engines: {node: '>=18'}
 
-  '@scalar/openapi-types@0.1.6':
-    resolution: {integrity: sha512-V+KnESyVJqorJzEN0QFlu3tAImCHjnvPov6QcQvjfY7s0+CjrI3rRO3oVIRlXURTQrQGrnhxvK0SkXGAZ+dxvw==}
-    engines: {node: '>=18'}
-
   '@scalar/types@0.0.25':
     resolution: {integrity: sha512-sGnOFnfiSn4o23rklU/jrg81hO+630bsFIdHg8MZ/w2Nc6IoUwARA2hbe4d4Fg+D0KBu40Tan/L+WAYDXkTJQg==}
-    engines: {node: '>=18'}
-
-  '@scalar/types@0.0.26':
-    resolution: {integrity: sha512-32RvTVh/tpOD8unnVG+41/hBoPCsTr1YmcLaEC3LIgYZxAFE8OeCO25JkQRFNBZEaid5FfRt9/qBlx5HqH1PAg==}
     engines: {node: '>=18'}
 
   '@sevinf/maybe@0.5.0':
@@ -6204,18 +6080,6 @@ packages:
       zod:
         optional: true
 
-  ai@4.1.0:
-    resolution: {integrity: sha512-95nI9hBSSAKPrMnpJbaB3yqvh+G8BS4/EtFz3HR0HgEDJpxC0R6JAlB8+B/BXHd/roNGBrS08Z3Zain/6OFSYA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      react: ^18 || ^19 || ^19.0.0-rc
-      zod: ^3.0.0
-    peerDependenciesMeta:
-      react:
-        optional: true
-      zod:
-        optional: true
-
   ajv-draft-04@1.0.0:
     resolution: {integrity: sha512-mv00Te6nmYbRp5DCwclxtt7yV/joXJPGS7nM+97GdxvuttCOfgI3K4U25zboyeX0O+myI8ERluxQe5wljMmVIw==}
     peerDependencies:
@@ -7103,10 +6967,6 @@ packages:
     resolution: {integrity: sha512-HmA/NeewvHywhJ2ENXD3KvOuM/+K2dGLJfxVfIHsGwaqKICJnS+Ke2L6UcSrSrtMJLJaT0Im1Qv4TFXfaZShyw==}
     hasBin: true
 
-  drizzle-kit@0.30.2:
-    resolution: {integrity: sha512-vhdLrxWA32WNVF77NabpSnX7pQBornx64VDQDmKddRonOB2Xe/yY4glQ7rECoa+ogqcQNo7VblLUbeBK6Zn9Ow==}
-    hasBin: true
-
   drizzle-orm@0.33.0:
     resolution: {integrity: sha512-SHy72R2Rdkz0LEq0PSG/IdvnT3nGiWuRk+2tXZQ90GVq/XQhpCzu/EFT3V2rox+w8MlkBQxifF8pCStNYnERfA==}
     peerDependencies:
@@ -7380,98 +7240,6 @@ packages:
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=3'
-      '@electric-sql/pglite': '>=0.2.0'
-      '@libsql/client': '>=0.10.0'
-      '@libsql/client-wasm': '>=0.10.0'
-      '@neondatabase/serverless': '>=0.10.0'
-      '@op-engineering/op-sqlite': '>=2'
-      '@opentelemetry/api': ^1.4.1
-      '@planetscale/database': '>=1'
-      '@prisma/client': '*'
-      '@tidbcloud/serverless': '*'
-      '@types/better-sqlite3': '*'
-      '@types/pg': '*'
-      '@types/react': '>=18'
-      '@types/sql.js': '*'
-      '@vercel/postgres': '>=0.8.0'
-      '@xata.io/client': '*'
-      better-sqlite3: '>=7'
-      bun-types: '*'
-      expo-sqlite: '>=14.0.0'
-      knex: '*'
-      kysely: '*'
-      mysql2: '>=2'
-      pg: '>=8'
-      postgres: '>=3'
-      prisma: '*'
-      react: '>=18'
-      sql.js: '>=1'
-      sqlite3: '>=5'
-    peerDependenciesMeta:
-      '@aws-sdk/client-rds-data':
-        optional: true
-      '@cloudflare/workers-types':
-        optional: true
-      '@electric-sql/pglite':
-        optional: true
-      '@libsql/client':
-        optional: true
-      '@libsql/client-wasm':
-        optional: true
-      '@neondatabase/serverless':
-        optional: true
-      '@op-engineering/op-sqlite':
-        optional: true
-      '@opentelemetry/api':
-        optional: true
-      '@planetscale/database':
-        optional: true
-      '@prisma/client':
-        optional: true
-      '@tidbcloud/serverless':
-        optional: true
-      '@types/better-sqlite3':
-        optional: true
-      '@types/pg':
-        optional: true
-      '@types/react':
-        optional: true
-      '@types/sql.js':
-        optional: true
-      '@vercel/postgres':
-        optional: true
-      '@xata.io/client':
-        optional: true
-      better-sqlite3:
-        optional: true
-      bun-types:
-        optional: true
-      expo-sqlite:
-        optional: true
-      knex:
-        optional: true
-      kysely:
-        optional: true
-      mysql2:
-        optional: true
-      pg:
-        optional: true
-      postgres:
-        optional: true
-      prisma:
-        optional: true
-      react:
-        optional: true
-      sql.js:
-        optional: true
-      sqlite3:
-        optional: true
-
-  drizzle-orm@0.38.4:
-    resolution: {integrity: sha512-s7/5BpLKO+WJRHspvpqTydxFob8i1vo2rEx4pY6TGY7QSMuUfWUuzaY0DIpXCkgHOo37BaFC+SJQb99dDUXT3Q==}
-    peerDependencies:
-      '@aws-sdk/client-rds-data': '>=3'
-      '@cloudflare/workers-types': '>=4'
       '@electric-sql/pglite': '>=0.2.0'
       '@libsql/client': '>=0.10.0'
       '@libsql/client-wasm': '>=0.10.0'
@@ -8285,10 +8053,6 @@ packages:
 
   hono@4.6.16:
     resolution: {integrity: sha512-iE6xOPwDYlfnZFwk6BfIMMIH4WZm3pPhz6rc1uJM/OPew0pjG5K6p8WTLaMBY1/szF/T0TaEjprMpwn16BA0NQ==}
-    engines: {node: '>=16.9.0'}
-
-  hono@4.6.17:
-    resolution: {integrity: sha512-Kbh4M0so2RzLiIg6iP33DoTU68TdvP2O/kb1Hhhdwa37fazuf402ig8ZRfjkz2dqXwiWl2dAgh0f++TuKAdOtQ==}
     engines: {node: '>=16.9.0'}
 
   hookable@5.5.3:
@@ -9352,11 +9116,6 @@ packages:
   nanoid@3.3.8:
     resolution: {integrity: sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
-
-  nanoid@5.0.9:
-    resolution: {integrity: sha512-Aooyr6MXU6HpvvWXKoVoXwKMs/KyVakWwg7xQfv5/S/RIgJMy0Ifa45H9qqYy7pTCszrHzP21Uk4PZq2HpEM8Q==}
-    engines: {node: ^18 || >=20}
     hasBin: true
 
   napi-build-utils@1.0.2:
@@ -11083,8 +10842,8 @@ packages:
     resolution: {integrity: sha512-RPYt6dKyemXJe7I6oNstcH24myUGSReicxcHTvCLgzm4e0n8y05dGvcGB15/SoPRBmhlMthWQ9pvKyL81ko8nQ==}
     engines: {node: '>=16'}
 
-  type-fest@4.30.0:
-    resolution: {integrity: sha512-G6zXWS1dLj6eagy6sVhOMQiLtJdxQBHIA9Z6HFUNLOlr6MFOgzV8wvmidtPONfPtEUv0uZsy77XJNzTAfwPDaA==}
+  type-fest@4.33.0:
+    resolution: {integrity: sha512-s6zVrxuyKbbAsSAD5ZPTB77q4YIdRctkTbJ2/Dqlinwz+8ooH2gd+YA7VA6Pa93KML9GockVvoxjZ2vHP+mu8g==}
     engines: {node: '>=16'}
 
   typed-emitter@2.1.0:
@@ -11956,12 +11715,6 @@ snapshots:
       '@ai-sdk/provider-utils': 2.0.2(zod@3.23.8)
       zod: 3.23.8
 
-  '@ai-sdk/openai@1.1.0(zod@3.24.1)':
-    dependencies:
-      '@ai-sdk/provider': 1.0.4
-      '@ai-sdk/provider-utils': 2.1.0(zod@3.24.1)
-      zod: 3.24.1
-
   '@ai-sdk/provider-utils@1.0.20(zod@3.23.8)':
     dependencies:
       '@ai-sdk/provider': 0.0.24
@@ -12008,15 +11761,6 @@ snapshots:
       zod: 3.23.8
 
   '@ai-sdk/provider-utils@2.0.8(zod@3.24.1)':
-    dependencies:
-      '@ai-sdk/provider': 1.0.4
-      eventsource-parser: 3.0.0
-      nanoid: 3.3.8
-      secure-json-parse: 2.7.0
-    optionalDependencies:
-      zod: 3.24.1
-
-  '@ai-sdk/provider-utils@2.1.0(zod@3.24.1)':
     dependencies:
       '@ai-sdk/provider': 1.0.4
       eventsource-parser: 3.0.0
@@ -12080,16 +11824,6 @@ snapshots:
     optionalDependencies:
       react: 19.0.0
       zod: 3.23.8
-
-  '@ai-sdk/react@1.1.0(react@19.0.0)(zod@3.24.1)':
-    dependencies:
-      '@ai-sdk/provider-utils': 2.1.0(zod@3.24.1)
-      '@ai-sdk/ui-utils': 1.1.0(zod@3.24.1)
-      swr: 2.2.5(react@19.0.0)
-      throttleit: 2.1.0
-    optionalDependencies:
-      react: 19.0.0
-      zod: 3.24.1
 
   '@ai-sdk/solid@0.0.54(zod@3.23.8)':
     dependencies:
@@ -12160,14 +11894,6 @@ snapshots:
       zod-to-json-schema: 3.24.1(zod@3.23.8)
     optionalDependencies:
       zod: 3.23.8
-
-  '@ai-sdk/ui-utils@1.1.0(zod@3.24.1)':
-    dependencies:
-      '@ai-sdk/provider': 1.0.4
-      '@ai-sdk/provider-utils': 2.1.0(zod@3.24.1)
-      zod-to-json-schema: 3.24.1(zod@3.24.1)
-    optionalDependencies:
-      zod: 3.24.1
 
   '@ai-sdk/vue@0.0.59(vue@3.5.12(typescript@5.7.2))(zod@3.23.8)':
     dependencies:
@@ -13189,11 +12915,6 @@ snapshots:
 
   '@builder.io/partytown@0.10.2': {}
 
-  '@cloudflare/ai-utils@1.0.1':
-    dependencies:
-      yaml: 2.6.1
-      zod: 3.24.1
-
   '@cloudflare/kv-asset-handler@0.3.4':
     dependencies:
       mime: 3.0.0
@@ -13998,8 +13719,6 @@ snapshots:
   '@esbuild/win32-x64@0.24.2':
     optional: true
 
-  '@eslint/js@9.18.0': {}
-
   '@expressive-code/core@0.35.6':
     dependencies:
       '@ctrl/tinycolor': 4.1.0
@@ -14027,7 +13746,7 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
-  '@fiberplane/embedded@0.0.17(hono@4.6.16)':
+  '@fiberplane/embedded@0.0.19(hono@4.6.16)':
     dependencies:
       hono: 4.6.16
       openapi-types: 12.1.3
@@ -14132,13 +13851,6 @@ snapshots:
       hono: 4.6.16
       zod: 3.24.1
 
-  '@hono/zod-openapi@0.18.3(hono@4.6.17)(zod@3.24.1)':
-    dependencies:
-      '@asteasolutions/zod-to-openapi': 7.3.0(zod@3.24.1)
-      '@hono/zod-validator': 0.4.2(hono@4.6.17)(zod@3.24.1)
-      hono: 4.6.17
-      zod: 3.24.1
-
   '@hono/zod-validator@0.2.2(hono@4.6.12)(zod@3.23.8)':
     dependencies:
       hono: 4.6.12
@@ -14167,11 +13879,6 @@ snapshots:
   '@hono/zod-validator@0.4.2(hono@4.6.16)(zod@3.24.1)':
     dependencies:
       hono: 4.6.16
-      zod: 3.24.1
-
-  '@hono/zod-validator@0.4.2(hono@4.6.17)(zod@3.24.1)':
-    dependencies:
-      hono: 4.6.17
       zod: 3.24.1
 
   '@hookform/resolvers@3.9.1(react-hook-form@7.53.2(react@18.3.1))':
@@ -16542,11 +16249,6 @@ snapshots:
       '@scalar/types': 0.0.25
       hono: 4.6.16
 
-  '@scalar/hono-api-reference@0.5.166(hono@4.6.17)':
-    dependencies:
-      '@scalar/types': 0.0.26
-      hono: 4.6.17
-
   '@scalar/openapi-parser@0.10.3':
     dependencies:
       ajv: 8.17.1
@@ -16558,16 +16260,9 @@ snapshots:
 
   '@scalar/openapi-types@0.1.5': {}
 
-  '@scalar/openapi-types@0.1.6': {}
-
   '@scalar/types@0.0.25':
     dependencies:
       '@scalar/openapi-types': 0.1.5
-      '@unhead/schema': 1.11.18
-
-  '@scalar/types@0.0.26':
-    dependencies:
-      '@scalar/openapi-types': 0.1.6
       '@unhead/schema': 1.11.18
 
   '@sevinf/maybe@0.5.0': {}
@@ -17826,18 +17521,6 @@ snapshots:
       react: 19.0.0
       zod: 3.23.8
 
-  ai@4.1.0(react@19.0.0)(zod@3.24.1):
-    dependencies:
-      '@ai-sdk/provider': 1.0.4
-      '@ai-sdk/provider-utils': 2.1.0(zod@3.24.1)
-      '@ai-sdk/react': 1.1.0(react@19.0.0)(zod@3.24.1)
-      '@ai-sdk/ui-utils': 1.1.0(zod@3.24.1)
-      '@opentelemetry/api': 1.9.0
-      jsondiffpatch: 0.6.0
-    optionalDependencies:
-      react: 19.0.0
-      zod: 3.24.1
-
   ajv-draft-04@1.0.0(ajv@8.17.1):
     optionalDependencies:
       ajv: 8.17.1
@@ -18152,7 +17835,7 @@ snapshots:
       chalk: 5.3.0
       cli-boxes: 3.0.0
       string-width: 7.2.0
-      type-fest: 4.30.0
+      type-fest: 4.33.0
       widest-line: 5.0.0
       wrap-ansi: 9.0.0
 
@@ -18853,15 +18536,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-kit@0.30.2:
-    dependencies:
-      '@drizzle-team/brocli': 0.10.2
-      '@esbuild-kit/esm-loader': 2.6.5
-      esbuild: 0.19.12
-      esbuild-register: 3.6.0(esbuild@0.19.12)
-    transitivePeerDependencies:
-      - supports-color
-
   drizzle-orm@0.33.0(@cloudflare/workers-types@4.20241205.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.18)(react@19.0.0):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20241205.0
@@ -18906,17 +18580,6 @@ snapshots:
       react: 19.0.0
 
   drizzle-orm@0.36.4(@cloudflare/workers-types@4.20250109.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.18)(react@19.0.0):
-    optionalDependencies:
-      '@cloudflare/workers-types': 4.20250109.0
-      '@libsql/client': 0.14.0
-      '@libsql/client-wasm': 0.14.0
-      '@neondatabase/serverless': 0.10.4
-      '@opentelemetry/api': 1.9.0
-      '@types/pg': 8.11.10
-      '@types/react': 18.3.18
-      react: 19.0.0
-
-  drizzle-orm@0.38.4(@cloudflare/workers-types@4.20250109.0)(@libsql/client-wasm@0.14.0)(@libsql/client@0.14.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.18)(react@19.0.0):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20250109.0
       '@libsql/client': 0.14.0
@@ -19993,8 +19656,6 @@ snapshots:
   hono@4.6.13: {}
 
   hono@4.6.16: {}
-
-  hono@4.6.17: {}
 
   hookable@5.5.3: {}
 
@@ -21388,8 +21049,6 @@ snapshots:
 
   nanoid@3.3.8: {}
 
-  nanoid@5.0.9: {}
-
   napi-build-utils@1.0.2: {}
 
   nearley@2.20.1:
@@ -22533,7 +22192,7 @@ snapshots:
 
   remeda@2.17.4:
     dependencies:
-      type-fest: 4.30.0
+      type-fest: 4.33.0
 
   replicate@1.0.1:
     optionalDependencies:
@@ -23437,7 +23096,7 @@ snapshots:
 
   type-fest@4.29.0: {}
 
-  type-fest@4.30.0: {}
+  type-fest@4.33.0: {}
 
   typed-emitter@2.1.0:
     optionalDependencies:
