@@ -1,4 +1,8 @@
-import type { ApiResponse, Trace } from "@/types";
+import type { ApiResponse } from "@/types";
+import type {
+  TraceDetailSpansResponse,
+  TraceListResponse,
+} from "@fiberplane/fpx-types";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api";
 
@@ -7,7 +11,8 @@ export const TRACES_KEY = "traces";
 export const tracesQueryOptions = () => ({
   queryKey: [TRACES_KEY],
   queryFn: () => api.getTraces(),
-  select: (response: ApiResponse<Trace[]>) => response.data,
+  // TODO - use TraceListResponseSchema to parse response
+  select: (response: ApiResponse<TraceListResponse>) => response.data,
 });
 
 export function useTraces() {
@@ -17,7 +22,7 @@ export function useTraces() {
 export const traceQueryOptions = (traceId: string) => ({
   queryKey: [TRACES_KEY, traceId],
   queryFn: () => api.getTrace(traceId),
-  select: (response: ApiResponse<Trace>) => response.data,
+  select: (response: ApiResponse<TraceDetailSpansResponse>) => response.data,
   enabled: !!traceId,
 });
 

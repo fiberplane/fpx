@@ -1,4 +1,11 @@
-import type { ApiResponse, Trace, Workflow } from "@/types";
+import type { ApiResponse, Workflow } from "@/types";
+import {
+  OtelSpanSchema,
+  type TraceDetailSpansResponse,
+  TraceListResponseSchema,
+  TraceSummarySchema,
+} from "@fiberplane/fpx-types";
+import z from "node_modules/zod/lib";
 
 function getBasePrefix(): string {
   // if we're running on localhost directly - skip this
@@ -106,16 +113,28 @@ export const api = {
       const error = await response.json();
       throw new Error(error.message);
     }
-    return response.json();
+    const data = await response.json();
+    return {
+      data: TraceListResponseSchema.parse(data),
+    };
   },
 
-  getTrace: async (id: string): Promise<ApiResponse<Trace>> => {
+  getTrace: async (
+    id: string,
+  ): Promise<ApiResponse<TraceDetailSpansResponse>> => {
     const response = await fetch(`${getTraceBaseUrl()}/${id}/spans`);
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message);
     }
-    return response.json();
+    const data = await response.json();
+    const aaagagagag = TraceSummarySchema.parse({
+      traceId: id,
+      spans: data,
+    });
+    return {
+      data: aaagagagag.spans,
+    };
   },
 };
 

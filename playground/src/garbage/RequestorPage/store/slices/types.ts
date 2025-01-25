@@ -93,6 +93,10 @@ export interface UISlice {
   togglePanel: (panelName: "sidePanel") => void;
   shortcutsOpen: boolean;
   setShortcutsOpen: (open: boolean) => void;
+  timelineShowLogs: boolean;
+  timelineAsTree: boolean;
+  toggleTimelineLogs: () => void;
+  toggleTimelineAsTree: () => void;
 }
 
 export type StudioState = RequestResponseSlice &

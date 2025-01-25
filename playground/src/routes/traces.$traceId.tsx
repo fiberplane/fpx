@@ -1,4 +1,8 @@
+import { useAsWaterfall } from "@/components/Timeline";
+import { TimelineListDetails } from "@/components/Timeline";
+import { extractWaterfallTimeStats } from "@/components/Timeline/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useOrphanLogs } from "@/hooks";
 import { traceQueryOptions } from "@/lib/hooks/useTraces";
 import { cn } from "@/lib/utils";
 import type { ApiResponse, OtelEvent, Span, Trace } from "@/types";
@@ -14,16 +18,18 @@ export const Route = createFileRoute("/traces/$traceId")({
     const response = await queryClient.ensureQueryData(
       traceQueryOptions(traceId),
     );
-    console.log("trace id  spans response", response);
-    return { trace: { traceId, spans: response } };
+    return { trace: { traceId, spans: response.data } };
   },
 });
 
 function TraceDetail() {
   const { trace } = Route.useLoaderData();
-  const { spanId } = Route.useSearch();
+  const { traceId, spans } = trace;
+  const orphanLogs = useOrphanLogs(traceId, spans ?? []);
+  const { waterfall } = useAsWaterfall(spans ?? [], orphanLogs);
+  const { minStart, duration } = extractWaterfallTimeStats(waterfall);
 
-  if (!trace || trace.spans.length === 0) {
+  if (!trace?.spans || !trace?.spans?.length) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-4">
         <h2 className="mb-2 text-lg font-medium">Trace not found</h2>
@@ -31,23 +37,35 @@ function TraceDetail() {
     );
   }
 
-  const selectedSpan = spanId
-    ? trace.spans.find((span: Span) => span.span_id === spanId)
-    : trace.spans[0];
+  // const selectedSpan = spanId
+  //   ? trace.spans.find((span: Span) => span.span_id === spanId)
+  //   : trace.spans[0];
 
-  if (!selectedSpan) {
+  // if (!selectedSpan) {
+  //   return (
+  //     <div className="flex flex-col items-center justify-center h-full p-4">
+  //       <h2 className="mb-2 text-lg font-medium">Span not found</h2>
+  //     </div>
+  //   );
+  // }
+
+  if (waterfall?.length) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-4">
-        <h2 className="mb-2 text-lg font-medium">Span not found</h2>
-      </div>
+      <TimelineListDetails
+        waterfall={waterfall}
+        minStart={minStart}
+        duration={duration}
+      />
     );
   }
+
+  // HACK - Old claude UI
 
   return (
     <div
       className={cn(
         "grid h-full gap-4",
-        trace.spans.length > 1 ? "grid-cols-2" : "grid-cols-1",
+        trace?.spans?.length > 1 ? "grid-cols-2" : "grid-cols-1",
       )}
     >
       <div className="h-full p-4 overflow-auto border rounded-md">

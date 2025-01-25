@@ -79,6 +79,7 @@ function makeProxiedRequest({
 
   // NOTE - we add custom headers to record additional metadata about the request
   const modHeaders = reduceKeyValueParameters(headers);
+
   if (route) {
     modHeaders["x-fpx-route"] = route;
   }
@@ -96,6 +97,10 @@ function makeProxiedRequest({
 
   // HACK - Serialize headers into the headers waaaaat
   modHeaders["x-fpx-headers-json"] = JSON.stringify(modHeaders);
+
+  // HACK - Generate a trace id for the request so we can link to it in the UI
+  const otelTraceId = generateOtelTraceIdWebStandard();
+  modHeaders["x-fpx-trace-id"] = otelTraceId;
 
   // We resolve the url with query parameters
   // const searchString = queryParamsForUrl.toString();
@@ -115,8 +120,11 @@ function makeProxiedRequest({
     const responseBody = await serializeResponseBody(r);
     // Serialize response headers into a JavaScript object
     const responseHeaders = Object.fromEntries(r.headers.entries());
+    const responseTraceId = r.headers.get("x-fpx-trace-id");
+    console.log("responseTraceId:", responseTraceId);
+    console.log("otelTraceId from request:", otelTraceId);
     return {
-      traceId: r.headers.get("x-fpx-trace-id") ?? crypto.randomUUID(),
+      traceId: responseTraceId ?? otelTraceId,
       responseHeaders,
       responseBody,
       responseStatusCode: r.status.toString(),
@@ -240,4 +248,18 @@ function createBody(body: RequestorBody) {
 // NOTE - This is for urlencoded (not multipart)
 function createUrlEncodedBody(body: Record<string, string>) {
   return new URLSearchParams(body).toString();
+}
+
+/**
+ * Set a trace id in the headers of the request using web standard apis
+ *
+ * Should be compatible with the OpenTelemetry standard
+ * Otel trace ids are 16 bytes long, and can be represented as a hex string
+ */
+function generateOtelTraceIdWebStandard(): string {
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  return Array.from(array)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
