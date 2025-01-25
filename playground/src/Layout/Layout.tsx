@@ -31,6 +31,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
         <div className="flex items-center gap-2">
           <NavButton to="/">Playground</NavButton>
           <NavButton to="/workflow">Workflows</NavButton>
+          <NavButton to="/traces">Traces</NavButton>
         </div>
         <div>
           <Button variant="ghost" size="sm" className="w-6 h-6 p-0">

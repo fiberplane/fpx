@@ -41,9 +41,7 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
     "setUseMockApiSpec",
     "setShortcutsOpen",
   );
-  const {
-    setWorkflowCommandOpen,
-  } = useWorkflowStore();
+  const { setWorkflowCommandOpen } = useWorkflowStore();
 
   const { setTheme } = useTheme();
   const navigate = useNavigate();

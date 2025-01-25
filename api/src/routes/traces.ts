@@ -6,12 +6,12 @@ import {
 import type { IExportTraceServiceRequest } from "@opentelemetry/otlp-transformer";
 import { and, desc, sql } from "drizzle-orm";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import * as schema from "../db/schema.js";
 import { fromCollectorRequest } from "../lib/otel/index.js";
 import { getSetting } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger/index.js";
-import { cors } from "hono/cors";
 
 const { otelSpans } = schema;
 

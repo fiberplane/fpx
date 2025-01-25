@@ -1,4 +1,4 @@
-import type { ApiResponse, Workflow } from "@/types";
+import type { ApiResponse, Trace, Workflow } from "@/types";
 
 function getBasePrefix(): string {
   // if we're running on localhost directly - skip this
@@ -99,4 +99,26 @@ export const api = {
       throw new Error(error.message);
     }
   },
+
+  getTraces: async () => {
+    const response = await fetch(`${getTraceBaseUrl()}`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+    return response.json();
+  },
+
+  getTrace: async (id: string): Promise<ApiResponse<Trace>> => {
+    const response = await fetch(`${getTraceBaseUrl()}/${id}/spans`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+    return response.json();
+  },
 };
+
+function getTraceBaseUrl() {
+  return "http://localhost:8788/v1/traces";
+}

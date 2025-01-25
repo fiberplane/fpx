@@ -1,3 +1,4 @@
+import type { OtelEvent, OtelSpan, OtelTrace } from "@fiberplane/fpx-types";
 import { z } from "zod";
 
 export type PanelState = "open" | "closed";
@@ -125,3 +126,8 @@ export interface ApiError {
     code?: string;
   };
 }
+
+// Re-export the OpenTelemetry types
+export type { OtelSpan as Span, OtelTrace as Trace, OtelEvent };
+
+// Remove the old Span and Trace interfaces since we're using the ones from @fiberplane/types
