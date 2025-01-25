@@ -38,7 +38,7 @@ export const RequestorPage = () => {
 
   return (
     <div
-      className={cn("h-[calc(100vh-40px)]", "flex", "flex-col", "gap-2", "p-2")}
+      className={cn("h-[calc(100vh-70px)]", "flex", "flex-col", "gap-2", "p-2")}
     >
       <ResizablePanelGroup
         direction="horizontal"
@@ -60,12 +60,12 @@ export const RequestorPage = () => {
             </ResizablePanel>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}
-              className="mr-2 w-0"
+              className="w-0 mr-2"
             />
           </>
         )}
         <ResizablePanel id="main" order={1}>
-          <div className="h-full flex flex-col min-h-0">
+          <div className="flex flex-col h-full min-h-0">
             <RequestorPageContent />
           </div>
         </ResizablePanel>

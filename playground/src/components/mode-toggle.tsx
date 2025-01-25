@@ -10,7 +10,7 @@ import {
 import { useTheme } from "./theme-provider";
 
 export function ModeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
 
   return (
     <div className="flex items-center gap-2">
@@ -38,7 +38,6 @@ export function ModeToggle() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <span className="text-sm capitalize">{theme} theme</span>
     </div>
   );
 }

@@ -10,7 +10,7 @@ type SearchProps = {
   onFocus?: () => void;
   onBlur?: () => void;
   placeholder?: string;
-  onItemSelect: (index: number) => void;
+  onItemSelect?: (index: number) => void;
   itemCount: number;
 };
 
@@ -31,9 +31,9 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(
           case "Enter":
             if (isSearchInputFocused && itemCount > 0) {
               setSelectedIndex(0);
-              onItemSelect(0);
+              onItemSelect?.(0);
             } else if (selectedIndex !== null) {
-              onItemSelect(selectedIndex);
+              onItemSelect?.(selectedIndex);
             }
             break;
           case "Escape":
@@ -76,9 +76,9 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(
               "peer-focus:hidden pointer-events-none",
             )}
           >
-            <span className="text-muted-foreground text-xs">Type</span>
+            <span className="text-xs text-muted-foreground">Type</span>
             <KeyboardShortcutKey>/</KeyboardShortcutKey>
-            <span className="text-muted-foreground text-xs">
+            <span className="text-xs text-muted-foreground">
               to search {placeholder}
             </span>
           </div>

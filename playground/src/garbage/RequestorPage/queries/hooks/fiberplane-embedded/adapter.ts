@@ -1,6 +1,5 @@
 import PLACEGOOSE_API_SPEC from "@/lib/placegoose.json";
 import TIGHTKNIT_API_SPEC from "@/lib/tightknit.json";
-
 import { specToProbedRoutes } from "./spec-to-probed-routes";
 import type { OpenAPISpec, ProbedRoutesResponse } from "./types";
 import type { ResolvedSpecResult } from "./types";
@@ -22,12 +21,13 @@ const MOCK_API_SPEC =
  */
 export async function getProbedRoutesFromOpenApiSpec(
   useMockApiSpec: boolean,
+  openapi: string,
 ): Promise<ProbedRoutesResponse> {
   // This is the generated ID for the converted routes
   let id = 1;
   const generateId = () => id++;
 
-  const result = getOpenApiSpec(useMockApiSpec);
+  const result = getOpenApiSpec(useMockApiSpec, openapi);
 
   if (result.type === "empty") {
     return {
@@ -44,11 +44,13 @@ export async function getProbedRoutesFromOpenApiSpec(
 }
 
 /**
- * Attempts to get the OpenAPI spec either from a mock spec or from the DOM. If getting from the DOM,
- * looks for a spec element and error element, parses them, and returns the appropriate result.
+ * Attempts to get the OpenAPI spec either from a mock spec or from the route context.
  * Returns empty if no spec is found.
  */
-function getOpenApiSpec(useMockApiSpec: boolean): ResolvedSpecResult {
+function getOpenApiSpec(
+  useMockApiSpec: boolean,
+  openapi: string,
+): ResolvedSpecResult {
   if (useMockApiSpec) {
     return {
       type: "success",
@@ -56,41 +58,21 @@ function getOpenApiSpec(useMockApiSpec: boolean): ResolvedSpecResult {
     };
   }
 
-  // Try to get the spec from the DOM
-  const specElement = document.getElementById("fp-api-spec");
-  const errorElement = document.getElementById("fp-api-spec-error");
-
-  // If we have an error element, parse it to get error details
-  if (errorElement?.textContent) {
-    try {
-      const errorResult = JSON.parse(
-        errorElement.textContent,
-      ) as ResolvedSpecResult;
-      if (errorResult.type === "error") {
-        return errorResult;
-      }
-    } catch {
-      // If we can't parse the error, fall through to try the spec
-    }
+  if (!openapi) {
+    return { type: "empty" };
   }
 
-  // If we have a spec element, try to parse it
-  if (specElement?.textContent) {
-    try {
-      const spec = JSON.parse(specElement.textContent) as OpenAPISpec;
-      return { type: "success", spec };
-    } catch (error) {
-      return {
-        type: "error",
-        error: "Failed to parse API spec from DOM",
-        source: "dom",
-        retryable: false,
-      };
-    }
+  try {
+    const spec = JSON.parse(openapi) as OpenAPISpec;
+    return { type: "success", spec };
+  } catch (error) {
+    return {
+      type: "error",
+      error: "Failed to parse API spec from route context",
+      source: "context",
+      retryable: false,
+    };
   }
-
-  // If we have neither element, return empty
-  return { type: "empty" };
 }
 
 async function handleSpecError(

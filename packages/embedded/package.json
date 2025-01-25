@@ -1,6 +1,6 @@
 {
   "name": "@fiberplane/embedded",
-  "version": "0.0.19",
+  "version": "0.0.24",
   "type": "module",
   "exports": {
     ".": {

@@ -57,3 +57,71 @@ export const ProbedRouteSchema = z.object({
 });
 
 export type ProbedRoute = z.infer<typeof ProbedRouteSchema>;
+
+export interface Parameter {
+  name: string;
+  value: string;
+}
+
+export interface SuccessCriteria {
+  condition: string;
+}
+
+export interface Output {
+  key: string;
+  value: string;
+}
+
+export interface WorkflowStep {
+  stepId: string;
+  description: string;
+  operation: string;
+  parameters: Parameter[];
+  successCriteria: SuccessCriteria[];
+  outputs: Output[];
+}
+
+export interface Workflow {
+  workflowId: string;
+  prompt: string;
+  summary: string;
+  description: string;
+  steps: WorkflowStep[];
+  inputs: JSONSchema;
+  outputs: Output[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface JSONSchema {
+  type: "object";
+  properties: {
+    [key: string]: {
+      type: "string" | "number" | "integer" | "boolean" | "object" | "array";
+      description: string;
+      title?: string;
+      default?: unknown;
+      examples?: unknown[];
+      items?: JSONSchema; // For array types
+      properties?: {
+        // For object types
+        [key: string]: JSONSchema;
+      };
+      required?: string[];
+      [key: string]: unknown; // For other valid JSON Schema properties
+    };
+  };
+  required?: string[];
+  additionalProperties?: boolean;
+}
+
+export interface ApiResponse<T> {
+  data: T;
+}
+
+export interface ApiError {
+  error: {
+    message: string;
+    code?: string;
+  };
+}

@@ -21,6 +21,9 @@ export default defineConfig({
   },
   server: {
     port: 6660,
+    proxy: {
+      "/api": "http://localhost:8787/fp",
+    },
   },
   // NOTE: Consistent filenames (without hashes) make sure we can load the assets via cdn (from @fiberplane/embedded)
   build: {

@@ -12,7 +12,7 @@ export const AuthorizationOption = ({
   checked?: boolean;
 }) => {
   return (
-    <label className="grid grid-cols-[auto_1fr] gap-2 items-center cursor-pointer overflow-hidden text-muted-foreground hover:text-foreground min-h-9">
+    <label className="grid grid-cols-[auto_1fr] gap-2 items-center cursor-pointer overflow-hidden text-muted-foreground hover:text-foreground min-h-9 border-t first:border-t-0 min-h-10">
       <input
         id={value}
         type="radio"
