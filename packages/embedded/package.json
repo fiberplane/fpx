@@ -38,6 +38,6 @@
   },
   "dependencies": {
     "openapi-types": "^12.1.3",
-    "zod": "^3.23.8"
+    "zod": "^3.24.1"
   }
 }

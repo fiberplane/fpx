@@ -32,7 +32,7 @@
     "drizzle-orm": "^0.36.4",
     "hono": "^4.6.7",
     "jose": "^5.9.6",
-    "zod": "^3.23.8"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
