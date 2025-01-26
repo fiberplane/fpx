@@ -1,5 +1,28 @@
 import { EditorView } from "@uiw/react-codemirror";
 
+export const sqlThemeAdditionalStyles = EditorView.theme({
+  // This is for highlighted lines, is a little to low contrast at the moment
+  ".cm-activeLine": {
+    background: "hsl(var(--muted)) !important",
+  },
+  // This is for the active line gutter, is a little to low contrast at the moment
+  ".cm-activeLineGutter": {
+    background: "hsl(var(--primary) / 0.10) !important",
+  },
+  // NOTE - This is for the SQL editor, columns inside SELECT clause
+  ".ͼ1v": {
+    color: "hsl(var(--info))",
+  },
+  // This is for commas
+  ".ͼ1x": {
+    color: "hsl(var(--info) / 0.5)",
+  },
+  // This is for SELECT and commas
+  ".ͼ1s": {
+    color: "hsl(var(--warning))",
+  },
+});
+
 export const customTheme = EditorView.theme({
   "&": {
     fontSize: "14px",
@@ -19,6 +42,7 @@ export const customTheme = EditorView.theme({
   ".ͼ1d": {
     color: "hsl(var(--secondary-foreground) / 0.6)",
   },
+
   ".cm-matchingBracket": {
     "background-color": "hsl(var(--info) / 0.2) !important",
   },

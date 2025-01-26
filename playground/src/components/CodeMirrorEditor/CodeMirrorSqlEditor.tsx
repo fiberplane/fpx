@@ -4,7 +4,7 @@ import { sql } from "@codemirror/lang-sql";
 import { duotoneLight } from "@uiw/codemirror-theme-duotone";
 
 import CodeMirror, { EditorView } from "@uiw/react-codemirror";
-import { customTheme } from "./themes";
+import { customTheme, sqlThemeAdditionalStyles } from "./themes";
 import type { CodeMirrorEditorProps } from "./types";
 
 type CodeMirrorSqlEditorProps = CodeMirrorEditorProps & {
@@ -34,7 +34,7 @@ export function CodeMirrorSqlEditor(props: CodeMirrorSqlEditorProps) {
       readOnly={readOnly}
       extensions={[EditorView.lineWrapping, sql()]}
       onChange={onChange}
-      theme={[duotoneLight, customTheme]}
+      theme={[duotoneLight, customTheme, sqlThemeAdditionalStyles]}
       basicSetup={{
         lineNumbers: lineNumbers ?? true,
       }}

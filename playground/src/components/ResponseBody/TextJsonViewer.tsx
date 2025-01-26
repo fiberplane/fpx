@@ -34,7 +34,9 @@ export function TextOrJsonViewer({
     // @ts-expect-error hacky way to just quickly change the value boolean color
     nordTheme["--w-rjv-type-boolean-color"] = "hsl(var(--warning))";
     // @ts-expect-error hacky way to just quickly change the value int color
-    nordTheme["--w-rjv-type-int-color"] = "hsl(var(--foreground) / 0.8)";
+    nordTheme["--w-rjv-type-int-color"] = "hsl(var(--foreground) / 0.9)";
+    // @ts-expect-error hacky way to just quickly change the value of info text
+    nordTheme["--w-rjv-info-color"] = "hsl(var(--foreground) / 0.6)";
 
     return (
       <JsonView
