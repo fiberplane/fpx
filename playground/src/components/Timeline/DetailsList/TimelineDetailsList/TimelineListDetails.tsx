@@ -35,7 +35,7 @@ function TimelineListDetailsComponent({
   );
 
   return (
-    <div className="grid gap-1 min-h-0 mt-0">
+    <div className="grid gap-0 min-h-0 mt-0">
       <div className="flex gap-12 border-b pb-2">
         <label
           className="flex items-center space-x-2 cursor-pointer"

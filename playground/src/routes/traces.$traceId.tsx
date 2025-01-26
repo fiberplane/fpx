@@ -36,7 +36,7 @@ function TraceDetail() {
 
   return (
     <div className="overflow-x-hidden h-full">
-      <h2 className="text-2xl font-bold mb-2">I am the Timeline</h2>
+      <h2 className="text-2xl font-bold mb-2">Request Timeline</h2>
       <TimelineListDetails
         waterfall={waterfall}
         minStart={minStart}
