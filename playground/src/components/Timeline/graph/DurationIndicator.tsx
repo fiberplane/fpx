@@ -112,14 +112,3 @@ const levelToBgColor = (
       return isActive ? "bg-danger/30" : "bg-danger/10";
   }
 };
-
-const levelToColor = (level: "info" | "warn" | "error") => {
-  switch (level) {
-    case "info":
-      return "info";
-    case "warn":
-      return "warning";
-    case "error":
-      return "red";
-  }
-};

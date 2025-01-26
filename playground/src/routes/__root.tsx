@@ -39,7 +39,8 @@ function RootComponent() {
   );
 }
 
-const TanStackRouterDevtools =
+// NOTE - Only exported to avoid typescript errors during compilation when this is commented out
+export const TanStackRouterDevtools =
   process.env.NODE_ENV === "production"
     ? () => null // Render nothing in production
     : React.lazy(() =>
@@ -51,7 +52,8 @@ const TanStackRouterDevtools =
         })),
       );
 
-const ReactQueryDevtools =
+// NOTE - Only exported to avoid typescript errors during compilation when this is commented out
+export const ReactQueryDevtools =
   process.env.NODE_ENV === "production"
     ? () => null // Render nothing in production
     : React.lazy(() =>

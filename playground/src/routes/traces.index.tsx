@@ -8,7 +8,7 @@ export const Route = createFileRoute("/traces/")({
   component: TracesOverview,
   loader: async ({ context: { queryClient } }) => {
     const response = await queryClient.ensureQueryData(tracesQueryOptions());
-    return { traces: response };
+    return { traces: response.data };
   },
 });
 
@@ -16,7 +16,7 @@ function TracesOverview() {
   const loaderData = Route.useLoaderData();
   const { traces } = loaderData;
 
-  if (!traces || traces.length === 0) {
+  if (!traces || traces?.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-4">
         <h2 className="mb-2 text-lg font-medium">No traces found</h2>
