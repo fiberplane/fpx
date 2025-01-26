@@ -29,7 +29,8 @@ export function Element({
   indent = 0,
 }: Props) {
   const isLog = isMizuOrphanLog(item);
-  const shouldShowDuration = !isLog && isIncomingRequestSpan(item.span);
+  // NOTE - Changed this from studio for the demo, since I thought it was a bug that child spans like D1 did not show their duration
+  const shouldShowDuration = !isLog; // && isIncomingRequestSpan(item.span);
   const bgColor = getBgColorForLevel(
     isLog
       ? item.level

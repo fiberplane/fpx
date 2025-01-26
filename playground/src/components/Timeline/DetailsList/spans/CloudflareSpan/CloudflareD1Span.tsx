@@ -20,9 +20,16 @@ type Props = {
 export function CloudflareD1Span({ attributes, vendorInfo, metadata }: Props) {
   const queryValue = useMemo(() => {
     try {
+      // HACK - Need to stringify params, as the sql-formatter doesn't like when we pass in numbers
+      const params = (vendorInfo.sql.params ?? []).map((param) => {
+        if (typeof param === "string") {
+          return param;
+        }
+        return JSON.stringify(param);
+      });
       return format(vendorInfo.sql.query, {
         language: "sqlite",
-        params: vendorInfo.sql.params ?? [],
+        params,
       });
     } catch (_e) {
       // Being very defensive
