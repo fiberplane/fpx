@@ -14,7 +14,7 @@ import { useState } from "react";
 import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
-} from "../../store/types";
+} from "@/garbage/RequestorPage/store/types";
 import { FailedRequest } from "./FailedRequest";
 import { ResponseBodyBinary } from "./ResponseBodyBinary";
 import { ResponseBodyText } from "./ResponseBodyText";

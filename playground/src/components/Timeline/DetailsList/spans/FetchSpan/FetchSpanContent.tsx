@@ -13,7 +13,7 @@ import {
 } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
 import { CollapsibleKeyValueTableV2 } from "../../KeyValueTableV2/KeyValueTable";
-import { TextOrJsonViewer } from "../../TextJsonViewer";
+import { TextOrJsonViewer } from "@/components/ResponseBody";
 import { useVendorSpecificSection } from "./hooks";
 
 type Props = { vendorInfo: VendorInfo } & Pick<OtelSpan, "attributes">;

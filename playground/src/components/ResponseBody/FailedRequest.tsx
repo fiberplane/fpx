@@ -1,9 +1,9 @@
 import { LinkBreak2Icon } from "@radix-ui/react-icons";
-import type { ProxiedRequestResponse } from "../../queries";
+import type { ProxiedRequestResponse } from "@/garbage/RequestorPage/queries";
 import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
-} from "../../store/types";
+} from "@/garbage/RequestorPage/store/types";
 
 export function FailedRequest({
   response,
