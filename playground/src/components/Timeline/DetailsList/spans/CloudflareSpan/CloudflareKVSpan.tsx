@@ -1,3 +1,4 @@
+import { TextOrJsonViewer } from "@/components/ResponseBody";
 import {
   CF_BINDING_ERROR,
   CF_BINDING_METHOD,
@@ -8,7 +9,6 @@ import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { CollapsibleSubSection } from "../../../shared";
 import { KeyValueTable } from "../../KeyValueTableV2";
-import { TextOrJsonViewer } from "@/components/ResponseBody";
 import { CfBindingOverview, KeyBadge } from "./shared";
 
 /**

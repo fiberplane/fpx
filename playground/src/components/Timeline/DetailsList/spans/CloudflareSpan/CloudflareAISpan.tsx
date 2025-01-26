@@ -1,10 +1,10 @@
+import { TextOrJsonViewer } from "@/components/ResponseBody";
 import { Badge } from "@/components/ui/badge";
 import { CF_BINDING_ERROR, CF_BINDING_RESULT } from "@/constants";
 import { getString } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { CollapsibleSubSection } from "../../../shared";
-import { TextOrJsonViewer } from "@/components/ResponseBody";
 import { CfBindingOverview, CfResultAndError } from "./shared";
 
 /**
@@ -59,7 +59,7 @@ function AiModelLink({ model }: { model: string }) {
   const modelName = model.split("/").pop();
   return (
     <a
-      className="text-blue-500 hover:underline"
+      className="text-info hover:underline"
       href={`https://developers.cloudflare.com/workers-ai/models/${modelName}`}
       target="_blank"
       rel="noopener noreferrer"

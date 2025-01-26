@@ -11,8 +11,8 @@ export function ItemIcon({ item }: { item: Waterfall[0] }) {
   const colorOverride = isLog
     ? getBgColorForLevel(item.level)
     : item.span.status?.code === SpanStatus.ERROR
-      ? "text-red-500"
-      : "text-blue-500";
+      ? "text-danger"
+      : "text-primary";
   const icon = useTimelineIcon(isLog ? item : item.span, {
     vendorInfo,
     colorOverride,

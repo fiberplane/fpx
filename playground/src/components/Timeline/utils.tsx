@@ -24,13 +24,13 @@ export const getTypeIcon = (type: string, colorOverride = "") => {
     case "fetch":
       return (
         <PaperPlaneIcon
-          className={`w-3.5 h-3.5 ${colorOverride || "text-blue-500"}`}
+          className={`w-3.5 h-3.5 ${colorOverride || "text-primary"}`}
         />
       );
     case "log":
       return (
         <CommitIcon
-          className={`w-3.5 h-3.5 rotate-90 ${colorOverride || "text-gray-400"}`}
+          className={`w-3.5 h-3.5 rotate-90 ${colorOverride || "text-foreground/70"}`}
         />
       );
     // return <Diamond className={`w-3.5 h-3.5 text-orange-400 ${className}`} />;
@@ -38,55 +38,55 @@ export const getTypeIcon = (type: string, colorOverride = "") => {
     case "db":
       return (
         <Database
-          className={`w-3.5 h-3.5 ${colorOverride || "text-blue-500"}`}
+          className={`w-3.5 h-3.5 ${colorOverride || "text-primary"}`}
         />
       );
     case "neon":
       return (
         <NeonLogo
-          className={`w-3.5 h-3.5 ${colorOverride || "text-blue-500"}`}
+          className={`w-3.5 h-3.5 ${colorOverride || "text-success"}`}
         />
       );
     case "openai":
       return (
         <OpenAiLogo
-          className={`w-3.5 h-3.5 ${colorOverride || "text-blue-500"}`}
+          className={`w-3.5 h-3.5 ${colorOverride || "text-primary"}`}
         />
       );
     case "anthropic":
       return (
         <AnthropicLogo
-          className={`w-3.5 h-3.5 ${colorOverride || "text-blue-500"}`}
+          className={`w-3.5 h-3.5 ${colorOverride || "text-primary"}`}
         />
       );
     case "cloudflare-ai":
       return (
         <CloudflareAiLogo
-          className={`w-3.5 h-3.5 ${colorOverride || "text-orange-500"}`}
+          className={`w-3.5 h-3.5 ${colorOverride || "text-primary"}`}
         />
       );
     case "cloudflare-d1":
       return (
         <CloudflareD1Logo
-          className={`w-3.5 h-3.5 ${colorOverride || "text-orange-500"}`}
+          className={`w-3.5 h-3.5 ${colorOverride || "text-primary"}`}
         />
       );
     case "cloudflare-kv":
       return (
         <CloudflareKVLogo
-          className={`w-3.5 h-3.5 ${colorOverride || "text-orange-500"}`}
+          className={`w-3.5 h-3.5 ${colorOverride || "text-primary"}`}
         />
       );
     case "cloudflare-r2":
       return (
         <CloudflareR2Logo
-          className={`w-3.5 h-3.5 ${colorOverride || "text-orange-500"}`}
+          className={`w-3.5 h-3.5 ${colorOverride || "text-primary"}`}
         />
       );
     default:
       return (
         <TimerIcon
-          className={`w-3.5 h-3.5 ${colorOverride || "text-blue-500"}`}
+          className={`w-3.5 h-3.5 ${colorOverride || "text-primary"}`}
         />
       );
     // return "🔸";
@@ -115,9 +115,9 @@ export function getTextColorForLevel(level: string) {
     case "warn":
       return "text-yellow-500";
     case "error":
-      return "text-red-500";
+      return "text-danger";
     default:
-      return "text-gray-500";
+      return "text-foreground/70";
   }
 }
 
@@ -163,19 +163,6 @@ export function extractWaterfallTimeStats(waterfall: Waterfall) {
     // NOTE - `duration` could be 0
     duration: endTime - startTime,
   };
-}
-
-export function getHttpMethodTextColor(method: string) {
-  return {
-    GET: "text-blue-500",
-    POST: "text-yellow-500",
-    PUT: "text-orange-500",
-    PATCH: "text-orange-500",
-    DELETE: "text-red-500",
-    OPTIONS: "text-blue-300",
-    HEAD: "text-gray-400",
-    WS: "text-green-500",
-  }[String(method).toUpperCase()];
 }
 
 export function getCloudflareSpanName(

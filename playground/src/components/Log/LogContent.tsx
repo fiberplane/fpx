@@ -138,7 +138,7 @@ export function LogContent(log: Props) {
                   {location.file?.startsWith("file://") ? (
                     <a
                       href={`vscode://${fileLocation.replace("file:///", "file/")}`}
-                      className="text-blue-500 hover:underline"
+                      className="text-info hover:underline"
                     >
                       {fileLocation}
                     </a>

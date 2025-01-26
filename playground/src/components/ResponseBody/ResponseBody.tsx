@@ -4,6 +4,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  type RequestorActiveResponse,
+  isRequestorActiveResponse,
+} from "@/garbage/RequestorPage/store/types";
 import { cn, safeParseJson } from "@/utils";
 import {
   CaretDownIcon,
@@ -11,10 +15,6 @@ import {
   QuestionMarkIcon,
 } from "@radix-ui/react-icons";
 import { useState } from "react";
-import {
-  type RequestorActiveResponse,
-  isRequestorActiveResponse,
-} from "@/garbage/RequestorPage/store/types";
 import { FailedRequest } from "./FailedRequest";
 import { ResponseBodyBinary } from "./ResponseBodyBinary";
 import { ResponseBodyText } from "./ResponseBodyText";

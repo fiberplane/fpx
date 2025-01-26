@@ -1,6 +1,6 @@
 import type { KeyValueParameter } from "../store";
 
-export type KeyColor = "text-orange-500" | "text-blue-500";
+export type KeyColor = "text-primary" | "text-info";
 
 /**
  * A "draft parameter" is a disabled parameter with a blank key and value.

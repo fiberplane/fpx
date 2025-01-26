@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export type KeyColor = "text-orange-500" | "text-blue-500";
+export type KeyColor = "text-warning" | "text-info";
 
 export const FormDataParameterSchema = z.object({
   id: z.string(),

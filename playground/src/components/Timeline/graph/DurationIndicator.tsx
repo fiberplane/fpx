@@ -57,14 +57,17 @@ export function DurationIndicator(props: {
           >
             <div
               className={cn(
-                `h-3.5 border border-${levelToColor(level)}-${isActive ? 600 : 700} bg-${levelToColor(level)}-${isActive && level !== "info" ? 950 : 950} flex items-center min-w-0 rounded`,
+                "border",
+                levelToBorderColor(level, isActive ?? false),
+                levelToBgColor(level, isActive ?? false),
+                "h-3.5 flex items-center min-w-0 rounded",
                 "max-w-full",
                 "text-center",
               )}
               style={{ width: lineWidth, marginLeft: lineOffset }}
             >
               {showDuration ? (
-                <div className="text-xs text-muted-foreground text-center mx-auto scale-75">
+                <div className="text-xs text-foreground/70 text-center mx-auto scale-75">
                   {itemDuration}ms
                 </div>
               ) : null}
@@ -82,12 +85,40 @@ export function DurationIndicator(props: {
   );
 }
 
-export const levelToColor = (level: "info" | "warn" | "error") => {
+const levelToBorderColor = (
+  level: "info" | "warn" | "error",
+  isActive: boolean,
+) => {
   switch (level) {
     case "info":
-      return "blue";
+      return isActive ? "border-primary" : "border-primary/70";
     case "warn":
-      return "yellow";
+      return isActive ? "border-warning" : "border-warning/70";
+    case "error":
+      return isActive ? "border-danger" : "border-danger/70";
+  }
+};
+
+const levelToBgColor = (
+  level: "info" | "warn" | "error",
+  isActive: boolean,
+) => {
+  switch (level) {
+    case "info":
+      return isActive ? "bg-primary/30" : "bg-primary/10";
+    case "warn":
+      return isActive ? "bg-warning/30" : "bg-warning/10";
+    case "error":
+      return isActive ? "bg-danger/30" : "bg-danger/10";
+  }
+};
+
+const levelToColor = (level: "info" | "warn" | "error") => {
+  switch (level) {
+    case "info":
+      return "info";
+    case "warn":
+      return "warning";
     case "error":
       return "red";
   }

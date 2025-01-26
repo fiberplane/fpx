@@ -67,6 +67,7 @@ export function Element({
       <div
         className={cn(
           "grid",
+          "py-1",
           isMdScreen
             ? "grid-cols-[2rem_auto_150px_min-content]"
             : "grid-cols-[2rem_auto_min-content]",
@@ -75,7 +76,7 @@ export function Element({
         <DivWithHover
           onClick={onClickToggle}
           onKeyDown={onKeyDownToggle}
-          className="flex items-center justify-around h-6
+          className="flex items-center justify-around h-7
        pr-3 pl-1"
         >
           <ItemIcon item={item} />
@@ -84,6 +85,7 @@ export function Element({
           className={cn(
             "grid",
             "grid-cols-[1fr_2rem]",
+            // "items-center",
             // min width needed for ellipsis to work
             "min-w-0",
           )}
@@ -99,13 +101,17 @@ export function Element({
               onClick={onClickToggle}
               onKeyDown={onKeyDownToggle}
               style={{ paddingLeft: `${indentSpace}px` }}
-              className="group-hover:bg-primary/10 pr-3 w-full text-left"
+              className={cn(
+                "group-hover:bg-primary/10 pr-3 w-full text-left",
+                // HACK - Other grid cols have h-6
+                "min-h-7",
+              )}
             >
               <TimelineDetailItemHeader item={item} />
             </button>
           </div>
           <DivWithHover
-            className="h-6 flex items-center justify-center text-primary grow-0  pr-3"
+            className="h-7 flex items-center justify-center text-primary grow-0 pr-3"
             onClick={onClickToggle}
             onKeyDown={onKeyDownToggle}
           >
@@ -120,7 +126,7 @@ export function Element({
         </div>
         {isMdScreen && (
           <DivWithHover
-            className="h-6 pr-3"
+            className="h-7 pr-3"
             onClick={onClickToggle}
             onKeyDown={onKeyDownToggle}
           >
@@ -151,7 +157,7 @@ export function Element({
           onKeyDown={onKeyDownToggle}
           className={cn(
             "text-xs font-mono text-muted-foreground",
-            "min-h-6 h-6",
+            "min-h-7 h-7",
             "flex justify-end pl-3 items-center",
             "text-nowrap",
           )}
@@ -164,13 +170,7 @@ export function Element({
         </DivWithHover>
       </div>
       {isExpanded && (
-        <div
-          className={cn(
-            "overflow-auto min-w-0",
-            "max-w-full",
-            // "max-w-[200px]"
-          )}
-        >
+        <div className={cn("overflow-auto min-w-0", "max-w-full")}>
           <div
             style={{ paddingLeft: `${indentSpace + 32}px` }}
             className={cn("")}
