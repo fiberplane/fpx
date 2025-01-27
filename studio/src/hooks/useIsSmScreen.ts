@@ -1,7 +1,7 @@
-import { useMedia } from "@fiberplane/hooks";
+import { useMedia } from "./useMedia";
 
 /**
- * HACK - targeting `md` breakpoint from tailwind
+ * HACK - targeting `sm` breakpoint from tailwind
  *
  * IMPROVE - Use css variable instead of hardcoded 640px?
  */
