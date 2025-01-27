@@ -14,7 +14,7 @@ const ApiRouteSchema = z.object({
 
 export const Route = createFileRoute("/")({
   component: Index,
-  validateSearch: search => ApiRouteSchema.parse(search)
+  validateSearch: (search) => ApiRouteSchema.parse(search),
 });
 
 /**
@@ -22,14 +22,20 @@ export const Route = createFileRoute("/")({
  */
 function Index() {
   const search = Route.useSearch();
-  const { updateMethod, updatePath, appRoutes, setActiveRoute } = useStudioStore("updateMethod", "updatePath", "appRoutes", "setActiveRoute");
+  const { updateMethod, updatePath, appRoutes, setActiveRoute } =
+    useStudioStore("updateMethod", "updatePath", "appRoutes", "setActiveRoute");
 
-  const updateActiveRoute = useCallback((method: string, path: string) => {
-    const route = appRoutes.find((r) => r.method === method && r.path === path);
-    if (route) {
-      setActiveRoute(route);
-    }
-  }, [appRoutes, setActiveRoute]);
+  const updateActiveRoute = useCallback(
+    (method: string, path: string) => {
+      const route = appRoutes.find(
+        (r) => r.method === method && r.path === path,
+      );
+      if (route) {
+        setActiveRoute(route);
+      }
+    },
+    [appRoutes, setActiveRoute],
+  );
 
   const setDefault = useHandler(() => {
     if (appRoutes.length > 0) {
@@ -41,22 +47,22 @@ function Index() {
       updateMethod("GET");
       updatePath("");
     }
-  })
-
+  });
 
   useEffect(() => {
     const { method, uri } = search || {};
     if (method && uri) {
-      const validatedMethod = RequestMethodInputValueSchema.safeParse(method).data || "GET";
+      const validatedMethod =
+        RequestMethodInputValueSchema.safeParse(method).data || "GET";
       updateMethod(validatedMethod);
       updatePath(uri);
       updateActiveRoute(validatedMethod, uri);
     } else {
       // updateMethod("GET");
       // updatePath("");
-      setDefault()
+      setDefault();
     }
-  }, [search, updateMethod, updatePath, updateActiveRoute, setDefault])
+  }, [search, updateMethod, updatePath, updateActiveRoute, setDefault]);
 
   return (
     <Layout>

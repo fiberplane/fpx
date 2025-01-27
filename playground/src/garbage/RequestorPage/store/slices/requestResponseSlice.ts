@@ -228,10 +228,10 @@ export const requestResponseSlice: StateCreator<
         state.body =
           state.body.type === "form-data"
             ? {
-              type: "form-data",
-              value: enforceFormDataTerminalDraftParameter([]),
-              isMultipart: state.body.isMultipart,
-            }
+                type: "form-data",
+                value: enforceFormDataTerminalDraftParameter([]),
+                isMultipart: state.body.isMultipart,
+              }
             : state.body.type === "file"
               ? { type: state.body.type, value: undefined }
               : { type: state.body.type, value: "" };

@@ -1,5 +1,6 @@
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
+import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useStudioStore } from "../../store";
@@ -7,7 +8,6 @@ import type { ProbedRoute } from "../../types";
 import { Search } from "../Search";
 import { RoutesItem } from "./RoutesItem";
 import { RoutesSection } from "./RoutesSection";
-import { useNavigate } from "@tanstack/react-router";
 
 export function RoutesPanel() {
   const {
@@ -99,7 +99,7 @@ export function RoutesPanel() {
     }
   });
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleItemSelect = (index: number) => {
     const route = allRoutes[index];
@@ -107,15 +107,13 @@ export function RoutesPanel() {
       return;
     }
 
-    navigate(
-      {
-        to: ".",
-        search: {
-          method: allRoutes[index].method,
-          uri: allRoutes[index].path,
-        }
+    navigate({
+      to: ".",
+      search: {
+        method: allRoutes[index].method,
+        uri: allRoutes[index].path,
       },
-    );
+    });
   };
 
   return (

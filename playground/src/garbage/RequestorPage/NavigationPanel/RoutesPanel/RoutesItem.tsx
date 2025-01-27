@@ -1,7 +1,7 @@
 import { cn, getHttpMethodTextColor } from "@/utils";
+import { Link } from "@tanstack/react-router";
 import { memo, useEffect, useRef } from "react";
 import type { ProbedRoute } from "../../types";
-import { Link } from "@tanstack/react-router";
 
 type RoutesItemProps = {
   index: number;
@@ -13,13 +13,8 @@ type RoutesItemProps = {
 };
 
 export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
-  const {
-    index,
-    route,
-    activeRoute,
-    selectedRoute,
-    setSelectedRouteIndex,
-  } = props;
+  const { index, route, activeRoute, selectedRoute, setSelectedRouteIndex } =
+    props;
 
   const method = route.method;
   const isSelected =
