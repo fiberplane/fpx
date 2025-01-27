@@ -13,6 +13,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useSettingsOpen } from "@/hooks";
 import { useWorkflowStore } from "@/lib/workflowStore";
 import { Icon } from "@iconify/react";
 import { useNavigate } from "@tanstack/react-router";
@@ -29,14 +30,12 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
   const {
     visibleRequestsPanelTabs,
     setActiveRequestsPanelTab,
-    setSettingsOpen,
     useMockApiSpec,
     setUseMockApiSpec,
     setShortcutsOpen,
   } = useStudioStore(
     "visibleRequestsPanelTabs",
     "setActiveRequestsPanelTab",
-    "setSettingsOpen",
     "useMockApiSpec",
     "setUseMockApiSpec",
     "setShortcutsOpen",
@@ -46,7 +45,7 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
   const { setTheme } = useTheme();
   const navigate = useNavigate();
   const [inputValue, setInputValue] = React.useState("");
-
+  const { setSettingsOpen } = useSettingsOpen();
   return (
     <Dialog open={open} onOpenChange={setOpen} modal={false}>
       <DialogContent className="overflow-hidden p-0 shadow-lg max-w-[500px] mx-auto data-[state=open]:bg-transparent">

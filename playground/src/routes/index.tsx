@@ -1,6 +1,7 @@
 import { Layout } from "@/Layout";
 import { RequestorPage } from "@/garbage/RequestorPage";
 import { useStudioStore } from "@/garbage/RequestorPage/store";
+import { useSettingsOpen } from "@/hooks";
 import { RequestMethodInputValueSchema } from "@/types";
 import { useHandler } from "@fiberplane/hooks";
 import { createFileRoute } from "@tanstack/react-router";
@@ -27,18 +28,20 @@ export const Route = createFileRoute("/")({
 function Index() {
   const search = Route.useSearch();
   const {
+    appRoutes,
+    clearPathParams,
+    setActiveRoute,
     updateMethod,
     updatePath,
-    appRoutes,
-    setActiveRoute,
-    clearPathParams,
   } = useStudioStore(
+    "appRoutes",
+    "clearPathParams",
+    "setActiveRoute",
     "updateMethod",
     "updatePath",
-    "appRoutes",
-    "setActiveRoute",
-    "clearPathParams",
   );
+
+  const { setSettingsOpen } = useSettingsOpen();
 
   const updateActiveRoute = useCallback(
     (method: string, path: string) => {
@@ -65,8 +68,12 @@ function Index() {
     }
   });
 
+  const { settings: showSettings = false, method, uri } = search || {};
   useEffect(() => {
-    const { method, uri } = search || {};
+    setSettingsOpen(showSettings);
+  }, [showSettings, setSettingsOpen]);
+
+  useEffect(() => {
     if (method && uri) {
       const validatedMethod =
         RequestMethodInputValueSchema.safeParse(method).data || "GET";
@@ -78,7 +85,8 @@ function Index() {
       setDefault();
     }
   }, [
-    search,
+    method,
+    uri,
     updateMethod,
     updatePath,
     updateActiveRoute,
