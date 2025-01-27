@@ -10,7 +10,22 @@ export const Route = createFileRoute("/traces/")({
     const response = await queryClient.ensureQueryData(tracesQueryOptions());
     return { traces: response.data };
   },
+  onError: (error) => {
+    console.error("Error loading traces", error);
+  },
+  errorComponent: ErrorBoundary,
 });
+
+function ErrorBoundary() {
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-4">
+      <h2 className="mb-2 text-lg font-medium">Error loading traces</h2>
+      <p className="text-sm text-muted-foreground">
+        Make sure you have a Fiberplane sidecar running
+      </p>
+    </div>
+  );
+}
 
 function TracesOverview() {
   const loaderData = Route.useLoaderData();

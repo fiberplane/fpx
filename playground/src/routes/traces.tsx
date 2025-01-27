@@ -5,23 +5,15 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { NavigationPanel } from "@/garbage/RequestorPage/NavigationPanel";
+import { NavigationFrame } from "@/garbage/RequestorPage/NavigationPanel";
 import { useIsLgScreen } from "@/hooks";
-import { tracesQueryOptions } from "@/lib/hooks/useTraces";
 import { cn } from "@/lib/utils";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
 export const Route = createFileRoute("/traces")({
   component: TracesLayout,
-  loader: async ({ context: { queryClient } }) => {
-    const tracesResponse = await queryClient.ensureQueryData(
-      tracesQueryOptions(),
-    );
-    console.log("tracesResponse", tracesResponse);
-    return {
-      traces: tracesResponse.data,
-    };
-  },
 });
 
 function getMainSectionWidth() {
@@ -49,17 +41,9 @@ function TracesLayout() {
                   minSize={minSize}
                   defaultSize={(320 / width) * 100}
                 >
-                  <div
-                    className={cn(
-                      "px-4 overflow-hidden border rounded-md",
-                      "h-full",
-                      "flex",
-                      "flex-col",
-                      "pt-4",
-                    )}
-                  >
-                    {/* Add TracesSidebar component here when needed */}
-                  </div>
+                  <NavigationFrame>
+                    <NavigationPanel />
+                  </NavigationFrame>
                 </ResizablePanel>
                 <ResizableHandle
                   hitAreaMargins={{ coarse: 20, fine: 10 }}
