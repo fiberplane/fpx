@@ -1,0 +1,113 @@
+---
+title: "Introducing Fogwatch: Real-time Log Viewing for Cloudflare Workers"
+description: "A terminal-based log viewer for Cloudflare Workers"
+slug: fogwatch
+date: 2025-01-29
+author: Micha Hernandez van Leuffen
+tags:
+  - Cloudflare
+  - Cloudflare Workers
+  - Rust
+---
+
+import { LinkCard } from "@astrojs/starlight/components";
+
+As Cloudflare Workers become an increasingly popular choice for edge computing, the need for better observability tools grows with it. Today, I'm excited to introduce Fogwatch, a powerful terminal-based log viewer that brings real-time visibility to your Cloudflare Workers deployments.
+
+## What is Fogwatch?
+
+Fogwatch is an [open-source](https://github.com/fiberplane/fogwatch) terminal-based tool that connects to Cloudflare's API to stream logs from your Workers in real-time. It provides a TUI (Terminal User Interface) for viewing, filtering, and analyzing log data, making it easier to debug and monitor your Workers during development and in production.
+
+<LinkCard
+  title="Follow along on GitHub"
+  description="Here is a repo with the code examples for this post"
+  href="https://github.com/fiberplane/fogwatch"
+  icon="external"
+  target="_blank"
+  rel="noopener noreferrer"
+/>
+
+## Key Features
+
+
+Watch your Worker logs as they happen, with zero delay. No more refreshing dashboards or waiting for logs to propagate – see exactly what's happening right now.
+
+
+Fogwatch features a modern, vim-inspired terminal interface that feels natural to developers. Navigate through logs with familiar keybindings (`j`/`k` for scrolling, `h`/`l` for switching views), and enjoy a distraction-free monitoring experience.
+
+
+The status code frequency chart at the top of the interface gives you an immediate visual understanding of your Worker's health. Spot patterns and anomalies at a glance.
+
+
+Quickly focus on what matters with built-in filters:
+- Filter by status codes (2xx, 4xx, 5xx)
+- Search through logs
+- Filter by HTTP methods
+- Adjustable sampling rates for high-traffic Workers
+
+
+Configure Fogwatch your way through:
+- Command-line arguments
+- Environment variables
+- Configuration files (fogwatch.toml)
+
+## Getting Started
+
+Clone and build from source:
+
+```bash
+git clone https://github.com/fiberplane/fogwatch.git
+cd fogwatch
+cargo build --release
+```
+
+Set your Cloudflare credentials:
+
+```bash
+export CLOUDFLARE_API_TOKEN="your-api-token"
+export CLOUDFLARE_ACCOUNT_ID="your-account-id"
+```
+
+And you're ready to start monitoring:
+
+```bash
+./target/release/fogwatch #(or just `cargo run` if you're on a dev build)
+```
+
+## Why Fogwatch?
+
+While Cloudflare's dashboard provides basic logging capabilities, Fogwatch brings several advantages:
+
+1. **Speed**: Real-time streaming means you see logs instantly
+2. **Efficiency**: Terminal-based interface means less resource usage and faster navigation
+3. **Developer-First**: Vim-like keybindings and a clean interface make it feel natural for developers
+
+## Under the Hood
+
+Fogwatch is built with Rust, chosen for its performance, reliability, and excellent async runtime support. The application architecture leverages several key components:
+
+### Terminal Interface
+The UI is powered by [ratatui](https://github.com/ratatui-org/ratatui), a Rust library for building rich terminal user interfaces. This gives us:
+- Efficient screen updates with double buffering
+- Cross-platform terminal manipulation
+- Custom widgets for visualizing log data and status code charts
+
+### Real-time Processing
+- Async WebSocket connections handle real-time log streaming
+- Lock-free data structures ensure smooth UI updates even under heavy log volume
+- Event-driven architecture separates UI rendering from log processing
+
+The combination of Rust's zero-cost abstractions and ratatui's efficient rendering ensures Fogwatch stays responsive even when processing thousands of log entries per second.
+
+## What's Next?
+
+The roadmap for Fogwatch includes exciting features like:
+- Enhanced filtering with path pattern matching and response time filters
+- Expanded analytics with request rate metrics and error tracking
+- Quality of life improvements like auto-reconnect and session persistence
+
+## Try It Today
+
+Whether you're debugging a production issue or monitoring your Workers' performance, Fogwatch provides the visibility you need. Give it a try today and experience a better way to monitor your Cloudflare Workers.
+
+Check out the [GitHub repository](https://github.com/fiberplane/fogwatch) to learn more or contribute to the project. 
