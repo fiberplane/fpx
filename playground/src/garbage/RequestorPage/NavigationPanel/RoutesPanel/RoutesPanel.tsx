@@ -16,15 +16,7 @@ export function RoutesPanel() {
     setActiveRoute,
   } = useStudioStore("appRoutes", "activeRoute", "setActiveRoute");
 
-  // const navigate = useNavigate();
-
   const handleRouteClick = useHandler((route: ProbedRoute) => {
-    // navigate(
-    //   {
-    //     pathname: "/",
-    //   },
-    //   { replace: true },
-    // );
     setActiveRoute(route);
   });
 

@@ -8,7 +8,6 @@ type RoutesItemProps = {
   route: ProbedRoute;
   activeRoute: ProbedRoute | null;
   selectedRoute: ProbedRoute | null;
-  handleRouteClick: (route: ProbedRoute) => void;
   setSelectedRouteIndex: (index: number | null) => void;
 };
 
@@ -38,7 +37,6 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
       to="."
       search={{ method, uri: route.path }}
       type="button"
-      // onClick={() => handleRouteClick(route)}
       onFocus={() => setSelectedRouteIndex(index)}
       onBlur={() => setSelectedRouteIndex(null)}
       onMouseEnter={() => setSelectedRouteIndex(null)}

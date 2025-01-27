@@ -7,7 +7,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect } from "react";
 import { z } from "zod";
 
-const ApiRouteSchema = z.object({
+const SettingsRouteSchema = z.object({
+  settings: z.boolean().optional(),
+});
+
+const ApiRouteSchema = SettingsRouteSchema.extend({
   method: z.string().optional(),
   uri: z.string().optional(),
 });
@@ -22,8 +26,19 @@ export const Route = createFileRoute("/")({
  */
 function Index() {
   const search = Route.useSearch();
-  const { updateMethod, updatePath, appRoutes, setActiveRoute } =
-    useStudioStore("updateMethod", "updatePath", "appRoutes", "setActiveRoute");
+  const {
+    updateMethod,
+    updatePath,
+    appRoutes,
+    setActiveRoute,
+    clearPathParams,
+  } = useStudioStore(
+    "updateMethod",
+    "updatePath",
+    "appRoutes",
+    "setActiveRoute",
+    "clearPathParams",
+  );
 
   const updateActiveRoute = useCallback(
     (method: string, path: string) => {
@@ -38,6 +53,7 @@ function Index() {
   );
 
   const setDefault = useHandler(() => {
+    clearPathParams();
     if (appRoutes.length > 0) {
       const route = appRoutes[0];
       updateMethod(route.method);
@@ -56,13 +72,19 @@ function Index() {
         RequestMethodInputValueSchema.safeParse(method).data || "GET";
       updateMethod(validatedMethod);
       updatePath(uri);
+      clearPathParams();
       updateActiveRoute(validatedMethod, uri);
     } else {
-      // updateMethod("GET");
-      // updatePath("");
       setDefault();
     }
-  }, [search, updateMethod, updatePath, updateActiveRoute, setDefault]);
+  }, [
+    search,
+    updateMethod,
+    updatePath,
+    updateActiveRoute,
+    setDefault,
+    clearPathParams,
+  ]);
 
   return (
     <Layout>
