@@ -74,11 +74,11 @@ function getColorValueBasedOnContent(content: string) {
 
 <style>
   :root {
-    --color-tag-blue: #2563eb;
-    --color-tag-green: #8db844;
-    --color-tag-orange: #f25a60;
-    --color-tag-purple: #c38bf0;
-    --color-tag-yellow: #e1a847;
+    --color-tag-blue: var(--fg-info);
+    --color-tag-green: var(--fg-success);
+    --color-tag-orange: var(--fg-brand);
+    --color-tag-purple: var(--fg-tip);
+    --color-tag-yellow: var(--fg-warning);
   }
 
   ul.blog-post-list {
@@ -124,10 +124,12 @@ function getColorValueBasedOnContent(content: string) {
         }
 
         li span {
+          --tag-color: hsl(from var(--color-tag) h s l / 0.9);
+
           line-height: 1;
-          background: hsl(from var(--color-tag) h s l / 0.025);
-          border: var(--color-tag) 1px solid;
-          color: var(--color-tag);
+          background: hsl(from var(--color-tag) h s l / 0.1);
+          border: var(--tag-color) 1px solid;
+          color: var(--tag-color);
 
           font-size: 0.875rem;
           font-weight: 500;

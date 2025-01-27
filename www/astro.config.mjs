@@ -18,8 +18,8 @@ export default defineConfig({
   integrations: [
     starlight({
       logo: {
-        src: "@/assets/fp-logo.png",
-        replacesTitle: true
+        src: "@/assets/fp-logo.svg",
+        replacesTitle: false
       },
       title: "Fiberplane",
       description:
@@ -73,11 +73,11 @@ export default defineConfig({
         }
       ],
       components: {
+        Banner: "@/components/Banner.astro",
         Header: "@/components/Header.astro",
+        Hero: "@/components/Hero.astro",
         Pagination: "@/components/Pagination.astro",
-        ThemeProvider: "@/components/ThemeProvider.astro",
-        Sidebar: "@/components/Sidebar.astro",
-        Hero: "@/components/Hero.astro"
+        Sidebar: "@/components/Sidebar.astro"
       },
       customCss: ["@/main.css"],
       expressiveCode: {

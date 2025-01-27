@@ -1,45 +1,102 @@
-/* For global overrides */
-:root {
-  --border-radius: 0.5rem;
-  --image-border-radius: 0.25rem;
+@import "./variables.css";
 
-  --bg-primary: hsl(217.2 91.2% 59.8%);
-  --bg-secondary: hsl(217.2 32.6% 17.5%);
+:root {
+  --border-radius: 10px;
 }
 
-/* Dark mode colors. */
-:root {
-  --sl-color-accent-low: #102246;
-  --sl-color-accent: #1e5be3;
-  --sl-color-accent-high: #b0c9f8;
-  --sl-color-white: #ffffff;
-  --sl-color-gray-1: #eceef2;
-  --sl-color-gray-2: #c0c2c7;
-  --sl-color-gray-3: #888b96;
-  --sl-color-gray-4: #545861;
-  --sl-color-gray-5: #353841;
-  --sl-color-gray-6: #24272f;
-  --sl-color-black: #17181c;
+/*
+  NOTE: As Starlight overrides theme values by a [data-theme] selector that is
+  either "light" or "dark", we use a general selector so we can override with
+  semantic values.
+*/
+:root[data-theme] {
+  --sl-color-gray-1: var(--fg-muted);
+  --sl-color-gray-2: var(--fg-default);
+  --sl-color-gray-3: var(--fg-muted);
+  --sl-color-gray-4: limegreen; /* DEV HIGHLIGHT, haven't seen it yet */
+  --sl-color-gray-5: var(--bg-emphasis);
+  --sl-color-gray-6: var(--bg-emphasis);
+  --sl-color-gray-7: var(--bg-emphasis);
+
+  --sl-color-accent: var(--fg-brand);
+  --sl-color-accent-high: var(--fg-brand-hover);
+  --sl-color-white: var(--fg-default);
+  --sl-color-black: var(--bg-background);
+  --sl-color-hairline-shade: var(--border-default);
 
   --sl-color-bg-nav: var(--sl-color-black);
-}
+  --sl-color-bg: var(--bg-background);
 
-/* Light mode colors. */
-:root[data-theme="light"] {
-  --sl-color-accent-low: #c4d8fb;
-  --sl-color-accent: #205ee5;
-  --sl-color-accent-high: #122e68;
-  --sl-color-white: #17181c;
-  --sl-color-gray-1: #24272f;
-  --sl-color-gray-2: #353841;
-  --sl-color-gray-3: #545861;
-  --sl-color-gray-4: #888b96;
-  --sl-color-gray-5: #c0c2c7;
-  --sl-color-gray-6: #eceef2;
-  --sl-color-gray-7: #f5f6f8;
-  --sl-color-black: #ffffff;
+  --sl-color-text-accent: var(--fg-brand);
 
-  --sl-color-bg-nav: var(--sl-color-black);
+  /* Fix for misaligned elements in nav/header */
+  --sl-nav-pad-y: .625rem;
+
+  /*
+    Overrides for only the note badge on the Changelog page, add more if
+    necessary
+  */
+  --sl-badge-note-bg: var(--bg-info);
+  --sl-badge-note-border: var(--fg-info);
+  --sl-badge-note-text: var(--fg-info);
+
+  a.site-title {
+    color: var(--sl-color-text);
+  }
+
+  /* Example code block highlighting */
+  .expressive-code .frame {
+    --ec-frm-trmTtbBg: var(--bg-emphasis);
+    --ec-brdCol: var(--border-default);
+
+    figcaption {
+      --ec-frm-trmTtbBrdBtmCol: var(--border-default);
+      --ec-frm-edTabBarBrdCol: var(--border-default);
+      --ec-frm-edTabBarBg: var(--bg-emphasis);
+      --ec-frm-edTabBarBrdBtmCol: var(--border-default);
+
+      span {
+        --ec-frm-edActTabIndTopCol: var(--fg-brand);
+        --ec-frm-edActTabBg: var(--bg-background);
+        --ec-frm-edActTabIndBtmCol: var(--border-default);
+      }
+    }
+
+    pre {
+      --ec-brdCol: var(--border-default);
+
+      background-color: var(--bg-input);
+
+      .ec-line.highlight {
+        --tmLineBgCol: var(--bg-success);
+        --ec-tm-insBrdCol: var(--fg-success);
+      }
+    }
+  }
+
+  .starlight-aside.starlight-aside--note {
+    --sl-color-asides-text-accent: var(--fg-info);
+    --sl-color-asides-border: var(--fg-info);
+    background-color: var(--bg-info);
+  }
+
+  .starlight-aside.starlight-aside--caution {
+    --sl-color-asides-text-accent: var(--fg-warning);
+    --sl-color-asides-border: var(--fg-warning);
+    background-color: var(--bg-warning);
+  }
+
+  .starlight-aside.starlight-aside--danger {
+    --sl-color-asides-text-accent: var(--fg-danger);
+    --sl-color-asides-border: var(--fg-danger);
+    background-color: var(--bg-danger);
+  }
+
+  .starlight-aside.starlight-aside--tip {
+    --sl-color-asides-text-accent: var(--fg-tip);
+    --sl-color-asides-border: var(--fg-tip);
+    background-color: var(--bg-tip);
+  }
 }
 
 .sl-markdown-content h1,
