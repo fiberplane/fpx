@@ -18,7 +18,6 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
     route,
     activeRoute,
     selectedRoute,
-    handleRouteClick,
     setSelectedRouteIndex,
   } = props;
 
@@ -30,11 +29,11 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
   const isActive =
     activeRoute === route ||
     (route.path === activeRoute?.path && route.method === activeRoute.method);
-  const buttonRef = useRef<typeof Link>(null);
+  const buttonRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
     if (isSelected && buttonRef.current) {
-      // buttonRef.current.focus();
+      buttonRef.current.focus();
     }
   }, [isSelected]);
 
@@ -57,7 +56,7 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
         "w-full items-center px-2 py-1 rounded cursor-pointer font-mono text-sm text-left gap-2",
         "focus:outline-none min-w-0",
         {
-          "bg-slate-700": isActive,
+          "bg-muted": isActive,
           "hover:bg-muted": !isActive,
           "focus:ring-inset focus:ring-1 focus:ring-blue-500 focus:ring-opacity-25 bg-muted":
             isSelected,

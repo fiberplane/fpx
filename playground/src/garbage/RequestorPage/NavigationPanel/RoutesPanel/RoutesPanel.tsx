@@ -7,6 +7,7 @@ import type { ProbedRoute } from "../../types";
 import { Search } from "../Search";
 import { RoutesItem } from "./RoutesItem";
 import { RoutesSection } from "./RoutesSection";
+import { useNavigate } from "@tanstack/react-router";
 
 export function RoutesPanel() {
   const {
@@ -33,6 +34,7 @@ export function RoutesPanel() {
     if (cleanFilter.length < 3) {
       return routes;
     }
+
     return routes.filter((r) => r.path.toLowerCase().includes(cleanFilter));
   }, [filterValue, routes]);
 
@@ -97,10 +99,23 @@ export function RoutesPanel() {
     }
   });
 
+  const navigate = useNavigate()
+
   const handleItemSelect = (index: number) => {
-    if (allRoutes[index]) {
-      // handleRouteClick(allRoutes[index]);
+    const route = allRoutes[index];
+    if (!route) {
+      return;
     }
+
+    navigate(
+      {
+        to: ".",
+        search: {
+          method: allRoutes[index].method,
+          uri: allRoutes[index].path,
+        }
+      },
+    );
   };
 
   return (

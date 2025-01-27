@@ -31,21 +31,33 @@ function Index() {
     }
   }, [appRoutes, setActiveRoute]);
 
+  const setDefault = useHandler(() => {
+    if (appRoutes.length > 0) {
+      const route = appRoutes[0];
+      updateMethod(route.method);
+      updatePath(route.path);
+      setActiveRoute(route);
+    } else {
+      updateMethod("GET");
+      updatePath("");
+    }
+  })
+
 
   useEffect(() => {
-    // console.log('search', search)
     const { method, uri } = search || {};
-    console.log('method', method, 'uri', uri)
     if (method && uri) {
       const validatedMethod = RequestMethodInputValueSchema.safeParse(method).data || "GET";
       updateMethod(validatedMethod);
       updatePath(uri);
       updateActiveRoute(validatedMethod, uri);
     } else {
-      updateMethod("GET");
-      updatePath("");
+      // updateMethod("GET");
+      // updatePath("");
+      setDefault()
     }
-  }, [search, updateMethod, updatePath, updateActiveRoute])
+  }, [search, updateMethod, updatePath, updateActiveRoute, setDefault])
+
   return (
     <Layout>
       <RequestorPage />
