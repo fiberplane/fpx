@@ -44,9 +44,9 @@ export default defineConfig({
         {
           label: "nav",
           items: [
-            { link: "/changelog", label: "Changelog" },
+            { link: "/docs/get-started", label: "Docs" },
             { link: "/blog", label: "Blog" },
-            { link: "/docs", label: "Docs" }
+            { link: "/changelog", label: "Changelog" },
           ]
         }
       ],
