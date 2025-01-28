@@ -1076,6 +1076,12 @@ importers:
       astro-icon:
         specifier: ^1.1.4
         version: 1.1.4
+      astro-og-canvas:
+        specifier: ^0.5.6
+        version: 0.5.6(astro@4.16.18(@types/node@22.10.2)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2))
+      canvaskit-wasm:
+        specifier: ^0.39.1
+        version: 0.39.1
       rehype-autolink-headings:
         specifier: ^7.1.0
         version: 7.1.0
@@ -5204,6 +5210,9 @@ packages:
   '@vue/shared@3.5.12':
     resolution: {integrity: sha512-L2RPSAwUFbgZH20etwrXyVyCBu9OxRSi8T/38QsvnkJyvq2LufW2lDCOzm7t/U9C1mkhJGWYfCuFBCmIuNivrg==}
 
+  '@webgpu/types@0.1.21':
+    resolution: {integrity: sha512-pUrWq3V5PiSGFLeLxoGqReTZmiiXwY3jRkIG5sLLKjyqNxrwm/04b4nw7LSmGWJcKk59XOM/YRTUwOzo4MMlow==}
+
   '@xenova/transformers@2.17.2':
     resolution: {integrity: sha512-lZmHqzrVIkSvZdKZEx7IYY51TK0WDrC8eR0c5IMnBsO8di8are1zzw8BlLhyO2TklZKLN5UffNGs1IJwT6oOqQ==}
 
@@ -5424,6 +5433,12 @@ packages:
   astro-icon@1.1.4:
     resolution: {integrity: sha512-sMLkQaevIQLv38WBzb/RDbsmxhg5+X+KcNmpTi9cE6MLurNWU1MPnlO87d9Vwg4HxTenKpDlYp81A3syXFW/gw==}
 
+  astro-og-canvas@0.5.6:
+    resolution: {integrity: sha512-w75UErZdRxYyoVnTz4IXn6T869PBrwYQEjPecWVaev9faYCHC3Uk7R47KCO3u+MSDkc8tCENz4ghVDrLImx9SA==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      astro: ^3.0.0 || ^4.0.0 || ^5.0.0
+
   astro@4.16.18:
     resolution: {integrity: sha512-G7zfwJt9BDHEZwlaLNvjbInIw2hPryyD654314KV/XT34pJU6SfN1S+mWa8RAkALcZNJnJXCJmT3JXLQStD3Lw==}
     engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0, npm: '>=9.6.5', pnpm: '>=7.1.0'}
@@ -5635,6 +5650,9 @@ packages:
   canvas@2.11.2:
     resolution: {integrity: sha512-ItanGBMrmRV7Py2Z+Xhs7cT+FNt5K0vPL4p9EZ/UX/Mu7hFbkxSjKF2KVtPwX7UYWp7dRKnrTvReflgrItJbdw==}
     engines: {node: '>=6'}
+
+  canvaskit-wasm@0.39.1:
+    resolution: {integrity: sha512-Gy3lCmhUdKq+8bvDrs9t8+qf7RvcjuQn+we7vTVVyqgOVO1UVfHpsnBxkTZw+R4ApEJ3D5fKySl9TU11hmjl/A==}
 
   capnp-ts@0.7.0:
     resolution: {integrity: sha512-XKxXAC3HVPv7r674zP0VC3RTXz+/JKhfyw94ljvF80yynK6VkTnqE3jMuN8b3dUVmmc43TjyxjW4KTsmB3c86g==}
@@ -15518,6 +15536,8 @@ snapshots:
 
   '@vue/shared@3.5.12': {}
 
+  '@webgpu/types@0.1.21': {}
+
   '@xenova/transformers@2.17.2':
     dependencies:
       '@huggingface/jinja': 0.2.2
@@ -15761,6 +15781,13 @@ snapshots:
     transitivePeerDependencies:
       - debug
       - supports-color
+
+  astro-og-canvas@0.5.6(astro@4.16.18(@types/node@22.10.2)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)):
+    dependencies:
+      astro: 4.16.18(@types/node@22.10.2)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2)
+      canvaskit-wasm: 0.39.1
+      deterministic-object-hash: 2.0.2
+      entities: 4.5.0
 
   astro@4.16.18(@types/node@22.10.2)(lightningcss@1.28.1)(rollup@4.27.4)(typescript@5.7.2):
     dependencies:
@@ -16084,6 +16111,10 @@ snapshots:
       - encoding
       - supports-color
     optional: true
+
+  canvaskit-wasm@0.39.1:
+    dependencies:
+      '@webgpu/types': 0.1.21
 
   capnp-ts@0.7.0:
     dependencies:
