@@ -34,7 +34,14 @@ const { Content, headings } = await entry.render();
         tag: "meta",
         attrs: {
           property: "og:image",
-          content: `https://fiberplane.com/blog/open-graph/${entry.slug}.png`
+          content: `https://fiberplane.com/og/blog/${entry.slug}.png`
+        }
+      },
+      {
+        tag: "meta",
+        attrs: {
+          property: "twitter:image",
+          content: `https://fiberplane.com/og/blog/${entry.slug}.png`
         }
       }
     ],

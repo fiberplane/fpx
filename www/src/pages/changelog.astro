@@ -29,7 +29,14 @@ const changelogEntries = await Promise.all(
         tag: "meta",
         attrs: {
           property: "og:image",
-          content: "https://fiberplane.com/changelog/open-graph/changelog.png"
+          content: "https://fiberplane.com/og/changelog.png"
+        }
+      },
+      {
+        tag: "meta",
+        attrs: {
+          property: "twitter:image",
+          content: "https://fiberplane.com/og/changelog.png"
         }
       }
     ]

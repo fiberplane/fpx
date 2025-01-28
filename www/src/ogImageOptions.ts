@@ -1,14 +1,16 @@
 import { OGImageRoute } from "astro-og-canvas";
 
 type OGImageOptions = Omit<
-  Awaited<ReturnType<Parameters<typeof OGImageRoute>[0]["getImageOptions"]>>,
+  Awaited<
+    ReturnType<Parameters<typeof OGImageRoute>[number]["getImageOptions"]>
+  >,
   "title" | "description"
 >;
 
 export const ogImageOptions: OGImageOptions = {
   bgGradient: [
-    [27, 26, 24],
-    [35, 34, 32]
+    [35, 34, 32],
+    [27, 26, 24]
   ],
   logo: {
     path: "./src/assets/fp-og-logo.png",
@@ -24,7 +26,12 @@ export const ogImageOptions: OGImageOptions = {
       families: ["Geist"]
     }
   },
-  padding: 40,
+  padding: 48,
+  border: {
+    color: [255, 87, 51],
+    side: "inline-start",
+    width: 8
+  },
   fonts: [
     "./src/assets/_fonts/Geist-Light.ttf",
     "./src/assets/_fonts/InstrumentSans-SemiBold.ttf"
