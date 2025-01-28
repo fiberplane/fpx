@@ -12,6 +12,11 @@ export const openApiSpecQueryOptions = (
 ) => ({
   queryKey: OPENAPI_CACHE_KEY,
   queryFn: async () => {
+    if (openapi?.content) {
+      console.log("openapi context in queryFn...", openapi);
+      return JSON.stringify(openapi.content);
+    }
+
     if (!openapi?.url) {
       return undefined;
     }
@@ -23,7 +28,7 @@ export const openApiSpecQueryOptions = (
 
     return response.text();
   },
-  enabled: !!openapi?.url,
+  enabled: !!openapi?.url || !!openapi?.content,
   staleTime: Number.POSITIVE_INFINITY,
   gcTime: Number.POSITIVE_INFINITY,
   retry: false,

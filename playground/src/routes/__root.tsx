@@ -17,7 +17,7 @@ export const Route = createRootRouteWithContext<{
 }>()({
   component: RootComponent,
   loader: async ({ context }) => {
-    if (!context.openapi?.url) {
+    if (!context.openapi?.url && !context.openapi?.content) {
       return { context };
     }
 
