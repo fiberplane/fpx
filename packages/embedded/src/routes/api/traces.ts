@@ -12,7 +12,14 @@ export default function createTracesApiRoute(fpxEndpoint?: string) {
     }
     try {
       const fpxBaseUrl = new URL(fpxEndpoint).origin;
-      const response = await fetch(`${fpxBaseUrl}/v1/traces${c.req.query()}`);
+      const requestUrl = `${fpxBaseUrl}/v1/traces`;
+      console.log("GET /traces - requestUrl", requestUrl);
+      const response = await fetch(requestUrl, {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
       const data = (await response.json()) as ApiResponse;
       return c.json(data);
     } catch (error) {
@@ -28,9 +35,14 @@ export default function createTracesApiRoute(fpxEndpoint?: string) {
     try {
       const fpxBaseUrl = new URL(fpxEndpoint).origin;
       const traceId = c.req.param("traceId");
-      const response = await fetch(
-        `${fpxBaseUrl}/v1/traces/${traceId}/spans${c.req.query()}`,
-      );
+      const requestUrl = `${fpxBaseUrl}/v1/traces/${traceId}/spans`;
+      console.log("GET /traces/:traceId/spans - requestUrl", requestUrl);
+      const response = await fetch(requestUrl, {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
       const data = (await response.json()) as ApiResponse;
       return c.json(data);
     } catch (error) {
