@@ -9,6 +9,22 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   frontmatter={{
     title: "Fiberplane",
     template: "splash",
+    head: [
+      {
+        tag: "meta",
+        attrs: {
+          property: "og:image",
+          content: "https://fiberplane.com/og/landing.png"
+        }
+      },
+      {
+        tag: "meta",
+        attrs: {
+          property: "twitter:image",
+          content: "https://fiberplane.com/og/landing.png"
+        }
+      }
+    ],
     banner: {
       content:
         '<span>🚀 Check out the latest features we shipped during <a href="/blog/mega-launch-week-2024">Mega Launch Week</a></span>'
@@ -27,7 +43,7 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
           text: "Get started",
           link: "docs/get-started",
           icon: "right-arrow",
-          variant: "primary",
+          variant: "primary"
         }
         // Once we have a demo vid we can uncomment this and link to a video
         // service site. It'd be nice to have something within the site with the

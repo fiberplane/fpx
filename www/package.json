@@ -20,6 +20,8 @@
     "@iconify-json/lucide": "^1.2.16",
     "astro": "^4.16.18",
     "astro-icon": "^1.1.4",
+    "astro-og-canvas": "^0.5.6",
+    "canvaskit-wasm": "^0.39.1",
     "rehype-autolink-headings": "^7.1.0",
     "rollup": "^4.27.4",
     "sharp": "^0.32.6",
