@@ -9,7 +9,10 @@
     "lint": "biome lint .",
     "format": "biome check . --write",
     "preview": "vite preview",
-    "shadd": "pnpm dlx shadcn@latest add"
+    "shadd": "pnpm dlx shadcn@latest add",
+    "test": "vitest",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.18.3",

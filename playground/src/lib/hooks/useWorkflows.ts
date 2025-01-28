@@ -2,6 +2,7 @@ import type { ApiResponse, Workflow } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { api } from "../api";
+import { useWorkflowStore } from "../workflowStore";
 
 export const WORKFLOWS_KEY = "workflows";
 
@@ -66,5 +67,54 @@ export function useDeleteWorkflow() {
       queryClient.invalidateQueries({ queryKey: [WORKFLOWS_KEY] });
       navigate({ to: "/workflow" });
     },
+  });
+}
+
+export interface ExecuteStepParams {
+  stepId: string;
+  url: string;
+  method: string;
+  body?: Record<string, unknown>;
+  headers?: Record<string, string>;
+}
+
+export interface ExecuteStepResult {
+  stepId: string;
+  data: unknown;
+  headers: Record<string, string>;
+  status: number;
+}
+
+export function useExecuteStep() {
+  return useMutation<
+    ExecuteStepResult,
+    Error,
+    ExecuteStepParams,
+    { stepId: string }
+  >({
+    mutationKey: ['executeStep'] as const,
+    mutationFn: async ({ stepId, url, method, body, headers = {} }) => {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers
+        },
+        body: body && JSON.stringify(body)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Request failed');
+      }
+
+      return {
+        stepId,
+        data,
+        headers: Object.fromEntries(response.headers.entries()),
+        status: response.status
+      };
+    }
   });
 }

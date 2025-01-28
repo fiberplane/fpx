@@ -1,9 +1,11 @@
 import type { ApiResponse, Workflow } from "@/types";
 import {
+  OtelSpanSchema,
   type TraceDetailSpansResponse,
   TraceListResponseSchema,
   TraceSummarySchema,
 } from "@fiberplane/fpx-types";
+import z from "node_modules/zod/lib";
 
 function getBasePrefix(): string {
   // if we're running on localhost directly - skip this
