@@ -21,7 +21,7 @@ export const { getStaticPaths, GET } = OGImageRoute({
       title: { size: 72, families: ["Instrument Sans"] },
       description: { size: 48, families: ["Geist"] }
     },
-    // padding: 40,
+    padding: 40,
     fonts: [
       "./src/pages/blog/open-graph/_fonts/Geist-Light.ttf",
       "./src/pages/blog/open-graph/_fonts/InstrumentSans-SemiBold.ttf"
