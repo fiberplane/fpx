@@ -6,6 +6,10 @@ authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 
+[[bin]]
+name = "fpx"
+path = "src/main.rs"
+
 [features]
 embed-studio = [] # When enabled it will embed Studio from frontend/dist
 
