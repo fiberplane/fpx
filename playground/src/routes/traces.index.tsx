@@ -1,8 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { tracesQueryOptions } from "@/lib/hooks/useTraces";
 import { cn } from "@/lib/utils";
 import type { Trace } from "@/types";
+import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/traces/")({
   component: TracesOverview,
@@ -17,17 +24,6 @@ export const Route = createFileRoute("/traces/")({
   },
   errorComponent: ErrorBoundary,
 });
-
-function ErrorBoundary() {
-  return (
-    <div className="flex flex-col items-center justify-center h-full p-4">
-      <h2 className="mb-2 text-lg font-medium">Error loading traces</h2>
-      <p className="text-sm text-muted-foreground">
-        Make sure you have a Fiberplane sidecar running
-      </p>
-    </div>
-  );
-}
 
 function TracesOverview() {
   const loaderData = Route.useLoaderData();
@@ -117,6 +113,119 @@ function TracesOverview() {
             </Link>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary(props: {
+  error: Error;
+}) {
+  const { error } = props;
+  const [isOpen, setIsOpen] = useState(false);
+  const { fpxEndpoint, mountedPath, openapi, parseError } = useMemo(() => {
+    try {
+      const rootElement = document.getElementById("root");
+      if (!rootElement) {
+        return {
+          fpxEndpoint: null,
+          mountedPath: null,
+          openapi: null,
+          parseError: { message: "Root element not found" },
+        };
+      }
+
+      const { fpxEndpoint, mountedPath, openapi } = JSON.parse(
+        rootElement.dataset.options as string,
+      ) as {
+        mountedPath: string;
+        openapi?: {
+          url?: string;
+          content?: string;
+        };
+        fpxEndpoint?: string;
+      };
+
+      return {
+        fpxEndpoint,
+        mountedPath,
+        openapi,
+        parseError: null,
+      };
+    } catch (parseError) {
+      return {
+        fpxEndpoint: null,
+        mountedPath: null,
+        openapi: null,
+        parseError,
+      };
+    }
+  }, []);
+
+  let message = "Make sure you have a Fiberplane sidecar running";
+  if (!fpxEndpoint) {
+    message = "Fiberplane tracing endpoint is not set";
+  } else if (error) {
+    message = error.message;
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-4">
+      <h2 className="mb-2 text-lg font-medium">Error loading traces</h2>
+      <p className="text-sm text-muted-foreground">{message}</p>
+      <div className="flex flex-col gap-4 mt-4">
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+            <span className="text-muted-foreground">Debug Info</span>
+            <Icon
+              icon="lucide:chevron-down"
+              className={cn(
+                "w-4 h-4 transition-transform duration-200",
+                isOpen && "rotate-180",
+              )}
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-2">
+            <div className="grid gap-2">
+              <Card className="bg-muted/50">
+                <CardContent className="p-3">
+                  <p className="mb-1 text-xs font-medium text-muted-foreground">
+                    FPX_ENDPOINT
+                  </p>
+                  <code className="text-sm">{fpxEndpoint}</code>
+                </CardContent>
+              </Card>
+              <Card className="bg-muted/50">
+                <CardContent className="p-3">
+                  <p className="mb-1 text-xs font-medium text-muted-foreground">
+                    MOUNTED_PATH
+                  </p>
+                  <code className="text-sm">{mountedPath}</code>
+                </CardContent>
+              </Card>
+              <Card className="bg-muted/50">
+                <CardContent className="p-3">
+                  <p className="mb-1 text-xs font-medium text-muted-foreground">
+                    OPENAPI
+                  </p>
+                  <code className="text-sm whitespace-pre-wrap">
+                    {JSON.stringify(openapi, null, 2)}
+                  </code>
+                </CardContent>
+              </Card>
+              <Card className="bg-muted/50">
+                <CardContent className="p-3">
+                  <p className="mb-1 text-xs font-medium text-muted-foreground">
+                    PARSE_ERROR
+                  </p>
+                  <code className="text-sm whitespace-pre-wrap">
+                    {JSON.stringify(parseError, null, 2)}
+                  </code>
+                </CardContent>
+              </Card>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </div>
   );

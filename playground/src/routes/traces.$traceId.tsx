@@ -5,6 +5,7 @@ import { useOrphanLogs } from "@/hooks";
 import { traceQueryOptions } from "@/lib/hooks/useTraces";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { ErrorBoundary } from "./traces.index";
 
 export const Route = createFileRoute("/traces/$traceId")({
   validateSearch: z.object({
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/traces/$traceId")({
     );
     return { trace: { traceId, spans: response.data } };
   },
+  errorComponent: ErrorBoundary,
 });
 
 function TraceDetail() {

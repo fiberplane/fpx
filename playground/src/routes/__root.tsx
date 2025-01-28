@@ -1,9 +1,9 @@
 import { WorkflowCommand } from "@/components/WorkflowCommand";
+import { openApiSpecQueryOptions } from "@/lib/hooks/useOpenApiSpec";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import type { QueryClient } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import React from "react";
-import { openApiSpecQueryOptions } from "@/lib/hooks/useOpenApiSpec";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -38,7 +38,12 @@ export const Route = createRootRouteWithContext<{
     console.error("Error loading openapi spec", error);
   },
   errorComponent: ({ error, info }) => {
-    return <ErrorBoundary error={error} info={info ? info : { componentStack: "" }} />;
+    return (
+      <ErrorBoundary
+        error={error}
+        info={info ? info : { componentStack: "" }}
+      />
+    );
   },
 });
 
@@ -56,7 +61,10 @@ function RootComponent() {
   );
 }
 
-function ErrorBoundary({ error, info }: { error: Error; info: { componentStack: string } }) {
+function ErrorBoundary({
+  error,
+  info,
+}: { error: Error; info: { componentStack: string } }) {
   return (
     <div className="min-h-screen bg-background">
       <div className="flex flex-col items-center justify-center h-screen gap-2">

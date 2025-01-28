@@ -7,7 +7,9 @@ interface OpenApiContext {
   content?: string;
 }
 
-export const openApiSpecQueryOptions = (openapi: OpenApiContext | undefined) => ({
+export const openApiSpecQueryOptions = (
+  openapi: OpenApiContext | undefined,
+) => ({
   queryKey: OPENAPI_CACHE_KEY,
   queryFn: async () => {
     if (!openapi?.url) {
@@ -29,4 +31,4 @@ export const openApiSpecQueryOptions = (openapi: OpenApiContext | undefined) => 
 
 export function useOpenApiSpec(openapi: OpenApiContext | undefined) {
   return useQuery(openApiSpecQueryOptions(openapi));
-} 
+}
