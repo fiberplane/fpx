@@ -15,6 +15,7 @@ export function parseEmbeddedConfig(rootElement: HTMLElement) {
     fpxEndpoint?: string;
   };
 
+  // NOTE - This option here is **only for local development** to be able to test the tracing UI in the playground
   let fpxEndpointHost: string | undefined = undefined;
   if (fpxEndpoint) {
     const url = new URL(fpxEndpoint);

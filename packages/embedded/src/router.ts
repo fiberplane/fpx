@@ -14,9 +14,9 @@ export function createRouter<E extends Env>(
   // Important: whatever gets passed to createEmbeddedPlayground
   // is passed to the playground, aka is on the HTML
   // We therefore remove the apiKey
-  const { apiKey, ...sanitizedOptions } = options;
+  const { apiKey, fpxEndpoint, ...sanitizedOptions } = options;
 
-  app.route("/api", createApiRoutes(apiKey));
+  app.route("/api", createApiRoutes(apiKey, fpxEndpoint));
 
   const embeddedPlayground = createEmbeddedPlayground(sanitizedOptions);
   app.route("/", embeddedPlayground);

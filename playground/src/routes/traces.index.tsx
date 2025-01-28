@@ -155,16 +155,6 @@ export function ErrorBoundary(props: {
               <Card className="bg-muted/50">
                 <CardContent className="p-3">
                   <p className="mb-1 text-xs font-medium text-muted-foreground">
-                    Tracing Endpoint Host
-                  </p>
-                  <code className="text-sm">
-                    {fpxEndpointHost ?? "not found"}
-                  </code>
-                </CardContent>
-              </Card>
-              <Card className="bg-muted/50">
-                <CardContent className="p-3">
-                  <p className="mb-1 text-xs font-medium text-muted-foreground">
                     MOUNTED_PATH
                   </p>
                   <code className="text-sm">{mountedPath}</code>
@@ -195,6 +185,16 @@ export function ErrorBoundary(props: {
                   </p>
                   <code className="text-sm whitespace-pre-wrap">
                     {JSON.stringify(error, null, 2)}
+                  </code>
+                </CardContent>
+              </Card>
+              <Card className="bg-muted/50">
+                <CardContent className="p-3">
+                  <p className="mb-1 text-xs font-medium text-muted-foreground">
+                    Tracing Endpoint Host ((Local only))
+                  </p>
+                  <code className="text-sm">
+                    {fpxEndpointHost ?? "not found"}
                   </code>
                 </CardContent>
               </Card>
