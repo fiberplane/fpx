@@ -3,6 +3,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import type { QueryClient } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import React from "react";
+import { openApiSpecQueryOptions } from "@/lib/hooks/useOpenApiSpec";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -14,22 +15,29 @@ export const Route = createRootRouteWithContext<{
     | undefined;
 }>()({
   component: RootComponent,
-  // NOTE - I am getting the feeling this executes many many times
-  beforeLoad: async ({ context }) => {
-    if (context.openapi?.url) {
-      const content = await fetch(context.openapi.url).then((res) =>
-        res.text(),
-      );
-      if (context.openapi) {
-        context.openapi.content = content;
-      }
+  loader: async ({ context }) => {
+    if (!context.openapi?.url) {
+      return { context };
     }
+
+    const queryOptions = openApiSpecQueryOptions(context.openapi);
+    const content = await context.queryClient.ensureQueryData(queryOptions);
+
+    return {
+      context: {
+        ...context,
+        openapi: {
+          ...context.openapi,
+          content,
+        },
+      },
+    };
   },
   onError: (error) => {
     console.error("Error loading openapi spec", error);
   },
-  errorComponent: () => {
-    return <ErrorBoundary />;
+  errorComponent: ({ error, info }) => {
+    return <ErrorBoundary error={error} info={info ? info : { componentStack: "" }} />;
   },
 });
 
@@ -47,7 +55,7 @@ function RootComponent() {
   );
 }
 
-function ErrorBoundary() {
+function ErrorBoundary({ error, info }: { error: Error; info: { componentStack: string } }) {
   return (
     <div className="min-h-screen bg-background">
       <div className="flex flex-col items-center justify-center h-screen gap-2">
@@ -58,7 +66,8 @@ function ErrorBoundary() {
           className="text-danger"
         />
         <p className="text-lg">
-          An error occurred while fetching the OpenAPI spec
+          {error.message}
+          {info?.componentStack}
         </p>
       </div>
       {/*  Commented out because they're annoying but leaving them here in case you need them */}
