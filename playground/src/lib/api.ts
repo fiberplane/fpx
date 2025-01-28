@@ -109,7 +109,7 @@ export const api = {
     const basePrefix = getBasePrefix();
     const tracesUrl = fpxEndpointHost
       ? `${fpxEndpointHost}/v1/traces`
-      : `${basePrefix}/api/traces/v1/traces`;
+      : `${basePrefix}/api/traces`;
     const response = await fetch(tracesUrl);
     if (!response.ok) {
       const error = await response.json();
@@ -128,7 +128,7 @@ export const api = {
     const basePrefix = getBasePrefix();
     const tracesUrl = fpxEndpointHost
       ? `${fpxEndpointHost}/v1/traces/${id}/spans`
-      : `${basePrefix}/api/traces/v1/traces/${id}/spans`;
+      : `${basePrefix}/api/traces/${id}/spans`;
 
     const response = await fetch(tracesUrl);
     if (!response.ok) {
