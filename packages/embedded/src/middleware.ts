@@ -11,11 +11,12 @@ export const createMiddleware =
   <E extends Env>(options: EmbeddedOptions): MiddlewareHandler<E> =>
   async (c, next) => {
     const { mountedPath, internalPath } = getPaths(c);
-
+    const fpxEndpoint = getFpxEndpoint(c);
     // Forward request to embedded router, continuing middleware chain if no route matches
     const router = createRouter({
       cdn: options.cdn ?? CDN_URL,
       mountedPath,
+      fpxEndpoint,
       ...options,
     } satisfies ResolvedEmbeddedOptions);
 
@@ -44,4 +45,8 @@ function getPaths(c: Context): { mountedPath: string; internalPath: string } {
     mountedPath,
     internalPath,
   };
+}
+
+function getFpxEndpoint(c: Context): string | undefined {
+  return c?.env?.FPX_ENDPOINT;
 }

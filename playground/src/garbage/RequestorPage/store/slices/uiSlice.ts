@@ -27,6 +27,17 @@ export const uiSlice: StateCreator<
         return;
       }),
 
+    timelineShowLogs: true,
+    timelineAsTree: true,
+    toggleTimelineAsTree: () =>
+      set((state) => {
+        state.timelineAsTree = !state.timelineAsTree;
+      }),
+    toggleTimelineLogs: () =>
+      set((state) => {
+        state.timelineShowLogs = !state.timelineShowLogs;
+      }),
+
     shortcutsOpen: false,
     setShortcutsOpen: (open: boolean) =>
       set((state) => {

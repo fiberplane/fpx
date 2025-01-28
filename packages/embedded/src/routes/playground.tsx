@@ -1,6 +1,3 @@
-// /** @jsx jsx */
-// /** @jsxImportSource hono/jsx */
-// import { jsx } from "hono/jsx";
 import { Hono } from "hono";
 import type { SanitizedEmbeddedOptions } from "../types.js";
 

@@ -33,7 +33,7 @@
     "jose": "^5.9.6",
     "tsx": "^4.19.2",
     "vitest": "^2.1.6",
-    "zod": "^3.23.8"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

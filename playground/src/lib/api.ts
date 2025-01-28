@@ -1,4 +1,9 @@
 import type { ApiResponse, Workflow } from "@/types";
+import {
+  type TraceDetailSpansResponse,
+  TraceListResponseSchema,
+  TraceSummarySchema,
+} from "@fiberplane/fpx-types";
 
 function getBasePrefix(): string {
   // if we're running on localhost directly - skip this
@@ -98,5 +103,36 @@ export const api = {
       const error = await response.json();
       throw new Error(error.message);
     }
+  },
+
+  getTraces: async (fpxEndpoint: string) => {
+    const response = await fetch(fpxEndpoint);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+    const data = await response.json();
+    return {
+      data: TraceListResponseSchema.parse(data),
+    };
+  },
+
+  getTrace: async (
+    fpxEndpoint: string,
+    id: string,
+  ): Promise<ApiResponse<TraceDetailSpansResponse>> => {
+    const response = await fetch(`${fpxEndpoint}/${id}/spans`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+    const data = await response.json();
+    const aaagagagag = TraceSummarySchema.parse({
+      traceId: id,
+      spans: data,
+    });
+    return {
+      data: aaagagagag.spans,
+    };
   },
 };

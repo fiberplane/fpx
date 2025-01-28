@@ -1,10 +1,12 @@
 import { KeyValueTable } from "@/components/KeyValueTableV2";
 import { Method } from "@/components/Method";
+import { FailedRequest, ResponseBody } from "@/components/ResponseBody";
 import { StatusCode } from "@/components/StatusCode";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
 import { Icon } from "@iconify/react";
+import { Link } from "@tanstack/react-router";
 import { memo } from "react";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { ProxiedRequestResponse } from "../queries";
@@ -14,7 +16,6 @@ import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
 } from "../store/types";
-import { FailedRequest, ResponseBody } from "./ResponseBody";
 
 type Props = {
   isLoading: boolean;
@@ -78,6 +79,7 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
             EmptyState={<NoResponse />}
           >
             <div className={cn("grid grid-rows-[auto_1fr]")}>
+              <TraceBanner activeResponse={responseToRender} />
               <ResponseBody
                 response={responseToRender}
                 // HACK - To support absolutely positioned bottom toolbar
@@ -210,5 +212,39 @@ function LoadingResponseBody() {
       </div>
       <Skeleton className="w-full h-32 mt-2" />
     </>
+  );
+}
+
+function TraceBanner({
+  activeResponse,
+}: {
+  activeResponse: ProxiedRequestResponse | RequestorActiveResponse | undefined;
+}) {
+  // HACK - To appease crufty types from Studio... we don't have proxied request/responses in Playground yet
+  if (!isRequestorActiveResponse(activeResponse)) {
+    return null;
+  }
+  if (!activeResponse?.traceId) {
+    return null;
+  }
+  return (
+    <div className="flex items-center min-h-10 bg-info/10 border-info/20 border rounded-lg mb-2 group transition-all hover:bg-info/15">
+      <Link
+        to={"/traces/$traceId"}
+        params={{ traceId: activeResponse.traceId }}
+        className="flex items-center gap-3 px-4 py-2.5 w-full"
+      >
+        <div className="rounded-full bg-info/15 p-1.5 group-hover:bg-info/25 transition-colors">
+          <Icon icon="lucide:activity" className="w-3.5 h-3.5 text-info" />
+        </div>
+        <span className="text-sm font-medium text-info">
+          Trace data available
+        </span>
+        <Icon
+          icon="lucide:chevron-right"
+          className="w-4 h-4 text-info/50 ml-auto group-hover:translate-x-0.5 transition-transform"
+        />
+      </Link>
+    </div>
   );
 }

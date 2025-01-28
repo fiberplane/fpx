@@ -6,6 +6,7 @@ import {
 import type { IExportTraceServiceRequest } from "@opentelemetry/otlp-transformer";
 import { and, desc, sql } from "drizzle-orm";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import * as schema from "../db/schema.js";
 import { fromCollectorRequest } from "../lib/otel/index.js";
 import { getSetting } from "../lib/settings/index.js";
@@ -22,7 +23,7 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
  *
  * This powers the table of traces in the UI.
  */
-app.get("/v1/traces", async (ctx) => {
+app.get("/v1/traces", cors(), async (ctx) => {
   const db = ctx.get("db");
 
   const fpxWorker = await getSetting(db, "fpxWorkerProxy");
@@ -68,7 +69,7 @@ app.get("/v1/traces", async (ctx) => {
  *
  * This powers the details page of a trace in the UI.
  */
-app.get("/v1/traces/:traceId/spans", async (ctx) => {
+app.get("/v1/traces/:traceId/spans", cors(), async (ctx) => {
   const traceId = ctx.req.param("traceId");
 
   const db = ctx.get("db");

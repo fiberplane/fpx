@@ -1,8 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { workflowsQueryOptions } from "@/lib/hooks/useWorkflows";
-import { PlusIcon } from "@radix-ui/react-icons";
-import { Outlet, createFileRoute } from "@tanstack/react-router";
-import { Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { NewWorkflow } from "./workflow.new";
 
 export const Route = createFileRoute("/workflow/")({
