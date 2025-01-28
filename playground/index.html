@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/fp-logo-fav.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fiberplane Playground</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      const options = {
+        mountedPath: "/",
+         openapi: {
+          url: "http://localhost:8787/openapi.json",
+        },
+      };
+      document.getElementById("root").dataset.options = JSON.stringify(options);
+    </script>
+  </body>
+</html>
