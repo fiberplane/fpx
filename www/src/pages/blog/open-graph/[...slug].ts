@@ -23,8 +23,8 @@ export const { getStaticPaths, GET } = OGImageRoute({
     },
     padding: 40,
     fonts: [
-      "./src/pages/blog/open-graph/_fonts/Geist-Light.ttf",
-      "./src/pages/blog/open-graph/_fonts/InstrumentSans-SemiBold.ttf"
+      "./src/assets/_fonts/Geist-Light.ttf",
+      "./src/assets/_fonts/InstrumentSans-SemiBold.ttf"
     ]
   })
 });
