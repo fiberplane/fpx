@@ -10,7 +10,7 @@ pub mod system;
 
 /// FPX - Super-charge your local development.
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command(name = "fpx", version)]
 pub struct Args {
     #[command(subcommand)]
     command: Command,
