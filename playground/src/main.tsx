@@ -14,7 +14,7 @@ if (rootElement === null) {
 
 // NOTE: Mounted path defines which path the whole playground is mounted on. The
 // client router needs to know this so it can generate correct links
-const { mountedPath, openapi } = JSON.parse(
+const { mountedPath, openapi, fpxEndpoint } = JSON.parse(
   rootElement.dataset.options as string,
 ) as {
   mountedPath: string;
@@ -22,13 +22,14 @@ const { mountedPath, openapi } = JSON.parse(
     url?: string;
     content?: string;
   };
+  fpxEndpoint?: string;
 };
 
 const queryClient = new QueryClient();
 const router = createRouter({
   routeTree,
   basepath: mountedPath,
-  context: { queryClient, openapi },
+  context: { queryClient, openapi, fpxEndpoint },
   defaultPreload: "viewport",
 });
 

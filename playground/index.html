@@ -12,9 +12,12 @@
     <script>
       const options = {
         mountedPath: "/",
-         openapi: {
+        // Assumes you have a local server running on :8787 with the OpenAPI spec exposed at /openapi.json
+        openapi: {
           url: "http://localhost:8787/openapi.json",
         },
+        // Assumes you have Fiberplane Studio running as a sidecar to ingest traces on :8788
+        fpxEndpoint: "http://localhost:8788/v1/traces",
       };
       document.getElementById("root").dataset.options = JSON.stringify(options);
     </script>

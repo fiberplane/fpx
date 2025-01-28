@@ -6,6 +6,7 @@ export interface EmbeddedOptions {
 
 export interface ResolvedEmbeddedOptions extends EmbeddedOptions {
   mountedPath: string;
+  fpxEndpoint?: string;
 }
 
 export interface SanitizedEmbeddedOptions

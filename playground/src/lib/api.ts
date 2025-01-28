@@ -105,8 +105,8 @@ export const api = {
     }
   },
 
-  getTraces: async () => {
-    const response = await fetch(`${getTraceBaseUrl()}`);
+  getTraces: async (fpxEndpoint: string) => {
+    const response = await fetch(fpxEndpoint);
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message);
@@ -118,9 +118,10 @@ export const api = {
   },
 
   getTrace: async (
+    fpxEndpoint: string,
     id: string,
   ): Promise<ApiResponse<TraceDetailSpansResponse>> => {
-    const response = await fetch(`${getTraceBaseUrl()}/${id}/spans`);
+    const response = await fetch(`${fpxEndpoint}/${id}/spans`);
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message);
@@ -135,7 +136,3 @@ export const api = {
     };
   },
 };
-
-function getTraceBaseUrl() {
-  return "http://localhost:8788/v1/traces";
-}
