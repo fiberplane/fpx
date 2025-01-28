@@ -1,5 +1,6 @@
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
+import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useStudioStore } from "../../store";
@@ -15,15 +16,7 @@ export function RoutesPanel() {
     setActiveRoute,
   } = useStudioStore("appRoutes", "activeRoute", "setActiveRoute");
 
-  // const navigate = useNavigate();
-
   const handleRouteClick = useHandler((route: ProbedRoute) => {
-    // navigate(
-    //   {
-    //     pathname: "/",
-    //   },
-    //   { replace: true },
-    // );
     setActiveRoute(route);
   });
 
@@ -33,6 +26,7 @@ export function RoutesPanel() {
     if (cleanFilter.length < 3) {
       return routes;
     }
+
     return routes.filter((r) => r.path.toLowerCase().includes(cleanFilter));
   }, [filterValue, routes]);
 
@@ -97,10 +91,21 @@ export function RoutesPanel() {
     }
   });
 
+  const navigate = useNavigate();
+
   const handleItemSelect = (index: number) => {
-    if (allRoutes[index]) {
-      // handleRouteClick(allRoutes[index]);
+    const route = allRoutes[index];
+    if (!route) {
+      return;
     }
+
+    navigate({
+      to: ".",
+      search: {
+        method: allRoutes[index].method,
+        uri: allRoutes[index].path,
+      },
+    });
   };
 
   return (

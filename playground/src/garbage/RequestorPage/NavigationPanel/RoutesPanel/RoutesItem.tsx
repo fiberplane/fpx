@@ -1,4 +1,5 @@
 import { cn, getHttpMethodTextColor } from "@/utils";
+import { Link } from "@tanstack/react-router";
 import { memo, useEffect, useRef } from "react";
 import type { ProbedRoute } from "../../types";
 
@@ -7,19 +8,12 @@ type RoutesItemProps = {
   route: ProbedRoute;
   activeRoute: ProbedRoute | null;
   selectedRoute: ProbedRoute | null;
-  handleRouteClick: (route: ProbedRoute) => void;
   setSelectedRouteIndex: (index: number | null) => void;
 };
 
 export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
-  const {
-    index,
-    route,
-    activeRoute,
-    selectedRoute,
-    handleRouteClick,
-    setSelectedRouteIndex,
-  } = props;
+  const { index, route, activeRoute, selectedRoute, setSelectedRouteIndex } =
+    props;
 
   const method = route.method;
   const isSelected =
@@ -29,7 +23,7 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
   const isActive =
     activeRoute === route ||
     (route.path === activeRoute?.path && route.method === activeRoute.method);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const buttonRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
     if (isSelected && buttonRef.current) {
@@ -38,10 +32,11 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
   }, [isSelected]);
 
   return (
-    <button
+    <Link
       ref={buttonRef}
+      to="."
+      search={{ method, uri: route.path }}
       type="button"
-      onClick={() => handleRouteClick(route)}
       onFocus={() => setSelectedRouteIndex(index)}
       onBlur={() => setSelectedRouteIndex(null)}
       onMouseEnter={() => setSelectedRouteIndex(null)}
@@ -70,6 +65,6 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
       <span className="overflow-hidden text-ellipsis whitespace-nowrap block">
         {route.path}
       </span>
-    </button>
+    </Link>
   );
 });
