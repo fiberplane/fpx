@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useSettingsOpen } from "@/hooks";
 import { Icon } from "@iconify/react";
 import {
   Dialog,
@@ -10,10 +11,9 @@ import {
 } from "@radix-ui/react-dialog";
 import { SettingsPage } from "../../garbage/RequestorPage/Settings/SettingsPage";
 
-export function SettingsScreen({
-  settingsOpen,
-  setSettingsOpen,
-}: { settingsOpen: boolean; setSettingsOpen: (open: boolean) => void }) {
+export function SettingsScreen() {
+  const { setSettingsOpen, settingsOpen } = useSettingsOpen();
+
   return (
     <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
       <DialogPortal>

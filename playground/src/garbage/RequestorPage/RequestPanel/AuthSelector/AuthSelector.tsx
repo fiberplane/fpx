@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useSettingsOpen } from "@/hooks";
 import { KeyRoundIcon, PlusIcon } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import {
@@ -10,14 +11,13 @@ import { AuthorizationItem } from "./AuthorizationItem";
 import { AuthorizationOption } from "./AuthorizationOption";
 
 export function AuthSelector() {
-  const { authorizations, setAuthorizationId, setSettingsOpen } =
-    useStudioStore(
-      "authorizations",
-      "authorizationId",
-      "setAuthorizationId",
-      "setSettingsOpen",
-    );
+  const { authorizations, setAuthorizationId } = useStudioStore(
+    "authorizations",
+    "authorizationId",
+    "setAuthorizationId",
+  );
 
+  const { setSettingsOpen } = useSettingsOpen();
   const preferredAuthorizationId = useStudioStoreRaw(
     useShallow((state) =>
       getPreferredAuthorizationId(state.authorizationId, state.authorizations),

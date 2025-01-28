@@ -86,9 +86,7 @@ export interface TabsSlice {
 export type PanelState = "open" | "closed";
 
 export interface UISlice {
-  settingsOpen: boolean;
   defaultSettingsTab: string | null;
-  setSettingsOpen: (open: boolean, defaultSettingsTab?: string | null) => void;
   sidePanel: PanelState;
   togglePanel: (panelName: "sidePanel") => void;
   shortcutsOpen: boolean;

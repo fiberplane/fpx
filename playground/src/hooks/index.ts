@@ -10,3 +10,4 @@ export { useShake } from "./useShake";
 export { useStickyLoading } from "./useStickyLoading";
 export { useTimeAgo } from "./useTimeAgo";
 export { useOrphanLogs } from "./useOrphanLogs";
+export { useSettingsOpen } from "./useSettingsOpen";
