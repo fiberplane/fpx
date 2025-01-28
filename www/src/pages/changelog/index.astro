@@ -23,7 +23,16 @@ const changelogEntries = await Promise.all(
     title: "Changelog",
     description: "Fiberplane Studio changelog",
     template: "doc",
-    tableOfContents: false
+    tableOfContents: false,
+    head: [
+      {
+        tag: "meta",
+        attrs: {
+          property: "og:image",
+          content: "https://fiberplane.com/changelog/open-graph/changelog.png"
+        }
+      }
+    ]
   }}
 >
   {
