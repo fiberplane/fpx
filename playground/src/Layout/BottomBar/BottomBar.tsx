@@ -4,7 +4,7 @@ import { FloatingSidePanel } from "../SidePanel";
 import { SidePanelTrigger } from "../SidePanel";
 
 export function BottomBar() {
-  const { setSettingsOpen, settingsOpen } = useSettingsOpen();
+  const { setSettingsOpen } = useSettingsOpen();
   return (
     <nav className="gap-4 bg-muted/50 py-2">
       <div className="flex justify-between px-2 items-center">
@@ -14,10 +14,6 @@ export function BottomBar() {
             <SettingsMenu setSettingsOpen={setSettingsOpen} />
           </div>
           <FloatingSidePanel />
-          <SettingsScreen
-            settingsOpen={settingsOpen}
-            setSettingsOpen={setSettingsOpen}
-          />
         </div>
 
         <div className="flex items-center gap-2">

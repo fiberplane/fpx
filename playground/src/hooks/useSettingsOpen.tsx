@@ -7,17 +7,21 @@ export function useSettingsOpen() {
   const { settings = false } = Route.useSearch();
 
   const setSettingsOpen = useHandler((open: boolean) => {
+    if (open === settings) {
+      return;
+    }
+
     navigate({
       to: ".",
       search: (value) => {
         const { settings, ...rest } = value;
-        if (value) {
-          // rest['settings'] = open;
+        if (open) {
           return {
             ...rest,
             settings: open,
           };
         }
+
         return rest;
       },
       replace: true,
