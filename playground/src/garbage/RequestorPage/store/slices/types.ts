@@ -95,6 +95,8 @@ export interface UISlice {
   timelineAsTree: boolean;
   toggleTimelineLogs: () => void;
   toggleTimelineAsTree: () => void;
+  settingsOpen: boolean;
+  setSettingsOpen: (open: boolean, defaultSettingsTab: string | null) => void;
 }
 
 export type StudioState = RequestResponseSlice &
