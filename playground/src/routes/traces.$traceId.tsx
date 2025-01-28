@@ -13,11 +13,11 @@ export const Route = createFileRoute("/traces/$traceId")({
   }),
   component: TraceDetail,
   loader: async ({
-    context: { queryClient, fpxEndpoint },
+    context: { queryClient, fpxEndpointHost },
     params: { traceId },
   }) => {
     const response = await queryClient.ensureQueryData(
-      traceQueryOptions(fpxEndpoint ?? "", traceId),
+      traceQueryOptions(fpxEndpointHost ?? "", traceId),
     );
     return { trace: { traceId, spans: response.data } };
   },

@@ -105,8 +105,8 @@ export const api = {
     }
   },
 
-  getTraces: async (fpxEndpoint: string) => {
-    const response = await fetch(fpxEndpoint);
+  getTraces: async (fpxEndpointHost: string) => {
+    const response = await fetch(`${fpxEndpointHost}/v1/traces`);
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message);
@@ -118,10 +118,10 @@ export const api = {
   },
 
   getTrace: async (
-    fpxEndpoint: string,
+    fpxEndpointHost: string,
     id: string,
   ): Promise<ApiResponse<TraceDetailSpansResponse>> => {
-    const response = await fetch(`${fpxEndpoint}/${id}/spans`);
+    const response = await fetch(`${fpxEndpointHost}/v1/traces/${id}/spans`);
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message);

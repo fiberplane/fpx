@@ -8,25 +8,28 @@ import { api } from "../api";
 
 export const TRACES_KEY = "traces";
 
-export const tracesQueryOptions = (fpxEndpoint: string) => ({
+export const tracesQueryOptions = (fpxEndpointHost: string) => ({
   queryKey: [TRACES_KEY],
-  queryFn: () => api.getTraces(fpxEndpoint),
+  queryFn: () => api.getTraces(fpxEndpointHost),
   // TODO - use TraceListResponseSchema to parse response
   select: (response: ApiResponse<TraceListResponse>) => response.data,
-  enabled: !!fpxEndpoint,
+  enabled: !!fpxEndpointHost,
 });
 
-export function useTraces(fpxEndpoint: string) {
-  return useQuery(tracesQueryOptions(fpxEndpoint));
+export function useTraces(fpxEndpointHost: string) {
+  return useQuery(tracesQueryOptions(fpxEndpointHost));
 }
 
-export const traceQueryOptions = (fpxEndpoint: string, traceId: string) => ({
+export const traceQueryOptions = (
+  fpxEndpointHost: string,
+  traceId: string,
+) => ({
   queryKey: [TRACES_KEY, traceId],
-  queryFn: () => api.getTrace(fpxEndpoint, traceId),
+  queryFn: () => api.getTrace(fpxEndpointHost, traceId),
   select: (response: ApiResponse<TraceDetailSpansResponse>) => response.data,
-  enabled: !!fpxEndpoint && !!traceId,
+  enabled: !!fpxEndpointHost && !!traceId,
 });
 
-export function useTrace(fpxEndpoint: string, id: string) {
-  return useQuery(traceQueryOptions(fpxEndpoint, id));
+export function useTrace(fpxEndpointHost: string, id: string) {
+  return useQuery(traceQueryOptions(fpxEndpointHost, id));
 }

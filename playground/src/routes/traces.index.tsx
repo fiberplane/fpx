@@ -1,3 +1,4 @@
+import { TextOrJsonViewer } from "@/components/ResponseBody";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Collapsible,
@@ -7,15 +8,16 @@ import {
 import { tracesQueryOptions } from "@/lib/hooks/useTraces";
 import { cn } from "@/lib/utils";
 import type { Trace } from "@/types";
+import { parseEmbeddedConfig } from "@/utils";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/traces/")({
   component: TracesOverview,
-  loader: async ({ context: { queryClient, fpxEndpoint } }) => {
+  loader: async ({ context: { queryClient, fpxEndpointHost } }) => {
     const response = await queryClient.ensureQueryData(
-      tracesQueryOptions(fpxEndpoint ?? ""),
+      tracesQueryOptions(fpxEndpointHost ?? ""),
     );
     return { traces: response.data };
   },
@@ -123,47 +125,10 @@ export function ErrorBoundary(props: {
 }) {
   const { error } = props;
   const [isOpen, setIsOpen] = useState(false);
-  const { fpxEndpoint, mountedPath, openapi, parseError } = useMemo(() => {
-    try {
-      const rootElement = document.getElementById("root");
-      if (!rootElement) {
-        return {
-          fpxEndpoint: null,
-          mountedPath: null,
-          openapi: null,
-          parseError: { message: "Root element not found" },
-        };
-      }
-
-      const { fpxEndpoint, mountedPath, openapi } = JSON.parse(
-        rootElement.dataset.options as string,
-      ) as {
-        mountedPath: string;
-        openapi?: {
-          url?: string;
-          content?: string;
-        };
-        fpxEndpoint?: string;
-      };
-
-      return {
-        fpxEndpoint,
-        mountedPath,
-        openapi,
-        parseError: null,
-      };
-    } catch (parseError) {
-      return {
-        fpxEndpoint: null,
-        mountedPath: null,
-        openapi: null,
-        parseError,
-      };
-    }
-  }, []);
+  const { fpxEndpointHost, mountedPath, openapi, parseError } = useDebugInfo();
 
   let message = "Make sure you have a Fiberplane sidecar running";
-  if (!fpxEndpoint) {
+  if (!fpxEndpointHost) {
     message = "Fiberplane tracing endpoint is not set";
   } else if (error) {
     message = error.message;
@@ -190,9 +155,11 @@ export function ErrorBoundary(props: {
               <Card className="bg-muted/50">
                 <CardContent className="p-3">
                   <p className="mb-1 text-xs font-medium text-muted-foreground">
-                    FPX_ENDPOINT
+                    Tracing Endpoint Host
                   </p>
-                  <code className="text-sm">{fpxEndpoint}</code>
+                  <code className="text-sm">
+                    {fpxEndpointHost ?? "not found"}
+                  </code>
                 </CardContent>
               </Card>
               <Card className="bg-muted/50">
@@ -208,9 +175,7 @@ export function ErrorBoundary(props: {
                   <p className="mb-1 text-xs font-medium text-muted-foreground">
                     OPENAPI
                   </p>
-                  <code className="text-sm whitespace-pre-wrap">
-                    {JSON.stringify(openapi, null, 2)}
-                  </code>
+                  <TextOrJsonViewer text={JSON.stringify(openapi, null, 2)} />
                 </CardContent>
               </Card>
               <Card className="bg-muted/50">
@@ -223,10 +188,54 @@ export function ErrorBoundary(props: {
                   </code>
                 </CardContent>
               </Card>
+              <Card className="bg-muted/50">
+                <CardContent className="p-3">
+                  <p className="mb-1 text-xs font-medium text-muted-foreground">
+                    LOADER_ERROR
+                  </p>
+                  <code className="text-sm whitespace-pre-wrap">
+                    {JSON.stringify(error, null, 2)}
+                  </code>
+                </CardContent>
+              </Card>
             </div>
           </CollapsibleContent>
         </Collapsible>
       </div>
     </div>
   );
+}
+
+type DebugInfo = {
+  fpxEndpointHost: string | undefined | null;
+  mountedPath: string | undefined | null;
+  openapi: Record<string, unknown> | undefined | null;
+  parseError: Error | null | unknown;
+};
+
+function useDebugInfo(): DebugInfo {
+  return useMemo(() => {
+    try {
+      const rootElement = document.getElementById("root");
+      if (!rootElement) {
+        return {
+          fpxEndpointHost: null,
+          mountedPath: null,
+          openapi: null,
+          parseError: { message: "Root element not found" },
+        };
+      }
+      return {
+        ...parseEmbeddedConfig(rootElement),
+        parseError: null,
+      };
+    } catch (parseError) {
+      return {
+        fpxEndpointHost: null,
+        mountedPath: null,
+        openapi: null,
+        parseError,
+      };
+    }
+  }, []);
 }
