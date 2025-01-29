@@ -29,20 +29,6 @@ const { Content, headings } = await entry.render();
       {
         tag: "style",
         content: `:root { --sl-content-width: 700px !important; }`
-      },
-      {
-        tag: "meta",
-        attrs: {
-          property: "og:image",
-          content: `https://fiberplane.com/og/blog/${entry.slug}.png`
-        }
-      },
-      {
-        tag: "meta",
-        attrs: {
-          property: "twitter:image",
-          content: `https://fiberplane.com/og/blog/${entry.slug}.png`
-        }
       }
     ],
     template: "splash"
