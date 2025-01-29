@@ -13,7 +13,6 @@ export const openApiSpecQueryOptions = (
   queryKey: OPENAPI_CACHE_KEY,
   queryFn: async () => {
     if (openapi?.content) {
-      console.log("openapi context in queryFn...", openapi);
       return JSON.stringify(openapi.content);
     }
 
