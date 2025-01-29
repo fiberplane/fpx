@@ -5,4 +5,4 @@ export function useCreateReport() {
   return useMutation({
     mutationFn: api.createReport,
   });
-} 
+}

@@ -2,6 +2,14 @@ import { KeyValueTable } from "@/components/KeyValueTableV2";
 import { Method } from "@/components/Method";
 import { FailedRequest, ResponseBody } from "@/components/ResponseBody";
 import { StatusCode } from "@/components/StatusCode";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
@@ -15,8 +23,6 @@ import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
 } from "../store/types";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ReportErrorForm } from "./ReportErrorForm";
 
 type Props = {
@@ -241,7 +247,10 @@ function ErrorBanner({
         <div className="flex items-center min-h-10 bg-destructive/10 border-destructive/20 border rounded-lg mb-2 group transition-all hover:bg-destructive/15 cursor-pointer">
           <div className="flex items-center gap-3 px-4 py-2.5 w-full">
             <div className="rounded-full bg-destructive/15 p-1.5 group-hover:bg-destructive/25 transition-colors">
-              <Icon icon="lucide:alert-circle" className="w-3.5 h-3.5 text-destructive" />
+              <Icon
+                icon="lucide:alert-circle"
+                className="w-3.5 h-3.5 text-destructive"
+              />
             </div>
             <span className="text-sm font-medium text-destructive">
               {errorType} - Status {statusCode}

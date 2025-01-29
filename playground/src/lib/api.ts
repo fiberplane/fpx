@@ -153,11 +153,11 @@ export const api = {
       },
       body: JSON.stringify(data),
     });
-    
+
     if (!response.ok) {
       throw new Error("Failed to make request");
     }
-    
+
     return response.json();
   },
 

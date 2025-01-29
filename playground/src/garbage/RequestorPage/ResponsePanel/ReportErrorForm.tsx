@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateReport } from "@/lib/hooks/useReport";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -63,4 +69,4 @@ export function ReportErrorForm({ traceId, onSuccess }: Props) {
       </form>
     </Form>
   );
-} 
+}
