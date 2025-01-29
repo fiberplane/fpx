@@ -144,4 +144,41 @@ export const api = {
       data: aaagagagag.spans,
     };
   },
+
+  post: async <T>(path: string, data: unknown): Promise<T> => {
+    const response = await fetch(path, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      throw new Error("Failed to make request");
+    }
+    
+    return response.json();
+  },
+
+  createReport: async (data: {
+    traceId: string;
+    description: string;
+  }): Promise<ApiResponse<void>> => {
+    const basePrefix = getBasePrefix();
+    const response = await fetch(`${basePrefix}/api/report/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
+  },
 };

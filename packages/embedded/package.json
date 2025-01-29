@@ -1,6 +1,6 @@
 {
   "name": "@fiberplane/embedded",
-  "version": "0.0.28",
+  "version": "0.0.29-alpha.0",
   "type": "module",
   "exports": {
     ".": {
@@ -23,13 +23,15 @@
     "build": "tsc",
     "format": "biome check . --write",
     "lint": "biome lint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "watch": "nodemon --watch src --ext ts,js,json --exec \"pnpm run build\""
   },
   "devDependencies": {
     "@types/node": "*",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "hono": "^4.6.12",
+    "nodemon": "^3.1.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
