@@ -29,7 +29,8 @@ const router = createRouter({
   routeTree,
   basepath: mountedPath,
   context: { queryClient, openapi },
-  defaultPreload: "viewport",
+  defaultPreload: "intent",
+  defaultPreloadStaleTime: 10 * 1000,
 });
 
 // Provide type safety for the router

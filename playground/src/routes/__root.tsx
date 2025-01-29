@@ -7,15 +7,15 @@ import React from "react";
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
   openapi:
-    | {
-        url?: string;
-        content?: string;
-      }
-    | undefined;
+  | {
+    url?: string;
+    content?: string;
+  }
+  | undefined;
 }>()({
   component: RootComponent,
   // NOTE - I am getting the feeling this executes many many times
-  beforeLoad: async ({ context }) => {
+  loader: async ({ context }) => {
     if (context.openapi?.url) {
       const content = await fetch(context.openapi.url).then((res) =>
         res.text(),
@@ -25,6 +25,11 @@ export const Route = createRootRouteWithContext<{
       }
     }
   },
+  // gcTime: 10 * 60 * 1000,
+  // preloadStaleTime: 10 * 60 * 1000,
+  staleTime: 10 * 60 * 1000,
+  // : 5 * 1000,
+
   onError: (error) => {
     console.error("Error loading openapi spec", error);
   },
@@ -73,21 +78,21 @@ export const TanStackRouterDevtools =
   process.env.NODE_ENV === "production"
     ? () => null // Render nothing in production
     : React.lazy(() =>
-        // Lazy load in development
-        import("@tanstack/router-devtools").then((res) => ({
-          default: res.TanStackRouterDevtools,
-          // For Embedded Mode
-          // default: res.TanStackRouterDevtoolsPanel
-        })),
-      );
+      // Lazy load in development
+      import("@tanstack/router-devtools").then((res) => ({
+        default: res.TanStackRouterDevtools,
+        // For Embedded Mode
+        // default: res.TanStackRouterDevtoolsPanel
+      })),
+    );
 
 // NOTE - Only exported to avoid typescript errors during compilation when this is commented out
 export const ReactQueryDevtools =
   process.env.NODE_ENV === "production"
     ? () => null // Render nothing in production
     : React.lazy(() =>
-        // Lazy load in development
-        import("@tanstack/react-query-devtools").then((res) => ({
-          default: res.ReactQueryDevtools,
-        })),
-      );
+      // Lazy load in development
+      import("@tanstack/react-query-devtools").then((res) => ({
+        default: res.ReactQueryDevtools,
+      })),
+    );
