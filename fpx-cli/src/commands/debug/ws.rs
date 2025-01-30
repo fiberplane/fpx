@@ -14,7 +14,8 @@ pub struct Args {
 }
 
 pub async fn handle_command(args: Args) -> Result<()> {
-    let (ws_stream, resp) = tokio_tungstenite::connect_async(&args.endpoint)
+    let url = args.endpoint.as_str();
+    let (ws_stream, resp) = tokio_tungstenite::connect_async(url)
         .await
         .with_context(|| format!("Unable to connect to server at {}", args.endpoint))?;
 
