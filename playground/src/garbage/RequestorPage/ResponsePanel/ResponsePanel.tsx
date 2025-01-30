@@ -53,16 +53,9 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
         onValueChange={setActiveResponsePanelTab}
         className="grid grid-rows-[auto_1fr] overflow-hidden h-full"
       >
-        <CustomTabsList className="">
+        <CustomTabsList className="max-w-full">
           <CustomTabTrigger value="response" className="flex items-center">
-            {responseToRender ? (
-              <ResponseSummary
-                response={responseToRender}
-                transformUrl={removeServiceUrlFromPath}
-              />
-            ) : (
-              "Response"
-            )}
+            Response
           </CustomTabTrigger>
 
           {responseToRender && (
@@ -127,7 +120,15 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
             FailState={<FailedRequest response={responseToRender} />}
             EmptyState={<NoResponse />}
           >
-            <div className={cn("grid grid-rows-[auto_1fr]")}>
+            <div className={cn("grid grid-rows-[auto_auto_1fr]")}>
+              {responseToRender && (
+                <div className="mb-4">
+                  <ResponseSummary
+                    response={responseToRender}
+                    transformUrl={removeServiceUrlFromPath}
+                  />
+                </div>
+              )}
               <ErrorBanner activeResponse={responseToRender} />
               <ResponseBody
                 response={responseToRender}
@@ -244,8 +245,8 @@ function ErrorBanner({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="flex items-center min-h-10 bg-destructive/10 border-destructive/20 border rounded-lg mb-2 group transition-all hover:bg-destructive/15 cursor-pointer">
-          <div className="flex items-center gap-3 px-4 py-2.5 w-full">
+        <div className="flex items-center min-h-9 bg-destructive/10 border-destructive/20 border rounded-lg mb-4 group transition-all hover:bg-destructive/15">
+          <div className="flex items-center gap-3 px-3 pt-2 pb-2.5 w-full">
             <div className="rounded-full bg-destructive/15 p-1.5 group-hover:bg-destructive/25 transition-colors">
               <Icon
                 icon="lucide:alert-circle"
@@ -255,7 +256,11 @@ function ErrorBanner({
             <span className="text-sm font-medium text-destructive">
               {errorType} - Status {statusCode}
             </span>
-            <Button variant="ghost" size="sm" className="ml-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-auto hover:bg-destructive/50"
+            >
               Report Issue
             </Button>
           </div>

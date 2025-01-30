@@ -1,4 +1,8 @@
 import { TextOrJsonViewer } from "@/components/ResponseBody";
+import {
+  type RequestInfo,
+  ResponseSummaryContainer,
+} from "@/components/ResponseSummary";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Collapsible,
@@ -9,6 +13,12 @@ import { tracesQueryOptions } from "@/lib/hooks/useTraces";
 import { cn } from "@/lib/utils";
 import type { Trace } from "@/types";
 import { parseEmbeddedConfig } from "@/utils";
+import {
+  getRequestMethod,
+  getRequestUrl,
+  getStatusCode,
+  isIncomingRequestSpan,
+} from "@/utils/otel-helpers";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -47,10 +57,24 @@ function TracesOverview() {
       <h2 className="mb-4 text-lg font-medium">
         Traces ({traces.length} total)
       </h2>
-      <div className="grid gap-4">
+      <div className="grid gap-2">
         {traces.map((trace: Trace) => {
-          const rootSpan = trace.spans[0];
+          const rootSpan = trace.spans.find((span) =>
+            isIncomingRequestSpan(span),
+          );
           if (!rootSpan) {
+            return null;
+          }
+
+          const responseStatusCode = getStatusCode(rootSpan) || 200;
+          const response: RequestInfo = {
+            requestMethod: getRequestMethod(rootSpan) || "GET",
+            requestUrl: getRequestUrl(rootSpan) || "",
+            responseStatusCode,
+          };
+
+          // Skip traces that don't have HTTP info
+          if (!response.requestMethod || !response.requestUrl) {
             return null;
           }
 
@@ -62,53 +86,15 @@ function TracesOverview() {
               className="block transition-colors hover:no-underline"
             >
               <Card className="transition-colors hover:bg-muted/50">
-                <CardContent className="p-4">
-                  <div className="grid gap-2">
-                    <div className="flex items-center justify-between">
-                      <div className="grid gap-1">
-                        <p className="font-medium">{rootSpan.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          ID: {trace.traceId}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {trace.spans.length} spans
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(rootSpan.start_time).toLocaleString()}
-                        </p>
-                        <p
-                          className={cn(
-                            "text-sm font-medium",
-                            rootSpan.status?.code === 2 && "text-destructive",
-                            rootSpan.status?.code === 1 && "text-green-600",
-                          )}
-                        >
-                          {rootSpan.status?.message}
-                        </p>
-                      </div>
+                <CardContent className="p-3">
+                  <div className="space-y-2">
+                    <ResponseSummaryContainer response={response} dimmed />
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{trace.spans.length} spans</span>
+                      <span>
+                        {new Date(rootSpan.start_time).toLocaleString()}
+                      </span>
                     </div>
-                    {Object.entries(rootSpan.attributes).length > 0 && (
-                      <div className="grid gap-1 pt-2 mt-2 text-sm border-t">
-                        {Object.entries(rootSpan.attributes)
-                          .slice(0, 3)
-                          .map(([key, value]) => (
-                            <div key={key} className="grid grid-cols-2">
-                              <p className="font-medium">{key}:</p>
-                              <p className="text-muted-foreground">
-                                {String(value)}
-                              </p>
-                            </div>
-                          ))}
-                        {Object.entries(rootSpan.attributes).length > 3 && (
-                          <p className="text-xs text-muted-foreground">
-                            +{Object.entries(rootSpan.attributes).length - 3}{" "}
-                            more attributes
-                          </p>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
