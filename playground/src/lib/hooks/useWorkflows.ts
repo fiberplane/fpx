@@ -2,7 +2,6 @@ import type { ApiResponse, Workflow } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { api } from "../api";
-import { useWorkflowStore } from "../workflowStore";
 
 export const WORKFLOWS_KEY = "workflows";
 
@@ -86,35 +85,44 @@ export interface ExecuteStepResult {
 }
 
 export function useExecuteStep() {
-  return useMutation<
-    ExecuteStepResult,
-    Error,
-    ExecuteStepParams,
-    { stepId: string }
-  >({
-    mutationKey: ['executeStep'] as const,
-    mutationFn: async ({ stepId, url, method, body, headers = {} }) => {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          ...headers
-        },
-        body: body && JSON.stringify(body)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Request failed');
-      }
-
-      return {
+  return useMutation(
+    // <
+    //   ExecuteStepResult,
+    //   Error,
+    //   ExecuteStepParams,
+    //   { stepId: string }
+    // >
+    {
+      mutationKey: ["executeStep"] as const,
+      mutationFn: async ({
         stepId,
-        data,
-        headers: Object.fromEntries(response.headers.entries()),
-        status: response.status
-      };
-    }
-  });
+        url,
+        method,
+        body,
+        headers = {},
+      }: ExecuteStepParams) => {
+        const response = await fetch(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            ...headers,
+          },
+          body: body && JSON.stringify(body),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Request failed");
+        }
+
+        return {
+          stepId,
+          data,
+          headers: Object.fromEntries(response.headers.entries()),
+          status: response.status,
+        };
+      },
+    },
+  );
 }

@@ -6,7 +6,9 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/traces/")({
   component: TracesOverview,
+  staleTime: 1000,
   loader: async ({ context: { queryClient } }) => {
+    console.log("my loader");
     const response = await queryClient.ensureQueryData(tracesQueryOptions());
     return { traces: response.data };
   },

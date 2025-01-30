@@ -1,10 +1,11 @@
-import { Route } from "@/routes";
 import { useHandler } from "@fiberplane/hooks";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 
 export function useSettingsOpen() {
   const navigate = useNavigate();
-  const { settings = false } = Route.useSearch();
+  const { settings = false } = useSearch({
+    strict: false,
+  });
 
   const setSettingsOpen = useHandler((open: boolean) => {
     if (open === settings) {

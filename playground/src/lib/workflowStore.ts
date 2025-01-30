@@ -3,6 +3,21 @@ import type { ExecuteStepResult } from "./hooks/useWorkflows";
 
 // Helper function to get nested value from an object using a path string
 function getValueByPath(obj: unknown, path: string): unknown {
+  if (Array.isArray(obj) && path.startsWith("[")) {
+    const index = Number.parseInt(path.match(/\[(\d+)\]/)?.[1] || "", 10);
+    const reconstructedPath = `[${index}]`;
+
+    if (path === reconstructedPath) {
+      return obj[index];
+    }
+
+    let newPath = path.replace(`${reconstructedPath}`, "");
+    if (newPath.startsWith(".")) {
+      newPath = newPath.substring(1);
+    }
+    return getValueByPath(obj[index], newPath);
+  }
+
   if (!obj || typeof obj !== "object") {
     return undefined;
   }
@@ -101,6 +116,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => {
     // Resolution helpers
     resolveRuntimeExpression: (expression: string) => {
       const { inputValues, workflowState, outputValues } = get();
+      // debugger;
 
       if (expression.startsWith("$inputs.")) {
         const inputKey = expression.replace("$inputs.", "");
@@ -113,29 +129,59 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => {
           return expression;
         }
 
-        const stepResult = workflowState[stepId] as ExecuteStepResult | undefined;
+        const stepResult = workflowState[snakeCaseToCamelCase(stepId)] as
+          | ExecuteStepResult
+          | undefined;
         if (!stepResult) {
           return expression;
         }
 
         // Get the path after stepId
-        const path = expression.replace(/^\$steps\.[^.]+\./, '');
-        
+        const path = expression.replace(/^\$steps\.[^.]+\./, "");
+
+        if (path.startsWith("outputs.")) {
+          // console.log('path', path, expression);
+          // return getValueByPath(outputValues, expression) ?? expression;
+          const firstPart = path
+            .replace("outputs.", "")
+            .split(".")[0]
+            .split("[")[0];
+          const simplestExpression = `$steps.${snakeCaseToCamelCase(stepId)}.outputs.${firstPart}`;
+          if (simplestExpression in outputValues) {
+            const value = outputValues[simplestExpression];
+            if (simplestExpression === expression) {
+              return value;
+            }
+
+            return (
+              getValueByPath(
+                value,
+                expression.substring(
+                  simplestExpression.length +
+                    stepId.length -
+                    snakeCaseToCamelCase(stepId).length,
+                ),
+              ) ?? expression
+            );
+          }
+        }
         // For step results, we look in the data property
-        return getValueByPath(stepResult.data, path) ?? expression;
+        return getValueByPath(stepResult, path) ?? expression;
       }
 
       if (expression.startsWith("$response.")) {
         // Extract type (body/headers) and path
         const [type, path] = expression.replace("$response.", "").split("#");
-        
+
         // Find the most recent step result
         const currentStepId = Object.keys(workflowState).pop();
         if (!currentStepId) {
           return expression;
         }
 
-        const stepResult = workflowState[currentStepId] as ExecuteStepResult | undefined;
+        const stepResult = workflowState[currentStepId] as
+          | ExecuteStepResult
+          | undefined;
         if (!stepResult) {
           return expression;
         }
@@ -145,7 +191,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => {
           const dotPath = path?.replace(/^\//, "").replace(/\//g, ".") || "";
           return getValueByPath(stepResult.data, dotPath) ?? expression;
         }
-        
+
         // For headers, just get the header directly
         if (type === "headers") {
           const headerName = path?.replace(/^\//, "") || "";
@@ -164,3 +210,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => {
     },
   };
 });
+
+function snakeCaseToCamelCase(str: string) {
+  return str.replace(/([-_]\w)/g, (g) => g[1].toUpperCase());
+}

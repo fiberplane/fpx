@@ -1,16 +1,26 @@
 import { CodeMirrorInput } from "@/components/CodeMirrorEditor/CodeMirrorInput";
+import { Method } from "@/components/Method";
+import { Button } from "@/components/ui/button";
+import type { OpenAPI } from "openapi-types";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { workflowQueryOptions } from "@/lib/hooks/useWorkflows";
+import type { ExecuteStepResult } from "@/lib/hooks/useWorkflows";
+import { useExecuteStep } from "@/lib/hooks/useWorkflows";
 import { cn } from "@/lib/utils";
 import { useWorkflowStore } from "@/lib/workflowStore";
 import type { Parameter, WorkflowStep } from "@/types";
-import type { ExecuteStepResult } from "@/lib/hooks/useWorkflows";
-import { validate } from "@scalar/openapi-parser";
+import { validate } from "@apidevtools/swagger-parser";
 import { useQuery } from "@tanstack/react-query";
 import {
   createFileRoute,
@@ -20,22 +30,12 @@ import {
 } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
-import { z } from "zod";
-import { Method } from "@/components/Method";
-import type {
-  OpenAPIOperation,
-  OpenApiPathItem,
-  OpenApiSpec,
-} from "@fiberplane/fpx-types";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useExecuteStep } from "@/lib/hooks/useWorkflows";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { z } from "zod";
+import { useShallow } from "zustand/react/shallow";
+import { isOpenApiV2, isOpenApiV3x } from "../lib/isOpenApiV2";
 
+type OpenAPIOperation = OpenAPI.Operation;
 export const Route = createFileRoute("/workflow/$workflowId")({
   validateSearch: z.object({
     stepId: z.string().optional(),
@@ -58,39 +58,71 @@ function WorkflowDetail() {
   const { setInputValue, inputValues } = useWorkflowStore();
   const selectedStep = workflow.steps.find((step) => step.stepId === stepId);
 
-  const { data: validatedOpenApi } = useQuery({
+  const { data: validatedOpenApi, error } = useQuery({
     queryKey: ["openapi", openapi?.content],
     queryFn: async () => {
       if (!openapi?.content) {
         return null;
       }
-      const { valid, schema } = await validate(openapi.content);
-      if (!valid) {
-        throw new Error("Invalid OpenAPI spec");
-      }
-      return schema as OpenApiSpec;
+
+      const docs = JSON.parse(openapi.content) as OpenAPI.Document;
+      return await validate(docs);
     },
     enabled: !!openapi?.content,
+    throwOnError: true,
   });
 
-  // Helper function to get operation details from OpenAPI spec
+  // TODO: Handle error gracefully
+  if (error) {
+    // return <ErrorBoundary error={error} />;
+    return (
+      <div>
+        An error occurred: {error.name}: {error.message}
+      </div>
+    );
+  }
+
   const getOperationDetails = (operationString: string) => {
+    if (
+      !validatedOpenApi
+      // || !isOpenApiV30(validatedOpenApi)
+    ) {
+      return null;
+    }
+
     if (!validatedOpenApi?.paths) {
       return null;
     }
 
     const [method, path] = operationString.split(" ");
-    if (!method || !path) {
-      return null;
-    }
 
-    const pathObj = validatedOpenApi.paths[path] as OpenApiPathItem;
+    const pathObj = validatedOpenApi.paths[path];
     if (!pathObj) {
       return null;
     }
 
-    const operation = pathObj[method.toLowerCase()] as OpenAPIOperation;
-    if (!operation) {
+    type PathObjKeys = keyof typeof pathObj;
+
+    // Assume that method results in a valid key
+    // Also assume that the keys we care about are all lowercase
+    const lowerCaseMethod = method.toLowerCase() as PathObjKeys;
+
+    // Ignore non-methods properties
+    //
+    const ignore =
+      // : Array<Lowercase<PathObjKeys>>
+      ["summary", "$ref", "description", "servers"] as const;
+    if (lowerCaseMethod in ignore) {
+      return null;
+    }
+
+    const operation = pathObj[lowerCaseMethod];
+    if (!operation || typeof operation === "string") {
+      return null;
+    }
+
+    if (Array.isArray(operation)) {
+      // TODO handle array of operations
       return null;
     }
 
@@ -235,29 +267,39 @@ function StepDetails({ step, operationDetails }: StepDetailsProps) {
   const { openapi } = useRouteContext({ from: "__root__" });
   const { data: validatedOpenApi } = useQuery({
     queryKey: ["openapi", openapi?.content],
-    queryFn: async () => {
-      if (!openapi?.content) {
+    queryFn: async (data) => {
+      const content = data.queryKey[1];
+      if (!content) {
         return null;
       }
-      const { valid, schema } = await validate(openapi.content);
-      if (!valid) {
-        throw new Error("Invalid OpenAPI spec");
-      }
-      return schema as OpenApiSpec;
+      return await validate(content);
     },
     enabled: !!openapi?.content,
   });
 
   const addServiceUrlIfBarePath = (path: string) => {
     // OpenAPI 3.0 type includes servers, but the type definition is incomplete
-    interface OpenApiWithServers extends OpenApiSpec {
-      servers?: Array<{ url: string }>;
-    }
-    const baseUrl = (validatedOpenApi as OpenApiWithServers)?.servers?.[0]?.url;
-    if (!baseUrl) {
+    // interface OpenApiWithServers extends OpenApiSpec {
+    //   servers?: Array<{ url: string }>;
+    // }
+    if (!validatedOpenApi) {
       return path;
     }
-    return new URL(path, baseUrl).toString();
+
+    if (isOpenApiV2(validatedOpenApi) && validatedOpenApi.host) {
+      return new URL(path, validatedOpenApi.host).toString();
+    }
+
+    if (
+      isOpenApiV3x(validatedOpenApi) &&
+      validatedOpenApi.servers &&
+      validatedOpenApi.servers?.length > 0
+    ) {
+      const baseUrl = validatedOpenApi.servers[0].url;
+      return new URL(path, baseUrl).toString();
+    }
+
+    return path;
   };
 
   const handleExecute = () => {
@@ -317,12 +359,16 @@ function StepDetails({ step, operationDetails }: StepDetailsProps) {
         onSuccess: (result) => {
           // First store the step result
           setStepResult(step.stepId, result);
-          
+
           // Then resolve outputs in next tick to ensure state is updated
           queueMicrotask(() => {
             for (const output of step.outputs) {
               const resolvedValue = resolveRuntimeExpression(output.value);
-              setOutputValue(output.key, resolvedValue);
+              console.log("updating output value", output.key, resolvedValue);
+              setOutputValue(
+                `$steps.${step.stepId}.outputs.${output.key}`,
+                resolvedValue,
+              );
             }
           });
         },
@@ -335,16 +381,17 @@ function StepDetails({ step, operationDetails }: StepDetailsProps) {
     executeStep.data?.stepId === step.stepId ? executeStep.data : undefined;
   const isLoading =
     executeStep.isPending && executeStep.variables?.stepId === step.stepId;
+
+  const stepError = executeStep.error;
   const errorMessage =
-    executeStep.error instanceof Error
-      ? executeStep.error.message
-      : typeof executeStep.error === "object" &&
-          executeStep.error &&
-          "message" in executeStep.error
-        ? String(executeStep.error.message)
+    stepError === null
+      ? null
+      : stepError instanceof Error
+        ? stepError.message
         : "An unknown error occurred";
 
   const hasUnresolvedParams = step.parameters.some((param) => {
+    console.log("i can haz unresolved?", param.value);
     const value = resolveRuntimeExpression(param.value);
     return value === param.value && param.value.startsWith("$");
   });
@@ -430,7 +477,6 @@ function StepDetails({ step, operationDetails }: StepDetailsProps) {
                 )}
               </div>
 
-              {/* Execution status */}
               {(result || executeStep.error || isLoading) && (
                 <div className="p-4 rounded-md bg-muted">
                   <div className="flex items-center gap-3 mb-3">
@@ -445,30 +491,31 @@ function StepDetails({ step, operationDetails }: StepDetailsProps) {
                     />
                   </div>
 
-                  {/* Error display */}
-                  {executeStep.error && (
+                  {errorMessage && (
                     <div className="p-3 rounded-md bg-destructive/10">
                       <pre className="text-sm text-destructive">
-                        {errorMessage}
+                        {String(errorMessage)}
                       </pre>
                     </div>
                   )}
 
-                  {/* Response data */}
-                  {(result || stepState) && (
+                  {(!!result || !!stepState) && (
                     <div className="overflow-x-auto">
                       <pre className="p-3 text-sm rounded-md bg-background">
                         {responseView === "body"
                           ? String(
                               JSON.stringify(
-                                (stepState as ExecuteStepResult)?.data ?? result?.data,
+                                (stepState as ExecuteStepResult)?.data ??
+                                  result?.data,
                                 null,
                                 2,
                               ),
                             )
                           : String(
                               JSON.stringify(
-                                (stepState as ExecuteStepResult)?.headers ?? result?.headers ?? {},
+                                (stepState as ExecuteStepResult)?.headers ??
+                                  result?.headers ??
+                                  {},
                                 null,
                                 2,
                               ),
@@ -673,10 +720,25 @@ function ParameterItem({ param }: { param: Parameter }) {
   );
 }
 
+const NOT_FOUND = Symbol("NOT_FOUND");
 function OutputItem({ output }: { output: { key: string; value: string } }) {
+  const value = useWorkflowStore(
+    useShallow((state) =>
+      output.key in state.outputValues
+        ? state.outputValues[output.key]
+        : NOT_FOUND,
+    ),
+  );
   return (
     <p className="font-mono text-sm text-muted-foreground">
-      {output.key}: {output.value}
+      {output.key}:
+      {value === NOT_FOUND ? (
+        output.value
+      ) : (
+        <>
+          {String(value)} (based on: {output.value})
+        </>
+      )}
     </p>
   );
 }
