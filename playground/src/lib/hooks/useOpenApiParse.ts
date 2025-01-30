@@ -13,7 +13,7 @@ export function useOpenApiParse(spec: string | undefined) {
 
       const parsed = JSON.parse(spec);
       const result = await validate(parsed);
-      if (result.errors) {
+      if (result.errors?.length) {
         throw new Error(result.errors.join("\n"));
       }
 
