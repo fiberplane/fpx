@@ -14,7 +14,7 @@ export const ogImageOptions: OGImageOptions = {
     fit: "cover"
   },
   logo: {
-    path: "./src/assets/og-logo.png",
+    path: "./src/assets/fp-logo-dark.png",
     size: [534, 100]
   },
   font: {

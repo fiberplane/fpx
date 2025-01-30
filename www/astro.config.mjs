@@ -18,8 +18,10 @@ export default defineConfig({
   integrations: [
     starlight({
       logo: {
-        src: "@/assets/fp-logo.svg",
-        replacesTitle: false
+        dark: "@/assets/fp-logo-dark.png",
+        light: "@/assets/fp-logo-light.png",
+        replacesTitle: true,
+        alt: "Fiberplane icon logo & text"
       },
       title: "Fiberplane",
       description:
