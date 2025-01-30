@@ -1,0 +1,151 @@
+---
+title: "Scaling Up Different Functionalities in a Single Worker using Queues"
+description: Learn how to scale different functions within a single Cloudflare Worker using Queues
+slug: single-worker-using-queues
+date: 2025-01-30
+author: Nele Uhlemann
+tags:
+  - Hono.js
+  - Cloudflare Workers
+  - Web development
+  - asynchronous programming
+  - scaling horizontal
+---
+
+import { LinkCard } from "@astrojs/starlight/components";
+import PackageManagers from "@/components/PackageManagers.astro";
+
+import videoSingleWorkerQueueArchitecture from "../../assets/blog/2025-01-30-single-worker-qeue.mov"
+
+
+In the last blog post, I demonstrated how to decompose the sign-up and send-mail functions into two separate workers. 
+One reason was to use Cloudflare Queues to scale the Workers logically independently. 
+
+Thanks to [Harshil](https://x.com/harshil1712) from Cloudflare, I recently learned that it's also possible to scale up different functions within a single worker if they use a Queue. 
+Meaning you can include the code of your Producer and Consumer into the same worker and they execute separately
+
+Coming from a service-oriented mindset, this was mind-blowing and new to me, and I'm still quite amazed by it. So let's break it down. 
+
+## How does this work
+Every worker in Cloudflare is single-threaded. 
+When a worker produces a message to a Queue and the same worker also implements a consumer to handle the message, a new Worker instance will be created for each message batch.
+This mechanism allows you to scale up different functions within a single worker.
+<LinkCard
+  title="Follow along on GitHub"
+  description="Here is a repo with the code examples for this post"
+  href="https://github.com/Nlea/cloudflare-handling-asynchronous-tasks-/tree/main/single-worker-queue"
+  icon="external"
+  target="_blank"
+  rel="noopener noreferrer"
+/>
+## Example
+Let's move the code back into a single worker and implement newsletter functionality for all signed-up users. This functionality will retrieve all existing users from the database and send them newsletters using our `sendMail` function. Instead of calling the function directly from the index.tsx file, we send a message for each database entry to the Queue. In addition, we implement in the same worker a consumer that will handle the messages in batches from the Queue.
+
+When a worker produces a message to a Queue and implements a consumer, Cloudflare will automatically create new instances of our worker. These instances process message batches in parallel. This means our worker can scale horizontally based on the Queue's workload.
+
+<figure>
+  <video
+    autoplay
+    disablePictureInPicture
+    loop
+    muted
+    playsinline
+    preload
+    width="100%"
+    style="border-radius: 0.5rem;"
+  >
+    <source src={videoSingleWorkerQueueArchitecture} type="video/mp4" />
+    <p>
+      Your browser does not support the video tag. You can download the video
+      <a href={videoSingleWorkerQueueArchitecture} download>here</a>.
+
+      Alternatively, let us know by
+      <a href="https://github.com/fiberplane/fpx/issues/new">opening an issue
+      </a> on GitHub!
+    </p>
+
+  </video>
+
+  <figcaption>
+    Scalling up functionality in a worker based on Queue workload 
+  </figcaption>
+</figure>
+
+## Implementation
+Make sure to include the Queue bindings in your `wrangler.toml` file for both consumer and producer, and add the Binding to your index.tsx file.
+
+Now let's add a endpoint to send a newsletter, get the database entries and produce a message for each entry to the Queue.
+
+```typescript, title="index.tsx"
+app.post("/api/send-newsletter", async (c) => {
+    const { newsletterText, subject } = await c.req.json();
+    
+    // Connect to the database
+    const sql = neon(c.env.DATABASE_URL);
+    const db = drizzle(sql);
+  
+    // Fetch all registered users
+    const allUsers = await db.select().from(runners);
+    
+    // Send newsletter to each user
+    for (const user of allUsers) {
+      try {
+      console.log(`Sending message to queue for user: ${user.firstName} (${user.email})`);
+        await c.env.NEWSLETTER_QUEUE.send({
+          email: user.email,
+          firstName: user.firstName,
+          newsletterText,
+          subject,
+          type: 'newsletter'
+        });
+      } catch (error) {
+      console.error(`Failed to send newsletter to ${user.email}:`, error);
+      }
+    }
+
+    return c.json({ 
+    message: `Newsletter queued for ${allUsers.length} recipients`,
+    status: "success" 
+    });
+});
+```
+Next we need to implement a queue handler within the same worker to send out the emails. 
+
+```typescript, title="index.tsx"
+export default {
+  fetch: instrument(app).fetch,
+  async queue(batch: MessageBatch<any>, env: Bindings): Promise<void> {
+    console.log(`Processing batch of ${batch.messages.length} messages`);
+    for (const message of batch.messages) {
+      const { email, firstName, type, newsletterText, subject } = message.body;
+      try {
+        if (type === 'newsletter') {
+            await sendNewsletterMail(email, env.RESEND_API, firstName, newsletterText, subject);
+        } else {
+            await sendMail(email, env.RESEND_API, firstName);
+        }
+        message.ack();
+        console.log(`Successfully sent ${type || 'signup'} email to ${firstName} (${email})`);
+      } catch (error) {
+        console.error(`Failed to send email to ${email}:`, error);
+          message.retry();
+      }
+    }
+  }
+};
+``` 
+
+
+The number of messages in a batch and other Queue parameters can be configured in the `wrangler.toml` file. For more details about Queue configuration, check out the [previous blog post](/blog/2025-01-17-asynchronous-tasks-in-cloudflare-part2) in this series.
+
+## Conclusion
+Cloudflare Queues provide a powerful way to scale different functions within a single worker. By producing messages to a Queue and implementing a consumer in the same worker, you can achieve horizontal scaling while maintaining your code in a monolithic codebase.
+So while it might seem counterintuitive at first, combining Producer and Consumer code in one Worker is a legitimate pattern when using Cloudflare Queues, as the platform handles the separation of concerns at runtime through its instance creation mechanism.
+
+However, there are still valid reasons to split your code into multiple workers:
+- Independent deployability of services
+- Separation of concerns
+- Team organization, especially when different teams are responsible for different services
+- Resource isolation and fine-grained scaling control
+
+The choice between a single worker with Queues or multiple workers depends on your specific needs and organizational structure.
