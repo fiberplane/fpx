@@ -1,0 +1,14 @@
+---
+import Default from "@astrojs/starlight/components/Head.astro";
+import type { Props } from "@astrojs/starlight/props";
+
+import ogDefaultImage from "@/assets/og-default.png?url";
+
+const { slug } = Astro.props;
+const ogImagePath = slug ? `og/${slug}.png` : ogDefaultImage;
+const canonicalImageSrc = new URL(ogImagePath, Astro.site);
+---
+
+<Default {...Astro.props}><slot /></Default>
+<meta property="og:image" content={canonicalImageSrc} />
+<meta name="twitter:image" content={canonicalImageSrc} />

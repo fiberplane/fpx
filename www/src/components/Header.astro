@@ -31,7 +31,7 @@ const navEntries = nav?.entries || [];
     <nav class="sl-flex nav-links">
       {
         navEntries.length > 0 &&
-          navEntries.toReversed().map(({ href, label }) => (
+          navEntries.map(({ href, label }) => (
             <LinkButton
               href={href}
               variant="minimal"
