@@ -116,7 +116,6 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => {
     // Resolution helpers
     resolveRuntimeExpression: (expression: string) => {
       const { inputValues, workflowState, outputValues } = get();
-      // debugger;
 
       if (expression.startsWith("$inputs.")) {
         const inputKey = expression.replace("$inputs.", "");
@@ -139,6 +138,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => {
         // Get the path after stepId
         const path = expression.replace(/^\$steps\.[^.]+\./, "");
         if (path.startsWith("outputs.")) {
+          // TODO: implement this nicely
           const firstPart = path
             .replace("outputs.", "")
             .split(".")[0]
@@ -208,6 +208,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => {
   };
 });
 
+// This is a temporary solution to solve some issues with snake_case and camelCase
 function snakeCaseToCamelCase(str: string) {
   return str.replace(/([-_]\w)/g, (g) => g[1].toUpperCase());
 }
