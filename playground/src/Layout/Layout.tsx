@@ -2,10 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Link, useMatches } from "@tanstack/react-router";
 import { UserCircle } from "lucide-react";
 import type React from "react";
+import { useState } from "react";
 import { cn } from "../utils";
 import { BottomBar } from "./BottomBar";
-import { SettingsScreen } from "./Settings";
-import { useState } from "react";
 
 function NavButton({
   to,
@@ -28,7 +27,7 @@ function NavButton({
 
 export function Layout({ children }: { children?: React.ReactNode }) {
   const [hideTraces, setHideTraces] = useState(false);
-  // @ts-ignore this is just for demo video 
+  // @ts-ignore this is just for demo video
   // FIXME: remove this pls
   window.setHideTraces = setHideTraces;
   return (
@@ -51,7 +50,6 @@ export function Layout({ children }: { children?: React.ReactNode }) {
         {children}
       </main>
       <BottomBar />
-      <SettingsScreen />
     </div>
   );
 }

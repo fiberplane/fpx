@@ -34,6 +34,11 @@ export const Route = createRootRouteWithContext<{
       },
     };
   },
+  // gcTime: 10 * 60 * 1000,
+  // preloadStaleTime: 10 * 60 * 1000,
+  staleTime: 10 * 60 * 1000,
+  // : 5 * 1000,
+
   onError: (error) => {
     console.error("Error loading openapi spec", error);
   },

@@ -1,24 +1,17 @@
 import { cn } from "@/utils";
-import { useHandler } from "@fiberplane/hooks";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useStudioStore } from "../../store";
-import type { ProbedRoute } from "../../types";
 import { Search } from "../Search";
 import { RoutesItem } from "./RoutesItem";
 import { RoutesSection } from "./RoutesSection";
 
 export function RoutesPanel() {
-  const {
-    appRoutes: routes,
-    activeRoute,
-    setActiveRoute,
-  } = useStudioStore("appRoutes", "activeRoute", "setActiveRoute");
-
-  const handleRouteClick = useHandler((route: ProbedRoute) => {
-    setActiveRoute(route);
-  });
+  const { appRoutes: routes, activeRoute } = useStudioStore(
+    "appRoutes",
+    "activeRoute",
+  );
 
   const [filterValue, setFilterValue] = useState("");
   const filteredRoutes = useMemo(() => {
@@ -141,7 +134,6 @@ export function RoutesPanel() {
                     route={route}
                     selectedRoute={selectedRouteIndex === index ? route : null}
                     activeRoute={activeRoute}
-                    handleRouteClick={handleRouteClick}
                     setSelectedRouteIndex={setSelectedRouteIndex}
                   />
                 ))}

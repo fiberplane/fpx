@@ -11,7 +11,10 @@ export const Route = createFileRoute("/workflow/new")({
 export function NewWorkflow() {
   const [userStory, setUserStory] = useState("");
   const { mutate: createWorkflow, isPending, error } = useCreateWorkflow();
-  const { openapi } = useRouteContext({ from: "__root__" });
+  const openapi = useRouteContext({
+    from: "__root__",
+    select: (ctx) => ctx.openapi,
+  });
   const { data: content } = useOpenApiSpec(openapi);
 
   if (!openapi) {

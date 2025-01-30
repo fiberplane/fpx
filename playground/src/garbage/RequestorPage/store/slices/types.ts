@@ -86,7 +86,6 @@ export interface TabsSlice {
 export type PanelState = "open" | "closed";
 
 export interface UISlice {
-  defaultSettingsTab: string | null;
   sidePanel: PanelState;
   togglePanel: (panelName: "sidePanel") => void;
   shortcutsOpen: boolean;
@@ -95,8 +94,6 @@ export interface UISlice {
   timelineAsTree: boolean;
   toggleTimelineLogs: () => void;
   toggleTimelineAsTree: () => void;
-  settingsOpen: boolean;
-  setSettingsOpen: (open: boolean, defaultSettingsTab: string | null) => void;
 }
 
 export type StudioState = RequestResponseSlice &
