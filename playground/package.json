@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "lint": "biome lint . && pnpm run typecheck",
     "format": "biome check . --write",
     "preview": "vite preview",
@@ -41,7 +41,7 @@
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-toast": "^1.2.2",
     "@radix-ui/react-tooltip": "^1.1.4",
-    "@scalar/openapi-parser": "^0.10.3",
+    "@rollup/plugin-replace": "^6.0.2",
     "@tanstack/react-query": "^5.61.5",
     "@tanstack/react-query-devtools": "^5.64.1",
     "@tanstack/react-router": "^1.95.5",

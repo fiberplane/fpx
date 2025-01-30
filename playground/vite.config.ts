@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import svgr from "vite-plugin-svgr";
+import replace from '@rollup/plugin-replace';
 
 // The SPA, when running locally, needs to proxy requests to the embedded API sometimes
 // It's nice to be able to configure this.
@@ -15,11 +16,8 @@ const EMBEDDED_API_URL =
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    nodePolyfills({
-      // include: [
-      //   'node:util',
-      // ]
-    }),
+    nodePolyfills(),
+    // ... other plugins
     react(),
     TanStackRouterVite(),
     svgr({
@@ -47,6 +45,18 @@ export default defineConfig({
         chunkFileNames: "[name].js",
         assetFileNames: "[name].[ext]",
       },
+      plugins: [
+        replace({
+          delimiters: ['', ''],
+          preventAssignment: true,
+          values: {
+            // This fixes an issue with the @jsdevtools/ono package in the browser
+            // see https://github.com/JS-DevTools/ono/issues/19
+            'if (typeof module === "object" && typeof module.exports === "object") {':
+              'if (typeof module === "object" && typeof module.exports === "object" && typeof module.exports.default === "object") {',
+          },
+        }),
+      ]
     },
   },
 });
