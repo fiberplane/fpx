@@ -15,9 +15,13 @@ const EMBEDDED_API_URL =
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    nodePolyfills({
+      // include: [
+      //   'node:util',
+      // ]
+    }),
     react(),
     TanStackRouterVite(),
-    nodePolyfills(),
     svgr({
       svgrOptions: { exportType: "default", ref: true },
       include: "**/*.svg",
@@ -36,6 +40,7 @@ export default defineConfig({
   },
   // NOTE: Consistent filenames (without hashes) make sure we can load the assets via cdn (from @fiberplane/embedded)
   build: {
+    sourcemap: true,
     rollupOptions: {
       output: {
         entryFileNames: "index.js",
