@@ -35,7 +35,7 @@ import {
   useRouteContext,
   useSearch,
 } from "@tanstack/react-router";
-import { ChevronDown, Link as LinkIcon } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Link as LinkIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { z } from "zod";
@@ -144,6 +144,8 @@ function WorkflowDetail() {
     );
   }
 
+  const stepIndex = workflow.steps.findIndex((step) => step.stepId === stepId);
+
   return (
     <div
       className={cn(
@@ -214,13 +216,41 @@ function WorkflowDetail() {
             )}
           </div>
           <div>
-            <h3 className="mb-4 text-lg font-medium flex items-center gap-2">
-              Steps{" "}
-              <div className="font-normal text-sm text-muted-foreground">
-                {workflow.steps.length} total
+            <div className="flex justify-between gap-2 items-center mb-4">
+              <h3 className="text-lg font-medium flex items-center gap-2">
+                Steps{" "}
+                <div className="font-normal text-sm text-muted-foreground">
+                  {workflow.steps.length} total
+                </div>
+              </h3>
+              <div className="flex gap-2 items-center h-fit">
+                <Link
+                  to="."
+                  className={cn("flex items-center gap-1 text-sm text-muted-foreground",
+                    stepIndex === 0 || stepIndex === -1 ? "pointer-events-none" : "pointer-events-auto bg-primary text-primary-foreground",
+                  )}
+                  search={(prev) => ({
+                    ...prev,
+                    stepId: workflow.steps[stepIndex - 1]?.stepId,
+                  })}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Link>
+                <Link
+                  to="."
+                  className={cn("flex items-center gap-1 text-sm text-muted-foreground",
+                    stepIndex >= workflow.steps.length - 1 || stepIndex === -1 ? "pointer-events-none" : "pointer-events-auto bg-primary text-primary-foreground",
+                  )}
+                  search={(prev) => ({
+                    ...prev,
+                    stepId: workflow.steps[stepIndex + 1]?.stepId,
+                  })}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
               </div>
-            </h3>
-            <div className="grid gap-4">
+            </div>
+            <div className="grid gap-2 -mx-2">
               {workflow.steps.map((step, index) => (
                 <div key={step.stepId}>
                   <StepperItem
@@ -230,22 +260,6 @@ function WorkflowDetail() {
                     description={step.description}
                     selected={selectedStep.stepId === step.stepId}
                   />
-                  {/* <StepCard
-                    key={step.stepId}
-                    step={step}
-                    index={index}
-                    isSelected={step.stepId === stepId}
-                    onSelect={() =>
-                      navigate({
-                        search: (prev) => ({
-                          ...prev,
-                          stepId:
-                            step.stepId === stepId ? undefined : step.stepId,
-                        }),
-                      })
-                    }
-                    operationDetails={getOperationDetails(step.operation)}
-                  /> */}
                 </div>
               ))}
             </div>
@@ -253,15 +267,17 @@ function WorkflowDetail() {
         </div>
       </div>
 
-      {selectedStep && (
-        <div className="col-span-2">
-          <StepDetails
-            step={selectedStep}
-            operationDetails={getOperationDetails(selectedStep.operation)}
-          />
-        </div>
-      )}
-    </div>
+      {
+        selectedStep && (
+          <div className="col-span-2">
+            <StepDetails
+              step={selectedStep}
+              operationDetails={getOperationDetails(selectedStep.operation)}
+            />
+          </div>
+        )
+      }
+    </div >
   );
 }
 
@@ -277,8 +293,9 @@ const StepperItem = (
       to="."
       search={(prev) => ({ ...prev, stepId })}
       className={cn(
-        `grid grid-cols-[auto_1fr] gap-4 rounded-md cursor-pointer relative before:content-[""] first:before:absolute before:h-full before:bottom-[16px] before:border-l before:border-l-foreground before:left-[12px] z-0`,
+        `grid grid-cols-[auto_1fr] gap-4 rounded-md cursor-pointer relative before:content-[""] first:before:absolute before:h-full before:bottom-[16px] before:border-l before:border-l-foreground before:left-[20px] z-0 py-2 px-2`,
         index === 0 ? "before:hidden" : "before:block",
+        selected ? "bg-primary/10" : "hover:bg-muted",
       )}
     >
       <div
