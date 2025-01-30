@@ -28,11 +28,6 @@ export const ogImageOptions: OGImageOptions = {
     }
   },
   padding: 60,
-  border: {
-    color: [255, 87, 51],
-    side: "inline-start",
-    width: 8
-  },
   fonts: [
     "./src/assets/_fonts/Geist-Light.ttf",
     "./src/assets/_fonts/InstrumentSans-SemiBold.ttf"
