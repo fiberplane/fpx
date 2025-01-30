@@ -83,7 +83,6 @@ export interface WorkflowStep {
 }
 
 export interface Workflow {
-  id: string;
   workflowId: string;
   prompt: string;
   summary: string;

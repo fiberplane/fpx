@@ -2,7 +2,6 @@ import path from "node:path";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
-import { nodePolyfills } from "vite-plugin-node-polyfills";
 import svgr from "vite-plugin-svgr";
 
 // The SPA, when running locally, needs to proxy requests to the embedded API sometimes
@@ -17,7 +16,6 @@ export default defineConfig({
   plugins: [
     react(),
     TanStackRouterVite(),
-    nodePolyfills(),
     svgr({
       svgrOptions: { exportType: "default", ref: true },
       include: "**/*.svg",

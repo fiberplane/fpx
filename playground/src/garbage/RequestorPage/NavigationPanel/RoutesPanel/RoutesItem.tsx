@@ -8,6 +8,7 @@ type RoutesItemProps = {
   route: ProbedRoute;
   activeRoute: ProbedRoute | null;
   selectedRoute: ProbedRoute | null;
+  handleRouteClick: (route: ProbedRoute) => void;
   setSelectedRouteIndex: (index: number | null) => void;
 };
 

@@ -55,7 +55,7 @@ export function WorkflowSidebar() {
             </div>
           ) : (
             filteredWorkflows.map((workflow) => (
-              <div key={workflow.id} className="relative group">
+              <div key={workflow.workflowId} className="relative group">
                 <Link
                   to="/workflow/$workflowId"
                   params={{ workflowId: workflow.workflowId }}

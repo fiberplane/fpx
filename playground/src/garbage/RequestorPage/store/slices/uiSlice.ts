@@ -9,6 +9,17 @@ export const uiSlice: StateCreator<
   UISlice
 > = (set) => {
   return {
+    settingsOpen: false,
+    defaultSettingsTab: null,
+    setSettingsOpen: (
+      open: boolean,
+      defaultSettingsTab: string | null = null,
+    ) =>
+      set((state) => {
+        state.settingsOpen = open;
+        state.defaultSettingsTab = defaultSettingsTab;
+      }),
+
     sidePanel: isLgScreen() ? "open" : "closed",
     togglePanel: (panelName: "sidePanel") =>
       set((state) => {
