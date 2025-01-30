@@ -14,14 +14,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useOpenApiParse } from "@/lib/hooks/useOpenApiParse";
+import { useOpenApiSpec } from "@/lib/hooks/useOpenApiSpec";
 import { workflowQueryOptions } from "@/lib/hooks/useWorkflows";
 import type { ExecuteStepResult } from "@/lib/hooks/useWorkflows";
 import { useExecuteStep } from "@/lib/hooks/useWorkflows";
 import { cn } from "@/lib/utils";
 import { useWorkflowStore } from "@/lib/workflowStore";
 import type { Parameter, WorkflowStep } from "@/types";
-import { validate } from "@apidevtools/swagger-parser";
-import { useQuery } from "@tanstack/react-query";
 import {
   createFileRoute,
   useNavigate,
@@ -45,48 +45,37 @@ export const Route = createFileRoute("/workflow/$workflowId")({
     const response = await queryClient.ensureQueryData(
       workflowQueryOptions(workflowId),
     );
+
     return { workflow: response.data };
   },
 });
 
 function WorkflowDetail() {
   const { workflow } = Route.useLoaderData();
-  const { openapi } = useRouteContext({ from: "__root__" });
+  const content = useRouteContext({
+    from: "__root__",
+    select: (context) => {
+      console.log("context", context);
+      return context.openapi?.content;
+    },
+  });
+  console.log("useRouteContext", content);
+  // const { openapi } = context;
+  const openapi = useRouteContext({
+    from: "__root__",
+    select: (context) => context.openapi,
+  });
   const navigate = useNavigate({ from: Route.fullPath });
   const { stepId } = useSearch({ from: Route.fullPath });
 
   const { setInputValue, inputValues } = useWorkflowStore();
   const selectedStep = workflow.steps.find((step) => step.stepId === stepId);
 
-  const { data: validatedOpenApi, error } = useQuery({
-    queryKey: ["openapi", openapi?.content],
-    queryFn: async () => {
-      if (!openapi?.content) {
-        return null;
-      }
-
-      const docs = JSON.parse(openapi.content) as OpenAPI.Document;
-      return await validate(docs);
-    },
-    enabled: !!openapi?.content,
-    throwOnError: true,
-  });
-
-  // TODO: Handle error gracefully
-  if (error) {
-    // return <ErrorBoundary error={error} />;
-    return (
-      <div>
-        An error occurred: {error.name}: {error.message}
-      </div>
-    );
-  }
+  const { data: spec, error: loadingError } = useOpenApiSpec(openapi);
+  const { data: validatedOpenApi, error: parsingError } = useOpenApiParse(spec);
 
   const getOperationDetails = (operationString: string) => {
-    if (
-      !validatedOpenApi
-      // || !isOpenApiV30(validatedOpenApi)
-    ) {
+    if (!validatedOpenApi) {
       return null;
     }
 
@@ -108,10 +97,7 @@ function WorkflowDetail() {
     const lowerCaseMethod = method.toLowerCase() as PathObjKeys;
 
     // Ignore non-methods properties
-    //
-    const ignore =
-      // : Array<Lowercase<PathObjKeys>>
-      ["summary", "$ref", "description", "servers"] as const;
+    const ignore = ["summary", "$ref", "description", "servers"] as const;
     if (lowerCaseMethod in ignore) {
       return null;
     }
@@ -137,8 +123,17 @@ function WorkflowDetail() {
     setInputValue(key, value || "");
   };
 
-  if (!openapi) {
-    console.error("No OpenAPI spec found");
+  if (loadingError || parsingError) {
+    return (
+      <div className="grid place-items-center h-full">
+        <div className="text-center">
+          <h2 className="text-2xl font-medium">Error loading OpenAPI spec</h2>
+          <p className="text-sm text-muted-foreground">
+            {loadingError?.message || parsingError?.message}
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -264,24 +259,16 @@ function StepDetails({ step, operationDetails }: StepDetailsProps) {
   } = useWorkflowStore();
   const [responseView, setResponseView] = useState<"body" | "headers">("body");
   const executeStep = useExecuteStep();
-  const { openapi } = useRouteContext({ from: "__root__" });
-  const { data: validatedOpenApi } = useQuery({
-    queryKey: ["openapi", openapi?.content],
-    queryFn: async (data) => {
-      const content = data.queryKey[1];
-      if (!content) {
-        return null;
-      }
-      return await validate(content);
-    },
-    enabled: !!openapi?.content,
+
+  const openapi = useRouteContext({
+    from: "__root__",
+    select: (context) => context.openapi,
   });
+  const { data: spec } = useOpenApiSpec(openapi);
+  const { data: validatedOpenApi } = useOpenApiParse(spec);
 
   const addServiceUrlIfBarePath = (path: string) => {
-    // OpenAPI 3.0 type includes servers, but the type definition is incomplete
-    // interface OpenApiWithServers extends OpenApiSpec {
-    //   servers?: Array<{ url: string }>;
-    // }
+    console.log("addServiceUrlIfBarePath", path);
     if (!validatedOpenApi) {
       return path;
     }

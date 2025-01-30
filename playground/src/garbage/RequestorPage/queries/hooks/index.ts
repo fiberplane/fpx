@@ -2,7 +2,6 @@ export {
   useMakeProxiedRequest,
   type MakeProxiedRequestQueryFn,
 } from "./useMakeProxiedRequest";
-export { useOpenApiParse } from "./useOpenApiParse";
 export { useProbedRoutes } from "./useProbedRoute";
 
 export type Route = {

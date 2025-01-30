@@ -12,9 +12,23 @@
     <script>
       const options = {
         mountedPath: "/",
-         openapi: {
+        openapi: {
+          // NOTE - This config assumes you have a local server running on :8787 with the OpenAPI spec exposed at /openapi.json
           url: "http://localhost:8787/openapi.json",
+          // NOTE - You can test a raw spec by using the `content` property instead of `url`, 
+          //        and passing in an object representing an OpenAPI spec
+          // content: {
+          //   openapi: "3.1.0",
+          //   info: {
+          //     title: "Test API",
+          //     version: "1.0.0",
+          //   },
+          //   // ...
+          // },
         },
+        // NOTE - This option here is **only for local development** to be able to test the tracing UI in the playground
+        // Assumes you have Fiberplane Studio running as a sidecar to ingest traces on :8788
+        fpxEndpoint: "http://localhost:8788/v1/traces",
       };
       document.getElementById("root").dataset.options = JSON.stringify(options);
     </script>

@@ -1,4 +1,5 @@
 import { WorkflowPrompt } from "@/components/WorkflowPrompt";
+import { useOpenApiSpec } from "@/lib/hooks/useOpenApiSpec";
 import { useCreateWorkflow } from "@/lib/hooks/useWorkflows";
 import { createFileRoute, useRouteContext } from "@tanstack/react-router";
 import { useState } from "react";
@@ -10,7 +11,11 @@ export const Route = createFileRoute("/workflow/new")({
 export function NewWorkflow() {
   const [userStory, setUserStory] = useState("");
   const { mutate: createWorkflow, isPending, error } = useCreateWorkflow();
-  const { openapi } = useRouteContext({ from: "__root__" });
+  const openapi = useRouteContext({
+    from: "__root__",
+    select: (ctx) => ctx.openapi,
+  });
+  const { data: content } = useOpenApiSpec(openapi);
 
   if (!openapi) {
     console.error("No OpenAPI spec found");
@@ -19,7 +24,7 @@ export function NewWorkflow() {
   const handleSubmit = () => {
     createWorkflow({
       prompt: userStory,
-      openApiSchema: openapi?.content ?? "",
+      openApiSchema: content ?? "",
     });
   };
 

@@ -5,18 +5,23 @@ import { useOrphanLogs } from "@/hooks";
 import { traceQueryOptions } from "@/lib/hooks/useTraces";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { ErrorBoundary } from "./traces.index";
 
 export const Route = createFileRoute("/traces/$traceId")({
   validateSearch: z.object({
     spanId: z.string().optional(),
   }),
   component: TraceDetail,
-  loader: async ({ context: { queryClient }, params: { traceId } }) => {
+  loader: async ({
+    context: { queryClient, fpxEndpointHost },
+    params: { traceId },
+  }) => {
     const response = await queryClient.ensureQueryData(
-      traceQueryOptions(traceId),
+      traceQueryOptions(fpxEndpointHost ?? "", traceId),
     );
     return { trace: { traceId, spans: response.data } };
   },
+  errorComponent: ErrorBoundary,
 });
 
 function TraceDetail() {

@@ -105,8 +105,12 @@ export const api = {
     }
   },
 
-  getTraces: async () => {
-    const response = await fetch(`${getTraceBaseUrl()}`);
+  getTraces: async (fpxEndpointHost: string) => {
+    const basePrefix = getBasePrefix();
+    const tracesUrl = fpxEndpointHost
+      ? `${fpxEndpointHost}/v1/traces`
+      : `${basePrefix}/api/traces`;
+    const response = await fetch(tracesUrl);
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message);
@@ -118,9 +122,15 @@ export const api = {
   },
 
   getTrace: async (
+    fpxEndpointHost: string,
     id: string,
   ): Promise<ApiResponse<TraceDetailSpansResponse>> => {
-    const response = await fetch(`${getTraceBaseUrl()}/${id}/spans`);
+    const basePrefix = getBasePrefix();
+    const tracesUrl = fpxEndpointHost
+      ? `${fpxEndpointHost}/v1/traces/${id}/spans`
+      : `${basePrefix}/api/traces/${id}/spans`;
+
+    const response = await fetch(tracesUrl);
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message);
@@ -134,8 +144,41 @@ export const api = {
       data: aaagagagag.spans,
     };
   },
-};
 
-function getTraceBaseUrl() {
-  return "http://localhost:8788/v1/traces";
-}
+  post: async <T>(path: string, data: unknown): Promise<T> => {
+    const response = await fetch(path, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to make request");
+    }
+
+    return response.json();
+  },
+
+  createReport: async (data: {
+    traceId: string;
+    description: string;
+  }): Promise<ApiResponse<void>> => {
+    const basePrefix = getBasePrefix();
+    const response = await fetch(`${basePrefix}/api/report/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
+  },
+};

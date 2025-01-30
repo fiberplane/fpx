@@ -2,11 +2,18 @@ import { KeyValueTable } from "@/components/KeyValueTableV2";
 import { Method } from "@/components/Method";
 import { FailedRequest, ResponseBody } from "@/components/ResponseBody";
 import { StatusCode } from "@/components/StatusCode";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
 import { Icon } from "@iconify/react";
-import { Link } from "@tanstack/react-router";
 import { memo } from "react";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { ProxiedRequestResponse } from "../queries";
@@ -16,6 +23,7 @@ import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
 } from "../store/types";
+import { ReportErrorForm } from "./ReportErrorForm";
 
 type Props = {
   isLoading: boolean;
@@ -79,7 +87,7 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
             EmptyState={<NoResponse />}
           >
             <div className={cn("grid grid-rows-[auto_1fr]")}>
-              <TraceBanner activeResponse={responseToRender} />
+              <ErrorBanner activeResponse={responseToRender} />
               <ResponseBody
                 response={responseToRender}
                 // HACK - To support absolutely positioned bottom toolbar
@@ -215,7 +223,7 @@ function LoadingResponseBody() {
   );
 }
 
-function TraceBanner({
+function ErrorBanner({
   activeResponse,
 }: {
   activeResponse: ProxiedRequestResponse | RequestorActiveResponse | undefined;
@@ -224,27 +232,53 @@ function TraceBanner({
   if (!isRequestorActiveResponse(activeResponse)) {
     return null;
   }
-  if (!activeResponse?.traceId) {
+
+  const statusCode = Number(activeResponse?.responseStatusCode);
+  if (!statusCode || !(statusCode >= 400)) {
     return null;
   }
+
+  const isServerError = statusCode >= 500;
+  const errorType = isServerError ? "Server Error" : "Client Error";
+
   return (
-    <div className="flex items-center min-h-10 bg-info/10 border-info/20 border rounded-lg mb-2 group transition-all hover:bg-info/15">
-      <Link
-        to={"/traces/$traceId"}
-        params={{ traceId: activeResponse.traceId }}
-        className="flex items-center gap-3 px-4 py-2.5 w-full"
-      >
-        <div className="rounded-full bg-info/15 p-1.5 group-hover:bg-info/25 transition-colors">
-          <Icon icon="lucide:activity" className="w-3.5 h-3.5 text-info" />
+    <Dialog>
+      <DialogTrigger asChild>
+        <div className="flex items-center min-h-10 bg-destructive/10 border-destructive/20 border rounded-lg mb-2 group transition-all hover:bg-destructive/15 cursor-pointer">
+          <div className="flex items-center gap-3 px-4 py-2.5 w-full">
+            <div className="rounded-full bg-destructive/15 p-1.5 group-hover:bg-destructive/25 transition-colors">
+              <Icon
+                icon="lucide:alert-circle"
+                className="w-3.5 h-3.5 text-destructive"
+              />
+            </div>
+            <span className="text-sm font-medium text-destructive">
+              {errorType} - Status {statusCode}
+            </span>
+            <Button variant="ghost" size="sm" className="ml-auto">
+              Report Issue
+            </Button>
+          </div>
         </div>
-        <span className="text-sm font-medium text-info">
-          Trace data available
-        </span>
-        <Icon
-          icon="lucide:chevron-right"
-          className="w-4 h-4 text-info/50 ml-auto group-hover:translate-x-0.5 transition-transform"
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Report Error</DialogTitle>
+        </DialogHeader>
+        <ReportErrorForm
+          traceId={activeResponse.traceId ?? ""}
+          onSuccess={() => {
+            // Close dialog on success
+            const dialogEl = document.querySelector('[role="dialog"]');
+            if (dialogEl) {
+              const closeButton = dialogEl.querySelector<HTMLButtonElement>(
+                'button[aria-label="Close"]',
+              );
+              closeButton?.click();
+            }
+          }}
         />
-      </Link>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

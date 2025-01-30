@@ -6,29 +6,23 @@ import { createRoot } from "react-dom/client";
 import { routeTree } from "./routeTree.gen";
 import "./index.css";
 import { ThemeProvider } from "./components/theme-provider";
+import { parseEmbeddedConfig } from "./utils";
 
-const rootElement = document.getElementById("root");
+export const rootElement = document.getElementById("root");
 if (rootElement === null) {
   throw new Error("Root element not found");
 }
 
 // NOTE: Mounted path defines which path the whole playground is mounted on. The
 // client router needs to know this so it can generate correct links
-const { mountedPath, openapi } = JSON.parse(
-  rootElement.dataset.options as string,
-) as {
-  mountedPath: string;
-  openapi?: {
-    url?: string;
-    content?: string;
-  };
-};
+const { mountedPath, openapi, fpxEndpointHost } =
+  parseEmbeddedConfig(rootElement);
 
 const queryClient = new QueryClient();
 const router = createRouter({
   routeTree,
   basepath: mountedPath,
-  context: { queryClient, openapi },
+  context: { queryClient, openapi, fpxEndpointHost },
   defaultPreload: "intent",
   defaultPreloadStaleTime: 10 * 1000,
 });
