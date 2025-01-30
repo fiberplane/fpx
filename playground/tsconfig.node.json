@@ -5,8 +5,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "types": ["vite-plugin-svgr/client-default"]
+    "strict": true
   },
   "include": ["vite.config.ts"]
 }
