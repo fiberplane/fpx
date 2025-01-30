@@ -186,4 +186,25 @@ export const api = {
 
     return response.json();
   },
+
+  getTraceSummary: async (data: {
+    traceId: string;
+    spans: TraceDetailSpansResponse;
+  }): Promise<ApiResponse<{ summary: string }>> => {
+    const basePrefix = getBasePrefix();
+    const response = await fetch(`${basePrefix}/api/assistant/trace-summary`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
+  },
 };

@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import assistant from "./assistant.js";
 import report from "./report.js";
 import createTokensApiRoutes from "./tokens.js";
 import createTracesApiRoute from "./traces.js";
@@ -11,6 +12,7 @@ export default function createApiRoutes(apiKey: string, fpxEndpoint?: string) {
   app.route("/tokens", createTokensApiRoutes(apiKey));
   app.route("/traces", createTracesApiRoute(fpxEndpoint));
   app.route("/report", report);
+  app.route("/assistant", assistant);
 
   return app;
 }
