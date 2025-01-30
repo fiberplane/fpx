@@ -9,11 +9,17 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Tabs } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  CustomTabTrigger,
+  CustomTabsContent,
+  CustomTabsList,
+} from "@/garbage/RequestorPage/Tabs";
 import { useOpenApiParse } from "@/lib/hooks/useOpenApiParse";
 import { useOpenApiSpec } from "@/lib/hooks/useOpenApiSpec";
 import { workflowQueryOptions } from "@/lib/hooks/useWorkflows";
@@ -23,12 +29,13 @@ import { cn } from "@/lib/utils";
 import { useWorkflowStore } from "@/lib/workflowStore";
 import type { Parameter, WorkflowStep } from "@/types";
 import {
+  Link,
   createFileRoute,
   useNavigate,
   useRouteContext,
   useSearch,
 } from "@tanstack/react-router";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Link as LinkIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { z } from "zod";
@@ -69,7 +76,8 @@ function WorkflowDetail() {
   const { stepId } = useSearch({ from: Route.fullPath });
 
   const { setInputValue, inputValues } = useWorkflowStore();
-  const selectedStep = workflow.steps.find((step) => step.stepId === stepId);
+  const selectedStep =
+    workflow.steps.find((step) => step.stepId === stepId) || workflow.steps[0];
 
   const { data: spec, error: loadingError } = useOpenApiSpec(openapi);
   const { data: validatedOpenApi, error: parsingError } = useOpenApiParse(spec);
@@ -140,7 +148,7 @@ function WorkflowDetail() {
     <div
       className={cn(
         "grid h-full gap-4",
-        selectedStep ? "grid-cols-2" : "grid-cols-1",
+        selectedStep ? "grid-cols-3" : "grid-cols-1",
       )}
     >
       <div className="h-full p-4 overflow-auto border rounded-md">
@@ -160,10 +168,10 @@ function WorkflowDetail() {
               <CollapsibleList
                 items={Object.entries(workflow.inputs.properties)}
                 maxItems={5}
-                className="grid gap-4 max-w-[800px]"
+                className="grid gap-2 max-w-[800px]"
                 renderItem={([key, schema]) => (
                   <div key={key} className="grid gap-1 lg:grid-cols-2">
-                    <div>
+                    <div className="pt-2">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">
                           {schema.title || key}
@@ -197,7 +205,7 @@ function WorkflowDetail() {
                           schema.examples?.[0]?.toString() ||
                           `Enter ${schema.type}`
                         }
-                        className="mt-1"
+                        className="mt-1 bg-muted"
                       />
                     </div>
                   </div>
@@ -206,25 +214,39 @@ function WorkflowDetail() {
             )}
           </div>
           <div>
-            <h3 className="mb-4 text-lg font-medium">Steps</h3>
+            <h3 className="mb-4 text-lg font-medium flex items-center gap-2">
+              Steps{" "}
+              <div className="font-normal text-sm text-muted-foreground">
+                {workflow.steps.length} total
+              </div>
+            </h3>
             <div className="grid gap-4">
               {workflow.steps.map((step, index) => (
-                <StepCard
-                  key={step.stepId}
-                  step={step}
-                  index={index}
-                  isSelected={step.stepId === stepId}
-                  onSelect={() =>
-                    navigate({
-                      search: (prev) => ({
-                        ...prev,
-                        stepId:
-                          step.stepId === stepId ? undefined : step.stepId,
-                      }),
-                    })
-                  }
-                  operationDetails={getOperationDetails(step.operation)}
-                />
+                <div key={step.stepId}>
+                  <StepperItem
+                    index={index}
+                    stepId={step.stepId}
+                    operation={step.operation}
+                    description={step.description}
+                    selected={selectedStep.stepId === step.stepId}
+                  />
+                  {/* <StepCard
+                    key={step.stepId}
+                    step={step}
+                    index={index}
+                    isSelected={step.stepId === stepId}
+                    onSelect={() =>
+                      navigate({
+                        search: (prev) => ({
+                          ...prev,
+                          stepId:
+                            step.stepId === stepId ? undefined : step.stepId,
+                        }),
+                      })
+                    }
+                    operationDetails={getOperationDetails(step.operation)}
+                  /> */}
+                </div>
               ))}
             </div>
           </div>
@@ -232,14 +254,45 @@ function WorkflowDetail() {
       </div>
 
       {selectedStep && (
-        <StepDetails
-          step={selectedStep}
-          operationDetails={getOperationDetails(selectedStep.operation)}
-        />
+        <div className="col-span-2">
+          <StepDetails
+            step={selectedStep}
+            operationDetails={getOperationDetails(selectedStep.operation)}
+          />
+        </div>
       )}
     </div>
   );
 }
+
+const StepperItem = (
+  props: Pick<WorkflowStep, "stepId" | "operation" | "description"> & {
+    index: number;
+    selected?: boolean;
+  },
+) => {
+  const { index, selected, stepId, description } = props;
+  return (
+    <Link
+      to="."
+      search={(prev) => ({ ...prev, stepId })}
+      className={cn(
+        `grid grid-cols-[auto_1fr] gap-4 rounded-md cursor-pointer relative before:content-[""] first:before:absolute before:h-full before:bottom-[16px] before:border-l before:border-l-foreground before:left-[12px] z-0`,
+        index === 0 ? "before:hidden" : "before:block",
+      )}
+    >
+      <div
+        className={cn(
+          "w-6 h-6 rounded-full flex items-center justify-center z-10 relative",
+          selected ? "bg-primary" : "bg-accent-foreground",
+        )}
+      >
+        <span className="text-primary-foreground">{index + 1}</span>
+      </div>
+      <div>{description}</div>
+    </Link>
+  );
+};
 
 interface StepDetailsProps {
   step: WorkflowStep;
@@ -388,154 +441,187 @@ function StepDetails({ step, operationDetails }: StepDetailsProps) {
     return value === param.value && param.value.startsWith("$");
   });
 
+  console.log("stepId", step.stepId);
   return (
-    <div className="h-full p-4 overflow-auto border rounded-md">
-      <div className="grid items-center justify-between mb-6">
-        <div className="grid gap-1">
-          <h2 className="text-2xl font-medium">{step.description}</h2>
+    <div className="h-full p-4 overflow-y-auto overflow-x-hidden border rounded-md ">
+      <div className="max-w-[800px]">
+        <div className="grid items-center justify-between mb-6">
+          <div className="grid gap-1">
+            <h2 className="text-2xl font-medium">{step.description}</h2>
+          </div>
         </div>
-      </div>
 
-      <div className="grid gap-6">
-        <div>
-          <div className="grid gap-4">
-            <div>
-              <p className="mb-1 text-sm font-medium">Operation</p>
-              <div className="flex items-end gap-2 font-mono text-sm">
-                <Method
-                  method={
-                    operationDetails?.method || step.operation.split(" ")[0]
-                  }
-                />
-                <span className="text-muted-foreground">
-                  {operationDetails?.path || step.operation.split(" ")[1]}
-                </span>
-              </div>
-              {operationDetails?.operation?.summary && (
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {operationDetails.operation.summary}
-                </p>
-              )}
-            </div>
-
-            {/* Execution controls */}
-            <div className="mt-6 space-y-4">
-              <div className="flex gap-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={(e) => {
-                        if (hasUnresolvedParams) {
-                          e.preventDefault();
-                          return;
-                        }
-                        handleExecute();
-                      }}
-                      disabled={isLoading}
-                    >
-                      {result ? "Re-run Step" : "Execute Step"}
-                    </Button>
-                  </TooltipTrigger>
-                  {hasUnresolvedParams && (
-                    <TooltipContent>
-                      <p>Cannot execute: Unresolved values for parameters:</p>
-                      <ul className="mt-2 list-disc list-inside">
-                        {unresolvedParams.map((param) => (
-                          <li key={param.name} className="text-sm">
-                            {param.name}: {param.value}
-                          </li>
-                        ))}
-                      </ul>
-                    </TooltipContent>
+        <div className="grid gap-6">
+          <div>
+            <div className="grid gap-4">
+              <div className="flex justify-between gap-2 mx-1.5">
+                <div>
+                  <p className="mb-1 text-sm font-medium">Operation</p>
+                  <div className="flex items-end gap-2 font-mono text-sm">
+                    <Method
+                      method={
+                        operationDetails?.method || step.operation.split(" ")[0]
+                      }
+                    />
+                    <span className="text-muted-foreground">
+                      {operationDetails?.path || step.operation.split(" ")[1]}
+                    </span>
+                  </div>
+                  {operationDetails?.operation?.summary && (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {operationDetails.operation.summary}
+                    </p>
                   )}
-                </Tooltip>
+                </div>
 
-                {result && (
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      setResponseView(
-                        responseView === "body" ? "headers" : "body",
-                      )
-                    }
-                  >
-                    View {responseView === "body" ? "Headers" : "Body"}
-                  </Button>
+                {/* Execution controls */}
+                <div className="flex gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={(e) => {
+                          if (hasUnresolvedParams) {
+                            e.preventDefault();
+                            return;
+                          }
+                          handleExecute();
+                        }}
+                        disabled={isLoading}
+                      >
+                        {result ? "Re-run Step" : "Execute Step"}
+                      </Button>
+                    </TooltipTrigger>
+                    {hasUnresolvedParams && (
+                      <TooltipContent>
+                        <p>Cannot execute: Unresolved values for parameters:</p>
+                        <ul className="mt-2 list-disc list-inside">
+                          {unresolvedParams.map((param) => (
+                            <li key={param.name} className="text-sm">
+                              {param.name}: {param.value}
+                            </li>
+                          ))}
+                        </ul>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </div>
+              </div>
+              <div className="mt-6 space-y-4">
+                {(result || executeStep.error || isLoading) && (
+                  <div className="py-1.5 rounded-md bg-muted">
+                    {errorMessage && (
+                      <div className="p-3 rounded-md bg-destructive/10">
+                        <pre className="text-sm text-destructive">
+                          {String(errorMessage)}
+                        </pre>
+                      </div>
+                    )}
+
+                    {(!!result || !!stepState) && (
+                      <Tabs
+                        value={responseView}
+                        onValueChange={(value) =>
+                          setResponseView(value as "body" | "headers")
+                        }
+                        className="grid grid-rows-[auto_1fr] overflow-hidden h-full"
+                      >
+                        {" "}
+                        <div className="flex items-center gap-3 mb-3 mx-2 justify-between">
+                          <div className="text-sm font-medium">Response</div>
+                          <StatusBadge
+                            status={
+                              isLoading
+                                ? "pending"
+                                : executeStep.error
+                                  ? "error"
+                                  : "success"
+                            }
+                            title={
+                              result?.status
+                                ? `Status code: ${result?.status}`
+                                : undefined
+                            }
+                          />
+                        </div>
+                        <CustomTabsList className="mx-2">
+                          <CustomTabTrigger
+                            key="body"
+                            value="body"
+                            className="flex items-center"
+                          >
+                            Body
+                          </CustomTabTrigger>
+                          <CustomTabTrigger
+                            key="headers"
+                            value="headers"
+                            className="flex items-center"
+                          >
+                            Headers
+                          </CustomTabTrigger>
+                        </CustomTabsList>
+                        <CustomTabsContent value="headers" className="h-full">
+                          <div className="overflow-x-auto">
+                            <pre className="p-3 text-sm rounded-md bg-background">
+                              {String(
+                                JSON.stringify(
+                                  (stepState as ExecuteStepResult)?.headers ??
+                                  result?.headers ??
+                                  {},
+                                  null,
+                                  2,
+                                ),
+                              )}
+                            </pre>
+                          </div>
+                        </CustomTabsContent>
+                        <CustomTabsContent value="body" className="h-full">
+                          <div className="overflow-x-auto">
+                            <pre className="p-3 text-sm rounded-md bg-background">
+                              {String(
+                                JSON.stringify(
+                                  (stepState as ExecuteStepResult)?.data ??
+                                  result?.data,
+                                  null,
+                                  2,
+                                ),
+                              )}
+                            </pre>
+                          </div>
+                        </CustomTabsContent>
+                      </Tabs>
+                    )}
+                  </div>
                 )}
               </div>
 
-              {(result || executeStep.error || isLoading) && (
-                <div className="p-4 rounded-md bg-muted">
-                  <div className="flex items-center gap-3 mb-3">
-                    <StatusBadge
-                      status={
-                        isLoading
-                          ? "pending"
-                          : executeStep.error
-                            ? "error"
-                            : "success"
-                      }
-                    />
-                  </div>
-
-                  {errorMessage && (
-                    <div className="p-3 rounded-md bg-destructive/10">
-                      <pre className="text-sm text-destructive">
-                        {String(errorMessage)}
-                      </pre>
-                    </div>
-                  )}
-
-                  {(!!result || !!stepState) && (
-                    <div className="overflow-x-auto">
-                      <pre className="p-3 text-sm rounded-md bg-background">
-                        {responseView === "body"
-                          ? String(
-                              JSON.stringify(
-                                (stepState as ExecuteStepResult)?.data ??
-                                  result?.data,
-                                null,
-                                2,
-                              ),
-                            )
-                          : String(
-                              JSON.stringify(
-                                (stepState as ExecuteStepResult)?.headers ??
-                                  result?.headers ??
-                                  {},
-                                null,
-                                2,
-                              ),
-                            )}
-                      </pre>
-                    </div>
-                  )}
+              {step.parameters.length > 0 && (
+                <div>
+                  <div className="mb-2 text-sm font-medium">Parameters</div>
+                  <CollapsibleList
+                    items={step.parameters}
+                    renderItem={(param) => (
+                      <ParameterItem key={param.name} param={param} />
+                    )}
+                  />
                 </div>
               )}
+              {step.outputs.length > 0 && (
+                <>
+                  <p className="mb-1 text-sm font-medium">Outputs</p>
+                  <CollapsibleList
+                    className="overflow-hidden"
+                    items={step.outputs}
+                    renderItem={(output) => (
+                      <OutputItem
+                        key={output.key}
+                        stepId={step.stepId}
+                        output={output}
+                      />
+                    )}
+                  />
+                </>
+              )}
             </div>
-
-            {step.parameters.length > 0 && (
-              <div>
-                <div className="mb-2 text-sm font-medium">Parameters</div>
-                <CollapsibleList
-                  items={step.parameters}
-                  renderItem={(param) => (
-                    <ParameterItem key={param.name} param={param} />
-                  )}
-                />
-              </div>
-            )}
-            {step.outputs.length > 0 && (
-              <>
-                <p className="mb-1 text-sm font-medium">Outputs</p>
-                <CollapsibleList
-                  items={step.outputs}
-                  renderItem={(output) => (
-                    <OutputItem key={output.key} output={output} />
-                  )}
-                />
-              </>
-            )}
           </div>
         </div>
       </div>
@@ -545,7 +631,10 @@ function StepDetails({ step, operationDetails }: StepDetailsProps) {
 
 type ExecutionStatus = "pending" | "success" | "error";
 
-function StatusBadge({ status }: { status: ExecutionStatus }) {
+function StatusBadge({
+  status,
+  title,
+}: { status: ExecutionStatus; title?: string }) {
   const statusConfig = {
     pending: { color: "bg-blue-100 text-blue-800", label: "Running" },
     success: { color: "bg-green-100 text-green-800", label: "Success" },
@@ -555,6 +644,7 @@ function StatusBadge({ status }: { status: ExecutionStatus }) {
   return (
     <span
       className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig.color}`}
+      title={title}
     >
       {statusConfig.label}
     </span>
@@ -597,8 +687,8 @@ function StepCard({
       </CardHeader>
       <CardContent>
         <div className="grid gap-4">
-          <div>
-            <p className="mb-1 text-sm font-medium">Operation</p>
+          <div className="grid gap-1">
+            <p className="text-sm font-medium">Operation</p>
             <div className="flex items-center gap-2 font-mono text-sm">
               <Method
                 method={
@@ -610,7 +700,7 @@ function StepCard({
               </span>
             </div>
             {operationDetails?.operation?.summary && (
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 {operationDetails.operation.summary}
               </p>
             )}
@@ -630,9 +720,14 @@ function StepCard({
             <>
               <p className="mb-1 text-sm font-medium">Outputs</p>
               <CollapsibleList
+                className="max-w-full overflow-hidden"
                 items={step.outputs}
                 renderItem={(output) => (
-                  <OutputItem key={output.key} output={output} />
+                  <OutputItem
+                    key={output.key}
+                    stepId={step.stepId}
+                    output={output}
+                  />
                 )}
               />
             </>
@@ -708,24 +803,42 @@ function ParameterItem({ param }: { param: Parameter }) {
 }
 
 const NOT_FOUND = Symbol("NOT_FOUND");
-function OutputItem({ output }: { output: { key: string; value: string } }) {
+function OutputItem({
+  output,
+  stepId,
+}: { output: { key: string; value: string }; stepId?: string }) {
+  const fullStepId = stepId
+    ? `$steps.${stepId}.outputs.${output.key}`
+    : output.key;
+  console.log("fullStepID", fullStepId);
   const value = useWorkflowStore(
     useShallow((state) =>
-      output.key in state.outputValues
-        ? state.outputValues[output.key]
+      fullStepId in state.outputValues
+        ? state.outputValues[fullStepId]
         : NOT_FOUND,
     ),
   );
   return (
-    <p className="font-mono text-sm text-muted-foreground">
-      {output.key}:
-      {value === NOT_FOUND ? (
-        output.value
-      ) : (
-        <>
-          {String(value)} (based on: {output.value})
-        </>
-      )}
+    <p className="text-sm grid grid-cols-[200px_auto] max-w-full overflow-hidden">
+      <div>{output.key}:</div>
+
+      <div className="overflow-x-auto">
+        {value === NOT_FOUND ? (
+          output.value
+        ) : (
+          <>
+            <pre className="font-mono bg-background overflow-auto max-w-full">
+              <code>
+                {JSON.stringify(output.value, null, "\t").replaceAll(
+                  '],\n\t"',
+                  '],\n\n\t"',
+                )}
+              </code>
+            </pre>
+            <div className="text-sm font-sans">(based on: {output.value})</div>
+          </>
+        )}
+      </div>
     </p>
   );
 }
