@@ -191,6 +191,15 @@ export const api = {
     traceId: string;
     spans: TraceDetailSpansResponse;
   }): Promise<ApiResponse<{ summary: string }>> => {
+    // HACK - To avoid excessive requests to the API
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    return {
+      data: {
+        summary:
+          "The trace shows a successful GET request to `/fp/api/workflow` on `localhost:8787`, which then makes a client call to `https://playground-services.mies.workers.dev/api/workflow`. Both requests returned a `200 OK` status. The total duration of the server request was ~1.15s, with the client call taking ~1.15s. The response body contains workflow data. No obvious performance bottlenecks or errors are apparent.",
+      },
+    };
+    // biome-ignore lint/correctness/noUnreachable: FOR TESTING PURPOSES
     const basePrefix = getBasePrefix();
     const response = await fetch(`${basePrefix}/api/assistant/trace-summary`, {
       method: "POST",
