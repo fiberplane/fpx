@@ -5,6 +5,7 @@ import type React from "react";
 import { cn } from "../utils";
 import { BottomBar } from "./BottomBar";
 import { SettingsScreen } from "./Settings";
+import { useState } from "react";
 
 function NavButton({
   to,
@@ -26,13 +27,17 @@ function NavButton({
 }
 
 export function Layout({ children }: { children?: React.ReactNode }) {
+  const [hideTraces, setHideTraces] = useState(false);
+  // @ts-ignore this is just for demo video 
+  // FIXME: remove this pls
+  window.setHideTraces = setHideTraces;
   return (
     <div className="flex flex-col justify-between w-full min-h-screen overflow-hidden bg-muted/30 max-w-128">
       <div className="grid grid-cols-[1fr_auto] mt-1 px-4 items-center h-6 place-items-center">
         <div className="flex items-center gap-2">
           <NavButton to="/">Playground</NavButton>
           <NavButton to="/workflow">Workflows</NavButton>
-          <NavButton to="/traces">Traces</NavButton>
+          {!hideTraces && <NavButton to="/traces">Traces</NavButton>}
         </div>
         <div>
           <Button variant="ghost" size="sm" className="w-6 h-6 p-0">
