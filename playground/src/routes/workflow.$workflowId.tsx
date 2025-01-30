@@ -3,7 +3,7 @@ import { Method } from "@/components/Method";
 import { Button } from "@/components/ui/button";
 import type { OpenAPI } from "openapi-types";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Collapsible,
   CollapsibleContent,
@@ -31,11 +31,16 @@ import type { Parameter, WorkflowStep } from "@/types";
 import {
   Link,
   createFileRoute,
-  useNavigate,
+  // useNavigate,
   useRouteContext,
   useSearch,
 } from "@tanstack/react-router";
-import { ChevronDown, ChevronLeft, ChevronRight, Link as LinkIcon } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  // Link as LinkIcon,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { z } from "zod";
@@ -72,7 +77,7 @@ function WorkflowDetail() {
     from: "__root__",
     select: (context) => context.openapi,
   });
-  const navigate = useNavigate({ from: Route.fullPath });
+  // const navigate = useNavigate({ from: Route.fullPath });
   const { stepId } = useSearch({ from: Route.fullPath });
 
   const { setInputValue, inputValues } = useWorkflowStore();
@@ -226,8 +231,11 @@ function WorkflowDetail() {
               <div className="flex gap-2 items-center h-fit">
                 <Link
                   to="."
-                  className={cn("flex items-center gap-1 text-sm text-muted-foreground",
-                    stepIndex === 0 || stepIndex === -1 ? "pointer-events-none" : "pointer-events-auto bg-primary text-primary-foreground",
+                  className={cn(
+                    "flex items-center gap-1 text-sm text-muted-foreground",
+                    stepIndex === 0 || stepIndex === -1
+                      ? "pointer-events-none"
+                      : "pointer-events-auto bg-primary text-primary-foreground",
                   )}
                   search={(prev) => ({
                     ...prev,
@@ -238,8 +246,11 @@ function WorkflowDetail() {
                 </Link>
                 <Link
                   to="."
-                  className={cn("flex items-center gap-1 text-sm text-muted-foreground",
-                    stepIndex >= workflow.steps.length - 1 || stepIndex === -1 ? "pointer-events-none" : "pointer-events-auto bg-primary text-primary-foreground",
+                  className={cn(
+                    "flex items-center gap-1 text-sm text-muted-foreground",
+                    stepIndex >= workflow.steps.length - 1 || stepIndex === -1
+                      ? "pointer-events-none"
+                      : "pointer-events-auto bg-primary text-primary-foreground",
                   )}
                   search={(prev) => ({
                     ...prev,
@@ -267,17 +278,15 @@ function WorkflowDetail() {
         </div>
       </div>
 
-      {
-        selectedStep && (
-          <div className="col-span-2">
-            <StepDetails
-              step={selectedStep}
-              operationDetails={getOperationDetails(selectedStep.operation)}
-            />
-          </div>
-        )
-      }
-    </div >
+      {selectedStep && (
+        <div className="col-span-2">
+          <StepDetails
+            step={selectedStep}
+            operationDetails={getOperationDetails(selectedStep.operation)}
+          />
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -668,92 +677,92 @@ function StatusBadge({
   );
 }
 
-interface StepCardProps {
-  step: WorkflowStep;
-  index: number;
-  isSelected: boolean;
-  onSelect: () => void;
-  operationDetails: {
-    method: string;
-    path: string;
-    operation: OpenAPIOperation;
-  } | null;
-}
+// interface StepCardProps {
+//   step: WorkflowStep;
+//   index: number;
+//   isSelected: boolean;
+//   onSelect: () => void;
+//   operationDetails: {
+//     method: string;
+//     path: string;
+//     operation: OpenAPIOperation;
+//   } | null;
+// }
 
-function StepCard({
-  step,
-  index,
-  isSelected,
-  onSelect,
-  operationDetails,
-}: StepCardProps) {
-  return (
-    <Card
-      className={cn(
-        "relative transition-colors shadow-none cursor-pointer group bg-card/50 hover:bg-card/70",
-        isSelected && "ring-2 ring-primary",
-      )}
-      onClick={onSelect}
-    >
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-medium">
-            {index + 1}. {step.description}
-          </CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-4">
-          <div className="grid gap-1">
-            <p className="text-sm font-medium">Operation</p>
-            <div className="flex items-center gap-2 font-mono text-sm">
-              <Method
-                method={
-                  operationDetails?.method || step.operation.split(" ")[0]
-                }
-              />
-              <span className="text-muted-foreground">
-                {operationDetails?.path || step.operation.split(" ")[1]}
-              </span>
-            </div>
-            {operationDetails?.operation?.summary && (
-              <p className="text-sm text-muted-foreground">
-                {operationDetails.operation.summary}
-              </p>
-            )}
-          </div>
-          {step.parameters.length > 0 && (
-            <div>
-              <div className="mb-2 text-sm font-medium">Parameters</div>
-              <CollapsibleList
-                items={step.parameters}
-                renderItem={(param) => (
-                  <ParameterItem key={param.name} param={param} />
-                )}
-              />
-            </div>
-          )}
-          {step.outputs.length > 0 && (
-            <>
-              <p className="mb-1 text-sm font-medium">Outputs</p>
-              <CollapsibleList
-                className="max-w-full overflow-hidden"
-                items={step.outputs}
-                renderItem={(output) => (
-                  <OutputItem
-                    key={output.key}
-                    stepId={step.stepId}
-                    output={output}
-                  />
-                )}
-              />
-            </>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+// function StepCard({
+//   step,
+//   index,
+//   isSelected,
+//   onSelect,
+//   operationDetails,
+// }: StepCardProps) {
+//   return (
+//     <Card
+//       className={cn(
+//         "relative transition-colors shadow-none cursor-pointer group bg-card/50 hover:bg-card/70",
+//         isSelected && "ring-2 ring-primary",
+//       )}
+//       onClick={onSelect}
+//     >
+//       <CardHeader>
+//         <div className="flex items-center justify-between">
+//           <CardTitle className="text-base font-medium">
+//             {index + 1}. {step.description}
+//           </CardTitle>
+//         </div>
+//       </CardHeader>
+//       <CardContent>
+//         <div className="grid gap-4">
+//           <div className="grid gap-1">
+//             <p className="text-sm font-medium">Operation</p>
+//             <div className="flex items-center gap-2 font-mono text-sm">
+//               <Method
+//                 method={
+//                   operationDetails?.method || step.operation.split(" ")[0]
+//                 }
+//               />
+//               <span className="text-muted-foreground">
+//                 {operationDetails?.path || step.operation.split(" ")[1]}
+//               </span>
+//             </div>
+//             {operationDetails?.operation?.summary && (
+//               <p className="text-sm text-muted-foreground">
+//                 {operationDetails.operation.summary}
+//               </p>
+//             )}
+//           </div>
+//           {step.parameters.length > 0 && (
+//             <div>
+//               <div className="mb-2 text-sm font-medium">Parameters</div>
+//               <CollapsibleList
+//                 items={step.parameters}
+//                 renderItem={(param) => (
+//                   <ParameterItem key={param.name} param={param} />
+//                 )}
+//               />
+//             </div>
+//           )}
+//           {step.outputs.length > 0 && (
+//             <>
+//               <p className="mb-1 text-sm font-medium">Outputs</p>
+//               <CollapsibleList
+//                 className="max-w-full overflow-hidden"
+//                 items={step.outputs}
+//                 renderItem={(output) => (
+//                   <OutputItem
+//                     key={output.key}
+//                     stepId={step.stepId}
+//                     output={output}
+//                   />
+//                 )}
+//               />
+//             </>
+//           )}
+//         </div>
+//       </CardContent>
+//     </Card>
+//   );
+// }
 
 interface CollapsibleListProps<T> {
   items: T[];
