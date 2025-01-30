@@ -85,44 +85,36 @@ export interface ExecuteStepResult {
 }
 
 export function useExecuteStep() {
-  return useMutation(
-    // <
-    //   ExecuteStepResult,
-    //   Error,
-    //   ExecuteStepParams,
-    //   { stepId: string }
-    // >
-    {
-      mutationKey: ["executeStep"] as const,
-      mutationFn: async ({
-        stepId,
-        url,
+  return useMutation({
+    mutationKey: ["executeStep"] as const,
+    mutationFn: async ({
+      stepId,
+      url,
+      method,
+      body,
+      headers = {},
+    }: ExecuteStepParams) => {
+      const response = await fetch(url, {
         method,
-        body,
-        headers = {},
-      }: ExecuteStepParams) => {
-        const response = await fetch(url, {
-          method,
-          headers: {
-            "Content-Type": "application/json",
-            ...headers,
-          },
-          body: body && JSON.stringify(body),
-        });
+        headers: {
+          "Content-Type": "application/json",
+          ...headers,
+        },
+        body: body && JSON.stringify(body),
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (!response.ok) {
-          throw new Error(data.message || "Request failed");
-        }
+      if (!response.ok) {
+        throw new Error(data.message || "Request failed");
+      }
 
-        return {
-          stepId,
-          data,
-          headers: Object.fromEntries(response.headers.entries()),
-          status: response.status,
-        };
-      },
+      return {
+        stepId,
+        data,
+        headers: Object.fromEntries(response.headers.entries()),
+        status: response.status,
+      };
     },
-  );
+  });
 }

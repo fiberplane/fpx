@@ -138,10 +138,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => {
 
         // Get the path after stepId
         const path = expression.replace(/^\$steps\.[^.]+\./, "");
-
         if (path.startsWith("outputs.")) {
-          // console.log('path', path, expression);
-          // return getValueByPath(outputValues, expression) ?? expression;
           const firstPart = path
             .replace("outputs.", "")
             .split(".")[0]

@@ -21,7 +21,6 @@ export const Route = createRootRouteWithContext<{
       return { context };
     }
 
-    // console.log("!!!!")
     const queryOptions = openApiSpecQueryOptions(context.openapi);
     const content = await context.queryClient.ensureQueryData(queryOptions);
 
