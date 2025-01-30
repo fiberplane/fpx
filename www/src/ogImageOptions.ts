@@ -8,25 +8,30 @@ type OGImageOptions = Omit<
 >;
 
 export const ogImageOptions: OGImageOptions = {
-  bgGradient: [
-    [35, 34, 32],
-    [27, 26, 24]
-  ],
+  // bgGradient: [
+  //   [35, 34, 32],
+  //   [27, 26, 24]
+  // ],
+  bgImage: {
+    path: "./src/assets/og-bg.png",
+    position:"center",
+    fit: "cover"
+  },
   logo: {
-    path: "./src/assets/fp-og-logo.png",
-    size: [150, 150]
+    path: "./src/assets/og-logo.png",
+    size: [534, 100]
   },
   font: {
     title: {
-      size: 72,
+      size: 56,
       families: ["Instrument Sans"]
     },
     description: {
-      size: 48,
+      size: 32,
       families: ["Geist"]
     }
   },
-  padding: 48,
+  padding: 60,
   border: {
     color: [255, 87, 51],
     side: "inline-start",
