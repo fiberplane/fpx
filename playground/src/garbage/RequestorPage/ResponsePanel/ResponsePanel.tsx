@@ -23,7 +23,8 @@ import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
 } from "../store/types";
-import { ReportErrorForm } from "./ReportErrorForm";
+import { FeedbackForm } from "./FeedbackForm";
+import { ResponseSummary } from "./ResponseSummary";
 
 type Props = {
   isLoading: boolean;
@@ -54,7 +55,7 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
         onValueChange={setActiveResponsePanelTab}
         className="grid grid-rows-[auto_1fr] overflow-hidden h-full"
       >
-        <CustomTabsList>
+        <CustomTabsList className="">
           <CustomTabTrigger value="response" className="flex items-center">
             {responseToRender ? (
               <ResponseSummary
@@ -67,14 +68,56 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
           </CustomTabTrigger>
 
           {responseToRender && (
-            <CustomTabTrigger value="headers">
-              Headers
-              {responseHeaders && Object.keys(responseHeaders).length > 1 && (
-                <span className="ml-1 text-muted-foreground font-mono text-xs">
-                  ({Object.keys(responseHeaders).length})
-                </span>
-              )}
-            </CustomTabTrigger>
+            <>
+              <CustomTabTrigger value="headers">
+                Headers
+                {responseHeaders && Object.keys(responseHeaders).length > 1 && (
+                  <span className="ml-1 text-muted-foreground font-mono text-xs">
+                    ({Object.keys(responseHeaders).length})
+                  </span>
+                )}
+              </CustomTabTrigger>
+
+              <div className="grow inline-flex items-center justify-end">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 ml-2 hover:bg-primary/70"
+                      title="Share feedback"
+                    >
+                      <Icon icon="lucide:share" className="w-4 h-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Share Feedback</DialogTitle>
+                    </DialogHeader>
+                    <FeedbackForm
+                      traceId={
+                        isRequestorActiveResponse(responseToRender)
+                          ? (responseToRender.traceId ?? "")
+                          : ""
+                      }
+                      response={responseToRender}
+                      onSuccess={() => {
+                        // Close dialog on success
+                        const dialogEl =
+                          document.querySelector('[role="dialog"]');
+                        if (dialogEl) {
+                          const closeButton =
+                            dialogEl.querySelector<HTMLButtonElement>(
+                              'button[aria-label="Close"]',
+                            );
+                          closeButton?.click();
+                        }
+                      }}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </>
           )}
         </CustomTabsList>
         <CustomTabsContent value="response" className="h-full">
@@ -139,47 +182,6 @@ function TabContentInner({
     <>{children}</>
   ) : (
     <>{EmptyState}</>
-  );
-}
-
-function ResponseSummary({
-  response,
-  transformUrl = (url: string) => url,
-}: {
-  response?: ProxiedRequestResponse | RequestorActiveResponse;
-  transformUrl?: (url: string) => string;
-}) {
-  const status = isRequestorActiveResponse(response)
-    ? response?.responseStatusCode
-    : response?.app_responses?.responseStatusCode;
-  const method = isRequestorActiveResponse(response)
-    ? response?.requestMethod
-    : response?.app_requests?.requestMethod;
-  const url = isRequestorActiveResponse(response)
-    ? response?.requestUrl
-    : parsePathFromRequestUrl(
-        response?.app_requests?.requestUrl ?? "",
-        response?.app_requests?.requestQueryParams ?? undefined,
-      );
-  return (
-    <div className="flex items-center space-x-2 text-sm">
-      <StatusCode status={status ?? "—"} isFailure={!status} />
-      <div>
-        <Method method={method ?? "—"} />
-        <span
-          className={cn(
-            "font-mono",
-            "whitespace-nowrap",
-            "overflow-ellipsis",
-            "text-xs",
-            "ml-2",
-            "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
-          )}
-        >
-          {transformUrl(url ?? "")}
-        </span>
-      </div>
-    </div>
   );
 }
 
@@ -263,10 +265,12 @@ function ErrorBanner({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Report Error</DialogTitle>
+          <DialogTitle>Report Issue</DialogTitle>
         </DialogHeader>
-        <ReportErrorForm
+        <FeedbackForm
           traceId={activeResponse.traceId ?? ""}
+          response={activeResponse}
+          isError
           onSuccess={() => {
             // Close dialog on success
             const dialogEl = document.querySelector('[role="dialog"]');
