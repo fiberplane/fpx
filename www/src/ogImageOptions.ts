@@ -8,10 +8,6 @@ type OGImageOptions = Omit<
 >;
 
 export const ogImageOptions: OGImageOptions = {
-  // bgGradient: [
-  //   [35, 34, 32],
-  //   [27, 26, 24]
-  // ],
   bgImage: {
     path: "./src/assets/og-bg.png",
     position:"center",
