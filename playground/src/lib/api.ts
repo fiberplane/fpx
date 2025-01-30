@@ -165,6 +165,11 @@ export const api = {
     traceId: string;
     description: string;
   }): Promise<ApiResponse<void>> => {
+    // NOTE - For testing the flow in the UI
+    // TODO - Remove this once ui is more finalized
+    // window.alert("hello");
+    // return { data: {} };
+
     const basePrefix = getBasePrefix();
     const response = await fetch(`${basePrefix}/api/report/create`, {
       method: "POST",

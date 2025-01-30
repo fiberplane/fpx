@@ -9,6 +9,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateReport } from "@/lib/hooks/useReport";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Icon } from "@iconify/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -24,7 +25,7 @@ type Props = {
 };
 
 export function ReportErrorForm({ traceId, onSuccess }: Props) {
-  const { mutate, isPending } = useCreateReport();
+  const { mutate, isPending, isSuccess } = useCreateReport();
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -39,11 +40,26 @@ export function ReportErrorForm({ traceId, onSuccess }: Props) {
       {
         onSuccess: () => {
           onSuccess?.();
-          form.reset();
         },
       },
     );
   };
+
+  if (isSuccess) {
+    return (
+      <div className="py-8 text-center space-y-4">
+        <div className="rounded-full bg-success/15 p-3 w-fit mx-auto">
+          <Icon icon="lucide:check-circle" className="w-6 h-6 text-success" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="font-medium">Issue Reported</h3>
+          <p className="text-sm text-muted-foreground">
+            Thank you for your feedback. The API developers have been notified.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>
@@ -57,6 +73,12 @@ export function ReportErrorForm({ traceId, onSuccess }: Props) {
               <FormControl>
                 <Textarea
                   placeholder="Please describe what went wrong..."
+                  onKeyDown={(e) => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                      e.preventDefault();
+                      form.handleSubmit(onSubmit)();
+                    }
+                  }}
                   {...field}
                 />
               </FormControl>
