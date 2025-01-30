@@ -1,7 +1,5 @@
 import { KeyValueTable } from "@/components/KeyValueTableV2";
-import { Method } from "@/components/Method";
 import { FailedRequest, ResponseBody } from "@/components/ResponseBody";
-import { StatusCode } from "@/components/StatusCode";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
-import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
+import { SENSITIVE_HEADERS, cn } from "@/utils";
 import { Icon } from "@iconify/react";
 import { memo } from "react";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
