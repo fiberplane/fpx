@@ -1,8 +1,8 @@
 const iconColorMap: Record<string, string> = {
-  error: "bg-red-500",
-  warn: "bg-yellow-500",
-  info: "bg-blue-500",
-  debug: "bg-green-500",
+  error: "bg-destructive/90",
+  warn: "bg-warning/80",
+  info: "bg-primary/80",
+  debug: "bg-success/80",
 };
 
 export function getIconColor(level: string) {

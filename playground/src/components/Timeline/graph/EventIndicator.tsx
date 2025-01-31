@@ -27,7 +27,7 @@ export function EventIndicator(props: Props) {
           style={{ marginLeft: lineOffset }}
           title={new Date(timestamp).toISOString()}
         >
-          <div className="h-1.5 w-1.5 min-w-1.5 border border-blue-500 bg-blue-800 rounded-full" />
+          <div className="h-1.5 w-1.5 min-w-1.5 border border-primary/70 bg-primary/30 rounded-full" />
         </div>
       </div>
     </DurationContainer>

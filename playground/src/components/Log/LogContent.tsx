@@ -76,7 +76,7 @@ export function LogContent(log: Props) {
                     size="sm"
                     title="Copy log message"
                     onClick={() => copyMessageToClipboard(message ?? "")}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 hover:bg-primary/50"
                   >
                     <CopyIcon className="h-3 w-3" />
                   </Button>
@@ -91,7 +91,7 @@ export function LogContent(log: Props) {
       )}
       {args.length > 0 && (
         <div className="flex gap-2">
-          <p>Additional arguments:</p>
+          <p>Args:</p>
           <div className="text-foreground break-words grow">
             <pre className="whitespace-pre-wrap">
               {JSON.stringify(args, null, 2)}
@@ -108,7 +108,7 @@ export function LogContent(log: Props) {
                     onClick={() =>
                       copyArgumentsToClipboard(JSON.stringify(args, null, 2))
                     }
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 hover:bg-primary/50"
                   >
                     <CopyIcon className="h-3 w-3" />
                   </Button>

@@ -79,9 +79,6 @@ function TimelineListDetailsComponent({
             )
           : waterfall.map((item) => {
               const isLog = isMizuOrphanLog(item);
-              if (isLog) {
-                console.log("log", item);
-              }
               return (isLog && withLogs && !item.isException) || !isLog ? (
                 <Element
                   item={item}
