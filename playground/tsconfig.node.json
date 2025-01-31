@@ -6,5 +6,7 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "strict": true,
+    "types": ["vite-plugin-svgr/client-default"]
   },
+  "include": ["vite.config.ts"]
 }
