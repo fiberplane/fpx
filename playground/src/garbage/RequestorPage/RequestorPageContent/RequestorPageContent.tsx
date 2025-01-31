@@ -188,21 +188,24 @@ export const RequestorPageContent: React.FC = (_props) => {
               id="request-panel"
               minSize={
                 requestPanelMinSize
-                  ? Math.min(100, requestPanelMinSize)
+                  ? Math.min(isLgScreen ? 100 : 20, requestPanelMinSize)
                   : undefined
               }
-              maxSize={requestPanelMaxSize}
+              maxSize={isLgScreen ? requestPanelMaxSize : undefined}
             >
               {requestContent}
             </ResizablePanel>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}
-              className="bg-transparent"
+              className={cn(
+                "bg-transparent",
+                isLgScreen ? "cursor-col-resize" : "cursor-row-resize h-4",
+              )}
             />
             <ResizablePanel
               id="response-panel"
               order={4}
-              minSize={10}
+              minSize={isLgScreen ? 10 : 15}
               className="sm:border sm:border-l-none"
             >
               {responseContent}

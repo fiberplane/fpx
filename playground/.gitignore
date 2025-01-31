@@ -1,3 +1,7 @@
+# Ignore these since they get compiled now?
+vite.config.js
+vite.config.d.ts
+
 # Logs
 logs
 *.log

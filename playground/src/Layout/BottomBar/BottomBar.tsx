@@ -1,5 +1,5 @@
 import { useSettingsOpen } from "@/hooks";
-import { SettingsMenu, SettingsScreen } from "../Settings";
+import { SettingsMenu } from "../Settings";
 import { FloatingSidePanel } from "../SidePanel";
 import { SidePanelTrigger } from "../SidePanel";
 

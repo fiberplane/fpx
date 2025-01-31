@@ -16,7 +16,7 @@ export type ApiKeysRouter = typeof apiKeysRouter;
 
 const apiKeysRouter = new Hono<AppType>()
   .get("/", getApiKeys)
-  // NOTE - `client.index[":id"].$delete` did not work on the Hono RPC client, so I added the "/keys" prefix
+  // NOTE - To invoke with RPC client use `client[":id"].$delete`
   .delete("/:id", deleteApiKey)
   // NOTE - We need to write this handler inline so that type inference works with zValidator and the `valid` property
   .post("/", zValidator("json", createApiKeyBodySchema), async (c) => {

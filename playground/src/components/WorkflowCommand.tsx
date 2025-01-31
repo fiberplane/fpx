@@ -1,10 +1,10 @@
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useOpenApiSpec } from "@/lib/hooks/useOpenApiSpec";
 import { useCreateWorkflow } from "@/lib/hooks/useWorkflows";
 import { useWorkflowStore } from "@/lib/workflowStore";
 import { useRouteContext } from "@tanstack/react-router";
@@ -15,6 +15,7 @@ export function WorkflowCommand() {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const { mutate: createWorkflow, isPending } = useCreateWorkflow();
   const { openapi } = useRouteContext({ from: "__root__" });
+  const { data: content } = useOpenApiSpec(openapi);
 
   const { isWorkflowCommandOpen, setWorkflowCommandOpen } = useWorkflowStore();
 
@@ -22,11 +23,11 @@ export function WorkflowCommand() {
     if (e.key === "Enter") {
       e.preventDefault();
       const trimmedValue = inputValue.trim();
-      if (trimmedValue && openapi?.content) {
+      if (trimmedValue && content) {
         createWorkflow(
           {
             prompt: trimmedValue,
-            openApiSchema: openapi.content,
+            openApiSchema: content,
           },
           {
             onSuccess: () => {

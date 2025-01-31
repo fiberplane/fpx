@@ -1,9 +1,16 @@
 import { KeyValueTable } from "@/components/KeyValueTableV2";
-import { Method } from "@/components/Method";
-import { StatusCode } from "@/components/StatusCode";
+import { FailedRequest, ResponseBody } from "@/components/ResponseBody";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
-import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
+import { SENSITIVE_HEADERS, cn } from "@/utils";
 import { Icon } from "@iconify/react";
 import { memo } from "react";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
@@ -14,7 +21,8 @@ import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
 } from "../store/types";
-import { FailedRequest, ResponseBody } from "./ResponseBody";
+import { FeedbackForm } from "./FeedbackForm";
+import { ResponseSummary } from "./ResponseSummary";
 
 type Props = {
   isLoading: boolean;
@@ -45,27 +53,62 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
         onValueChange={setActiveResponsePanelTab}
         className="grid grid-rows-[auto_1fr] overflow-hidden h-full"
       >
-        <CustomTabsList>
+        <CustomTabsList className="max-w-full">
           <CustomTabTrigger value="response" className="flex items-center">
-            {responseToRender ? (
-              <ResponseSummary
-                response={responseToRender}
-                transformUrl={removeServiceUrlFromPath}
-              />
-            ) : (
-              "Response"
-            )}
+            Response
           </CustomTabTrigger>
 
           {responseToRender && (
-            <CustomTabTrigger value="headers">
-              Headers
-              {responseHeaders && Object.keys(responseHeaders).length > 1 && (
-                <span className="ml-1 text-muted-foreground font-mono text-xs">
-                  ({Object.keys(responseHeaders).length})
-                </span>
-              )}
-            </CustomTabTrigger>
+            <>
+              <CustomTabTrigger value="headers">
+                Headers
+                {responseHeaders && Object.keys(responseHeaders).length > 1 && (
+                  <span className="ml-1 text-muted-foreground font-mono text-xs">
+                    ({Object.keys(responseHeaders).length})
+                  </span>
+                )}
+              </CustomTabTrigger>
+
+              <div className="grow inline-flex items-center justify-end">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 ml-2 hover:bg-primary/70"
+                      title="Share feedback"
+                    >
+                      <Icon icon="lucide:share" className="w-4 h-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Share Feedback</DialogTitle>
+                    </DialogHeader>
+                    <FeedbackForm
+                      traceId={
+                        isRequestorActiveResponse(responseToRender)
+                          ? (responseToRender.traceId ?? "")
+                          : ""
+                      }
+                      response={responseToRender}
+                      onSuccess={() => {
+                        // Close dialog on success
+                        const dialogEl =
+                          document.querySelector('[role="dialog"]');
+                        if (dialogEl) {
+                          const closeButton =
+                            dialogEl.querySelector<HTMLButtonElement>(
+                              'button[aria-label="Close"]',
+                            );
+                          closeButton?.click();
+                        }
+                      }}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </>
           )}
         </CustomTabsList>
         <CustomTabsContent value="response" className="h-full">
@@ -77,7 +120,16 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
             FailState={<FailedRequest response={responseToRender} />}
             EmptyState={<NoResponse />}
           >
-            <div className={cn("grid grid-rows-[auto_1fr]")}>
+            <div className={cn("grid grid-rows-[auto_auto_1fr]")}>
+              {responseToRender && (
+                <div className="mb-4">
+                  <ResponseSummary
+                    response={responseToRender}
+                    transformUrl={removeServiceUrlFromPath}
+                  />
+                </div>
+              )}
+              <ErrorBanner activeResponse={responseToRender} />
               <ResponseBody
                 response={responseToRender}
                 // HACK - To support absolutely positioned bottom toolbar
@@ -132,47 +184,6 @@ function TabContentInner({
   );
 }
 
-function ResponseSummary({
-  response,
-  transformUrl = (url: string) => url,
-}: {
-  response?: ProxiedRequestResponse | RequestorActiveResponse;
-  transformUrl?: (url: string) => string;
-}) {
-  const status = isRequestorActiveResponse(response)
-    ? response?.responseStatusCode
-    : response?.app_responses?.responseStatusCode;
-  const method = isRequestorActiveResponse(response)
-    ? response?.requestMethod
-    : response?.app_requests?.requestMethod;
-  const url = isRequestorActiveResponse(response)
-    ? response?.requestUrl
-    : parsePathFromRequestUrl(
-        response?.app_requests?.requestUrl ?? "",
-        response?.app_requests?.requestQueryParams ?? undefined,
-      );
-  return (
-    <div className="flex items-center space-x-2 text-sm">
-      <StatusCode status={status ?? "—"} isFailure={!status} />
-      <div>
-        <Method method={method ?? "—"} />
-        <span
-          className={cn(
-            "font-mono",
-            "whitespace-nowrap",
-            "overflow-ellipsis",
-            "text-xs",
-            "ml-2",
-            "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
-          )}
-        >
-          {transformUrl(url ?? "")}
-        </span>
-      </div>
-    </div>
-  );
-}
-
 function NoResponse() {
   return (
     <div className="flex flex-col items-center justify-center text-muted-foreground h-full">
@@ -210,5 +221,71 @@ function LoadingResponseBody() {
       </div>
       <Skeleton className="w-full h-32 mt-2" />
     </>
+  );
+}
+
+function ErrorBanner({
+  activeResponse,
+}: {
+  activeResponse: ProxiedRequestResponse | RequestorActiveResponse | undefined;
+}) {
+  // HACK - To appease crufty types from Studio... we don't have proxied request/responses in Playground yet
+  if (!isRequestorActiveResponse(activeResponse)) {
+    return null;
+  }
+
+  const statusCode = Number(activeResponse?.responseStatusCode);
+  if (!statusCode || !(statusCode >= 400)) {
+    return null;
+  }
+
+  const isServerError = statusCode >= 500;
+  const errorType = isServerError ? "Server Error" : "Client Error";
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <div className="flex items-center min-h-9 bg-destructive/10 border-destructive/20 border rounded-lg mb-4 group transition-all hover:bg-destructive/15">
+          <div className="flex items-center gap-3 px-3 pt-2 pb-2.5 w-full">
+            <div className="rounded-full bg-destructive/15 p-1.5 group-hover:bg-destructive/25 transition-colors">
+              <Icon
+                icon="lucide:alert-circle"
+                className="w-3.5 h-3.5 text-destructive"
+              />
+            </div>
+            <span className="text-sm font-medium text-destructive">
+              {errorType} - Status {statusCode}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-auto hover:bg-destructive/50"
+            >
+              Report Issue
+            </Button>
+          </div>
+        </div>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Report Issue</DialogTitle>
+        </DialogHeader>
+        <FeedbackForm
+          traceId={activeResponse.traceId ?? ""}
+          response={activeResponse}
+          isError
+          onSuccess={() => {
+            // Close dialog on success
+            const dialogEl = document.querySelector('[role="dialog"]');
+            if (dialogEl) {
+              const closeButton = dialogEl.querySelector<HTMLButtonElement>(
+                'button[aria-label="Close"]',
+              );
+              closeButton?.click();
+            }
+          }}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }
