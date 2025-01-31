@@ -52,6 +52,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { z } from "zod";
 import { isOpenApiV2, isOpenApiV3x } from "../lib/isOpenApiV2";
+import { useShake } from "@/hooks";
 
 type OpenAPIOperation = OpenAPI.Operation;
 export const Route = createFileRoute("/workflow/$workflowId")({
@@ -128,10 +129,6 @@ function WorkflowDetail() {
     };
   };
 
-  const handleInputChange = (key: string, value?: string) => {
-    setInputValue(key, value || "");
-  };
-
   if (loadingError || parsingError) {
     return (
       <div className="grid place-items-center h-full">
@@ -189,7 +186,7 @@ function WorkflowDetail() {
           <ListSection
             title={
               <div className="grid gap-2 items-center grid-cols-[1fr_auto]">
-                <h3 className="text-lg font-medium flex items-center gap-2">
+                <h3 className="text-lg font-medium flex items-center gap-2 justify-between">
                   Steps
                   <div className="font-normal text-sm text-muted-foreground flex items-center">
                     <Button
@@ -198,7 +195,7 @@ function WorkflowDetail() {
                       className="w-auto px-1 py-1 hover:text-muted rounded-sm gap-0"
                     >
                       <Play />
-                      {workflow.steps.length} steps
+                      Run {workflow.steps.length} steps
                     </Button>
                   </div>
                 </h3>
@@ -362,7 +359,8 @@ function getInput(
       return (
         <Input
           type="number"
-          className={cn(codeMirrorClassNames, "bg-muted")}
+          className={cn(codeMirrorClassNames, "bg-muted", "px-2")}
+          placeholder="Enter an integer"
           value={value}
           onChange={(e) => setInputValue(propertyKey, e.target.value)}
           name={schema.title}
@@ -452,6 +450,7 @@ function StepDetails({
   });
   const { data: spec } = useOpenApiSpec(openapi);
   const { data: validatedOpenApi } = useOpenApiParse(spec);
+  const { shakeClassName, triggerShake } = useShake()
 
   const addServiceUrlIfBarePath = (path: string) => {
     if (!validatedOpenApi) {
@@ -593,6 +592,38 @@ function StepDetails({
           <div className="grid grid-cols-[1fr_auto] gap-1">
             <h2 className="text-2xl font-medium">{step.description}</h2>
             <div className="flex gap-2 items-center">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={(e) => {
+                      if (hasUnresolvedParams) {
+                        triggerShake()
+                        e.preventDefault();
+                        return;
+                      }
+                      handleExecute();
+                    }}
+                    size="sm"
+                    className={cn("gap-1", shakeClassName)}
+                    disabled={isLoading}
+                  >
+                    <ArrowDownToDot className="w-4 h-4" />
+                    {result ? "Re-run Step" : "Run Step"}
+                  </Button>
+                </TooltipTrigger>
+                {hasUnresolvedParams && (
+                  <TooltipContent>
+                    <p>Cannot execute: Unresolved values for parameters:</p>
+                    <ul className="mt-2 list-disc list-inside">
+                      {unresolvedParams.map((param) => (
+                        <li key={param.name} className="text-sm">
+                          {param.name}: {param.value}
+                        </li>
+                      ))}
+                    </ul>
+                  </TooltipContent>
+                )}
+              </Tooltip>
               <Link
                 to="."
                 className={cn(
@@ -623,37 +654,6 @@ function StepDetails({
               >
                 <StepForward className="w-4 h-4" />
               </Link>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={(e) => {
-                      if (hasUnresolvedParams) {
-                        e.preventDefault();
-                        return;
-                      }
-                      handleExecute();
-                    }}
-                    size="sm"
-                    className="gap-1"
-                    disabled={isLoading}
-                  >
-                    <ArrowDownToDot className="w-4 h-4" />
-                    {result ? "Re-run Step" : "Run Step"}
-                  </Button>
-                </TooltipTrigger>
-                {hasUnresolvedParams && (
-                  <TooltipContent>
-                    <p>Cannot execute: Unresolved values for parameters:</p>
-                    <ul className="mt-2 list-disc list-inside">
-                      {unresolvedParams.map((param) => (
-                        <li key={param.name} className="text-sm">
-                          {param.name}: {param.value}
-                        </li>
-                      ))}
-                    </ul>
-                  </TooltipContent>
-                )}
-              </Tooltip>{" "}
             </div>
           </div>
         </div>
