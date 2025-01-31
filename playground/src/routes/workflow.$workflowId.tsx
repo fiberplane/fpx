@@ -36,9 +36,12 @@ import {
   useSearch,
 } from "@tanstack/react-router";
 import {
+  ArrowDownToDot,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
+  Edit,
+  Play,
+  StepBack,
+  StepForward,
   // Link as LinkIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -213,41 +216,48 @@ function WorkflowDetail() {
           <div>
             <div className="flex justify-between gap-2 items-center mb-4">
               <h3 className="text-lg font-medium flex items-center gap-2">
-                Steps{" "}
-                <div className="font-normal text-sm text-muted-foreground">
-                  {workflow.steps.length} total
+                Steps
+                <div className="font-normal text-sm text-muted-foreground flex items-center">
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className="w-auto px-1 py-1 hover:text-muted rounded-sm gap-0"
+                  >
+                    <Play />
+                    {workflow.steps.length} steps
+                  </Button>
                 </div>
               </h3>
               <div className="flex gap-2 items-center h-fit">
                 <Link
                   to="."
                   className={cn(
-                    "flex items-center gap-1 text-sm text-muted-foreground",
+                    "flex items-center gap-1 text-sm text-muted-foreground  p-1 rounded-sm",
                     stepIndex === 0 || stepIndex === -1
                       ? "pointer-events-none"
-                      : "pointer-events-auto bg-primary text-primary-foreground",
+                      : "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary",
                   )}
                   search={(prev) => ({
                     ...prev,
                     stepId: workflow.steps[stepIndex - 1]?.stepId,
                   })}
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <StepBack className="w-4 h-4" />
                 </Link>
                 <Link
                   to="."
                   className={cn(
-                    "flex items-center gap-1 text-sm text-muted-foreground",
+                    "flex items-center gap-1 text-sm text-muted-foreground  p-1 rounded-sm",
                     stepIndex >= workflow.steps.length - 1 || stepIndex === -1
                       ? "pointer-events-none"
-                      : "pointer-events-auto bg-primary text-primary-foreground",
+                      : "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary p-1 rounded-sm",
                   )}
                   search={(prev) => ({
                     ...prev,
                     stepId: workflow.steps[stepIndex + 1]?.stepId,
                   })}
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <StepForward className="w-4 h-4" />
                 </Link>
               </div>
             </div>
@@ -273,6 +283,14 @@ function WorkflowDetail() {
           <StepDetails
             step={selectedStep}
             operationDetails={getOperationDetails(selectedStep.operation)}
+            nextStepId={
+              stepIndex < workflow.steps.length - 1
+                ? workflow.steps[stepIndex + 1].stepId
+                : undefined
+            }
+            previousStepId={
+              stepIndex > 0 ? workflow.steps[stepIndex - 1].stepId : undefined
+            }
           />
         </div>
       )}
@@ -312,6 +330,8 @@ const StepperItem = (
 
 interface StepDetailsProps {
   step: WorkflowStep;
+  nextStepId?: string;
+  previousStepId?: string;
   operationDetails: {
     method: string;
     path: string;
@@ -319,7 +339,12 @@ interface StepDetailsProps {
   } | null;
 }
 
-function StepDetails({ step, operationDetails }: StepDetailsProps) {
+function StepDetails({
+  step,
+  operationDetails,
+  nextStepId,
+  previousStepId,
+}: StepDetailsProps) {
   const {
     workflowState,
     resolveRuntimeExpression,
@@ -456,13 +481,73 @@ function StepDetails({ step, operationDetails }: StepDetailsProps) {
     return value === param.value && param.value.startsWith("$");
   });
 
-  console.log("stepId", step.stepId);
   return (
     <div className="h-full p-4 overflow-y-auto overflow-x-hidden border rounded-md ">
       <div className="max-w-[800px]">
-        <div className="grid items-center justify-between mb-6">
-          <div className="grid gap-1">
+        <div className="grid items-center mb-6">
+          <div className="grid grid-cols-[1fr_auto] gap-1">
             <h2 className="text-2xl font-medium">{step.description}</h2>
+            <div className="flex gap-2 items-center">
+              <Link
+                to="."
+                className={cn(
+                  "flex items-center gap-1 text-sm text-muted-foreground  p-1 rounded-sm",
+                  previousStepId
+                    ? "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary"
+                    : "pointer-events-none",
+                )}
+                search={(prev) => ({
+                  ...prev,
+                  stepId: previousStepId,
+                })}
+              >
+                <StepBack className="w-4 h-4" />
+              </Link>
+              <Link
+                to="."
+                className={cn(
+                  "flex items-center gap-1 text-sm text-muted-foreground  p-1 rounded-sm",
+                  nextStepId
+                    ? "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary"
+                    : "pointer-events-none",
+                )}
+                search={(prev) => ({
+                  ...prev,
+                  stepId: nextStepId,
+                })}
+              >
+                <StepForward className="w-4 h-4" />
+              </Link>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={(e) => {
+                      if (hasUnresolvedParams) {
+                        e.preventDefault();
+                        return;
+                      }
+                      handleExecute();
+                    }}
+                    disabled={isLoading}
+                  >
+                    <ArrowDownToDot className="w-4 h-4" />
+                    {result ? "Re-run Step" : "Run Step"}
+                  </Button>
+                </TooltipTrigger>
+                {hasUnresolvedParams && (
+                  <TooltipContent>
+                    <p>Cannot execute: Unresolved values for parameters:</p>
+                    <ul className="mt-2 list-disc list-inside">
+                      {unresolvedParams.map((param) => (
+                        <li key={param.name} className="text-sm">
+                          {param.name}: {param.value}
+                        </li>
+                      ))}
+                    </ul>
+                  </TooltipContent>
+                )}
+              </Tooltip>{" "}
+            </div>
           </div>
         </div>
 
@@ -489,36 +574,6 @@ function StepDetails({ step, operationDetails }: StepDetailsProps) {
               </div>
 
               {/* Execution controls */}
-              <div className="flex gap-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={(e) => {
-                        if (hasUnresolvedParams) {
-                          e.preventDefault();
-                          return;
-                        }
-                        handleExecute();
-                      }}
-                      disabled={isLoading}
-                    >
-                      {result ? "Re-run Step" : "Execute Step"}
-                    </Button>
-                  </TooltipTrigger>
-                  {hasUnresolvedParams && (
-                    <TooltipContent>
-                      <p>Cannot execute: Unresolved values for parameters:</p>
-                      <ul className="mt-2 list-disc list-inside">
-                        {unresolvedParams.map((param) => (
-                          <li key={param.name} className="text-sm">
-                            {param.name}: {param.value}
-                          </li>
-                        ))}
-                      </ul>
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              </div>
             </div>
             <div className="mt-6 space-y-4">
               {(result || executeStep.error || isLoading) && (
@@ -578,8 +633,8 @@ function StepDetails({ step, operationDetails }: StepDetailsProps) {
                             {String(
                               JSON.stringify(
                                 (stepState as ExecuteStepResult)?.headers ??
-                                result?.headers ??
-                                {},
+                                  result?.headers ??
+                                  {},
                                 null,
                                 2,
                               ),
@@ -593,7 +648,7 @@ function StepDetails({ step, operationDetails }: StepDetailsProps) {
                             {String(
                               JSON.stringify(
                                 (stepState as ExecuteStepResult)?.data ??
-                                result?.data,
+                                  result?.data,
                                 null,
                                 2,
                               ),
@@ -807,17 +862,33 @@ function ParameterItem({ param }: { param: Parameter }) {
   const { resolveRuntimeExpression } = useWorkflowStore();
   // console.log('params', param);
   const resolvedValue = resolveRuntimeExpression(param.value);
-  const value = resolvedValue === param.name ? NOT_FOUND : resolvedValue;
+  const value = resolvedValue === param.value ? NOT_FOUND : resolvedValue;
 
   return (
     <div className="text-sm grid grid-cols-[200px_auto] max-w-full overflow-hidden">
       <div>{param.name}:</div>
       <div className="overflow-x-auto">
         {value === NOT_FOUND ? (
-          <>
-            <em className="text-muted-foreground">No value</em>
-            {/* <div className="text-sm font-sans text-muted-foreground">{output.value}</div> */}
-          </>
+          param.value.startsWith("$steps.") ? (
+            <div>
+              <div className="text-warning italic">No value set</div>
+              <div className="text-sm font-sans text-muted-foreground">
+                Value not found in step
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-2 justify-start items-center">
+              <div className="text-danger italic">No value set</div>
+              <Button
+                variant="outline"
+                size="icon-xs"
+                className="w-auto px-1 py-1 hover:text-primary-foreground font-normal"
+              >
+                <Edit />
+                edit
+              </Button>
+            </div>
+          )
         ) : (
           <>
             <pre className="font-mono bg-background overflow-auto max-w-full">
@@ -865,7 +936,7 @@ function OutputItem({
       <div className="overflow-x-auto">
         {value === NOT_FOUND ? (
           <>
-            <em className="text-muted-foreground">No value</em>
+            <em className="text-muted-foreground">No value set</em>
             {/* <div className="text-sm font-sans text-muted-foreground">{output.value}</div> */}
           </>
         ) : (
