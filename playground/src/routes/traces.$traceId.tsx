@@ -18,6 +18,7 @@ import {
 import { useIsLgScreen, useOrphanLogs } from "@/hooks";
 import { useTraceSummary } from "@/lib/hooks/useTraceSummary";
 import { traceQueryOptions } from "@/lib/hooks/useTraces";
+import type { ApiResponse } from "@/types";
 import { cn } from "@/utils";
 import { isMac } from "@/utils";
 import type { TraceDetailSpansResponse } from "@fiberplane/fpx-types";
@@ -36,12 +37,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { z } from "zod";
-import { ErrorBoundary } from "./traces.index";
-import type { ApiResponse } from "@/types";
 import ReactMarkdown from "react-markdown";
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { z } from "zod";
+import { ErrorBoundary } from "./traces.index";
 
 function MarkdownRenderer({ content }: { content: string }) {
   return (
@@ -195,7 +195,11 @@ function TraceDetailFloatingSidePanel({
                   View trace details and analysis
                 </DialogDescription>
                 <DialogClose asChild>
-                  <Button variant="ghost" size="icon" className="ml-auto p-0.5 w-6 h-6 hover:bg-primary/50">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="ml-auto p-0.5 w-6 h-6 hover:bg-primary/50"
+                  >
                     <Icon icon="lucide:panel-right-close" />
                   </Button>
                 </DialogClose>
@@ -235,16 +239,15 @@ function TraceDetailAssistant({
   }, [getSummary, trace.traceId, trace.spans, queryClient, queryKey]);
 
   // Use cached data if available
-  const data = queryClient.getQueryData<ApiResponse<{ summary: string }>>(queryKey) ?? summaryData;
+  const data =
+    queryClient.getQueryData<ApiResponse<{ summary: string }>>(queryKey) ??
+    summaryData;
 
   return (
     <div className="flex flex-col gap-4 overflow-hidden">
       <div className="flex flex-col gap-2">
         <h3 className="text-lg font-medium flex items-center gap-2 text-foreground/70">
-          <Icon
-            icon="lucide:sparkles"
-            className="h-4 w-4 flex-shrink-0"
-          />
+          <Icon icon="lucide:sparkles" className="h-4 w-4 flex-shrink-0" />
           Analysis
         </h3>
 

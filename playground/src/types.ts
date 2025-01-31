@@ -98,23 +98,25 @@ export interface Workflow {
 export interface JSONSchema {
   type: "object";
   properties: {
-    [key: string]: {
-      type: "string" | "number" | "integer" | "boolean" | "object" | "array";
-      description: string;
-      title?: string;
-      default?: unknown;
-      examples?: unknown[];
-      items?: JSONSchema; // For array types
-      properties?: {
-        // For object types
-        [key: string]: JSONSchema;
-      };
-      required?: string[];
-      [key: string]: unknown; // For other valid JSON Schema properties
-    };
+    [key: string]: JSONPropertyValueSchema;
   };
   required?: string[];
   additionalProperties?: boolean;
+}
+
+export interface JSONPropertyValueSchema {
+  type: "string" | "number" | "integer" | "boolean" | "object" | "array";
+  description: string;
+  title?: string;
+  default?: unknown;
+  examples?: unknown[];
+  items?: JSONSchema; // For array types
+  properties?: {
+    // For object types
+    [key: string]: JSONSchema;
+  };
+  required?: string[];
+  [key: string]: unknown; // For other valid JSON Schema properties
 }
 
 export interface ApiResponse<T> {

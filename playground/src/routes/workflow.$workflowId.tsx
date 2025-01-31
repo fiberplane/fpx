@@ -1,4 +1,7 @@
-import { CodeMirrorInput } from "@/components/CodeMirrorEditor/CodeMirrorInput";
+import {
+  CodeMirrorInput,
+  codeMirrorClassNames,
+} from "@/components/CodeMirrorEditor/CodeMirrorInput";
 import { Method } from "@/components/Method";
 import { Button } from "@/components/ui/button";
 import type { OpenAPI } from "openapi-types";
@@ -9,6 +12,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
 import { Tabs } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -27,7 +31,7 @@ import type { ExecuteStepResult } from "@/lib/hooks/useWorkflows";
 import { useExecuteStep } from "@/lib/hooks/useWorkflows";
 import { cn } from "@/lib/utils";
 import { useWorkflowStore } from "@/lib/workflowStore";
-import type { Parameter, WorkflowStep } from "@/types";
+import type { JSONPropertyValueSchema, Parameter, WorkflowStep } from "@/types";
 import {
   Link,
   createFileRoute,
@@ -73,7 +77,6 @@ function WorkflowDetail() {
   // const navigate = useNavigate({ from: Route.fullPath });
   const { stepId } = useSearch({ from: Route.fullPath });
 
-  const { setInputValue, inputValues } = useWorkflowStore();
   const selectedStep =
     workflow.steps.find((step) => step.stepId === stepId) || workflow.steps[0];
 
@@ -142,7 +145,9 @@ function WorkflowDetail() {
     );
   }
 
-  const stepIndex = workflow.steps.findIndex((step) => step.stepId === stepId);
+  const stepIndex = workflow.steps.findIndex(
+    (step) => step.stepId === selectedStep.stepId,
+  );
 
   return (
     <div
@@ -162,73 +167,61 @@ function WorkflowDetail() {
         </div>
 
         <div className="grid gap-6">
-          <div>
-            <h3 className="mb-4 text-lg font-medium">Inputs</h3>
+          {/* <div>
+            <h3 className="mb-4 text-lg font-medium">Inputs</h3> */}
+          <ListSection title="Inputs">
             {workflow.inputs.properties && (
               <CollapsibleList
                 items={Object.entries(workflow.inputs.properties)}
                 maxItems={5}
                 className="grid gap-2 max-w-[800px]"
                 renderItem={([key, schema]) => (
-                  <div key={key} className="grid gap-1 lg:grid-cols-2">
-                    <div className="pt-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">
-                          {schema.title || key}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          ({schema.type})
-                        </span>
-                        {workflow.inputs.required?.includes(key) && (
-                          <span className="text-xs text-destructive">
-                            *required
-                          </span>
-                        )}
-                      </div>
-                      {schema.description && (
-                        <p className="text-sm text-muted-foreground">
-                          {schema.description}
-                        </p>
-                      )}
-                      {schema.examples && schema.examples.length > 0 && (
-                        <p className="text-xs text-muted-foreground">
-                          Example: {JSON.stringify(schema.examples[0])}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <CodeMirrorInput
-                        value={inputValues[key] || ""}
-                        onChange={(value) => handleInputChange(key, value)}
-                        placeholder={
-                          schema.examples?.[0]?.toString() ||
-                          `Enter ${schema.type}`
-                        }
-                        className="mt-1 bg-muted"
-                      />
-                    </div>
-                  </div>
+                  <InputItem
+                    key={key}
+                    propertyKey={key}
+                    schema={schema}
+                    value={""}
+                  />
                 )}
               />
             )}
-          </div>
-          <div>
-            <div className="flex justify-between gap-2 items-center mb-4">
-              <h3 className="text-lg font-medium flex items-center gap-2">
-                Steps
-                <div className="font-normal text-sm text-muted-foreground flex items-center">
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    className="w-auto px-1 py-1 hover:text-muted rounded-sm gap-0"
-                  >
-                    <Play />
-                    {workflow.steps.length} steps
-                  </Button>
-                </div>
-              </h3>
-              <div className="flex gap-2 items-center h-fit">
+          </ListSection>
+          <ListSection
+            title={
+              <div className="grid gap-2 items-center grid-cols-[1fr_auto]">
+                <h3 className="text-lg font-medium flex items-center gap-2">
+                  Steps
+                  <div className="font-normal text-sm text-muted-foreground flex items-center">
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      className="w-auto px-1 py-1 hover:text-muted rounded-sm gap-0"
+                    >
+                      <Play />
+                      {workflow.steps.length} steps
+                    </Button>
+                  </div>
+                </h3>
+              </div>
+            }
+          >
+            <div className="grid gap-1">
+              <div className="grid gap-2">
+                {workflow.steps.map((step, index) => (
+                  <div key={step.stepId}>
+                    <StepperItem
+                      index={index}
+                      stepId={step.stepId}
+                      operation={step.operation}
+                      description={step.description}
+                      selected={selectedStep.stepId === step.stepId}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2 items-center h-fit text-muted-foreground justify-center border-t border-t-muted pt-2">
+                Go to
                 <Link
                   to="."
                   className={cn(
@@ -237,10 +230,15 @@ function WorkflowDetail() {
                       ? "pointer-events-none"
                       : "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary",
                   )}
-                  search={(prev) => ({
-                    ...prev,
-                    stepId: workflow.steps[stepIndex - 1]?.stepId,
-                  })}
+                  title="previous"
+                  search={
+                    stepIndex === 0 || stepIndex === -1
+                      ? (prev) => ({
+                        ...prev,
+                        stepId: workflow.steps[stepIndex - 1]?.stepId,
+                      })
+                      : undefined
+                  }
                 >
                   <StepBack className="w-4 h-4" />
                 </Link>
@@ -248,33 +246,25 @@ function WorkflowDetail() {
                   to="."
                   className={cn(
                     "flex items-center gap-1 text-sm text-muted-foreground  p-1 rounded-sm",
-                    stepIndex >= workflow.steps.length - 1 || stepIndex === -1
-                      ? "pointer-events-none"
-                      : "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary p-1 rounded-sm",
+                    stepIndex < workflow.steps.length - 1 && stepIndex !== -1
+                      ? "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary p-1 rounded-sm"
+                      : "pointer-events-none",
                   )}
-                  search={(prev) => ({
-                    ...prev,
-                    stepId: workflow.steps[stepIndex + 1]?.stepId,
-                  })}
+                  title="next"
+                  search={
+                    stepIndex < workflow.steps.length - 1 && stepIndex !== -1
+                      ? (prev) => ({
+                        ...prev,
+                        stepId: workflow.steps[stepIndex + 1]?.stepId,
+                      })
+                      : undefined
+                  }
                 >
                   <StepForward className="w-4 h-4" />
                 </Link>
               </div>
             </div>
-            <div className="grid gap-2 -mx-2">
-              {workflow.steps.map((step, index) => (
-                <div key={step.stepId}>
-                  <StepperItem
-                    index={index}
-                    stepId={step.stepId}
-                    operation={step.operation}
-                    description={step.description}
-                    selected={selectedStep.stepId === step.stepId}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+          </ListSection>
         </div>
       </div>
 
@@ -295,6 +285,108 @@ function WorkflowDetail() {
         </div>
       )}
     </div>
+  );
+
+  function InputItem({
+    propertyKey,
+    schema,
+  }: {
+    propertyKey: string;
+    value: string;
+    schema: JSONPropertyValueSchema;
+  }): ReactNode {
+    const { setInputValue, inputValues } = useWorkflowStore();
+    const value = inputValues[propertyKey] || "";
+
+    return (
+      <div key={propertyKey} className="grid gap-1 lg:grid-cols-2 items-center">
+        <div className="pt-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">
+              {schema.title || propertyKey}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              ({schema.type})
+            </span>
+            {workflow.inputs.required?.includes(propertyKey) && (
+              <span className="text-xs text-destructive">*required</span>
+            )}
+          </div>
+          {schema.description && (
+            <p className="text-sm text-muted-foreground">
+              {schema.description}
+            </p>
+          )}
+          {schema.examples && schema.examples.length > 0 && (
+            <p className="text-xs text-muted-foreground">
+              Example: {JSON.stringify(schema.examples[0])}
+            </p>
+          )}
+        </div>
+
+        <div>
+          {/* {schema.type === "boolean" && } */}
+          {/* <CodeMirrorInput
+          value={value || ""}
+          onChange={ }
+          placeholder={schema.examples?.[0]?.toString() ||
+            `Enter ${schema.type}`}
+          className="mt-1 bg-muted" /> */}
+          {getInput(propertyKey, value, schema, setInputValue)}
+        </div>
+      </div>
+    );
+  }
+}
+
+function getInput(
+  propertyKey: string,
+  value: string,
+  schema: JSONPropertyValueSchema,
+  setInputValue: (key: string, value: string) => void,
+): ReactNode {
+  switch (schema.type) {
+    case "boolean":
+      return (
+        <input
+          type="checkbox"
+          checked={value === "true"}
+          onChange={(event) =>
+            setInputValue(propertyKey, event.target.checked ? "true" : "false")
+          }
+          name={schema.title}
+        // onChange={(e) => handleInputChange(schema.title, e.target.checked)}
+        />
+      );
+    case "integer":
+      return (
+        <Input
+          type="number"
+          className={cn(codeMirrorClassNames, "bg-muted")}
+          value={value}
+          onChange={(e) => setInputValue(propertyKey, e.target.value)}
+          name={schema.title}
+        />
+      );
+    case "number":
+      return (
+        <Input
+          type="number"
+          className={cn(codeMirrorClassNames, "bg-muted")}
+          value={value}
+          onChange={(e) => setInputValue(propertyKey, e.target.value)}
+          name={schema.title}
+        />
+      );
+  }
+
+  return (
+    <CodeMirrorInput
+      value={value || ""}
+      onChange={(value) => setInputValue(propertyKey, value || "")}
+      placeholder={schema.examples?.[0]?.toString() || `Enter ${schema.type}`}
+      className="mt-1 bg-muted"
+    />
   );
 }
 
@@ -362,7 +454,6 @@ function StepDetails({
   const { data: validatedOpenApi } = useOpenApiParse(spec);
 
   const addServiceUrlIfBarePath = (path: string) => {
-    console.log("addServiceUrlIfBarePath", path);
     if (!validatedOpenApi) {
       return path;
     }
@@ -460,7 +551,6 @@ function StepDetails({
           queueMicrotask(() => {
             for (const output of step.outputs) {
               const resolvedValue = resolveRuntimeExpression(output.value);
-              console.log("updating output value", output.key, resolvedValue);
               setOutputValue(
                 `$steps.${step.stepId}.outputs.${output.key}`,
                 resolvedValue,
@@ -543,6 +633,8 @@ function StepDetails({
                       }
                       handleExecute();
                     }}
+                    size="sm"
+                    className="gap-1"
                     disabled={isLoading}
                   >
                     <ArrowDownToDot className="w-4 h-4" />
@@ -590,8 +682,8 @@ function StepDetails({
 
               {/* Execution controls */}
             </div>
-            <div className="mt-6 space-y-4">
-              {(result || executeStep.error || isLoading) && (
+            {(result || executeStep.error || isLoading) && (
+              <div className="mt-6 space-y-4">
                 <div className="py-1.5 rounded-md bg-muted">
                   {errorMessage && (
                     <div className="p-3 rounded-md bg-destructive/10">
@@ -648,8 +740,8 @@ function StepDetails({
                             {String(
                               JSON.stringify(
                                 (stepState as ExecuteStepResult)?.headers ??
-                                  result?.headers ??
-                                  {},
+                                result?.headers ??
+                                {},
                                 null,
                                 2,
                               ),
@@ -663,7 +755,7 @@ function StepDetails({
                             {String(
                               JSON.stringify(
                                 (stepState as ExecuteStepResult)?.data ??
-                                  result?.data,
+                                result?.data,
                                 null,
                                 2,
                               ),
@@ -674,46 +766,50 @@ function StepDetails({
                     </Tabs>
                   )}
                 </div>
-              )}
-            </div>
-
-            {step.parameters.length > 0 && (
-              <div className="py-1.5 rounded-md bg-muted">
-                <div className="grid items-center gap-3 mx-2">
-                  <div className="mb-2 text-sm font-medium">Parameters</div>
-                  <div className="bg-background rounded-md p-2 w-full">
-                    <CollapsibleList
-                      items={step.parameters}
-                      renderItem={(param) => (
-                        <ParameterItem key={param.name} param={param} />
-                      )}
-                    />
-                  </div>
-                </div>
               </div>
             )}
+
+            {step.parameters.length > 0 && (
+              <ListSection title="Parameters">
+                <CollapsibleList
+                  items={step.parameters}
+                  renderItem={(param) => (
+                    <ParameterItem key={param.name} param={param} />
+                  )}
+                />
+              </ListSection>
+            )}
             {step.outputs.length > 0 && (
-              <div className="py-1.5 rounded-md bg-muted">
-                <div className="grid items-center gap-3 mx-2">
-                  <p className="mb-1 text-sm font-medium">Outputs</p>
-                  <div className="bg-background rounded-md p-2 w-full">
-                    <CollapsibleList
-                      className="overflow-hidden mx-1"
-                      items={step.outputs}
-                      renderItem={(output) => (
-                        <OutputItem
-                          key={output.key}
-                          stepId={step.stepId}
-                          output={output}
-                        />
-                      )}
+              <ListSection title="Outputs">
+                <CollapsibleList
+                  className="overflow-hidden mx-1"
+                  items={step.outputs}
+                  renderItem={(output) => (
+                    <OutputItem
+                      key={output.key}
+                      stepId={step.stepId}
+                      output={output}
                     />
-                  </div>
-                </div>
-              </div>
+                  )}
+                />
+              </ListSection>
             )}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ListSection({
+  title,
+  children,
+}: { title: ReactNode; children: ReactNode }) {
+  return (
+    <div className="py-1.5 pb-2 rounded-lg bg-muted">
+      <div className="grid items-center mx-2">
+        <div className="p-1.5 pt-0.5 text-sm font-medium">{title}</div>
+        <div className="bg-background rounded-md p-2 w-full">{children}</div>
       </div>
     </div>
   );
@@ -875,7 +971,6 @@ function CollapsibleList<T>({
 
 function ParameterItem({ param }: { param: Parameter }) {
   const { resolveRuntimeExpression } = useWorkflowStore();
-  // console.log('params', param);
   const resolvedValue = resolveRuntimeExpression(param.value);
   const value = resolvedValue === param.value ? NOT_FOUND : resolvedValue;
 
@@ -932,14 +1027,6 @@ function OutputItem({
   const fullStepId = stepId
     ? `$steps.${stepId}.outputs.${output.key}`
     : output.key;
-  // const value = useWorkflowStore(
-  //   useShallow((state) => {
-  //     return fullStepId in state.outputValues
-  //       ? state.outputValues[fullStepId]
-  //       : NOT_FOUND;
-  //   }
-  //   ),
-  // );
   const { resolveRuntimeExpression } = useWorkflowStore();
   const resolvedValue = resolveRuntimeExpression(fullStepId);
   const value = resolvedValue === fullStepId ? NOT_FOUND : resolvedValue;
@@ -952,7 +1039,6 @@ function OutputItem({
         {value === NOT_FOUND ? (
           <>
             <em className="text-muted-foreground">No value set</em>
-            {/* <div className="text-sm font-sans text-muted-foreground">{output.value}</div> */}
           </>
         ) : (
           <>

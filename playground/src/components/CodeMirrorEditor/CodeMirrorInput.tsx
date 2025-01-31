@@ -179,6 +179,21 @@ const preventNewlineInFirefox = keymap.of([
   },
 ]);
 
+const disabledStyling = "focus-within:border-neutral-400/50";
+export const codeMirrorClassNames = cn(
+  "h-auto",
+  "rounded border border-transparent",
+  // Show a text cursor on hover
+  "cursor-text",
+  // Show truncated text when not focused
+  "overflow-hidden whitespace-nowrap text-ellipsis",
+  // Show expanded text when focused
+  "focus-within:overflow-visible focus-within:whitespace-normal focus-within:text-clip",
+  // Show colorful border when focused
+  "focus-within:border-primary",
+  `disabled:${disabledStyling}`,
+);
+
 export function CodeMirrorInput(props: CodeMirrorInputProps) {
   const {
     value,
@@ -227,19 +242,8 @@ export function CodeMirrorInput(props: CodeMirrorInputProps) {
   return (
     <div
       className={cn(
-        "h-auto",
-        "rounded border border-transparent",
-        // Show a text cursor on hover
-        "cursor-text",
-        // Show truncated text when not focused
-        "overflow-hidden whitespace-nowrap text-ellipsis",
-        // Show expanded text when focused
-        "focus-within:overflow-visible focus-within:whitespace-normal focus-within:text-clip",
-        // Show colorful border when focused
-        {
-          "focus-within:border-primary": !readOnly,
-          "focus-within:border-neutral-400/50": readOnly,
-        },
+        codeMirrorClassNames,
+        readOnly && disabledStyling,
         className,
       )}
     >
