@@ -402,7 +402,8 @@ function StepDetails({
 
     // Process parameters into query params and body
     const queryParams = new URLSearchParams();
-    const body: Record<string, unknown> = {};
+    const body: Record<string, unknown> | undefined =
+      method === "GET" || method === "HEAD" ? undefined : {};
     let processedPath = path;
 
     for (const param of step.parameters) {
@@ -416,7 +417,13 @@ function StepDetails({
       } else if (method === "GET" || method === "DELETE") {
         queryParams.append(param.name, String(value));
       } else {
-        body[param.name] = value;
+        if (body) {
+          body[param.name] = value;
+        } else {
+          console.debug(
+            "Trying to add some body params to a GET or HEAD request ... skipping to avoid errors!!",
+          );
+        }
       }
     }
 
@@ -434,7 +441,7 @@ function StepDetails({
         stepId: step.stepId,
         url,
         method,
-        body: Object.keys(body).length > 0 ? body : undefined,
+        body: body && Object.keys(body).length > 0 ? body : undefined,
       },
       {
         onSuccess: (result) => {
