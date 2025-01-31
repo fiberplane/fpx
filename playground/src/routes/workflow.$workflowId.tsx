@@ -981,7 +981,7 @@ function ParameterItem({ param }: { param: Parameter }) {
         {value === NOT_FOUND ? (
           param.value.startsWith("$steps.") ? (
             <div>
-              <div className="text-warning italic">No value set</div>
+              <div className="text-danger italic">No value set</div>
               <div className="text-sm font-sans text-muted-foreground">
                 Value not found in step
               </div>
