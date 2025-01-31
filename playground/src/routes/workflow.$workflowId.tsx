@@ -402,8 +402,11 @@ function StepDetails({
 
     // Process parameters into query params and body
     const queryParams = new URLSearchParams();
+    const lowerCaseMethod = method?.toLowerCase();
     const body: Record<string, unknown> | undefined =
-      method === "GET" || method === "HEAD" ? undefined : {};
+      lowerCaseMethod === "get" || lowerCaseMethod === "head"
+        ? undefined
+        : {};
     let processedPath = path;
 
     for (const param of step.parameters) {
@@ -414,7 +417,12 @@ function StepDetails({
           `{${param.name}}`,
           encodeURIComponent(String(value)),
         );
-      } else if (method === "GET" || method === "DELETE") {
+      } else if (
+        lowerCaseMethod === "get" ||
+        // HACK - Delete could support a body - not sure why we default to putting query params here
+        lowerCaseMethod === "delete" ||
+        lowerCaseMethod === "head"
+      ) {
         queryParams.append(param.name, String(value));
       } else {
         if (body) {
