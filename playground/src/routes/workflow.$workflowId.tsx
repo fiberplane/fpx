@@ -44,7 +44,6 @@ import {
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { z } from "zod";
-import { useShallow } from "zustand/react/shallow";
 import { isOpenApiV2, isOpenApiV3x } from "../lib/isOpenApiV2";
 
 type OpenAPIOperation = OpenAPI.Operation;
@@ -64,15 +63,6 @@ export const Route = createFileRoute("/workflow/$workflowId")({
 
 function WorkflowDetail() {
   const { workflow } = Route.useLoaderData();
-  const content = useRouteContext({
-    from: "__root__",
-    select: (context) => {
-      console.log("context", context);
-      return context.openapi?.content;
-    },
-  });
-  console.log("useRouteContext", content);
-  // const { openapi } = context;
   const openapi = useRouteContext({
     from: "__root__",
     select: (context) => context.openapi,
@@ -279,7 +269,7 @@ function WorkflowDetail() {
       </div>
 
       {selectedStep && (
-        <div className="col-span-2">
+        <div className="col-span-2 overflow-y-auto">
           <StepDetails
             step={selectedStep}
             operationDetails={getOperationDetails(selectedStep.operation)}
@@ -457,7 +447,6 @@ function StepDetails({ step, operationDetails }: StepDetailsProps) {
         : "An unknown error occurred";
 
   const hasUnresolvedParams = step.parameters.some((param) => {
-    console.log("i can haz unresolved?", param.value);
     const value = resolveRuntimeExpression(param.value);
     return value === param.value && param.value.startsWith("$");
   });
@@ -478,176 +467,181 @@ function StepDetails({ step, operationDetails }: StepDetailsProps) {
         </div>
 
         <div className="grid gap-6">
-          <div>
-            <div className="grid gap-4">
-              <div className="flex justify-between gap-2 mx-1.5">
-                <div>
-                  <p className="mb-1 text-sm font-medium">Operation</p>
-                  <div className="flex items-end gap-2 font-mono text-sm">
-                    <Method
-                      method={
-                        operationDetails?.method || step.operation.split(" ")[0]
-                      }
-                    />
-                    <span className="text-muted-foreground">
-                      {operationDetails?.path || step.operation.split(" ")[1]}
-                    </span>
-                  </div>
-                  {operationDetails?.operation?.summary && (
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {operationDetails.operation.summary}
-                    </p>
-                  )}
+          <div className="grid gap-4 overflow-scroll">
+            <div className="flex justify-between gap-2 mx-1.5">
+              <div>
+                <p className="mb-1 text-sm font-medium">Operation</p>
+                <div className="flex items-end gap-2 font-mono text-sm">
+                  <Method
+                    method={
+                      operationDetails?.method || step.operation.split(" ")[0]
+                    }
+                  />
+                  <span className="text-muted-foreground">
+                    {operationDetails?.path || step.operation.split(" ")[1]}
+                  </span>
                 </div>
-
-                {/* Execution controls */}
-                <div className="flex gap-2">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onClick={(e) => {
-                          if (hasUnresolvedParams) {
-                            e.preventDefault();
-                            return;
-                          }
-                          handleExecute();
-                        }}
-                        disabled={isLoading}
-                      >
-                        {result ? "Re-run Step" : "Execute Step"}
-                      </Button>
-                    </TooltipTrigger>
-                    {hasUnresolvedParams && (
-                      <TooltipContent>
-                        <p>Cannot execute: Unresolved values for parameters:</p>
-                        <ul className="mt-2 list-disc list-inside">
-                          {unresolvedParams.map((param) => (
-                            <li key={param.name} className="text-sm">
-                              {param.name}: {param.value}
-                            </li>
-                          ))}
-                        </ul>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </div>
-              </div>
-              <div className="mt-6 space-y-4">
-                {(result || executeStep.error || isLoading) && (
-                  <div className="py-1.5 rounded-md bg-muted">
-                    {errorMessage && (
-                      <div className="p-3 rounded-md bg-destructive/10">
-                        <pre className="text-sm text-destructive">
-                          {String(errorMessage)}
-                        </pre>
-                      </div>
-                    )}
-
-                    {(!!result || !!stepState) && (
-                      <Tabs
-                        value={responseView}
-                        onValueChange={(value) =>
-                          setResponseView(value as "body" | "headers")
-                        }
-                        className="grid grid-rows-[auto_1fr] overflow-hidden h-full"
-                      >
-                        {" "}
-                        <div className="flex items-center gap-3 mb-3 mx-2 justify-between">
-                          <div className="text-sm font-medium">Response</div>
-                          <StatusBadge
-                            status={
-                              isLoading
-                                ? "pending"
-                                : executeStep.error
-                                  ? "error"
-                                  : "success"
-                            }
-                            title={
-                              result?.status
-                                ? `Status code: ${result?.status}`
-                                : undefined
-                            }
-                          />
-                        </div>
-                        <CustomTabsList className="mx-2">
-                          <CustomTabTrigger
-                            key="body"
-                            value="body"
-                            className="flex items-center"
-                          >
-                            Body
-                          </CustomTabTrigger>
-                          <CustomTabTrigger
-                            key="headers"
-                            value="headers"
-                            className="flex items-center"
-                          >
-                            Headers
-                          </CustomTabTrigger>
-                        </CustomTabsList>
-                        <CustomTabsContent value="headers" className="h-full">
-                          <div className="overflow-x-auto">
-                            <pre className="p-3 text-sm rounded-md bg-background">
-                              {String(
-                                JSON.stringify(
-                                  (stepState as ExecuteStepResult)?.headers ??
-                                  result?.headers ??
-                                  {},
-                                  null,
-                                  2,
-                                ),
-                              )}
-                            </pre>
-                          </div>
-                        </CustomTabsContent>
-                        <CustomTabsContent value="body" className="h-full">
-                          <div className="overflow-x-auto">
-                            <pre className="p-3 text-sm rounded-md bg-background">
-                              {String(
-                                JSON.stringify(
-                                  (stepState as ExecuteStepResult)?.data ??
-                                  result?.data,
-                                  null,
-                                  2,
-                                ),
-                              )}
-                            </pre>
-                          </div>
-                        </CustomTabsContent>
-                      </Tabs>
-                    )}
-                  </div>
+                {operationDetails?.operation?.summary && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {operationDetails.operation.summary}
+                  </p>
                 )}
               </div>
 
-              {step.parameters.length > 0 && (
-                <div>
-                  <div className="mb-2 text-sm font-medium">Parameters</div>
-                  <CollapsibleList
-                    items={step.parameters}
-                    renderItem={(param) => (
-                      <ParameterItem key={param.name} param={param} />
-                    )}
-                  />
+              {/* Execution controls */}
+              <div className="flex gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={(e) => {
+                        if (hasUnresolvedParams) {
+                          e.preventDefault();
+                          return;
+                        }
+                        handleExecute();
+                      }}
+                      disabled={isLoading}
+                    >
+                      {result ? "Re-run Step" : "Execute Step"}
+                    </Button>
+                  </TooltipTrigger>
+                  {hasUnresolvedParams && (
+                    <TooltipContent>
+                      <p>Cannot execute: Unresolved values for parameters:</p>
+                      <ul className="mt-2 list-disc list-inside">
+                        {unresolvedParams.map((param) => (
+                          <li key={param.name} className="text-sm">
+                            {param.name}: {param.value}
+                          </li>
+                        ))}
+                      </ul>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </div>
+            </div>
+            <div className="mt-6 space-y-4">
+              {(result || executeStep.error || isLoading) && (
+                <div className="py-1.5 rounded-md bg-muted">
+                  {errorMessage && (
+                    <div className="p-3 rounded-md bg-destructive/10">
+                      <pre className="text-sm text-destructive">
+                        {String(errorMessage)}
+                      </pre>
+                    </div>
+                  )}
+
+                  {(!!result || !!stepState) && (
+                    <Tabs
+                      value={responseView}
+                      onValueChange={(value) =>
+                        setResponseView(value as "body" | "headers")
+                      }
+                      className="grid grid-rows-[auto_1fr] overflow-hidden"
+                    >
+                      <div className="flex items-center gap-3 mb-3 mx-2 justify-between">
+                        <div className="text-sm font-medium">Response</div>
+                        <StatusBadge
+                          status={
+                            isLoading
+                              ? "pending"
+                              : executeStep.error
+                                ? "error"
+                                : "success"
+                          }
+                          title={
+                            result?.status
+                              ? `Status code: ${result?.status}`
+                              : undefined
+                          }
+                        />
+                      </div>
+                      <CustomTabsList className="mx-2">
+                        <CustomTabTrigger
+                          key="body"
+                          value="body"
+                          className="flex items-center"
+                        >
+                          Body
+                        </CustomTabTrigger>
+                        <CustomTabTrigger
+                          key="headers"
+                          value="headers"
+                          className="flex items-center"
+                        >
+                          Headers
+                        </CustomTabTrigger>
+                      </CustomTabsList>
+                      <CustomTabsContent value="headers" className="h-full">
+                        <div className="overflow-x-auto">
+                          <pre className="p-3 text-sm rounded-md bg-background">
+                            {String(
+                              JSON.stringify(
+                                (stepState as ExecuteStepResult)?.headers ??
+                                result?.headers ??
+                                {},
+                                null,
+                                2,
+                              ),
+                            )}
+                          </pre>
+                        </div>
+                      </CustomTabsContent>
+                      <CustomTabsContent value="body" className="h-full">
+                        <div className="overflow-x-auto">
+                          <pre className="p-3 text-sm rounded-md bg-background">
+                            {String(
+                              JSON.stringify(
+                                (stepState as ExecuteStepResult)?.data ??
+                                result?.data,
+                                null,
+                                2,
+                              ),
+                            )}
+                          </pre>
+                        </div>
+                      </CustomTabsContent>
+                    </Tabs>
+                  )}
                 </div>
               )}
-              {step.outputs.length > 0 && (
-                <>
-                  <p className="mb-1 text-sm font-medium">Outputs</p>
-                  <CollapsibleList
-                    className="overflow-hidden"
-                    items={step.outputs}
-                    renderItem={(output) => (
-                      <OutputItem
-                        key={output.key}
-                        stepId={step.stepId}
-                        output={output}
-                      />
-                    )}
-                  />
-                </>
-              )}
             </div>
+
+            {step.parameters.length > 0 && (
+              <div className="py-1.5 rounded-md bg-muted">
+                <div className="grid items-center gap-3 mx-2">
+                  <div className="mb-2 text-sm font-medium">Parameters</div>
+                  <div className="bg-background rounded-md p-2 w-full">
+                    <CollapsibleList
+                      items={step.parameters}
+                      renderItem={(param) => (
+                        <ParameterItem key={param.name} param={param} />
+                      )}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+            {step.outputs.length > 0 && (
+              <div className="py-1.5 rounded-md bg-muted">
+                <div className="grid items-center gap-3 mx-2">
+                  <p className="mb-1 text-sm font-medium">Outputs</p>
+                  <div className="bg-background rounded-md p-2 w-full">
+                    <CollapsibleList
+                      className="overflow-hidden mx-1"
+                      items={step.outputs}
+                      renderItem={(output) => (
+                        <OutputItem
+                          key={output.key}
+                          stepId={step.stepId}
+                          output={output}
+                        />
+                      )}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -811,17 +805,33 @@ function CollapsibleList<T>({
 
 function ParameterItem({ param }: { param: Parameter }) {
   const { resolveRuntimeExpression } = useWorkflowStore();
+  // console.log('params', param);
   const resolvedValue = resolveRuntimeExpression(param.value);
+  const value = resolvedValue === param.name ? NOT_FOUND : resolvedValue;
 
   return (
-    <div className="flex items-start gap-2 text-sm">
-      <div className="font-mono text-muted-foreground">{param.name}:</div>
-      <div className="text-muted-foreground">
-        <span>{String(resolvedValue)}</span>
-        {resolvedValue !== param.value && (
-          <span className="ml-2 text-xs text-muted-foreground">
-            ({param.value})
-          </span>
+    <div className="text-sm grid grid-cols-[200px_auto] max-w-full overflow-hidden">
+      <div>{param.name}:</div>
+      <div className="overflow-x-auto">
+        {value === NOT_FOUND ? (
+          <>
+            <em className="text-muted-foreground">No value</em>
+            {/* <div className="text-sm font-sans text-muted-foreground">{output.value}</div> */}
+          </>
+        ) : (
+          <>
+            <pre className="font-mono bg-background overflow-auto max-w-full">
+              <code>
+                {JSON.stringify(value, null, "\t").replaceAll(
+                  '],\n\t"',
+                  '],\n\n\t"',
+                )}
+              </code>
+            </pre>
+            <div className="text-sm font-sans text-muted-foreground">
+              (value selector: {param.value})
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -836,35 +846,44 @@ function OutputItem({
   const fullStepId = stepId
     ? `$steps.${stepId}.outputs.${output.key}`
     : output.key;
-  console.log("fullStepID", fullStepId);
-  const value = useWorkflowStore(
-    useShallow((state) =>
-      fullStepId in state.outputValues
-        ? state.outputValues[fullStepId]
-        : NOT_FOUND,
-    ),
-  );
+  // const value = useWorkflowStore(
+  //   useShallow((state) => {
+  //     return fullStepId in state.outputValues
+  //       ? state.outputValues[fullStepId]
+  //       : NOT_FOUND;
+  //   }
+  //   ),
+  // );
+  const { resolveRuntimeExpression } = useWorkflowStore();
+  const resolvedValue = resolveRuntimeExpression(fullStepId);
+  const value = resolvedValue === fullStepId ? NOT_FOUND : resolvedValue;
+
   return (
-    <p className="text-sm grid grid-cols-[200px_auto] max-w-full overflow-hidden">
-      <div>{output.key}:</div>
+    <div className="text-sm grid grid-cols-[200px_auto] max-w-full overflow-hidden">
+      <div>{output.key}</div>
 
       <div className="overflow-x-auto">
         {value === NOT_FOUND ? (
-          output.value
+          <>
+            <em className="text-muted-foreground">No value</em>
+            {/* <div className="text-sm font-sans text-muted-foreground">{output.value}</div> */}
+          </>
         ) : (
           <>
             <pre className="font-mono bg-background overflow-auto max-w-full">
               <code>
-                {JSON.stringify(output.value, null, "\t").replaceAll(
+                {JSON.stringify(value, null, "\t").replaceAll(
                   '],\n\t"',
                   '],\n\n\t"',
                 )}
               </code>
             </pre>
-            <div className="text-sm font-sans">(based on: {output.value})</div>
+            <div className="text-sm font-sans text-muted-foreground">
+              (value selector: {output.value})
+            </div>
           </>
         )}
       </div>
-    </p>
+    </div>
   );
 }

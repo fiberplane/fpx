@@ -1,10 +1,10 @@
 import path from "node:path";
+import replace from "@rollup/plugin-replace";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import svgr from "vite-plugin-svgr";
-import replace from '@rollup/plugin-replace';
 
 // The SPA, when running locally, needs to proxy requests to the embedded API sometimes
 // It's nice to be able to configure this.
@@ -47,7 +47,7 @@ export default defineConfig({
       },
       plugins: [
         replace({
-          delimiters: ['', ''],
+          delimiters: ["", ""],
           preventAssignment: true,
           values: {
             // This fixes an issue with the @jsdevtools/ono package in the browser
@@ -56,7 +56,7 @@ export default defineConfig({
               'if (typeof module === "object" && typeof module.exports === "object" && typeof module.exports.default === "object") {',
           },
         }),
-      ]
+      ],
     },
   },
 });
