@@ -84,7 +84,9 @@ const app = new Hono()
 		'/posts',
 		// Must be handler-specific for type-safety
 		zValidator('query', ZSearchQuery),
-		async (c: Context) => {
+                // After going through middleware, Context
+                // is passed into the handler
+		async (c) => {
 			const { search } = c.req.valid('query');
 			// We know `search` is a string in this scope, so we
 			// can handle the request type-safely from here on
