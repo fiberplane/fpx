@@ -66,7 +66,7 @@ export type Context<
 }
 ```
 
-Crucially, `Context` allows us to share data between middleware and handlers type-safely. This can be useful in a number of ways, but we'll start with the `c.req.valid` method, which allows us to access any request data validated by `validator` (or middleware like `zod-validator` that use it internally).
+Crucially, `Context` allows us to [share data between middleware and handlers type-safely.](https://hono.dev/docs/guides/middleware) This can be useful in a number of ways, but we'll start with the `c.req.valid` method, which allows us to access any request data validated by `validator` (or middleware like `zod-validator` that use it internally).
 
 ```tsx
 import { Hono } from 'hono';
