@@ -31,6 +31,15 @@ To get a clear picture of how Hono middleware works, we'll implement the same va
 
 Hono's `validator` is especially powerful in combination with its RPC client, so we'll also take a quick look at how route typing plugs into `hono/client`. We won't be covering OpenAPI integration—that deserves its own discussion—but most topics we address will be relevant in any middleware or handler.
 
+<LinkCard
+  title="Follow along on GitHub"
+  description="All code samples from this article are freely available as a Gist on GitHub"
+  href="https://gist.github.com/ambergristle/f4f805138f0d72d7f5e43edf0ffc8c85"
+  icon="external"
+  target="_blank"
+  rel="noopener noreferrer"
+/>
+
 ## Low-lift validation with `@hono/zod-validator`
 
 If you're already using a type-safe schema library, like Zod or TypeBox, and you just want to plug your schema in and go, Hono's got you covered. You just install the relevant [package-specific validation middleware](https://hono.dev/examples/validator-error-handling#see-also), and it handles most of the boilerplate for you.
