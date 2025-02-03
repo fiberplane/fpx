@@ -19,7 +19,7 @@ axum = { workspace = true, default-features = false, features = [
     "tracing",
     "ws",
 ] }
-bytes = { version = "1.6" }
+bytes = { version = "1.10" }
 clap = { workspace = true, features = ["derive", "env"] }
 fpx = { version = "0.1.0", path = "../fpx", features = [
     "libsql",
@@ -49,7 +49,7 @@ opentelemetry-proto = { version = "0.27", features = [
     "with-schemars",
 ] }
 prost = { version = "0.13" }
-rand = { version = "0.8.5" }
+rand = { version = "0.9.0" }
 schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
