@@ -14,11 +14,6 @@ export function useOpenApiParse(spec: string | undefined) {
       const parsed = JSON.parse(spec);
       const result = await validate(parsed);
       return result;
-      // if (result.errors?.length) {
-      //   throw new Error(result.errors.join("\n"));
-      // }
-
-      // return (result.schema as OpenAPI.Document)
     },
     enabled: !!spec,
     staleTime: Number.POSITIVE_INFINITY,
