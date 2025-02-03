@@ -39,7 +39,7 @@ I'm a long-time Zod fan, so we'll start with Hono's `zod-validator`, but none of
 
 ### Sharing valid data with Context
 
-The first piece of Hono typing we really need to understand is the `Context` object. Whether we're using one of the dozens of official and community middleware—or creating our own—we'll be working with `Context`. It exposes the app environment—including any Cloudflare bindings, the `Request` and `Response`, and a variety of helpers for reading and writing data. You can read more about those in [the Hono `Context` API docs](https://hono.dev/docs/api/context).
+The first piece of Hono typing we really need to understand is the `Context` object. Whether we're using one of the dozens of official and community middleware—or creating our own—we'll be working with `Context`. It exposes the app environment—including bindings for Cloudflare environments, the `Request` and `Response`, and a variety of helpers for reading and writing data. You can read more about those in [the Hono `Context` API docs](https://hono.dev/docs/api/context).
 
 ```tsx
 export type Context<
@@ -48,7 +48,7 @@ export type Context<
 	P extends string = any, 
 	I extends Input = {}
 > = {
-	// Cloudflare bindings and env variables
+	// Env vars and Cloudflare bindings
 	env: E["Bindings"];
 	// Augmented Request with optionally-validated data
 	get req(): HonoRequest<P, I["out"]>; 
@@ -106,7 +106,7 @@ The `zod-validator` package makes it really easy to enforce type-safety within h
 While convenient in development, it's not great for production. This is especially true if you have internals that need obscuring (like auth flows), if you want to standardize error responses, or if your app has complex error-handling requirements (like logging or alerts).
 
 :::note
-Some OAuth flows use validation logic that takes the *unparsed* body as input (typically in combination with a signature in the headers). In these cases, I've found its simplest to verify the request before moving on to validation.
+Some OAuth flows use validation logic that takes the *unparsed* body as input (typically in combination with a signature in the headers). In these cases, I've found it's simplest to verify the request before moving on to validation.
 :::
 
 To override this default behavior, `zValidator` accepts a third `hook` argument: a callback that exposes the validation result and our good friend `Context`. If validation fails, you can send a custom response, or throw to an error handler for additional processing.
@@ -160,7 +160,7 @@ First, let's get a better understanding of how schema output types get from `zVa
 
 If you don't see your favorite validator (or parser) on the list, or want to get creative with your error processing, fret not. It's fairly trivial to reproduce the essentials yourself. Hono tools are built to be extended, and the source code is refreshingly accessible.
 
-```tsx
+```tsx del={1, 9} ins={2, 10-12}
 // import { zValidator } from '@hono/zod-validator';
 import { validator } from 'hono/validator';
 
@@ -436,6 +436,6 @@ Hono's flexibility—which extends from its cross-runtime compatibility to its h
 
 This approach radically simplifies workflows—like auth and rate limiting—that often require data to be shared between multiple middleware layers before the request even hits the handler.
 
-I'm currently having a lot of fun building auth into a Hono app using the [new Lucia Auth guide](https://lucia-auth.com/). I'm still ironing out some kinks, but I look forward to publishing an article on Hono auth in the coming months!
+I'm currently having a lot of fun building auth into a Hono app using the [new Lucia Auth guide](https://lucia-auth.com/), which is an awesome resource if you want to roll your own auth, or just learn more.. I'm still ironing out some kinks, but I look forward to publishing an article on Hono auth in the coming months!
 
 Until then, if you need help with Hono or are seeking inspiration for your next project, check out the [Hono Discord](https://discord.com/invite/KMh2eNSdxV). I've found it to be an incredibly welcoming and supportive community, following the example set by the project authors, maintainers, and contributors. 
