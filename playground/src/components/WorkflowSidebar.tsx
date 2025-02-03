@@ -4,11 +4,14 @@ import { useDeleteWorkflow, useWorkflows } from "@/lib/hooks/useWorkflows";
 import { PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { ConfirmationDialog } from "./ui/ConfirmationDialog";
+import { Dialog } from "./ui/dialog";
 
 export function WorkflowSidebar() {
   const { data: workflows, isLoading } = useWorkflows();
   const deleteWorkflow = useDeleteWorkflow();
   const [filterValue, setFilterValue] = useState("");
+  const [confirmationId, setConfirmationId] = useState<string | null>(null);
 
   if (!workflows) {
     return null;
@@ -55,11 +58,14 @@ export function WorkflowSidebar() {
             </div>
           ) : (
             filteredWorkflows.map((workflow) => (
-              <div key={workflow.id} className="relative group">
+              <div
+                key={workflow.id}
+                className="relative group grid grid-cols-[1fr_auto] items-center gap-2"
+              >
                 <Link
                   to="/workflow/$workflowId"
                   params={{ workflowId: workflow.workflowId }}
-                  className="flex items-start justify-between p-2 text-sm rounded cursor-pointer hover:bg-muted"
+                  className="flex items-start justify-between p-2 text-sm rounded cursor-pointer hover:bg-muted transition-all"
                 >
                   <div className="grid gap-1">
                     <div className="font-medium truncate">
@@ -71,12 +77,12 @@ export function WorkflowSidebar() {
                   </div>
                 </Link>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="icon"
-                  className="absolute hidden group-hover:flex top-1 right-1"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity group-hover:delay-100 top-1 right-1"
                   onClick={(e) => {
                     e.preventDefault();
-                    deleteWorkflow.mutate(workflow.workflowId);
+                    setConfirmationId(workflow.workflowId);
                   }}
                 >
                   <TrashIcon className="w-4 h-4" />
@@ -85,6 +91,26 @@ export function WorkflowSidebar() {
             ))
           )}
         </div>
+        {confirmationId && (
+          <Dialog
+            onOpenChange={(isOpen) => {
+              if (!isOpen) {
+                setConfirmationId(null);
+              }
+            }}
+            open={confirmationId !== null}
+          >
+            <ConfirmationDialog
+              title="Delete workflow"
+              description="This action cannot be undone."
+              onConfirm={() => {
+                deleteWorkflow.mutate(confirmationId);
+                setConfirmationId(null);
+              }}
+              onCancel={() => setConfirmationId(null)}
+            />
+          </Dialog>
+        )}
       </div>
     </div>
   );

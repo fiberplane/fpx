@@ -15,15 +15,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs } from "@/components/ui/tabs";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
   CustomTabTrigger,
   CustomTabsContent,
   CustomTabsList,
 } from "@/garbage/RequestorPage/Tabs";
+import { useShake } from "@/hooks";
 import { useOpenApiParse } from "@/lib/hooks/useOpenApiParse";
 import { useOpenApiSpec } from "@/lib/hooks/useOpenApiSpec";
 import { workflowQueryOptions } from "@/lib/hooks/useWorkflows";
@@ -35,7 +31,6 @@ import type { JSONPropertyValueSchema, Parameter, WorkflowStep } from "@/types";
 import {
   Link,
   createFileRoute,
-  // useNavigate,
   useRouteContext,
   useSearch,
 } from "@tanstack/react-router";
@@ -46,13 +41,12 @@ import {
   Play,
   StepBack,
   StepForward,
-  // Link as LinkIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { z } from "zod";
+import { useShallow } from "zustand/react/shallow";
 import { isOpenApiV2, isOpenApiV3x } from "../lib/isOpenApiV2";
-import { useShake } from "@/hooks";
 
 type OpenAPIOperation = OpenAPI.Operation;
 export const Route = createFileRoute("/workflow/$workflowId")({
@@ -75,7 +69,6 @@ function WorkflowDetail() {
     from: "__root__",
     select: (context) => context.openapi,
   });
-  // const navigate = useNavigate({ from: Route.fullPath });
   const { stepId } = useSearch({ from: Route.fullPath });
 
   const selectedStep =
@@ -146,6 +139,7 @@ function WorkflowDetail() {
     (step) => step.stepId === selectedStep.stepId,
   );
 
+  const inputs = Object.entries(workflow.inputs.properties);
   return (
     <div
       className={cn(
@@ -164,12 +158,10 @@ function WorkflowDetail() {
         </div>
 
         <div className="grid gap-6">
-          {/* <div>
-            <h3 className="mb-4 text-lg font-medium">Inputs</h3> */}
           <ListSection title="Inputs">
-            {workflow.inputs.properties && (
+            {inputs.length > 0 ? (
               <CollapsibleList
-                items={Object.entries(workflow.inputs.properties)}
+                items={inputs}
                 maxItems={5}
                 className="grid gap-2 max-w-[800px]"
                 renderItem={([key, schema]) => (
@@ -181,6 +173,10 @@ function WorkflowDetail() {
                   />
                 )}
               />
+            ) : (
+              <em className="block text-center text-muted-foreground text-sm">
+                No inputs required
+              </em>
             )}
           </ListSection>
           <ListSection
@@ -222,18 +218,21 @@ function WorkflowDetail() {
                 <Link
                   to="."
                   className={cn(
-                    "flex items-center gap-1 text-sm text-muted-foreground  p-1 rounded-sm",
-                    stepIndex === 0 || stepIndex === -1
+                    "flex items-center gap-1 text-sm text-muted-foreground p-1 rounded-sm",
+                    stepIndex <= 0
                       ? "pointer-events-none"
                       : "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary",
                   )}
                   title="previous"
+                  replace
                   search={
-                    stepIndex === 0 || stepIndex === -1
+                    stepIndex > 0
                       ? (prev) => ({
-                        ...prev,
-                        stepId: workflow.steps[stepIndex - 1]?.stepId,
-                      })
+                          ...prev,
+                          stepId:
+                            workflow.steps[stepIndex - 1]?.stepId ??
+                            prev.stepId,
+                        })
                       : undefined
                   }
                 >
@@ -250,10 +249,12 @@ function WorkflowDetail() {
                   title="next"
                   search={
                     stepIndex < workflow.steps.length - 1 && stepIndex !== -1
-                      ? (prev) => ({
-                        ...prev,
-                        stepId: workflow.steps[stepIndex + 1]?.stepId,
-                      })
+                      ? (prev) => {
+                          return {
+                            ...prev,
+                            stepId: workflow.steps[stepIndex + 1]?.stepId,
+                          };
+                        }
                       : undefined
                   }
                 >
@@ -322,26 +323,25 @@ function WorkflowDetail() {
         </div>
 
         <div>
-          {/* {schema.type === "boolean" && } */}
-          {/* <CodeMirrorInput
-          value={value || ""}
-          onChange={ }
-          placeholder={schema.examples?.[0]?.toString() ||
-            `Enter ${schema.type}`}
-          className="mt-1 bg-muted" /> */}
-          {getInput(propertyKey, value, schema, setInputValue)}
+          <WorkflowInput
+            propertyKey={propertyKey}
+            value={value}
+            schema={schema}
+            setInputValue={setInputValue}
+          />
         </div>
       </div>
     );
   }
 }
 
-function getInput(
-  propertyKey: string,
-  value: string,
-  schema: JSONPropertyValueSchema,
-  setInputValue: (key: string, value: string) => void,
-): ReactNode {
+function WorkflowInput(props: {
+  propertyKey: string;
+  value: string;
+  schema: JSONPropertyValueSchema;
+  setInputValue: (key: string, value: string) => void;
+}): ReactNode {
+  const { propertyKey, value, schema, setInputValue } = props;
   switch (schema.type) {
     case "boolean":
       return (
@@ -352,7 +352,6 @@ function getInput(
             setInputValue(propertyKey, event.target.checked ? "true" : "false")
           }
           name={schema.title}
-        // onChange={(e) => handleInputChange(schema.title, e.target.checked)}
         />
       );
     case "integer":
@@ -450,7 +449,7 @@ function StepDetails({
   });
   const { data: spec } = useOpenApiSpec(openapi);
   const { data: validatedOpenApi } = useOpenApiParse(spec);
-  const { shakeClassName, triggerShake } = useShake()
+  const { shakeClassName, triggerShake } = useShake();
 
   const addServiceUrlIfBarePath = (path: string) => {
     if (!validatedOpenApi) {
@@ -494,9 +493,7 @@ function StepDetails({
     const queryParams = new URLSearchParams();
     const lowerCaseMethod = method?.toLowerCase();
     const body: Record<string, unknown> | undefined =
-      lowerCaseMethod === "get" || lowerCaseMethod === "head"
-        ? undefined
-        : {};
+      lowerCaseMethod === "get" || lowerCaseMethod === "head" ? undefined : {};
     let processedPath = path;
 
     for (const param of step.parameters) {
@@ -592,38 +589,22 @@ function StepDetails({
           <div className="grid grid-cols-[1fr_auto] gap-1">
             <h2 className="text-2xl font-medium">{step.description}</h2>
             <div className="flex gap-2 items-center">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={(e) => {
-                      if (hasUnresolvedParams) {
-                        triggerShake()
-                        e.preventDefault();
-                        return;
-                      }
-                      handleExecute();
-                    }}
-                    size="sm"
-                    className={cn("gap-1", shakeClassName)}
-                    disabled={isLoading}
-                  >
-                    <ArrowDownToDot className="w-4 h-4" />
-                    {result ? "Re-run Step" : "Run Step"}
-                  </Button>
-                </TooltipTrigger>
-                {hasUnresolvedParams && (
-                  <TooltipContent>
-                    <p>Cannot execute: Unresolved values for parameters:</p>
-                    <ul className="mt-2 list-disc list-inside">
-                      {unresolvedParams.map((param) => (
-                        <li key={param.name} className="text-sm">
-                          {param.name}: {param.value}
-                        </li>
-                      ))}
-                    </ul>
-                  </TooltipContent>
-                )}
-              </Tooltip>
+              <Button
+                onClick={(e) => {
+                  if (hasUnresolvedParams) {
+                    triggerShake();
+                    e.preventDefault();
+                    return;
+                  }
+                  handleExecute();
+                }}
+                size="sm"
+                className={cn("gap-1", shakeClassName)}
+                disabled={isLoading}
+              >
+                <ArrowDownToDot className="w-4 h-4" />
+                {result ? "Re-run Step" : "Run Step"}
+              </Button>
               <Link
                 to="."
                 className={cn(
@@ -657,6 +638,18 @@ function StepDetails({
             </div>
           </div>
         </div>
+        {hasUnresolvedParams && (
+          <ListSection title={<div className="">Issues</div>}>
+            <p>Cannot execute: Unresolved values for parameters:</p>
+            <ul className="mt-2 list-disc list-inside">
+              {unresolvedParams.map((param) => (
+                <li key={param.name} className="text-sm">
+                  {param.name}: {param.value}
+                </li>
+              ))}
+            </ul>
+          </ListSection>
+        )}
 
         <div className="grid gap-6">
           <div className="grid gap-4 overflow-scroll">
@@ -740,8 +733,8 @@ function StepDetails({
                             {String(
                               JSON.stringify(
                                 (stepState as ExecuteStepResult)?.headers ??
-                                result?.headers ??
-                                {},
+                                  result?.headers ??
+                                  {},
                                 null,
                                 2,
                               ),
@@ -755,7 +748,7 @@ function StepDetails({
                             {String(
                               JSON.stringify(
                                 (stepState as ExecuteStepResult)?.data ??
-                                result?.data,
+                                  result?.data,
                                 null,
                                 2,
                               ),
@@ -929,6 +922,7 @@ interface CollapsibleListProps<T> {
   renderItem: (item: T) => ReactNode;
   maxItems?: number;
   className?: string;
+  empty?: () => ReactNode;
 }
 
 function CollapsibleList<T>({
@@ -969,11 +963,25 @@ function CollapsibleList<T>({
   );
 }
 
+function extractStepName(selector: string) {
+  // Match the pattern to extract the step name
+  const match = selector.match(/\$steps\.(\w+)\.outputs\.\w+/);
+  return match ? match[1] : null; // Return the step name or null if not found
+}
 function ParameterItem({ param }: { param: Parameter }) {
-  const { resolveRuntimeExpression } = useWorkflowStore();
+  const { workflow } = Route.useLoaderData();
+  const steps = workflow.steps;
+  const { resolveRuntimeExpression } = useWorkflowStore(
+    useShallow((state) => ({
+      resolveRuntimeExpression: state.resolveRuntimeExpression,
+    })),
+  );
   const resolvedValue = resolveRuntimeExpression(param.value);
   const value = resolvedValue === param.value ? NOT_FOUND : resolvedValue;
-
+  const stepName = extractStepName(param.value);
+  const stepIndex = stepName
+    ? steps.findIndex((step) => step.stepId === stepName)
+    : -1;
   return (
     <div className="text-sm grid grid-cols-[200px_auto] max-w-full overflow-hidden">
       <div>{param.name}:</div>
@@ -983,20 +991,38 @@ function ParameterItem({ param }: { param: Parameter }) {
             <div>
               <div className="text-danger italic">No value set</div>
               <div className="text-sm font-sans text-muted-foreground">
-                Value not found in step
+                (source:{" "}
+                {stepName && (
+                  <Link
+                    className="underline text-foreground hover:text-accent"
+                    to="."
+                    search={(prev) => ({
+                      ...prev,
+                      stepId: stepName,
+                    })}
+                  >
+                    {stepIndex !== -1 && stepIndex + 1}. {stepName}
+                  </Link>
+                )}
+                , full selector: {param.value})
               </div>
             </div>
-          ) : (
+          ) : param.value.startsWith("$inputs.") ? (
             <div className="flex gap-2 justify-start items-center">
               <div className="text-danger italic">No value set</div>
               <Button
                 variant="outline"
                 size="icon-xs"
+                title={param.name}
                 className="w-auto px-1 py-1 hover:text-primary-foreground font-normal"
               >
                 <Edit />
-                edit
+                Edit
               </Button>
+            </div>
+          ) : (
+            <div className="flex gap-2 justify-start items-center">
+              {JSON.stringify(param.value)}
             </div>
           )
         ) : (
@@ -1010,7 +1036,19 @@ function ParameterItem({ param }: { param: Parameter }) {
               </code>
             </pre>
             <div className="text-sm font-sans text-muted-foreground">
-              (value selector: {param.value})
+              (value selector: {param.value}){" "}
+              {stepName && (
+                <Link
+                  className="underline text-foreground hover:text-accent"
+                  to="."
+                  search={(prev) => ({
+                    ...prev,
+                    stepId: stepName,
+                  })}
+                >
+                  {stepName}
+                </Link>
+              )}
             </div>
           </>
         )}
