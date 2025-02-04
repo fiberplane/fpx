@@ -34,15 +34,15 @@
               "endTimeUnixNano": "1648138141000000000",
               "attributes": [
                 {
-                  "key": "http.method",
+                  "key": "http.request.method",
                   "value": { "stringValue": "GET" }
                 },
                 {
-                  "key": "http.url",
+                  "key": "url.full",
                   "value": { "stringValue": "/api/users" }
                 },
                 {
-                  "key": "http.status_code",
+                  "key": "http.response.status_code",
                   "value": { "intValue": "200" }
                 }
               ],
