@@ -13,13 +13,13 @@ import { useStudioStore } from "./store";
 
 type PlaygroundInputProps = {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  isRequestorRequesting?: boolean;
+  isPlaygroundRequesting?: boolean;
   formRef: React.RefObject<HTMLFormElement>;
 };
 
 export function PlaygroundInput({
   onSubmit,
-  isRequestorRequesting,
+  isPlaygroundRequesting,
   formRef,
 }: PlaygroundInputProps) {
   const {
@@ -58,7 +58,7 @@ export function PlaygroundInput({
             <Button
               size="sm"
               type="submit"
-              disabled={isRequestorRequesting}
+              disabled={isPlaygroundRequesting}
               variant="default"
               className={cn("p-2 md:px-2.5 py-1 h-auto")}
             >

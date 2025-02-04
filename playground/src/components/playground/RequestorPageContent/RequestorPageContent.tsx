@@ -9,8 +9,8 @@ import { cn } from "@/utils";
 import { useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { CommandBar } from "../CommandBar";
-import { RequestPanel } from "../RequestPanel";
 import { PlaygroundInput } from "../PlaygroundInput";
+import { RequestPanel } from "../RequestPanel";
 import { ResponsePanel } from "../ResponsePanel";
 import { useMakeProxiedRequest } from "../queries";
 import { useStudioStore } from "../store";
@@ -29,7 +29,7 @@ export const RequestorPageContent: React.FC = (_props) => {
     "visibleRequestsPanelTabs",
   );
 
-  const { mutate: makeRequest, isPending: isRequestorRequesting } =
+  const { mutate: makeRequest, isPending: isPlaygroundRequesting } =
     useMakeProxiedRequest();
 
   // Send a request when we submit the form
@@ -145,12 +145,12 @@ export const RequestorPageContent: React.FC = (_props) => {
 
   const requestContent = <RequestPanel onSubmit={onSubmit} />;
 
-  const responseContent = <ResponsePanel isLoading={isRequestorRequesting} />;
+  const responseContent = <ResponsePanel isLoading={isPlaygroundRequesting} />;
 
   const { minSize: requestPanelMinSize, maxSize: requestPanelMaxSize } =
     usePanelConstraints({
-      // Change the groupId to `""` on small screens because we're not rendering
-      // the resizable panel group
+      // NOTE - We may need to change the groupId to `""` on small screens because we're not rendering
+      //        the resizable panel group
       groupId: "requestor-page-request-panel-group",
       initialGroupSize: getMainSectionWidth(),
       minPixelSize: 200,
@@ -172,7 +172,7 @@ export const RequestorPageContent: React.FC = (_props) => {
       <CommandBar open={commandBarOpen} setOpen={setCommandBarOpen} />
       <PlaygroundInput
         onSubmit={onSubmit}
-        isRequestorRequesting={isRequestorRequesting}
+        isPlaygroundRequesting={isPlaygroundRequesting}
         formRef={formRef}
       />
       <ResizablePanelGroup direction="vertical" id="content-panels">
