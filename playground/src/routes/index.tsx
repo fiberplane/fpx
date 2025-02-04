@@ -1,5 +1,5 @@
 import { Layout } from "@/Layout";
-import { RequestorPage } from "@/components/playground";
+import { PlaygroundPage } from "@/components/playground";
 import { useStudioStore } from "@/components/playground/store";
 import { useSettingsOpen } from "@/hooks";
 import { RequestMethodInputValueSchema } from "@/types";
@@ -96,7 +96,7 @@ function Index() {
 
   return (
     <Layout>
-      <RequestorPage />
+      <PlaygroundPage />
     </Layout>
   );
 }

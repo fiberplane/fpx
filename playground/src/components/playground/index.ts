@@ -1,1 +1,1 @@
-export { RequestorPage } from "./RequestorPage";
+export { PlaygroundPage } from "./PlaygroundPage";

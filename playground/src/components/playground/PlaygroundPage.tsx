@@ -1,5 +1,3 @@
-import "./styles.css";
-
 import {
   ResizableHandle,
   ResizablePanel,
@@ -20,7 +18,7 @@ function getMainSectionWidth() {
   return window.innerWidth - 85;
 }
 
-export const RequestorPage = () => {
+export const PlaygroundPage = () => {
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   const { isLoading: _isLoading, isError: _isError } = useRoutes();
 
