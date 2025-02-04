@@ -9,14 +9,14 @@ export function FailedRequest({
   return (
     <div className="h-full pb-8 sm:pb-20 md:pb-32 flex flex-col items-center justify-center p-4">
       <div className="flex flex-col items-center justify-center p-4">
-        <LinkBreak2Icon className="h-10 w-10 text-red-200" />
-        <div className="mt-4 text-md text-white text-center">
+        <LinkBreak2Icon className="h-10 w-10 text-destructive" />
+        <div className="mt-4 text-md text-foreground text-center">
           {friendlyMessage
             ? `Request failed: ${friendlyMessage}`
             : "Request failed"}
         </div>
-        <div className="mt-2 text-ms text-gray-400 text-center font-light">
-          Make sure your api is up and has FPX Middleware enabled!
+        <div className="mt-2 text-ms text-muted-foreground text-center font-light">
+          Make sure your api is up!
         </div>
       </div>
     </div>

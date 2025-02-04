@@ -2,6 +2,7 @@ export type { ResponsePanelTab, RequestsPanelTab } from "./tabs";
 export type {
   PlaygroundBody,
   PlaygroundResponseBody,
+  PlaygroundActiveResponse,
   NavigationRoutesView,
   KeyValueParameter,
 } from "./types";

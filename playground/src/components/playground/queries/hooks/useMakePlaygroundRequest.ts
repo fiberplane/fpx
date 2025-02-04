@@ -6,7 +6,7 @@ import type {
   PlaygroundBody,
   PlaygroundResponseBody,
 } from "../../store";
-import { useStudioStore } from "../../store";
+import { type PlaygroundActiveResponse, useStudioStore } from "../../store";
 
 export type MakeProxiedRequestQueryFn = ReturnType<
   typeof useMakeProxiedRequest
@@ -55,16 +55,7 @@ function makeProxiedRequest({
   pathParams?: KeyValueParameter[];
   queryParams: KeyValueParameter[];
   route?: string;
-}) {
-  // HACK - We need to make sure the path is safe to use as a URL pathname
-  // let safePath: string;
-  // try {
-  //   const url = new URL(path);
-  //   safePath = url.pathname;
-  // } catch {
-  //   safePath = path?.startsWith("/") ? path : `/${path}`;
-  // }
-
+}): Promise<PlaygroundActiveResponse> {
   const queryParamsForUrl = new URLSearchParams();
   for (const param of queryParams) {
     if (param.enabled) {
@@ -110,26 +101,41 @@ function makeProxiedRequest({
     method,
     headers: modHeaders,
     body: method === "GET" || method === "HEAD" ? undefined : hackyBody,
-  }).then(async (r) => {
-    // Serialize response body to render in the UI
-    const responseBody = await serializeResponseBody(r);
-    // Serialize response headers into a JavaScript object
-    const responseHeaders = Object.fromEntries(r.headers.entries());
-    const responseTraceId = r.headers.get("x-fpx-trace-id");
-    console.log("responseTraceId:", responseTraceId);
-    console.log("otelTraceId from request:", otelTraceId);
-    return {
-      traceId: responseTraceId ?? otelTraceId,
-      responseHeaders,
-      responseBody,
-      responseStatusCode: r.status.toString(),
-      isFailure: responseBody.type === "error",
+  }).then(
+    async (r) => {
+      // Serialize response body to render in the UI
+      const responseBody = await serializeResponseBody(r);
+      // Serialize response headers into a JavaScript object
+      const responseHeaders = Object.fromEntries(r.headers.entries());
+      return {
+        traceId: otelTraceId,
+        responseHeaders,
+        responseBody,
+        responseStatusCode: r.status.toString(),
+        isFailure: responseBody.type === "error",
 
-      // NOTE - Need these fields for UI, to render the summary in the response panel
-      requestUrl: proxyToUrl,
-      requestMethod: method,
-    };
-  });
+        // NOTE - Need these fields for UI, to render the summary in the response panel
+        requestUrl: proxyToUrl,
+        requestMethod: method,
+      };
+    },
+    (error) => {
+      console.error("Error making playground request", error);
+      return {
+        traceId: otelTraceId,
+        responseHeaders: null,
+        responseBody: {
+          contentType: "",
+          type: "error",
+          value: null,
+        },
+        responseStatusCode: "",
+        isFailure: true,
+        requestUrl: proxyToUrl,
+        requestMethod: method,
+      };
+    },
+  );
 }
 
 async function serializeResponseBody(
