@@ -1,5 +1,4 @@
 export { useCopyToClipboard } from "./useCopyToClipboard";
-export { useFeature } from "./useFeature";
 export { useInputFocusDetection } from "./useInputFocusDetection";
 export { useIsLgScreen } from "./useIsLgScreen";
 export { useIsMdScreen } from "./useIsMdScreen";

@@ -24,10 +24,14 @@ export const RequestorPage = () => {
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   const { isLoading: _isLoading, isError: _isError } = useRoutes();
 
-  const { sidePanel } = useStudioStore("sidePanel");
+  const { sidePanel, shouldShowTopNav } = useStudioStore(
+    "sidePanel",
+    "shouldShowTopNav",
+  );
 
   const width = getMainSectionWidth();
   const isLgScreen = useIsLgScreen();
+  const hasTopNav = shouldShowTopNav;
 
   const { minSize, maxSize } = usePanelConstraints({
     groupId: "main-layout",
@@ -38,7 +42,13 @@ export const RequestorPage = () => {
 
   return (
     <div
-      className={cn("h-[calc(100vh-70px)]", "flex", "flex-col", "gap-2", "p-2")}
+      className={cn(
+        hasTopNav ? "h-[calc(100vh-70px)]" : "h-[calc(100vh-40px)]",
+        "flex",
+        "flex-col",
+        "gap-2",
+        "p-2",
+      )}
     >
       <ResizablePanelGroup
         direction="horizontal"

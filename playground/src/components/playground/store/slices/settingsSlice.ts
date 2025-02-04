@@ -1,3 +1,9 @@
+import {
+  AVAILABLE_FEATURE_FLAGS,
+  FEATURE_FLAG_TRACES,
+  FEATURE_FLAG_WORKFLOWS,
+  type FeatureFlag,
+} from "@/constants";
 import { safeParseJson } from "@/utils";
 import { z } from "zod";
 import type { StateCreator } from "zustand";
@@ -46,6 +52,10 @@ const loadSettingsFromStorage = (): {
   persistentAuthHeaders: KeyValueParameter[];
   authorizations: Authorization[];
   useMockApiSpec: boolean;
+  enabledFeatures: FeatureFlag[];
+  isWorkflowsEnabled: boolean;
+  isTracingEnabled: boolean;
+  shouldShowTopNav: boolean;
 } => {
   const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
   if (!stored) {
@@ -53,6 +63,10 @@ const loadSettingsFromStorage = (): {
       persistentAuthHeaders: getInitialAuthHeaders(),
       authorizations: [],
       useMockApiSpec: false,
+      enabledFeatures: [],
+      isWorkflowsEnabled: false,
+      isTracingEnabled: false,
+      shouldShowTopNav: false,
     };
   }
 
@@ -62,17 +76,36 @@ const loadSettingsFromStorage = (): {
       persistentAuthHeaders: getInitialAuthHeaders(),
       authorizations: [],
       useMockApiSpec: false,
+      enabledFeatures: [],
+      isWorkflowsEnabled: false,
+      isTracingEnabled: false,
+      shouldShowTopNav: false,
     };
   }
 
   const result = AuthorizationsSchema.safeParse(parsed.authorizations);
   const authorizations = result.success ? result.data : [];
+  const enabledFeatures = Array.isArray(parsed.enabledFeatures)
+    ? parsed.enabledFeatures.filter((f: string) =>
+        AVAILABLE_FEATURE_FLAGS.includes(f as FeatureFlag),
+      )
+    : [];
+
+  // Compute the derived states
+  const isWorkflowsEnabled = enabledFeatures.includes(FEATURE_FLAG_WORKFLOWS);
+  const isTracingEnabled = enabledFeatures.includes(FEATURE_FLAG_TRACES);
+  const shouldShowTopNav = isWorkflowsEnabled || isTracingEnabled;
+
   return {
     persistentAuthHeaders: enforceTerminalDraftParameter(
       parsed.persistentAuthHeaders || [],
     ),
     authorizations,
     useMockApiSpec: parsed.useMockApiSpec || false,
+    enabledFeatures,
+    isWorkflowsEnabled,
+    isTracingEnabled,
+    shouldShowTopNav,
   };
 };
 
@@ -85,6 +118,12 @@ export interface SettingsSlice {
   // Whether to use mock API spec instead of loading programmatically
   useMockApiSpec: boolean;
 
+  // Feature flags
+  isWorkflowsEnabled: boolean;
+  isTracingEnabled: boolean;
+  shouldShowTopNav: boolean;
+  enabledFeatures: FeatureFlag[];
+
   // Actions
   addAuthorization: (
     authorization: Authorization & Pick<Partial<Authorization>, "id">,
@@ -93,6 +132,7 @@ export interface SettingsSlice {
   removeAuthorization: (id: string) => void;
   setPersistentAuthHeaders: (headers: KeyValueParameter[]) => void;
   setUseMockApiSpec: (useMock: boolean) => void;
+  setFeatureEnabled: (feature: FeatureFlag, enabled: boolean) => void;
 }
 
 export const settingsSlice: StateCreator<
@@ -100,8 +140,17 @@ export const settingsSlice: StateCreator<
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   SettingsSlice
-> = (set) => {
+> = (set, get) => {
   const initialState = loadSettingsFromStorage();
+
+  const updateFeatureFlags = (state: StudioState) => {
+    state.isWorkflowsEnabled = state.enabledFeatures.includes(
+      FEATURE_FLAG_WORKFLOWS,
+    );
+    state.isTracingEnabled =
+      state.enabledFeatures.includes(FEATURE_FLAG_TRACES);
+    state.shouldShowTopNav = state.isWorkflowsEnabled || state.isTracingEnabled;
+  };
 
   return {
     ...initialState,
@@ -175,6 +224,28 @@ export const settingsSlice: StateCreator<
           JSON.stringify({
             ...state,
             useMockApiSpec: useMock,
+          }),
+        );
+      }),
+
+    setFeatureEnabled: (feature: FeatureFlag, enabled: boolean) =>
+      set((state) => {
+        if (enabled && !state.enabledFeatures.includes(feature)) {
+          state.enabledFeatures.push(feature);
+        } else if (!enabled) {
+          state.enabledFeatures = state.enabledFeatures.filter(
+            (f) => f !== feature,
+          );
+        }
+
+        // Update computed feature flags
+        updateFeatureFlags(state);
+
+        localStorage.setItem(
+          SETTINGS_STORAGE_KEY,
+          JSON.stringify({
+            ...state,
+            enabledFeatures: state.enabledFeatures,
           }),
         );
       }),

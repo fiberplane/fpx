@@ -1,3 +1,11 @@
+export const FEATURE_FLAG_WORKFLOWS = "workflows";
+export const FEATURE_FLAG_TRACES = "traces";
+export const AVAILABLE_FEATURE_FLAGS = [
+  FEATURE_FLAG_WORKFLOWS,
+  FEATURE_FLAG_TRACES,
+] as const;
+export type FeatureFlag = (typeof AVAILABLE_FEATURE_FLAGS)[number];
+
 export const NAVIGATION_PANEL_KEY = "filter-tab";
 export const NAVIGATION_PANEL_ROUTES = "routes" as const;
 export const NAVIGATION_PANEL_COLLECTIONS = "collections" as const;
