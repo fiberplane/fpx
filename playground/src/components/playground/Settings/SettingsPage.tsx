@@ -27,19 +27,24 @@ export function SettingsPage() {
               loading one programmatically.
             </p>
           </div>
-          <div className="flex items-center space-x-4 p-4 border rounded-lg ">
-            <Switch
-              id="mock-api"
-              checked={useMockApiSpec}
-              onCheckedChange={setUseMockApiSpec}
-            />
-            <label
-              htmlFor="mock-api"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Use mock API specification
-            </label>
-          </div>
+          {
+            // Hide the option to use a mock API spec in production
+            process.env.NODE_ENV !== "production" && (
+              <div className="flex items-center space-x-4 p-4 border rounded-lg ">
+                <Switch
+                  id="mock-api"
+                  checked={useMockApiSpec}
+                  onCheckedChange={setUseMockApiSpec}
+                />
+                <label
+                  htmlFor="mock-api"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Use mock API spec (local development only)
+                </label>
+              </div>
+            )
+          }
         </div>
 
         <Separator />
