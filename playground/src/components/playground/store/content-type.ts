@@ -1,7 +1,7 @@
 import { enforceTerminalDraftParameter } from "../KeyValueForm";
 import { isDraftParameter } from "../KeyValueForm/data";
 import type { RequestResponseSlice } from "./slices/types";
-import type { KeyValueParameter, RequestorBody } from "./types";
+import type { KeyValueParameter, PlaygroundBody } from "./types";
 
 /**
  * This makes sure to synchronize the content type header with the body type.
@@ -61,7 +61,7 @@ function removeHeader(
 
 // NOTE - This logic is partly duplicated in `usePlaygroundSubmitHandler`
 //        We should refactor to share this logic
-function mapBodyToContentType(body: RequestorBody) {
+function mapBodyToContentType(body: PlaygroundBody) {
   if (body.type === "form-data" && body.isMultipart) {
     return "multipart/form-data";
   }

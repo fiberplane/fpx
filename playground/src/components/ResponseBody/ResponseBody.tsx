@@ -1,7 +1,7 @@
 import { SubSectionHeading } from "@/components/SubSectionHeading";
 import {
-  type RequestorActiveResponse,
-  isRequestorActiveResponse,
+  type PlaygroundActiveResponse,
+  isPlaygroundActiveResponse,
 } from "@/components/playground/store/types";
 import {
   Collapsible,
@@ -24,7 +24,7 @@ export function ResponseBody({
   response,
   className,
 }: {
-  response?: RequestorActiveResponse;
+  response?: PlaygroundActiveResponse;
   className?: string;
 }) {
   const isFailure = response?.isFailure;
@@ -37,7 +37,7 @@ export function ResponseBody({
   // NOTE - This means we have the *actual* response from the service in the store,
   //        which may contain binary data that we can render in the UI.
   //        This is different from history responses, which will only have whatever data was stored in the trace
-  if (isRequestorActiveResponse(response)) {
+  if (isPlaygroundActiveResponse(response)) {
     const body = response?.responseBody;
     if (body?.type === "error") {
       return <FailedRequest response={response} />;

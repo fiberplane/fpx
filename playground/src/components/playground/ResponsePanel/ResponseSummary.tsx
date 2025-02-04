@@ -3,24 +3,24 @@ import { StatusCode } from "@/components/StatusCode";
 import { cn, parsePathFromRequestUrl } from "@/utils";
 import type { ProxiedRequestResponse } from "../queries";
 import {
-  type RequestorActiveResponse,
-  isRequestorActiveResponse,
+  type PlaygroundActiveResponse,
+  isPlaygroundActiveResponse,
 } from "../store/types";
 
 export function ResponseSummary({
   response,
   transformUrl = (url: string) => url,
 }: {
-  response?: ProxiedRequestResponse | RequestorActiveResponse;
+  response?: ProxiedRequestResponse | PlaygroundActiveResponse;
   transformUrl?: (url: string) => string;
 }) {
-  const status = isRequestorActiveResponse(response)
+  const status = isPlaygroundActiveResponse(response)
     ? response?.responseStatusCode
     : response?.app_responses?.responseStatusCode;
-  const method = isRequestorActiveResponse(response)
+  const method = isPlaygroundActiveResponse(response)
     ? response?.requestMethod
     : response?.app_requests?.requestMethod;
-  const url = isRequestorActiveResponse(response)
+  const url = isPlaygroundActiveResponse(response)
     ? response?.requestUrl
     : parsePathFromRequestUrl(
         response?.app_requests?.requestUrl ?? "",

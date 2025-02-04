@@ -1,15 +1,15 @@
 import type { ProxiedRequestResponse } from "@/components/playground/queries";
 import {
-  type RequestorActiveResponse,
-  isRequestorActiveResponse,
+  type PlaygroundActiveResponse,
+  isPlaygroundActiveResponse,
 } from "@/components/playground/store/types";
 import { LinkBreak2Icon } from "@radix-ui/react-icons";
 
 export function FailedRequest({
   response,
-}: { response?: ProxiedRequestResponse | RequestorActiveResponse }) {
+}: { response?: ProxiedRequestResponse | PlaygroundActiveResponse }) {
   // TODO - Show a more friendly error message
-  const failureReason = isRequestorActiveResponse(response)
+  const failureReason = isPlaygroundActiveResponse(response)
     ? null
     : response?.app_responses?.failureReason;
   const friendlyMessage =

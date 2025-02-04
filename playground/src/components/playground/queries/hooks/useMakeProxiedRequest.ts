@@ -3,8 +3,8 @@ import { reduceFormDataParameters } from "../../FormDataForm";
 import { reduceKeyValueParameters } from "../../KeyValueForm";
 import type {
   KeyValueParameter,
-  RequestorBody,
-  RequestorResponseBody,
+  PlaygroundBody,
+  PlaygroundResponseBody,
 } from "../../store";
 import { useStudioStore } from "../../store";
 import { REQUESTOR_REQUESTS_KEY } from "./constants";
@@ -55,7 +55,7 @@ function makeProxiedRequest({
   addServiceUrlIfBarePath: (path: string) => string;
   path: string;
   method: string;
-  body: RequestorBody;
+  body: PlaygroundBody;
   headers: KeyValueParameter[];
   pathParams?: KeyValueParameter[];
   queryParams: KeyValueParameter[];
@@ -139,7 +139,7 @@ function makeProxiedRequest({
 
 async function serializeResponseBody(
   response: Response,
-): Promise<RequestorResponseBody> {
+): Promise<PlaygroundResponseBody> {
   const contentType = response.headers.get("content-type") || "";
 
   try {
@@ -214,7 +214,7 @@ async function serializeResponseBody(
   }
 }
 
-function createBody(body: RequestorBody) {
+function createBody(body: PlaygroundBody) {
   if (body.type === "json") {
     if (typeof body.value !== "undefined") {
       return body.value;

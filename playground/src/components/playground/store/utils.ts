@@ -2,9 +2,9 @@ import type { findMatchedRoute } from "../routes";
 import type { ProbedRoute } from "../types";
 import type { RequestMethod, RequestType } from "../types";
 import type { Authorization } from "./slices/settingsSlice";
-import type { RequestorState } from "./types";
+import type { PlaygroundState } from "./types";
 
-export const _getActiveRoute = (state: RequestorState): ProbedRoute => {
+export const _getActiveRoute = (state: PlaygroundState): ProbedRoute => {
   return (
     state.activeRoute ?? {
       id: Number.NEGATIVE_INFINITY,

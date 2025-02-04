@@ -1,9 +1,9 @@
 import { createParameterId } from "@/components/playground/KeyValueForm/data";
 import type {
   KeyValueParameter,
-  RequestorBody,
+  PlaygroundBody,
 } from "@/components/playground/store";
-import { RequestorBodySchema } from "@/components/playground/store/request-body";
+import { PlaygroundBodySchema } from "@/components/playground/store";
 import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
@@ -241,10 +241,10 @@ export function isSensitiveEnvVar(key: string) {
   );
 }
 
-export function constructRequestorBody(bodyValue: string): RequestorBody {
+export function constructPlaygroundBody(bodyValue: string): PlaygroundBody {
   try {
     const parsed = JSON.parse(bodyValue);
-    const result = RequestorBodySchema.safeParse(parsed);
+    const result = PlaygroundBodySchema.safeParse(parsed);
     if (result.success) {
       return result.data;
     }

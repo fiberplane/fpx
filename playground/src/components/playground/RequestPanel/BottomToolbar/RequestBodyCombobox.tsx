@@ -19,10 +19,10 @@ import {
 import { cn } from "@/utils";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import type { RequestorBody, RequestorBodyType } from "../../store";
+import type { PlaygroundBody, PlaygroundBodyType } from "../../store";
 
 type RequestBodyTypeOption = {
-  value: RequestorBodyType;
+  value: PlaygroundBodyType;
   label: string;
 };
 
@@ -34,9 +34,9 @@ const bodyTypes: RequestBodyTypeOption[] = [
 ];
 
 export type RequestBodyTypeDropdownProps = {
-  requestBody: RequestorBody;
+  requestBody: PlaygroundBody;
   handleRequestBodyTypeChange: (
-    contentType: RequestorBodyType,
+    contentType: PlaygroundBodyType,
     isMultipart?: boolean,
   ) => void;
   isDisabled: boolean;
@@ -103,7 +103,7 @@ export function RequestBodyTypeDropdown({
                   className="text-xs data-[selected=true]:bg-secondary"
                   onSelect={(currentValue: string) => {
                     handleRequestBodyTypeChange(
-                      currentValue as RequestorBodyType,
+                      currentValue as PlaygroundBodyType,
                     );
                     setOpen(false);
                   }}

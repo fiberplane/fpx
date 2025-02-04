@@ -1,7 +1,7 @@
 import { useHandler } from "@fiberplane/hooks";
 import { useShallow } from "zustand/react/shallow";
 import type { MakeProxiedRequestQueryFn } from "./queries";
-import type { KeyValueParameter, RequestorBody } from "./store";
+import type { KeyValueParameter, PlaygroundBody } from "./store";
 import {
   getPreferredAuthorizationId,
   useServiceBaseUrl,
@@ -116,7 +116,7 @@ export function usePlaygroundSubmitHandler({
 
 // NOTE - This logic is partly duplicated in `reducer/reducers/content-type.ts`
 //        We should refactor to share this logic
-function getContentTypeHeader(body: RequestorBody): string | null {
+function getContentTypeHeader(body: PlaygroundBody): string | null {
   switch (body.type) {
     case "json":
       return "application/json";
@@ -141,7 +141,7 @@ function getContentTypeHeader(body: RequestorBody): string | null {
   }
 }
 
-function getContentLength(body: RequestorBody) {
+function getContentLength(body: PlaygroundBody) {
   switch (body.type) {
     case "file":
       return body.value?.size ?? null;

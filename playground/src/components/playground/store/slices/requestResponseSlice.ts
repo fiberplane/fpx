@@ -1,5 +1,5 @@
 import {
-  constructRequestorBody,
+  constructPlaygroundBody,
   createKeyValueParametersFromValues,
 } from "@/utils";
 import type { StateCreator } from "zustand";
@@ -348,7 +348,7 @@ export const requestResponseSlice: StateCreator<
         : typeof requestBody !== "string"
           ? JSON.stringify(requestBody)
           : requestBody;
-    get().setBody(bodyValue && constructRequestorBody(bodyValue));
+    get().setBody(bodyValue && constructPlaygroundBody(bodyValue));
 
     get().setRequestHeaders(
       createKeyValueParametersFromValues(

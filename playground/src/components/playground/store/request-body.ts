@@ -1,44 +1,44 @@
 import { z } from "zod";
 import { FormDataParameterSchema } from "../FormDataForm";
 
-const RequestorBodyJsonTypeSchema = z.literal("json");
-const RequestorBodyTextTypeSchema = z.literal("text");
-const RequestorBodyFormDataTypeSchema = z.literal("form-data");
-const RequestorBodyFileTypeSchema = z.literal("file");
+const PlaygroundBodyJsonTypeSchema = z.literal("json");
+const PlaygroundBodyTextTypeSchema = z.literal("text");
+const PlaygroundBodyFormDataTypeSchema = z.literal("form-data");
+const PlaygroundBodyFileTypeSchema = z.literal("file");
 
-const RequestorBodyTypeSchema = z.union([
-  RequestorBodyJsonTypeSchema,
-  RequestorBodyTextTypeSchema,
-  RequestorBodyFormDataTypeSchema,
-  RequestorBodyFileTypeSchema,
+const PlaygroundBodyTypeSchema = z.union([
+  PlaygroundBodyJsonTypeSchema,
+  PlaygroundBodyTextTypeSchema,
+  PlaygroundBodyFormDataTypeSchema,
+  PlaygroundBodyFileTypeSchema,
 ]);
 
 /**
- * The identifying value for the discriminator `type` property on the RequestorBody (schema) types
+ * The identifying value for the discriminator `type` property on the PlaygroundBody (schema) types
  */
-export type RequestorBodyType = z.infer<typeof RequestorBodyTypeSchema>;
+export type PlaygroundBodyType = z.infer<typeof PlaygroundBodyTypeSchema>;
 
-export const isRequestorBodyType = (
+export const isPlaygroundBodyType = (
   bodyType: unknown,
-): bodyType is RequestorBodyType =>
-  RequestorBodyTypeSchema.safeParse(bodyType).success;
+): bodyType is PlaygroundBodyType =>
+  PlaygroundBodyTypeSchema.safeParse(bodyType).success;
 
-export const RequestorBodySchema = z.union([
+export const PlaygroundBodySchema = z.union([
   z.object({
-    type: RequestorBodyTextTypeSchema,
+    type: PlaygroundBodyTextTypeSchema,
     value: z.string().optional(),
   }),
   z.object({
-    type: RequestorBodyJsonTypeSchema,
+    type: PlaygroundBodyJsonTypeSchema,
     value: z.string().optional(),
   }),
   z.object({
-    type: RequestorBodyFormDataTypeSchema,
+    type: PlaygroundBodyFormDataTypeSchema,
     isMultipart: z.boolean(),
     value: z.array(FormDataParameterSchema),
   }),
   z.object({
-    type: RequestorBodyFileTypeSchema,
+    type: PlaygroundBodyFileTypeSchema,
     value: z.instanceof(File).optional(),
   }),
 ]);

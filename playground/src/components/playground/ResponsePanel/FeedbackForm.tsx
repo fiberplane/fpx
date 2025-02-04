@@ -15,7 +15,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { ProxiedRequestResponse } from "../queries";
 import { useServiceBaseUrl } from "../store";
-import type { RequestorActiveResponse } from "../store/types";
+import type { PlaygroundActiveResponse } from "../store/types";
 import { ResponseSummary } from "./ResponseSummary";
 
 const formSchema = z.object({
@@ -28,7 +28,7 @@ type Props = {
   traceId: string;
   onSuccess?: () => void;
   isError?: boolean;
-  response?: ProxiedRequestResponse | RequestorActiveResponse;
+  response?: ProxiedRequestResponse | PlaygroundActiveResponse;
 };
 
 export function FeedbackForm({ traceId, onSuccess, isError, response }: Props) {

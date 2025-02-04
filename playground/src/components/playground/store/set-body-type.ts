@@ -1,5 +1,5 @@
 import { enforceFormDataTerminalDraftParameter } from "../FormDataForm";
-import type { RequestorBodyType } from "./request-body";
+import type { PlaygroundBodyType } from "./request-body";
 import type { RequestResponseSlice } from "./slices/types";
 
 /**
@@ -14,7 +14,7 @@ export function setBodyTypeInState(
     type: newBodyType,
     isMultipart,
   }: {
-    type: RequestorBodyType;
+    type: PlaygroundBodyType;
     isMultipart?: boolean;
   },
 ): void {

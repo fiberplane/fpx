@@ -1,6 +1,6 @@
 import type {
-  RequestorBody,
-  RequestorBodyType,
+  PlaygroundBody,
+  PlaygroundBodyType,
   RequestsPanelTab,
   ResponsePanelTab,
 } from "..";
@@ -11,17 +11,17 @@ import type {
   RequestMethodInputValue,
   RequestType,
 } from "../../types";
-import type { KeyValueParameter, RequestorActiveResponse } from "../types";
+import type { KeyValueParameter, PlaygroundActiveResponse } from "../types";
 import type { SettingsSlice } from "./settingsSlice";
 
-type RequestorTraceId = string;
+type TraceId = string;
 
 export interface RequestResponseSlice {
   serviceBaseUrl: string;
   path: string;
   method: RequestMethod;
   requestType: RequestType;
-  body: RequestorBody;
+  body: PlaygroundBody;
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
   requestHeaders: KeyValueParameter[];
@@ -36,21 +36,21 @@ export interface RequestResponseSlice {
   setQueryParams: (queryParams: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
   setAuthorizationId: (authorizationId: string | null) => void;
-  setBody: (body: undefined | string | RequestorBody) => void;
+  setBody: (body: undefined | string | PlaygroundBody) => void;
   handleRequestBodyTypeChange: (
-    requestBodyType: RequestorBodyType,
+    requestBodyType: PlaygroundBodyType,
     isMultipart?: boolean,
   ) => void;
   /** Response related state */
 
-  activeResponse: RequestorActiveResponse | null;
+  activeResponse: PlaygroundActiveResponse | null;
 
   showResponseBodyFromHistory: (traceId: string) => void;
-  setActiveResponse: (response: RequestorActiveResponse | null) => void;
+  setActiveResponse: (response: PlaygroundActiveResponse | null) => void;
 
   /** Session history related state */
-  sessionHistory: RequestorTraceId[];
-  recordRequestInSessionHistory: (traceId: RequestorTraceId) => void;
+  sessionHistory: TraceId[];
+  recordRequestInSessionHistory: (traceId: TraceId) => void;
   setRequestParams: (
     requestParams: Pick<
       ProxiedRequestResponse["app_requests"],

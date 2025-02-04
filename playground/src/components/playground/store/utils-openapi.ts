@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { enforceTerminalDraftParameter } from "../KeyValueForm";
 import type { ProbedRoute } from "../types";
-import type { KeyValueParameter, RequestorBody } from "./types";
+import type { KeyValueParameter, PlaygroundBody } from "./types";
 
 /**
  * Filters query parameters to only include those that are either enabled or have a value
@@ -136,9 +136,9 @@ function safeParseOpenApiSpec(openApiSpec: string, routePath: string) {
  * @returns Sample JSON body string or the current body if no valid schema found
  */
 export function extractJsonBodyFromOpenApiDefinition(
-  currentBody: RequestorBody,
+  currentBody: PlaygroundBody,
   route: ProbedRoute,
-): RequestorBody {
+): PlaygroundBody {
   // If no OpenAPI spec exists, return current body
   if (!route.openApiSpec) {
     return currentBody;

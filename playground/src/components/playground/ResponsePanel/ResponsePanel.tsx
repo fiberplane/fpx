@@ -18,8 +18,8 @@ import type { ProxiedRequestResponse } from "../queries";
 import { useServiceBaseUrl } from "../store";
 import { useStudioStore } from "../store";
 import {
-  type RequestorActiveResponse,
-  isRequestorActiveResponse,
+  type PlaygroundActiveResponse,
+  isPlaygroundActiveResponse,
 } from "../store/types";
 import { FeedbackForm } from "./FeedbackForm";
 import { ResponseSummary } from "./ResponseSummary";
@@ -87,7 +87,7 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
                     </DialogHeader>
                     <FeedbackForm
                       traceId={
-                        isRequestorActiveResponse(responseToRender)
+                        isPlaygroundActiveResponse(responseToRender)
                           ? (responseToRender.traceId ?? "")
                           : ""
                       }
@@ -227,10 +227,10 @@ function LoadingResponseBody() {
 function ErrorBanner({
   activeResponse,
 }: {
-  activeResponse: ProxiedRequestResponse | RequestorActiveResponse | undefined;
+  activeResponse: ProxiedRequestResponse | PlaygroundActiveResponse | undefined;
 }) {
   // HACK - To appease crufty types from Studio... we don't have proxied request/responses in Playground yet
-  if (!isRequestorActiveResponse(activeResponse)) {
+  if (!isPlaygroundActiveResponse(activeResponse)) {
     return null;
   }
 

@@ -6,7 +6,7 @@ import { memo, useMemo } from "react";
 import { FormDataForm } from "../FormDataForm";
 import { KeyValueForm } from "../KeyValueForm";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
-import type { RequestorBody, RequestsPanelTab } from "../store";
+import type { PlaygroundBody, RequestsPanelTab } from "../store";
 import { BottomToolbar } from "./BottomToolbar";
 import { FileUploadForm } from "./FileUploadForm";
 import { PathParamForm } from "./PathParamForm";
@@ -327,7 +327,7 @@ export function PanelSectionHeader({
   );
 }
 
-function isBodyEmpty(body: RequestorBody) {
+function isBodyEmpty(body: PlaygroundBody) {
   switch (body.type) {
     case "text":
       return !body.value || body.value.length === 0;
