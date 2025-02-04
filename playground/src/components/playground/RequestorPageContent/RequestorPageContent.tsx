@@ -14,7 +14,7 @@ import { RequestorInput } from "../RequestorInput";
 import { ResponsePanel } from "../ResponsePanel";
 import { useMakeProxiedRequest } from "../queries";
 import { useStudioStore } from "../store";
-import { useRequestorSubmitHandler } from "../useRequestorSubmitHandler";
+import { usePlaygroundSubmitHandler } from "../usePlaygroundSubmitHandler";
 import { getMainSectionWidth } from "./util";
 
 export const RequestorPageContent: React.FC = (_props) => {
@@ -33,7 +33,7 @@ export const RequestorPageContent: React.FC = (_props) => {
     useMakeProxiedRequest();
 
   // Send a request when we submit the form
-  const onSubmit = useRequestorSubmitHandler({
+  const onSubmit = usePlaygroundSubmitHandler({
     makeRequest,
   });
 

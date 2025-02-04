@@ -59,7 +59,7 @@ function removeHeader(
   return currentHeaders.filter((p) => p.id !== header.id);
 }
 
-// NOTE - This logic is partly duplicated in `useRequestorSubmitHandler`
+// NOTE - This logic is partly duplicated in `usePlaygroundSubmitHandler`
 //        We should refactor to share this logic
 function mapBodyToContentType(body: RequestorBody) {
   if (body.type === "form-data" && body.isMultipart) {

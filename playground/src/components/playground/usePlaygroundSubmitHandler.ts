@@ -9,7 +9,7 @@ import {
   useStudioStoreRaw,
 } from "./store";
 
-export function useRequestorSubmitHandler({
+export function usePlaygroundSubmitHandler({
   makeRequest,
 }: {
   makeRequest: MakeProxiedRequestQueryFn;
