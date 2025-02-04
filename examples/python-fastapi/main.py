@@ -44,7 +44,6 @@ async def root():
 
 @app.get("/sse")
 def sse():
-    logger.info("/sse")
     return StreamingResponse(generate_data_events(), media_type="text/event-stream")
 
 @measure()
