@@ -1,6 +1,6 @@
 # Fiberplane with Python (alpha)
 
-This is a work in progress on supporting Python applications with Fiberplane instrumentation and debugging. This directory includes the `fpxpy` package which supports FastAPI instrumentation and a few examples to quickstart.
+Fiberplane Studio is an API debugger for local developement. This is a work in progress on supporting Python applications with Fiberplane instrumentation and debugging. This directory includes the `fpxpy` package which supports FastAPI instrumentation and a few examples to quickstart.
 
 ![Fiberplane python](../assets/studio-python.png)
 
