@@ -38,7 +38,7 @@ export const useStudioStoreRaw = create<StudioState>()(
       ...uiSlice(...a),
       ...settingsSlice(...a),
     })),
-    { name: "StudioStore", trace: true },
+    { name: "StudioStore" },
   ),
 );
 
