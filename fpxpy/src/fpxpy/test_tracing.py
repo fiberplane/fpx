@@ -302,7 +302,7 @@ def test_iterator_error_handling(test_app: FastAPI):
     
     # Verify successful iteration spans
     for i, span in enumerate(iteration_spans):
-        assert span.name == f"error_generator[{i}]"
+        assert span.name == f"error_generator[{(i)}]"
         assert span.status.is_ok
         assert span.parent.span_id == parent_span.context.span_id
 

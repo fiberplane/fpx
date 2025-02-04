@@ -182,6 +182,7 @@ def measure(
                     iteration = 0
                     iteration_start = time.time_ns()
                     async for value in async_gen:
+                        print("iteration", iteration)
                         with tracer.start_as_current_span(
                             name=f"{current_name}[{iteration}]",
                             kind=span_kind,
@@ -218,7 +219,6 @@ def measure(
                     iteration = 0
                     iteration_start = time.time_ns()
                     for value in gen:
-                        iteration += 1
                         with tracer.start_as_current_span(
                             name=f"{current_name}[{iteration}]",
                             kind=span_kind,
@@ -248,6 +248,7 @@ def measure(
                             yield value
                             iteration_start = time.time_ns()
 
+                        iteration += 1
                     parent_span.set_status(Status(StatusCode.OK))
 
                 except Exception as e:
