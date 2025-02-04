@@ -31,9 +31,33 @@ pointing to your instance of Fiberplane Studio, e.g:
 FPX_ENDPOINT=http://localhost:8788/v1/traces uv run fastapi dev main.py
 ```
 
-If you don't specify this environment variable, the library will not be enabled.
+> [!IMPORTANT]
+> If you don't specify the `FPX_ENDPOINT` environment variable, the library will not be enabled.
 
-## API
+## Using MCP server with Fiberplane
+
+Fiberplane runs a local API that can be used through the Model Context Protocol. This enables MCP hosts like Claude Desktop to connect to Fiberplane Studio and query the API.
+
+![Using MCP server with Fiberplane](../assets/mcp.png)
+
+### Setting up using Claude Desktop
+
+If you have Claude Desktop installed, update the configuration to use the local MCP server.
+
+```json
+{
+  "mcpServers": {
+    "fiberplane": {
+      "command": "npx",
+      "args": [
+        "@fiberplane/mcp-server-fiberplane"
+      ]
+    }
+  }
+}
+```
+
+## `fpxpy` API
 
 The package exports two functions:
 
