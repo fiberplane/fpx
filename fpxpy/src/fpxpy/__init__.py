@@ -30,7 +30,8 @@ def setup(app: FastAPI) -> None:
     if endpoint is None:
         logger.info("FPX_ENDPOINT is not set, fpx functionality is disabled")
         return None
-
+    
+    logger.info("FPXPY is enabled, reporting to %s", endpoint)
     install(app)
 
     url = urlparse(endpoint)

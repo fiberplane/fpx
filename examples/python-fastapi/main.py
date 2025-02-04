@@ -1,20 +1,21 @@
 from typing import Union
 import logging
+import json
+import asyncio
 
 from time import sleep
 
 from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
 from fpxpy import measure, setup
-
-
-app = FastAPI()
-setup(app)
 
 # Example logger
 logger = logging.getLogger(__name__)
 # Set the log level to log everything
 logger.setLevel(logging.DEBUG)
 
+app = FastAPI()
+setup(app)
 
 @app.get("/")
 def read_root():
@@ -39,6 +40,22 @@ def loop(n: int = 10) -> None:
 @app.get("/hello")
 async def root():
     return {"message": "Hello World"}
+
+
+@app.get("/sse")
+def sse():
+    logger.info("/sse")
+    return StreamingResponse(generate_data_events(), media_type="text/event-stream")
+
+@measure()
+async def generate_data_events(n: int = 10):
+    for value in range(n):
+        data = json.dumps({
+            "value": value
+        })
+        yield f"data: event {data}\n\n"
+        await asyncio.sleep(0.1)
+
 
 
 @app.get("/items/{item_id}")
