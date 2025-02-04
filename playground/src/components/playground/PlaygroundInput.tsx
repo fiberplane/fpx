@@ -11,17 +11,17 @@ import { Icon } from "@iconify/react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { useStudioStore } from "./store";
 
-type RequestInputProps = {
+type PlaygroundInputProps = {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isRequestorRequesting?: boolean;
   formRef: React.RefObject<HTMLFormElement>;
 };
 
-export function RequestorInput({
+export function PlaygroundInput({
   onSubmit,
   isRequestorRequesting,
   formRef,
-}: RequestInputProps) {
+}: PlaygroundInputProps) {
   const {
     method,
     path,

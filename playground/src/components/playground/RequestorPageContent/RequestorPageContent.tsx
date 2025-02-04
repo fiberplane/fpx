@@ -10,7 +10,7 @@ import { useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { CommandBar } from "../CommandBar";
 import { RequestPanel } from "../RequestPanel";
-import { RequestorInput } from "../RequestorInput";
+import { PlaygroundInput } from "../PlaygroundInput";
 import { ResponsePanel } from "../ResponsePanel";
 import { useMakeProxiedRequest } from "../queries";
 import { useStudioStore } from "../store";
@@ -170,7 +170,7 @@ export const RequestorPageContent: React.FC = (_props) => {
       )}
     >
       <CommandBar open={commandBarOpen} setOpen={setCommandBarOpen} />
-      <RequestorInput
+      <PlaygroundInput
         onSubmit={onSubmit}
         isRequestorRequesting={isRequestorRequesting}
         formRef={formRef}
