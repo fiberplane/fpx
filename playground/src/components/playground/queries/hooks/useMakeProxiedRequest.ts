@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { reduceFormDataParameters } from "../../FormDataForm";
 import { reduceKeyValueParameters } from "../../KeyValueForm";
 import type {
@@ -7,7 +7,6 @@ import type {
   PlaygroundResponseBody,
 } from "../../store";
 import { useStudioStore } from "../../store";
-import { REQUESTOR_REQUESTS_KEY } from "./constants";
 
 export type MakeProxiedRequestQueryFn = ReturnType<
   typeof useMakeProxiedRequest
@@ -16,13 +15,9 @@ export type MakeProxiedRequestQueryFn = ReturnType<
 export function useMakeProxiedRequest() {
   const { setActiveResponse } = useStudioStore("setActiveResponse");
 
-  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: makeProxiedRequest,
     onSuccess: (data) => {
-      // Invalidate and refetch requestor requests
-      queryClient.invalidateQueries({ queryKey: [REQUESTOR_REQUESTS_KEY] });
-
       // Make sure the response panel is cleared of data, then add the new response
       if (data) {
         setActiveResponse(data);

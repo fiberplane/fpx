@@ -17,7 +17,7 @@ import { useStudioStore } from "../store";
 import { usePlaygroundSubmitHandler } from "../usePlaygroundSubmitHandler";
 import { getMainSectionWidth } from "./util";
 
-export const RequestorPageContent: React.FC = (_props) => {
+export const PlaygroundPageContent: React.FC = (_props) => {
   // const appRouteRef = useLatest<ProbedRoute | undefined>(appRoute);
   const {
     setShortcutsOpen,
@@ -151,7 +151,7 @@ export const RequestorPageContent: React.FC = (_props) => {
     usePanelConstraints({
       // NOTE - We may need to change the groupId to `""` on small screens because we're not rendering
       //        the resizable panel group
-      groupId: "requestor-page-request-panel-group",
+      groupId: "playground-page-request-panel-group",
       initialGroupSize: getMainSectionWidth(),
       minPixelSize: 200,
       dimension: "width",
@@ -179,7 +179,7 @@ export const RequestorPageContent: React.FC = (_props) => {
         <ResizablePanel order={0} id="top-panels">
           <ResizablePanelGroup
             direction={isLgScreen ? "horizontal" : "vertical"}
-            id="requestor-page-request-panel-group"
+            id="playground-page-request-panel-group"
             className={cn("rounded-md", "max-w-screen", "max-h-full")}
           >
             <ResizablePanel
