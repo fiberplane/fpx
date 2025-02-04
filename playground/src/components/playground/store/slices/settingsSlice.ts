@@ -1,5 +1,6 @@
 import {
   AVAILABLE_FEATURE_FLAGS,
+  FEATURE_FLAG_ERROR_REPORTING,
   FEATURE_FLAG_TRACES,
   FEATURE_FLAG_WORKFLOWS,
   type FeatureFlag,
@@ -56,6 +57,7 @@ const loadSettingsFromStorage = (): {
   isWorkflowsEnabled: boolean;
   isTracingEnabled: boolean;
   shouldShowTopNav: boolean;
+  isErrorReportingEnabled: boolean;
 } => {
   const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
   if (!stored) {
@@ -66,6 +68,7 @@ const loadSettingsFromStorage = (): {
       enabledFeatures: [],
       isWorkflowsEnabled: false,
       isTracingEnabled: false,
+      isErrorReportingEnabled: false,
       shouldShowTopNav: false,
     };
   }
@@ -79,6 +82,7 @@ const loadSettingsFromStorage = (): {
       enabledFeatures: [],
       isWorkflowsEnabled: false,
       isTracingEnabled: false,
+      isErrorReportingEnabled: false,
       shouldShowTopNav: false,
     };
   }
@@ -95,7 +99,9 @@ const loadSettingsFromStorage = (): {
   const isWorkflowsEnabled = enabledFeatures.includes(FEATURE_FLAG_WORKFLOWS);
   const isTracingEnabled = enabledFeatures.includes(FEATURE_FLAG_TRACES);
   const shouldShowTopNav = isWorkflowsEnabled || isTracingEnabled;
-
+  const isErrorReportingEnabled = enabledFeatures.includes(
+    FEATURE_FLAG_ERROR_REPORTING,
+  );
   return {
     persistentAuthHeaders: enforceTerminalDraftParameter(
       parsed.persistentAuthHeaders || [],
@@ -106,6 +112,7 @@ const loadSettingsFromStorage = (): {
     isWorkflowsEnabled,
     isTracingEnabled,
     shouldShowTopNav,
+    isErrorReportingEnabled,
   };
 };
 
@@ -121,6 +128,7 @@ export interface SettingsSlice {
   // Feature flags
   isWorkflowsEnabled: boolean;
   isTracingEnabled: boolean;
+  isErrorReportingEnabled: boolean;
   shouldShowTopNav: boolean;
   enabledFeatures: FeatureFlag[];
 

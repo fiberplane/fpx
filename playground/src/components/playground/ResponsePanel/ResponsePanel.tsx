@@ -229,6 +229,12 @@ function ErrorBanner({
 }: {
   activeResponse: ProxiedRequestResponse | PlaygroundActiveResponse | undefined;
 }) {
+  const { isErrorReportingEnabled } = useStudioStore("isErrorReportingEnabled");
+
+  if (!isErrorReportingEnabled) {
+    return null;
+  }
+
   // HACK - To appease crufty types from Studio... we don't have proxied request/responses in Playground yet
   if (!isPlaygroundActiveResponse(activeResponse)) {
     return null;

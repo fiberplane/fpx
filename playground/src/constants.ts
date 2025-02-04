@@ -1,8 +1,10 @@
 export const FEATURE_FLAG_WORKFLOWS = "workflows";
 export const FEATURE_FLAG_TRACES = "traces";
+export const FEATURE_FLAG_ERROR_REPORTING = "error-reporting";
 export const AVAILABLE_FEATURE_FLAGS = [
   FEATURE_FLAG_WORKFLOWS,
   FEATURE_FLAG_TRACES,
+  FEATURE_FLAG_ERROR_REPORTING,
 ] as const;
 export type FeatureFlag = (typeof AVAILABLE_FEATURE_FLAGS)[number];
 
