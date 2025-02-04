@@ -5,6 +5,7 @@ import type React from "react";
 import { useState } from "react";
 import { cn } from "../utils";
 import { BottomBar } from "./BottomBar";
+import { SettingsScreen } from "./Settings";
 
 function NavButton({
   to,
@@ -50,6 +51,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
         {children}
       </main>
       <BottomBar />
+      <SettingsScreen />
     </div>
   );
 }
