@@ -11,7 +11,7 @@ Fiberplane Studio is a local tool for building and debugging Hono APIs. It can m
 
 ## Quick Start
 
-For FastAPI/Python developers, we've got an experimental library in the [fpxpy](./fpxpy) folder.
+For FastAPI/Python developers, we've got an experimental library in the [python](./python) folder.
 
 Create Hono project
 
