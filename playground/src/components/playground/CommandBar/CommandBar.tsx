@@ -30,14 +30,10 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
   const {
     visibleRequestsPanelTabs,
     setActiveRequestsPanelTab,
-    useMockApiSpec,
-    setUseMockApiSpec,
     setShortcutsOpen,
   } = useStudioStore(
     "visibleRequestsPanelTabs",
     "setActiveRequestsPanelTab",
-    "useMockApiSpec",
-    "setUseMockApiSpec",
     "setShortcutsOpen",
   );
   const { setWorkflowCommandOpen } = useWorkflowStore();
@@ -133,22 +129,6 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
               >
                 <Icon icon="lucide:book-open" className="w-4 h-4 mr-2" />
                 <span>Show Keyboard Shortcuts</span>
-              </CustomCommandItem>
-              <CustomCommandItem
-                onSelect={() => {
-                  setUseMockApiSpec(!useMockApiSpec);
-                  setOpen(false);
-                }}
-                //  The cmdk library has built-in fuzzy search, but we can improve the matching priority by adding a value prop to the CommandItems like this
-                value="mock api spec toggle"
-              >
-                <Icon
-                  icon="lucide:toggle-left"
-                  className={`h-4 w-4 mr-2 ${useMockApiSpec ? "rotate-180" : ""}`}
-                />
-                <span>
-                  {useMockApiSpec ? "Disable" : "Enable"} Mock API Spec
-                </span>
               </CustomCommandItem>
             </CommandGroup>
             <CommandSeparator className="mx-2" />
