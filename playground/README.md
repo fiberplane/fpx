@@ -2,18 +2,12 @@
 
 This is a single page application with the UI for Fiberplane's embedded api playground.
 
-It requires an OpenAPI spec to power the UI.
+Important bits:
 
-It is similar to Fiberplane Studio, except it does **NOT** have the following features:
+- Requires an OpenAPI spec to power the UI.
+- When running the UI in this folder locally, you should also run a server on `:8787` that exposes an OpenAPI spec on the `/openapi.json` path. See [mies's fashion api](https://github.com/mies/fashion) as an example 
 
-- Traces
-- Logs
-- AI Request Generations
-- Request History
-- Collections
-- Code Intelligence
-
-## Running
+## Local Development
 
 The playground is served/built with Vite and runs on port 6660
 
@@ -21,13 +15,13 @@ The playground is served/built with Vite and runs on port 6660
 pnpm run dev
 ```
 
-When you're running things locally, you can go to settings and enable a mock API spec for development. This allows you to test the playground with an OpenAPI spec without having to host one yourself.
+The UI relies entirely on having a valid OpenAPI spec to work with.
 
-## How we parse api specifications in production
+The way we know how to fetch the OpenAPI spec is by looking at the element in the DOM with the id `root`, and parsing the `data-options` attribute on it.
 
-When this UI is served in production, it attempts to parse an OpenAPI spec from the DOM, which should be embedded in a script tag as JSON.
+The `data-options` attribute should be a JSON object that describes how to fetch the OpenAPI spec. Either it is the raw spec itself, or it is a url from which the spec can be fetched.
 
-See: `src/garbage/RequestorPage/queries/hooks/fiberplane-embedded/*` for the code that does this.
+Given the way we've set up the `index.html` file for local development here, we **assume that you're running a server on `:8787` that exposes an OpenAPI spec on the `/openapi.json` path**.
 
 ## Deploying
 
