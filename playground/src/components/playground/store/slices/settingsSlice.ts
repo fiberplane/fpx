@@ -140,7 +140,7 @@ export const settingsSlice: StateCreator<
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   SettingsSlice
-> = (set, get) => {
+> = (set) => {
   const initialState = loadSettingsFromStorage();
 
   const updateFeatureFlags = (state: StudioState) => {

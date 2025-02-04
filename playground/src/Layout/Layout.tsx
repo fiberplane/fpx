@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Link, useMatches } from "@tanstack/react-router";
 import { UserCircle } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
 import { cn } from "../utils";
 import { BottomBar } from "./BottomBar";
 import { SettingsScreen } from "./Settings";
