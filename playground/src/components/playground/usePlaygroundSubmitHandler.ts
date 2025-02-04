@@ -1,6 +1,6 @@
 import { useHandler } from "@fiberplane/hooks";
 import { useShallow } from "zustand/react/shallow";
-import type { MakeProxiedRequestQueryFn } from "./queries";
+import type { MakePlaygroundRequestQueryFn } from "./queries";
 import type { KeyValueParameter, PlaygroundBody } from "./store";
 import {
   getPreferredAuthorizationId,
@@ -12,7 +12,7 @@ import {
 export function usePlaygroundSubmitHandler({
   makeRequest,
 }: {
-  makeRequest: MakeProxiedRequestQueryFn;
+  makeRequest: MakePlaygroundRequestQueryFn;
 }) {
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();
 

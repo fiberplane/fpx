@@ -1,5 +1,5 @@
 export {
-  useMakeProxiedRequest,
-  type MakeProxiedRequestQueryFn,
-} from "./useMakeProxiedRequest";
+  useMakePlaygroundRequest,
+  type MakePlaygroundRequestQueryFn,
+} from "./useMakePlaygroundRequest";
 export { useProbedRoutes } from "./useProbedRoute";

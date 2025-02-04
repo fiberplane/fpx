@@ -12,7 +12,7 @@ import { CommandBar } from "../CommandBar";
 import { PlaygroundInput } from "../PlaygroundInput";
 import { RequestPanel } from "../RequestPanel";
 import { ResponsePanel } from "../ResponsePanel";
-import { useMakeProxiedRequest } from "../queries";
+import { useMakePlaygroundRequest } from "../queries";
 import { useStudioStore } from "../store";
 import { usePlaygroundSubmitHandler } from "../usePlaygroundSubmitHandler";
 import { getMainSectionWidth } from "./util";
@@ -30,7 +30,7 @@ export const PlaygroundPageContent: React.FC = (_props) => {
   );
 
   const { mutate: makeRequest, isPending: isPlaygroundRequesting } =
-    useMakeProxiedRequest();
+    useMakePlaygroundRequest();
 
   // Send a request when we submit the form
   const onSubmit = usePlaygroundSubmitHandler({

@@ -3,20 +3,21 @@ import { reduceFormDataParameters } from "../../FormDataForm";
 import { reduceKeyValueParameters } from "../../KeyValueForm";
 import type {
   KeyValueParameter,
+  PlaygroundActiveResponse,
   PlaygroundBody,
   PlaygroundResponseBody,
 } from "../../store";
-import { type PlaygroundActiveResponse, useStudioStore } from "../../store";
+import { useStudioStore } from "../../store";
 
-export type MakeProxiedRequestQueryFn = ReturnType<
-  typeof useMakeProxiedRequest
+export type MakePlaygroundRequestQueryFn = ReturnType<
+  typeof useMakePlaygroundRequest
 >["mutate"];
 
-export function useMakeProxiedRequest() {
+export function useMakePlaygroundRequest() {
   const { setActiveResponse } = useStudioStore("setActiveResponse");
 
   const mutation = useMutation({
-    mutationFn: makeProxiedRequest,
+    mutationFn: makePlaygroundRequest,
     onSuccess: (data) => {
       // Make sure the response panel is cleared of data, then add the new response
       if (data) {
@@ -37,7 +38,7 @@ export function useMakeProxiedRequest() {
   return mutation;
 }
 
-function makeProxiedRequest({
+function makePlaygroundRequest({
   addServiceUrlIfBarePath,
   path,
   method,
