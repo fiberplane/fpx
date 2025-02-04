@@ -1,6 +1,7 @@
 import functools
 import asyncio
 import inspect
+import time
 from typing import (
     Callable,
     Optional,
@@ -16,7 +17,6 @@ from typing import (
     AsyncIterator,
 )
 
-# from collections.abc import Coroutine as CoroutineType
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode, SpanKind, Span
 from opentelemetry.sdk.resources import Attributes
@@ -108,6 +108,7 @@ def measure(
     func: Callable[P, Union[Iterator[T], AsyncIterator[T]]],
     span_kind: SpanKind = SpanKind.INTERNAL,
     on_start: Optional[OnStartCallback[P]] = None,
+    # on_yield: Optional[Callable[Span, T], None] = None,
     on_success: Optional[Callable[[Span, T], None]] = None,
     on_error: Optional[Callable[[Span, Exception], None]] = None,
     check_result: Optional[Callable[[T], None]] = None,
@@ -120,6 +121,7 @@ def measure(
     func: Optional[Callable[P, Union[R, Coroutine[Any, Any, R], Iterator[T], AsyncIterator[T]]]] = None,
     span_kind: SpanKind = SpanKind.INTERNAL,
     on_start: Optional[OnStartCallback[P]] = None,
+    # on_yield: Optional[Callable[Span, T], None] = None,
     on_success: Optional[
         Callable[[Span, R], Union[None, Coroutine[Any, Any, None]]]
     ] = None,
@@ -176,33 +178,20 @@ def measure(
                     on_start(parent_span, *args, **kwargs)
                 try:
                     async_gen = fn(*args, **kwargs)
+
                     iteration = 0
+                    iteration_start = time.time_ns()
                     async for value in async_gen:
                         with tracer.start_as_current_span(
                             name=f"{current_name}[{iteration}]",
                             kind=span_kind,
                             attributes=attributes,
+                            start_time=iteration_start,
                         ) as span:
-                            if check_result:
-                                try:
-                                    check = check_result(value)
-                                    if inspect.iscoroutine(check):
-                                        await check
-                                except Exception as e:
-                                    span.set_status(Status(StatusCode.ERROR, str(e)))
-                                    span.record_exception(e)
-                                    if on_error:
-                                        on_error(span, e)
-                                    yield value
-                                    continue
-
-                            span.set_status(Status(StatusCode.OK))
-                            if on_success:
-                                success = on_success(span, value)
-                                if inspect.iscoroutine(success):
-                                    await success
                             yield value
-                            iteration += 1
+                            span.set_status(Status(StatusCode.OK))
+                        iteration_start = time.time_ns()
+                        iteration += 1
 
                     parent_span.set_status(Status(StatusCode.OK))
 
@@ -227,11 +216,14 @@ def measure(
                 try:
                     gen = fn(*args, **kwargs)
                     iteration = 0
+                    iteration_start = time.time_ns()
                     for value in gen:
+                        iteration += 1
                         with tracer.start_as_current_span(
                             name=f"{current_name}[{iteration}]",
                             kind=span_kind,
                             attributes=attributes,
+                            start_time=iteration_start,
                         ) as span:
                             if check_result:
                                 try:
@@ -254,7 +246,7 @@ def measure(
                                     loop = asyncio.get_event_loop()
                                     loop.run_until_complete(success)
                             yield value
-                            iteration += 1
+                            iteration_start = time.time_ns()
 
                     parent_span.set_status(Status(StatusCode.OK))
 

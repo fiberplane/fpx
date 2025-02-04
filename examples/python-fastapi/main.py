@@ -50,11 +50,12 @@ def sse():
 @measure()
 async def generate_data_events(n: int = 10):
     for value in range(n):
+        await asyncio.sleep(0.1)
         data = json.dumps({
             "value": value
         })
+        print(f"Loop number: %i" % value)
         yield f"data: event {data}\n\n"
-        await asyncio.sleep(0.1)
 
 
 
