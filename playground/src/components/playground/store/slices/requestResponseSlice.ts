@@ -1,14 +1,8 @@
-import {
-  constructPlaygroundBody,
-  createKeyValueParametersFromValues,
-} from "@/utils";
 import type { StateCreator } from "zustand";
 import { enforceFormDataTerminalDraftParameter } from "../../FormDataForm";
 import { enforceTerminalDraftParameter } from "../../KeyValueForm";
 import { isOpenApiOperation } from "../../RequestPanel/RouteDocumentation";
-import type { ProxiedRequestResponse } from "../../queries";
 import { findMatchedRoute } from "../../routes";
-import { isRequestMethod } from "../../types";
 import { updateContentTypeHeaderInState } from "../content-type";
 import { setBodyTypeInState } from "../set-body-type";
 import { getVisibleRequestPanelTabs } from "../tabs";
@@ -293,73 +287,4 @@ export const requestResponseSlice: StateCreator<
     set((state) => {
       state.sessionHistory.push(traceId);
     }),
-
-  setRequestParams: (
-    requestParams: Pick<
-      ProxiedRequestResponse["app_requests"],
-      | "requestBody"
-      | "requestHeaders"
-      | "requestMethod"
-      | "requestPathParams"
-      | "requestQueryParams"
-      | "requestRoute"
-      | "requestUrl"
-    >,
-  ) => {
-    const {
-      requestBody,
-      requestHeaders,
-      requestMethod,
-      requestPathParams = {},
-      requestQueryParams = {},
-    } = requestParams;
-
-    // Updating the path has the side effect of clearing/resetting the path params
-    // So it's good to do this early
-    get().updatePath(requestParams.requestUrl);
-
-    get().updateMethod(
-      requestMethod === "WS" || isRequestMethod(requestMethod)
-        ? requestMethod
-        : "GET",
-      // );
-    );
-
-    get().setPathParams(
-      createKeyValueParametersFromValues(
-        Object.entries(requestPathParams || {}).map(([key, value]) => ({
-          key,
-          value,
-        })),
-      ),
-    );
-
-    get().setQueryParams(
-      createKeyValueParametersFromValues(
-        Object.entries(requestQueryParams || {}).map(([key, value]) => ({
-          key,
-          value,
-        })),
-      ),
-    );
-    const bodyValue =
-      requestBody === undefined || requestBody === null
-        ? undefined
-        : typeof requestBody !== "string"
-          ? JSON.stringify(requestBody)
-          : requestBody;
-    get().setBody(bodyValue && constructPlaygroundBody(bodyValue));
-
-    get().setRequestHeaders(
-      createKeyValueParametersFromValues(
-        Object.entries(requestHeaders || {})
-          .map(([key, value]) => ({ key, value }))
-          .filter(
-            // HACK - We don't want to pass through the trace id header,
-            //        Otherwise each successive request will be correlated!!
-            ({ key }) => key?.toLowerCase() !== "x-fpx-trace-id",
-          ),
-      ),
-    );
-  },
 });

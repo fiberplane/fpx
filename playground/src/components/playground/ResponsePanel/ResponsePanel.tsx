@@ -14,7 +14,6 @@ import { SENSITIVE_HEADERS, cn } from "@/utils";
 import { Icon } from "@iconify/react";
 import { memo } from "react";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
-import type { ProxiedRequestResponse } from "../queries";
 import { useServiceBaseUrl } from "../store";
 import { useStudioStore } from "../store";
 import {
@@ -227,16 +226,15 @@ function LoadingResponseBody() {
 function ErrorBanner({
   activeResponse,
 }: {
-  activeResponse: ProxiedRequestResponse | PlaygroundActiveResponse | undefined;
+  activeResponse: PlaygroundActiveResponse | undefined;
 }) {
   const { isErrorReportingEnabled } = useStudioStore("isErrorReportingEnabled");
 
-  if (!isErrorReportingEnabled) {
+  if (!activeResponse) {
     return null;
   }
 
-  // HACK - To appease crufty types from Studio... we don't have proxied request/responses in Playground yet
-  if (!isPlaygroundActiveResponse(activeResponse)) {
+  if (!isErrorReportingEnabled) {
     return null;
   }
 

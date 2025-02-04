@@ -4,7 +4,6 @@ import type {
   RequestsPanelTab,
   ResponsePanelTab,
 } from "..";
-import type { ProxiedRequestResponse } from "../../queries";
 import type { ProbedRoute } from "../../types";
 import type {
   RequestMethod,
@@ -51,18 +50,6 @@ export interface RequestResponseSlice {
   /** Session history related state */
   sessionHistory: TraceId[];
   recordRequestInSessionHistory: (traceId: TraceId) => void;
-  setRequestParams: (
-    requestParams: Pick<
-      ProxiedRequestResponse["app_requests"],
-      | "requestBody"
-      | "requestHeaders"
-      | "requestMethod"
-      | "requestPathParams"
-      | "requestQueryParams"
-      | "requestRoute"
-      | "requestUrl"
-    >,
-  ) => void;
 }
 
 export interface RoutesSlice {

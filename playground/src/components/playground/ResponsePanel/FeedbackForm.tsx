@@ -13,7 +13,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Icon } from "@iconify/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import type { ProxiedRequestResponse } from "../queries";
 import { useServiceBaseUrl } from "../store";
 import type { PlaygroundActiveResponse } from "../store/types";
 import { ResponseSummary } from "./ResponseSummary";
@@ -28,7 +27,7 @@ type Props = {
   traceId: string;
   onSuccess?: () => void;
   isError?: boolean;
-  response?: ProxiedRequestResponse | PlaygroundActiveResponse;
+  response?: PlaygroundActiveResponse;
 };
 
 export function FeedbackForm({ traceId, onSuccess, isError, response }: Props) {

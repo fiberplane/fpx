@@ -1,20 +1,11 @@
-import type { ProxiedRequestResponse } from "@/components/playground/queries";
-import {
-  type PlaygroundActiveResponse,
-  isPlaygroundActiveResponse,
-} from "@/components/playground/store/types";
+import type { PlaygroundActiveResponse } from "@/components/playground/store/types";
 import { LinkBreak2Icon } from "@radix-ui/react-icons";
 
 export function FailedRequest({
   response,
-}: { response?: ProxiedRequestResponse | PlaygroundActiveResponse }) {
-  // TODO - Show a more friendly error message
-  const failureReason = isPlaygroundActiveResponse(response)
-    ? null
-    : response?.app_responses?.failureReason;
-  const friendlyMessage =
-    failureReason === "fetch failed" ? "Service unreachable" : null;
-  // const failureDetails = response?.app_responses?.failureDetails;
+}: { response?: PlaygroundActiveResponse }) {
+  // TODO - Show more granular error messages
+  const friendlyMessage = response?.isFailure ? "Service unreachable" : null;
   return (
     <div className="h-full pb-8 sm:pb-20 md:pb-32 flex flex-col items-center justify-center p-4">
       <div className="flex flex-col items-center justify-center p-4">
