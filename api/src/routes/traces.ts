@@ -28,7 +28,11 @@ app.get("/v1/traces", cors(), async (ctx) => {
 
   const fpxWorker = await getSetting(db, "fpxWorkerProxy");
   if (fpxWorker?.enabled && fpxWorker.baseUrl) {
-    const response = await fetch(`${fpxWorker.baseUrl}/v1/traces`);
+    const headers: Record<string, string> = fpxWorker.bearerToken
+      ? { Authorization: `Bearer ${fpxWorker.bearerToken}` }
+      : {};
+
+    const response = await fetch(`${fpxWorker.baseUrl}/v1/traces`, { headers });
     const json = await response.json();
     return ctx.json(json as JSON);
   }

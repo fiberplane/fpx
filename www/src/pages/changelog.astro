@@ -23,7 +23,7 @@ const changelogEntries = await Promise.all(
     title: "Changelog",
     description: "Fiberplane Studio changelog",
     template: "doc",
-    tableOfContents: false
+    tableOfContents: false,
   }}
 >
   {
@@ -38,7 +38,7 @@ const changelogEntries = await Promise.all(
                 day: "numeric"
               })}
             </h2>
-            <Badge variant="default" text={`v${entry.data.version}`} />
+            <Badge variant="note" text={`v${entry.data.version}`} />
           </div>
           <entry.content.Content />
         </section>

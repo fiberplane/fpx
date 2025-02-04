@@ -1,0 +1,26 @@
+---
+const { banner } = Astro.props.entry.data;
+---
+
+{banner && <div class="sl-banner" set:html={banner.content} />}
+
+<style>
+  .sl-banner {
+    --__sl-banner-text: var(
+      --sl-color-banner-text,
+      var(--sl-color-text-invert)
+    );
+    --__sl-banner-text: var(--fg-brand);
+    padding: 0.5rem var(--sl-nav-pad-x);
+    background-color: var(--bg-brand-muted);
+    color: var(--__sl-banner-text);
+    line-height: var(--sl-line-height-headings);
+    text-align: center;
+    text-wrap: balance;
+    box-shadow: var(--sl-shadow-sm);
+    box-shadow: 0 1px 1px hsl(from var(--bg-brand) h s l / 0.3);
+  }
+  .sl-banner :global(a) {
+    color: var(--__sl-banner-text);
+  }
+</style>

@@ -18,8 +18,10 @@ export default defineConfig({
   integrations: [
     starlight({
       logo: {
-        src: "@/assets/fp-logo.png",
-        replacesTitle: true
+        dark: "@/assets/fp-logo-dark.png",
+        light: "@/assets/fp-logo-light.png",
+        replacesTitle: true,
+        alt: "Fiberplane icon logo & text"
       },
       title: "Fiberplane",
       description:
@@ -44,9 +46,9 @@ export default defineConfig({
         {
           label: "nav",
           items: [
-            { link: "/changelog", label: "Changelog" },
+            { link: "/docs/get-started", label: "Docs" },
             { link: "/blog", label: "Blog" },
-            { link: "/docs", label: "Docs" }
+            { link: "/changelog", label: "Changelog" },
           ]
         }
       ],
@@ -73,11 +75,12 @@ export default defineConfig({
         }
       ],
       components: {
+        Banner: "@/components/Banner.astro",
+        Head: "@/components/Head.astro",
         Header: "@/components/Header.astro",
+        Hero: "@/components/Hero.astro",
         Pagination: "@/components/Pagination.astro",
-        ThemeProvider: "@/components/ThemeProvider.astro",
-        Sidebar: "@/components/Sidebar.astro",
-        Hero: "@/components/Hero.astro"
+        Sidebar: "@/components/Sidebar.astro"
       },
       customCss: ["@/main.css"],
       expressiveCode: {
