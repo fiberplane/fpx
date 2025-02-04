@@ -97,7 +97,7 @@ function makePlaygroundRequest({
   // We create the body
   // FIXME - We should validate JSON in the UI itself
   const hackyBody = createBody(body);
-  // debugger;
+
   return fetch(proxyToUrl, {
     method,
     headers: modHeaders,

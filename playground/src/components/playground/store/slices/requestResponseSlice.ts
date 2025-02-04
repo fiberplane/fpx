@@ -74,8 +74,20 @@ export const requestResponseSlice: StateCreator<
         if (fakeHeaders.length > 0) {
           state.requestHeaders = enforceTerminalDraftParameter(fakeHeaders);
         }
-        const fakePathParams = transformToFormParams(fakeData.pathParams);
+        const fakePathParams = transformToFormParams(fakeData.pathParams).map(
+          (param) => ({
+            ...param,
+            id: param.key,
+          }),
+        );
         if (fakePathParams.length > 0) {
+          const nextPath = fakePathParams.reduce((accPath, param) => {
+            if (param.enabled) {
+              return accPath.replace(`:${param.key}`, param.value || param.key);
+            }
+            return accPath;
+          }, state.activeRoute?.path ?? state.path);
+          state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
           state.pathParams = fakePathParams;
         }
       });
