@@ -188,8 +188,27 @@ def measure(
                             attributes=attributes,
                             start_time=iteration_start,
                         ) as span:
-                            yield value
+                            if check_result:
+                                try:
+                                    check = check_result(value)
+                                    if inspect.iscoroutine(check):
+                                        loop = asyncio.get_event_loop()
+                                        loop.run_until_complete(check)
+                                except Exception as e:
+                                    span.set_status(Status(StatusCode.ERROR, str(e)))
+                                    span.record_exception(e)
+                                    if on_error:
+                                        on_error(span, e)
+                                    yield value
+                                    continue
+
                             span.set_status(Status(StatusCode.OK))
+                            if on_success:
+                                success = on_success(span, value)
+                                if inspect.isawaitable(success):
+                                    loop = asyncio.get_event_loop()
+                                    loop.run_until_complete(success)
+                            yield value
                         iteration_start = time.time_ns()
                         iteration += 1
 
