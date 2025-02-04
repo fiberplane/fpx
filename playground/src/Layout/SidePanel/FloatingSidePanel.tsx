@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button";
 import {
   NavigationFrame,
   NavigationPanel,
-} from "@/garbage/RequestorPage/NavigationPanel";
-import { useStudioStore } from "@/garbage/RequestorPage/store";
+} from "@/components/playground/NavigationPanel";
+import { useStudioStore } from "@/components/playground/store";
+import { Button } from "@/components/ui/button";
 import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react";

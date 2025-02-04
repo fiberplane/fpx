@@ -1,13 +1,13 @@
 import { SubSectionHeading } from "@/components/SubSectionHeading";
 import {
+  type RequestorActiveResponse,
+  isRequestorActiveResponse,
+} from "@/components/playground/store/types";
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  type RequestorActiveResponse,
-  isRequestorActiveResponse,
-} from "@/garbage/RequestorPage/store/types";
 import { cn, safeParseJson } from "@/utils";
 import {
   CaretDownIcon,

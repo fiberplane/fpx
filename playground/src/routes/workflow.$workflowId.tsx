@@ -6,6 +6,11 @@ import { Method } from "@/components/Method";
 import { Button } from "@/components/ui/button";
 import type { OpenAPI } from "openapi-types";
 
+import {
+  CustomTabTrigger,
+  CustomTabsContent,
+  CustomTabsList,
+} from "@/components/playground/Tabs";
 // import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Collapsible,
@@ -14,11 +19,6 @@ import {
 } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Tabs } from "@/components/ui/tabs";
-import {
-  CustomTabTrigger,
-  CustomTabsContent,
-  CustomTabsList,
-} from "@/garbage/RequestorPage/Tabs";
 import { useShake } from "@/hooks";
 import { useOpenApiParse } from "@/lib/hooks/useOpenApiParse";
 import { useOpenApiSpec } from "@/lib/hooks/useOpenApiSpec";

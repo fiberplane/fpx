@@ -1,9 +1,9 @@
-import { createParameterId } from "@/garbage/RequestorPage/KeyValueForm/data";
+import { createParameterId } from "@/components/playground/KeyValueForm/data";
 import type {
   KeyValueParameter,
   RequestorBody,
-} from "@/garbage/RequestorPage/store";
-import { RequestorBodySchema } from "@/garbage/RequestorPage/store/request-body";
+} from "@/components/playground/store";
+import { RequestorBodySchema } from "@/components/playground/store/request-body";
 import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";

@@ -1,5 +1,5 @@
+import { Search } from "@/components/playground/NavigationPanel/Search";
 import { Button } from "@/components/ui/button";
-import { Search } from "@/garbage/RequestorPage/NavigationPanel/Search";
 import { useDeleteWorkflow, useWorkflows } from "@/lib/hooks/useWorkflows";
 import { PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 import { Link } from "@tanstack/react-router";

@@ -3,6 +3,8 @@ import {
   type RequestInfo,
   ResponseSummaryContainer,
 } from "@/components/ResponseSummary";
+import { NavigationPanel } from "@/components/playground/NavigationPanel";
+import { NavigationFrame } from "@/components/playground/NavigationPanel";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Collapsible,
@@ -14,8 +16,6 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { NavigationPanel } from "@/garbage/RequestorPage/NavigationPanel";
-import { NavigationFrame } from "@/garbage/RequestorPage/NavigationPanel";
 import { useIsLgScreen } from "@/hooks";
 import { tracesQueryOptions } from "@/lib/hooks/useTraces";
 import { cn } from "@/lib/utils";

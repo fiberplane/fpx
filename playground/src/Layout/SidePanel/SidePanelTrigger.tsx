@@ -1,11 +1,11 @@
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
+import { useStudioStore } from "@/components/playground/store";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useStudioStore } from "@/garbage/RequestorPage/store";
 import { isMac } from "@/utils";
 import { Icon } from "@iconify/react";
 import { useHotkeys } from "react-hotkeys-hook";

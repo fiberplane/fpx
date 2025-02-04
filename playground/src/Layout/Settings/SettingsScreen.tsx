@@ -1,3 +1,4 @@
+import { SettingsPage } from "@/components/playground/Settings/SettingsPage";
 import { Button } from "@/components/ui/button";
 import { useSettingsOpen } from "@/hooks";
 import { Icon } from "@iconify/react";
@@ -9,7 +10,6 @@ import {
   DialogPortal,
   DialogTitle,
 } from "@radix-ui/react-dialog";
-import { SettingsPage } from "../../garbage/RequestorPage/Settings/SettingsPage";
 
 export function SettingsScreen() {
   const { setSettingsOpen, settingsOpen } = useSettingsOpen();

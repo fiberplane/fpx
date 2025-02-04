@@ -1,5 +1,5 @@
+import { useStudioStore } from "@/components/playground/store";
 import { Switch } from "@/components/ui/switch";
-import { useStudioStore } from "@/garbage/RequestorPage/store";
 import { useIsMdScreen } from "@/hooks";
 import { isMizuOrphanLog } from "@/types";
 import type { Waterfall } from "@/utils";

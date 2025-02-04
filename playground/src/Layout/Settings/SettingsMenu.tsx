@@ -1,4 +1,4 @@
-import { useStudioStore } from "@/garbage/RequestorPage/store";
+import { useStudioStore } from "@/components/playground/store";
 import { Icon } from "@iconify/react";
 import {
   Menubar,

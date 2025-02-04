@@ -1,12 +1,12 @@
 import { Layout } from "@/Layout";
 import { WorkflowSidebar } from "@/components/WorkflowSidebar";
+import { CommandBar } from "@/components/playground/CommandBar/CommandBar";
 import { ThemeProvider } from "@/components/theme-provider";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { CommandBar } from "@/garbage/RequestorPage/CommandBar/CommandBar";
 import { useIsLgScreen } from "@/hooks";
 import { workflowsQueryOptions } from "@/lib/hooks/useWorkflows";
 import { cn } from "@/lib/utils";

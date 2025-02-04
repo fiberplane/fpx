@@ -1,6 +1,6 @@
 import { Layout } from "@/Layout";
-import { RequestorPage } from "@/garbage/RequestorPage";
-import { useStudioStore } from "@/garbage/RequestorPage/store";
+import { RequestorPage } from "@/components/playground";
+import { useStudioStore } from "@/components/playground/store";
 import { useSettingsOpen } from "@/hooks";
 import { RequestMethodInputValueSchema } from "@/types";
 import { useHandler } from "@fiberplane/hooks";
