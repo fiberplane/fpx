@@ -26,7 +26,6 @@ export function useRoutes() {
   // TODO - Remove notion of active routes, since this is a holdover from Studio
   const activeRoutesAndMiddleware = useMemo(() => {
     const activeRoutes = routesAndMiddleware?.routes ?? [];
-    activeRoutes.sort((a, b) => b.registrationOrder - a.registrationOrder);
     return activeRoutes;
   }, [routesAndMiddleware]);
 

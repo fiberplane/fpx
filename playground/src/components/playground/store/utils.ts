@@ -10,7 +10,7 @@ export const _getActiveRoute = (state: PlaygroundState): ApiRoute => {
       id: Number.NEGATIVE_INFINITY,
       path: state.path,
       method: state.method,
-      registrationOrder: -1,
+      openApiSpec: null,
     }
   );
 };
@@ -32,6 +32,8 @@ export function apiRouteToInputMethod(route: ApiRoute): RequestMethod {
       return "PATCH";
     case "HEAD":
       return "HEAD";
+    case "TRACE":
+      return "TRACE";
     default:
       return "GET";
   }

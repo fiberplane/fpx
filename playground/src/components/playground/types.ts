@@ -29,7 +29,6 @@ export const ApiRouteSchema = z.object({
   id: z.number(),
   path: z.string(),
   method: RequestMethodSchema,
-  registrationOrder: z.number().default(-1),
   openApiSpec: z.string().nullish().optional(),
 });
 

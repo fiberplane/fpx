@@ -144,22 +144,10 @@ const isMatchResultEmpty = <R extends SmartRouter<T>, T>(
 };
 
 /**
- * Sorts routes for matching, with registered routes first, then unregistered routes
- *
- * - for registered routes:
- *   - `registrationOrder` (ascending)
- * - for unregistered routes:
- *   - `isDraft` status (`false` before `true`)
- *
- * @NOTE - Creates a new array, does not mutate the input
+ * @TODO - Remove this, we no longer need to sort routes for matching
  */
 function sortRoutesForMatching(unsortedRoutes: ApiRoute[]) {
   const routes = [...unsortedRoutes];
-
-  routes.sort((a, b) => {
-    // If both registration and draft status are the same, sort by registration order
-    return a.registrationOrder - b.registrationOrder;
-  });
 
   return routes;
 }

@@ -26,8 +26,6 @@ export function RoutesPanel() {
   // TODO - Remove the notion of "detected" routes, since this is a holdover from Studio
   const detectedRoutes = useMemo(() => {
     const detected = [...filteredRoutes];
-    // NOTE - This preserves the order the routes were registered in the Hono api
-    detected.sort((a, b) => a.registrationOrder - b.registrationOrder);
     return detected;
   }, [filteredRoutes]);
 
