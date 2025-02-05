@@ -8,13 +8,13 @@ import { Search } from "../Search";
 import { RoutesItem } from "./RoutesItem";
 import { RoutesSection } from "./RoutesSection";
 
-const UNTAGGED_TAG = "untagged";
+const UNTAGGED = Symbol("untagged");
 
 function useRoutesGroupedByTags(routes: ApiRoute[]) {
   const routesGroupedByTags = useMemo(() => {
-    return routes.reduce<Record<string, ApiRoute[]>>((acc, route) => {
+    return routes.reduce<Record<string | symbol, ApiRoute[]>>((acc, route) => {
       // NOTE - Also group routes without tags under the "untagged" tag
-      const tags = route.tags?.length ? route.tags : [UNTAGGED_TAG];
+      const tags = route.tags?.length ? route.tags : [UNTAGGED];
 
       // Add route to each of its tags
       for (const tag of tags) {
@@ -32,22 +32,18 @@ function useRoutesGroupedByTags(routes: ApiRoute[]) {
   const sortedTags = useMemo(() => {
     const tags = Object.keys(routesGroupedByTags);
     // If all routes are untagged, return empty array to signal no tags
-    if (tags.length === 1 && tags[0] === UNTAGGED_TAG) {
+    if (tags.length === 0) {
       return [];
     }
 
-    return tags.sort((a, b) => {
-      // Always put untagged at the end
-      if (a === UNTAGGED_TAG) {
-        return 1;
-      }
-
-      if (b === UNTAGGED_TAG) {
-        return -1;
-      }
-
+    tags.sort((a, b) => {
       return a.localeCompare(b);
     });
+
+    const hasUntaggedRoutes = routesGroupedByTags[UNTAGGED]?.length > 0;
+
+    // Always put untagged routes at the end
+    return hasUntaggedRoutes ? [...tags, UNTAGGED] : tags;
   }, [routesGroupedByTags]);
 
   return { routesGroupedByTags, sortedTags };
@@ -89,7 +85,7 @@ export function RoutesPanel() {
   const allRoutes = useMemo(() => {
     // If no tags, just return all routes
     if (sortedTags.length === 0) {
-      return routesGroupedByTags[UNTAGGED_TAG] || [];
+      return routesGroupedByTags[UNTAGGED] || [];
     }
 
     // Otherwise flatten routes in tag order for keyboard navigation
@@ -209,7 +205,10 @@ export function RoutesPanel() {
           ) : (
             // Otherwise render routes grouped by tags
             sortedTags.map((tag) => (
-              <RoutesSection key={tag} title={tag}>
+              <RoutesSection
+                key={typeof tag === "string" ? tag : "Symbol('untagged')"}
+                title={typeof tag === "string" ? tag : "Untagged Routes"}
+              >
                 <div className="grid">
                   {routesGroupedByTags[tag].map((route) => {
                     // Calculate the global index for this route
