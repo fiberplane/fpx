@@ -13,7 +13,6 @@ export function useApiRoutes() {
 
   return useQuery({
     queryKey: [API_ROUTES_KEY, useMockApiSpec],
-    queryFn: () =>
-      getApiRoutesFromOpenApiSpec(useMockApiSpec, content ?? ""),
+    queryFn: () => getApiRoutesFromOpenApiSpec(useMockApiSpec, content ?? ""),
   });
 }

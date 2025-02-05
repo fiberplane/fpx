@@ -1,7 +1,7 @@
 import PLACEGOOSE_API_SPEC from "@/lib/placegoose.json";
 import TIGHTKNIT_API_SPEC from "@/lib/tightknit.json";
 import { specToApiRoutes } from "./spec-to-api-routes";
-import type { OpenAPISpec, ApiRoutesResponse } from "./types";
+import type { ApiRoutesResponse, OpenAPISpec } from "./types";
 import type { ResolvedSpecResult } from "./types";
 
 const MOCK_API_SPEC =
