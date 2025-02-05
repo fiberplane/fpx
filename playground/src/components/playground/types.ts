@@ -30,6 +30,10 @@ export const ApiRouteSchema = z.object({
   path: z.string(),
   method: RequestMethodSchema,
   openApiSpec: z.string().nullish().optional(),
+  title: z.string().nullish(),
+  summary: z.string().nullish(),
+  description: z.string().nullish(),
+  tags: z.array(z.string()).nullish(),
 });
 
 export type ApiRoute = z.infer<typeof ApiRouteSchema>;

@@ -32,6 +32,12 @@ export function specToApiRoutes(
           id,
           path: transformedPath,
           method: upperMethod,
+          // `summary` is the succint title of the operation
+          summary: dereferencedOperation.summary,
+          // `description` is the more long-form description of the operation
+          description: dereferencedOperation.description,
+          // TODO - Dereference tags? (Make sure they're in the Schema)
+          tags: dereferencedOperation.tags,
           openApiSpec: operation
             ? JSON.stringify(dereferencedOperation)
             : undefined,

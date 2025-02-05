@@ -19,6 +19,7 @@ export type OpenAPIOperation = {
     };
   }>;
   responses: Record<string, unknown>;
+  tags?: Array<string>;
 };
 
 export type OpenAPIPathItem = {
