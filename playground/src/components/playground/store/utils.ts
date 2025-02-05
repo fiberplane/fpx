@@ -16,7 +16,6 @@ export const _getActiveRoute = (state: PlaygroundState): ApiRoute => {
       currentlyRegistered: false,
       registrationOrder: -1,
       routeOrigin: "custom",
-      isDraft: true,
     }
   );
 };

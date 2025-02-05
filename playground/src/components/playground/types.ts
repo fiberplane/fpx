@@ -47,13 +47,6 @@ export const ApiRouteSchema = z.object({
   routeOrigin: z.enum(["discovered", "custom", "open_api"]),
   openApiSpec: z.string().nullish().optional(),
   requestType: RequestTypeSchema,
-  // NOTE - Added on the frontend, not stored in DB
-  isDraft: z
-    .boolean()
-    .optional()
-    .describe(
-      "Added on the frontend, not stored in DB. This is only true when the user is typing a path, and none of the routes in the sidebar match.",
-    ),
 });
 
 export type ApiRoute = z.infer<typeof ApiRouteSchema>;
