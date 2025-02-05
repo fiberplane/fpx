@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 const TAB_HEIGHT = "h-8";
 
 const FpTabs = TabsPrimitive.Root;
+FpTabs.displayName = "FpTabs";
 
 const FpTabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
@@ -22,7 +23,7 @@ const FpTabsList = React.forwardRef<
     {...props}
   />
 ));
-FpTabsList.displayName = TabsPrimitive.List.displayName;
+FpTabsList.displayName = `Fp${TabsPrimitive.List.displayName}`;
 
 const FpTabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
@@ -56,7 +57,7 @@ const FpTabsTrigger = React.forwardRef<
     {...props}
   />
 ));
-FpTabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
+FpTabsTrigger.displayName = `Fp${TabsPrimitive.Trigger.displayName}`;
 
 const FpTabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
@@ -73,6 +74,6 @@ const FpTabsContent = React.forwardRef<
     {...props}
   />
 ));
-FpTabsContent.displayName = TabsPrimitive.Content.displayName;
+FpTabsContent.displayName = `Fp${TabsPrimitive.Content.displayName}`;
 
 export { FpTabs, FpTabsList, FpTabsTrigger, FpTabsContent };
