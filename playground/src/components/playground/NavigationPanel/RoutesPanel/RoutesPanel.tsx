@@ -8,11 +8,13 @@ import { Search } from "../Search";
 import { RoutesItem } from "./RoutesItem";
 import { RoutesSection } from "./RoutesSection";
 
+const UNTAGGED_TAG = "untagged";
+
 function useRoutesGroupedByTags(routes: ApiRoute[]) {
   const routesGroupedByTags = useMemo(() => {
     return routes.reduce<Record<string, ApiRoute[]>>((acc, route) => {
-      // HACK - Also group routes without tags under the "untagged" tag
-      const tags = route.tags?.length ? route.tags : ["untagged"];
+      // NOTE - Also group routes without tags under the "untagged" tag
+      const tags = route.tags?.length ? route.tags : [UNTAGGED_TAG];
 
       // Add route to each of its tags
       for (const tag of tags) {
@@ -26,16 +28,24 @@ function useRoutesGroupedByTags(routes: ApiRoute[]) {
     }, {});
   }, [routes]);
 
-  // Get sorted tag names (TODO: respect tag order from spec)
+  // Get sorted tag names (TODO: respect tag order from spec instead of doing alphabetical ordering)
   const sortedTags = useMemo(() => {
-    return Object.keys(routesGroupedByTags).sort((a, b) => {
+    const tags = Object.keys(routesGroupedByTags);
+    // If all routes are untagged, return empty array to signal no tags
+    if (tags.length === 1 && tags[0] === UNTAGGED_TAG) {
+      return [];
+    }
+
+    return tags.sort((a, b) => {
       // Always put untagged at the end
-      if (a === "untagged") {
+      if (a === UNTAGGED_TAG) {
         return 1;
       }
-      if (b === "untagged") {
+
+      if (b === UNTAGGED_TAG) {
         return -1;
       }
+
       return a.localeCompare(b);
     });
   }, [routesGroupedByTags]);
@@ -77,7 +87,12 @@ export function RoutesPanel() {
 
   const hasAnyRoutes = routes.length > 0;
   const allRoutes = useMemo(() => {
-    // Flatten routes in tag order for keyboard navigation
+    // If no tags, just return all routes
+    if (sortedTags.length === 0) {
+      return routesGroupedByTags[UNTAGGED_TAG] || [];
+    }
+
+    // Otherwise flatten routes in tag order for keyboard navigation
     return sortedTags.flatMap((tag) => routesGroupedByTags[tag]);
   }, [routesGroupedByTags, sortedTags]);
 
@@ -98,6 +113,7 @@ export function RoutesPanel() {
     } else if (nextIndex >= allRoutes.length) {
       nextIndex = 0;
     }
+
     return nextIndex;
   };
 
@@ -167,7 +183,31 @@ export function RoutesPanel() {
             <div className="italic text-center text-muted-foreground text-xs my-4">
               No routes match filter criteria
             </div>
+          ) : sortedTags.length === 0 ? (
+            // If no tags, render routes directly without sections
+            <div className="grid">
+              {allRoutes.map((route) => (
+                <RoutesItem
+                  key={`${route.method}-${route.path}`}
+                  index={allRoutes.findIndex(
+                    (r) => r.path === route.path && r.method === route.method,
+                  )}
+                  route={route}
+                  selectedRoute={
+                    selectedRouteIndex ===
+                    allRoutes.findIndex(
+                      (r) => r.path === route.path && r.method === route.method,
+                    )
+                      ? route
+                      : null
+                  }
+                  activeRoute={activeRoute}
+                  setSelectedRouteIndex={setSelectedRouteIndex}
+                />
+              ))}
+            </div>
           ) : (
+            // Otherwise render routes grouped by tags
             sortedTags.map((tag) => (
               <RoutesSection key={tag} title={tag}>
                 <div className="grid">
@@ -176,6 +216,7 @@ export function RoutesPanel() {
                     const globalIndex = allRoutes.findIndex(
                       (r) => r.path === route.path && r.method === route.method,
                     );
+
                     return (
                       <RoutesItem
                         key={`${route.method}-${route.path}`}
