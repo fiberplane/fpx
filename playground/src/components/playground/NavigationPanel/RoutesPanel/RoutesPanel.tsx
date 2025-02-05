@@ -3,9 +3,45 @@ import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useStudioStore } from "../../store";
+import type { ApiRoute } from "../../types";
 import { Search } from "../Search";
 import { RoutesItem } from "./RoutesItem";
 import { RoutesSection } from "./RoutesSection";
+
+function useRoutesGroupedByTags(routes: ApiRoute[]) {
+  const routesGroupedByTags = useMemo(() => {
+    return routes.reduce<Record<string, ApiRoute[]>>((acc, route) => {
+      // HACK - Also group routes without tags under the "untagged" tag
+      const tags = route.tags?.length ? route.tags : ["untagged"];
+
+      // Add route to each of its tags
+      for (const tag of tags) {
+        if (!acc[tag]) {
+          acc[tag] = [];
+        }
+        acc[tag].push(route);
+      }
+
+      return acc;
+    }, {});
+  }, [routes]);
+
+  // Get sorted tag names (TODO: respect tag order from spec)
+  const sortedTags = useMemo(() => {
+    return Object.keys(routesGroupedByTags).sort((a, b) => {
+      // Always put untagged at the end
+      if (a === "untagged") {
+        return 1;
+      }
+      if (b === "untagged") {
+        return -1;
+      }
+      return a.localeCompare(b);
+    });
+  }, [routesGroupedByTags]);
+
+  return { routesGroupedByTags, sortedTags };
+}
 
 export function RoutesPanel() {
   const { appRoutes: routes, activeRoute } = useStudioStore(
@@ -20,7 +56,14 @@ export function RoutesPanel() {
       return routes;
     }
 
-    return routes.filter((r) => r.path.toLowerCase().includes(cleanFilter));
+    return routes.filter((r) => {
+      const matchesPath = r.path.toLowerCase().includes(cleanFilter);
+      const matchesSummary = r.summary?.toLowerCase().includes(cleanFilter);
+      const matchesTags = r.tags?.some((tag) =>
+        tag.toLowerCase().includes(cleanFilter),
+      );
+      return matchesPath || matchesSummary || matchesTags;
+    });
   }, [filterValue, routes]);
 
   // TODO - Remove the notion of "detected" routes, since this is a holdover from Studio
@@ -29,11 +72,14 @@ export function RoutesPanel() {
     return detected;
   }, [filteredRoutes]);
 
+  const { routesGroupedByTags, sortedTags } =
+    useRoutesGroupedByTags(detectedRoutes);
+
   const hasAnyRoutes = routes.length > 0;
-  const visibleRoutes = detectedRoutes;
   const allRoutes = useMemo(() => {
-    return [...visibleRoutes];
-  }, [visibleRoutes]);
+    // Flatten routes in tag order for keyboard navigation
+    return sortedTags.flatMap((tag) => routesGroupedByTags[tag]);
+  }, [routesGroupedByTags, sortedTags]);
 
   const activeRouteIndex = useMemo(() => {
     return allRoutes.findIndex(
@@ -116,28 +162,37 @@ export function RoutesPanel() {
         </div>
       </div>
       <div className="overflow-y-auto h-full relative flex flex-col gap-2">
-        {hasAnyRoutes && (
-          <RoutesSection title="Routes">
-            {detectedRoutes.length === 0 ? (
-              <div className="italic text-center text-muted-foreground text-xs my-4">
-                No routes match filter criteria
-              </div>
-            ) : (
-              <div className="grid">
-                {detectedRoutes.map((route, index) => (
-                  <RoutesItem
-                    key={index}
-                    index={index}
-                    route={route}
-                    selectedRoute={selectedRouteIndex === index ? route : null}
-                    activeRoute={activeRoute}
-                    setSelectedRouteIndex={setSelectedRouteIndex}
-                  />
-                ))}
-              </div>
-            )}
-          </RoutesSection>
-        )}
+        {hasAnyRoutes &&
+          (detectedRoutes.length === 0 ? (
+            <div className="italic text-center text-muted-foreground text-xs my-4">
+              No routes match filter criteria
+            </div>
+          ) : (
+            sortedTags.map((tag) => (
+              <RoutesSection key={tag} title={tag}>
+                <div className="grid">
+                  {routesGroupedByTags[tag].map((route) => {
+                    // Calculate the global index for this route
+                    const globalIndex = allRoutes.findIndex(
+                      (r) => r.path === route.path && r.method === route.method,
+                    );
+                    return (
+                      <RoutesItem
+                        key={`${route.method}-${route.path}`}
+                        index={globalIndex}
+                        route={route}
+                        selectedRoute={
+                          selectedRouteIndex === globalIndex ? route : null
+                        }
+                        activeRoute={activeRoute}
+                        setSelectedRouteIndex={setSelectedRouteIndex}
+                      />
+                    );
+                  })}
+                </div>
+              </RoutesSection>
+            ))
+          ))}
       </div>
     </div>
   );

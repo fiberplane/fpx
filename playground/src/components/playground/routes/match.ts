@@ -66,15 +66,15 @@ export function findFirstSmartRouterMatch(
 
 /**
  * Returns all matching routes (or middleware!) from the smart router
+ *
+ * @TODO - Remove this eventually as we no longer want to be tied to Hono for route matching on the frontend.
  */
 export function findAllSmartRouterMatches(
   unsortedRoutes: ApiRoute[],
   pathname: string,
   method: string,
 ) {
-  // HACK - Sort with registered routes first, then unregistered routes
-  //        Look at the sortRoutesForMatching function for more details
-  const routes = sortRoutesForMatching(unsortedRoutes);
+  const routes = [...unsortedRoutes];
 
   // HACK - We need to be able to associate route handlers back to the ApiRoute definition
   const functionHandlerLookupTable: Map<() => void, ApiRoute> = new Map();
@@ -142,15 +142,6 @@ const isMatchResultEmpty = <R extends SmartRouter<T>, T>(
     });
   }
 };
-
-/**
- * @TODO - Remove this, we no longer need to sort routes for matching
- */
-function sortRoutesForMatching(unsortedRoutes: ApiRoute[]) {
-  const routes = [...unsortedRoutes];
-
-  return routes;
-}
 
 /**
  * Transforms a route match result into an array of matches with path parameter values
