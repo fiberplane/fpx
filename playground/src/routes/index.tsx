@@ -29,13 +29,13 @@ function Index() {
   const search = Route.useSearch();
   const {
     appRoutes,
-    clearPathParams,
+    clearCurrentPathParams: clearPathParams,
     setActiveRoute,
     updateMethod,
     updatePath,
   } = useStudioStore(
     "appRoutes",
-    "clearPathParams",
+    "clearCurrentPathParams",
     "setActiveRoute",
     "updateMethod",
     "updatePath",

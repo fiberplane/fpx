@@ -97,16 +97,21 @@ export const PlaygroundStateSchema = z.object({
   path: z.string().describe("Path input"),
   method: RequestMethodSchema.describe("Method input"),
   requestType: RequestTypeSchema.describe("Request type input"),
-  body: PlaygroundBodySchema.describe("Body"),
-  pathParams: z
-    .array(KeyValueParameterSchema)
-    .describe("Path parameters and their corresponding values"),
-  queryParams: z
-    .array(KeyValueParameterSchema)
-    .describe("Query parameters to be sent with the request"),
-  requestHeaders: z
-    .array(KeyValueParameterSchema)
-    .describe("Headers to be sent with the request"),
+  requestParameters: z.record(
+    z.string(),
+    z.object({
+      body: PlaygroundBodySchema.describe("Body"),
+      pathParams: z
+        .array(KeyValueParameterSchema)
+        .describe("Path parameters and their corresponding values"),
+      queryParams: z
+        .array(KeyValueParameterSchema)
+        .describe("Query parameters to be sent with the request"),
+      requestHeaders: z
+        .array(KeyValueParameterSchema)
+        .describe("Headers to be sent with the request"),
+    }),
+  ),
 
   // Tabs
   activeRequestsPanelTab: RequestsPanelTabSchema.describe(
@@ -131,5 +136,5 @@ export const PlaygroundStateSchema = z.object({
 
 export type PlaygroundState = z.infer<typeof PlaygroundStateSchema>;
 
-export type PlaygroundBody = PlaygroundState["body"];
+export type PlaygroundBody = z.infer<typeof PlaygroundBodySchema>;
 export type NavigationRoutesView = "list" | "fileTree";

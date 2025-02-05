@@ -9,18 +9,20 @@ import {
 } from "../../store";
 import { AuthorizationItem } from "./AuthorizationItem";
 import { AuthorizationOption } from "./AuthorizationOption";
+import { getRouteId } from "../../store/slices/requestResponseSlice";
 
 export function AuthSelector() {
-  const { authorizations, setAuthorizationId } = useStudioStore(
+  const { authorizations, setCurrentAuthorizationId: setAuthorizationId } = useStudioStore(
     "authorizations",
-    "authorizationId",
-    "setAuthorizationId",
+    "setCurrentAuthorizationId",
   );
 
   const { setSettingsOpen } = useSettingsOpen();
   const preferredAuthorizationId = useStudioStoreRaw(
-    useShallow((state) =>
-      getPreferredAuthorizationId(state.authorizationId, state.authorizations),
+    useShallow((state) => {
+      const params = state.requestParameters[getRouteId(state)];
+      return getPreferredAuthorizationId(params.authorizationId, state.authorizations);
+    }
     ),
   );
 

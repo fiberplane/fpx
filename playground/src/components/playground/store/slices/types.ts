@@ -20,22 +20,20 @@ export interface RequestResponseSlice {
   path: string;
   method: RequestMethod;
   requestType: RequestType;
-  body: PlaygroundBody;
-  pathParams: KeyValueParameter[];
-  queryParams: KeyValueParameter[];
-  requestHeaders: KeyValueParameter[];
-  authorizationId: "none" | string | null;
+  requestParameters: Record<string, RequestParameters>;
   fillInFakeData: () => void;
   setServiceBaseUrl: (serviceBaseUrl: string) => void;
   updatePath: (path: string) => void;
   updateMethod: (methodInputValue: RequestMethodInputValue) => void;
-  setPathParams: (pathParams: KeyValueParameter[]) => void;
-  updatePathParamValues: (pathParams: { key: string; value: string }[]) => void;
-  clearPathParams: () => void;
-  setQueryParams: (queryParams: KeyValueParameter[]) => void;
-  setRequestHeaders: (headers: KeyValueParameter[]) => void;
-  setAuthorizationId: (authorizationId: string | null) => void;
-  setBody: (body: undefined | string | PlaygroundBody) => void;
+  setCurrentPathParams: (pathParams: KeyValueParameter[]) => void;
+  updateCurrentPathParamValues: (
+    pathParams: { key: string; value: string }[],
+  ) => void;
+  clearCurrentPathParams: () => void;
+  setCurrentQueryParams: (queryParams: KeyValueParameter[]) => void;
+  setCurrentRequestHeaders: (headers: KeyValueParameter[]) => void;
+  setCurrentAuthorizationId: (authorizationId: string | null) => void;
+  setCurrentBody: (body: undefined | string | PlaygroundBody) => void;
   handleRequestBodyTypeChange: (
     requestBodyType: PlaygroundBodyType,
     isMultipart?: boolean,
@@ -51,6 +49,16 @@ export interface RequestResponseSlice {
   sessionHistory: TraceId[];
   recordRequestInSessionHistory: (traceId: TraceId) => void;
 }
+
+// Stores all request (path) specific parameters
+// Like query string parameters, path parameters, body, etc...
+export type RequestParameters = {
+  body: PlaygroundBody;
+  pathParams: KeyValueParameter[];
+  queryParams: KeyValueParameter[];
+  requestHeaders: KeyValueParameter[];
+  authorizationId: "none" | string | null;
+};
 
 export interface RoutesSlice {
   appRoutes: ProbedRoute[];

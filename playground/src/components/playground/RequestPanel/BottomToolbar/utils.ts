@@ -1,4 +1,5 @@
-import type { StudioState } from "../../store";
+import type { RequestParameters } from "../../store/slices/types";
+import type { PlaygroundState } from "../../store/types";
 
 /**
  * Get the value of the request body, if any. It doesn't support multi-part
@@ -7,7 +8,7 @@ import type { StudioState } from "../../store";
 export function getBodyValue({
   body,
   method,
-}: Pick<StudioState, "body" | "method">) {
+}: Pick<RequestParameters, "body"> & Pick<PlaygroundState, "method">) {
   // Prevent sending JSON body for GET and HEAD requests, as they're the only
   // methods where providing data is invalid.
   if (method === "GET" || method === "HEAD" || !body.value) {

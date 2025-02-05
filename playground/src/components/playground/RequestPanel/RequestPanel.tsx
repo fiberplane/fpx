@@ -20,6 +20,7 @@ import { useStudioStore } from "../store";
 import { AuthSelector } from "./AuthSelector";
 import { Faker } from "./Faker";
 import { RouteDocumentation, isOpenApiOperation } from "./RouteDocumentation";
+import { useRequestParameters } from "../store/hooks/useStudioStore";
 
 type RequestPanelProps = {
   onSubmit: () => void;
@@ -32,16 +33,12 @@ export const RequestPanel = memo(function RequestPanel(
 
   const {
     path,
-    body,
     method,
-    setBody,
-    pathParams,
-    queryParams,
-    requestHeaders,
-    setRequestHeaders,
-    setQueryParams,
-    setPathParams,
-    clearPathParams,
+    setCurrentBody: setBody,
+    setCurrentRequestHeaders: setRequestHeaders,
+    setCurrentQueryParams: setQueryParams,
+    setCurrentPathParams: setPathParams,
+    clearCurrentPathParams: clearPathParams,
     handleRequestBodyTypeChange,
     activeRequestsPanelTab,
     setActiveRequestsPanelTab,
@@ -51,16 +48,12 @@ export const RequestPanel = memo(function RequestPanel(
     fillInFakeData,
   } = useStudioStore(
     "path",
-    "body",
     "method",
-    "setBody",
-    "pathParams",
-    "queryParams",
-    "requestHeaders",
-    "setRequestHeaders",
-    "setQueryParams",
-    "setPathParams",
-    "clearPathParams",
+    "setCurrentBody",
+    "setCurrentRequestHeaders",
+    "setCurrentQueryParams",
+    "setCurrentPathParams",
+    "clearCurrentPathParams",
     "handleRequestBodyTypeChange",
     "activeRequestsPanelTab",
     "setActiveRequestsPanelTab",
@@ -69,6 +62,18 @@ export const RequestPanel = memo(function RequestPanel(
     "togglePanel",
     "fillInFakeData",
   );
+
+  const {
+    body,
+    pathParams,
+    queryParams,
+    requestHeaders,
+  } = useRequestParameters(
+    "body",
+    "pathParams",
+    "queryParams",
+    "requestHeaders",
+  )
 
   const toggleSideBar = useHandler(() => {
     togglePanel("sidePanel");

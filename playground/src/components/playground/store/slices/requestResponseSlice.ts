@@ -19,7 +19,11 @@ import {
   transformToFormBody,
   transformToFormParams,
 } from "../utils-faker";
-import type { RequestResponseSlice, StudioState } from "./types";
+import type {
+  RequestParameters,
+  RequestResponseSlice,
+  StudioState,
+} from "./types";
 
 export const requestResponseSlice: StateCreator<
   StudioState,
@@ -31,14 +35,15 @@ export const requestResponseSlice: StateCreator<
   path: "",
   method: "GET",
   requestType: "http",
-  body: {
-    type: "json",
-    value: "",
-  },
-  pathParams: [],
-  queryParams: enforceTerminalDraftParameter([]),
-  requestHeaders: enforceTerminalDraftParameter([]),
-  authorizationId: null,
+  requestParameters: {},
+  // body: {
+  //   type: "json",
+  //   value: "",
+  // },
+  // pathParams: [],
+  // queryParams: enforceTerminalDraftParameter([]),
+  // requestHeaders: enforceTerminalDraftParameter([]),
+  // authorizationId: null,
 
   // HACK - This setter has a bunch of side effects (logs, alerts)
   //        I moved it to the store so that it'd be a static handler.
@@ -63,16 +68,24 @@ export const requestResponseSlice: StateCreator<
 
       // Transform data to match form state types
       set((state) => {
-        state.body = transformToFormBody(fakeData.body);
+        const id = getRouteId(state);
+        const { requestParameters } = state;
+        if (id in requestParameters === false) {
+          requestParameters[id] = createRequestParameters();
+        }
+
+        const params = requestParameters[id];
+
+        params.body = transformToFormBody(fakeData.body);
         const fakeQueryParams = transformToFormParams(fakeData.queryParams);
         if (fakeQueryParams.length > 0) {
-          state.queryParams = enforceTerminalDraftParameter(
+          params.queryParams = enforceTerminalDraftParameter(
             transformToFormParams(fakeData.queryParams),
           );
         }
         const fakeHeaders = transformToFormParams(fakeData.headers);
         if (fakeHeaders.length > 0) {
-          state.requestHeaders = enforceTerminalDraftParameter(fakeHeaders);
+          params.requestHeaders = enforceTerminalDraftParameter(fakeHeaders);
         }
         const fakePathParams = transformToFormParams(fakeData.pathParams).map(
           (param) => ({
@@ -80,15 +93,17 @@ export const requestResponseSlice: StateCreator<
             id: param.key,
           }),
         );
+
         if (fakePathParams.length > 0) {
-          const nextPath = fakePathParams.reduce((accPath, param) => {
-            if (param.enabled) {
-              return accPath.replace(`:${param.key}`, param.value || param.key);
-            }
-            return accPath;
-          }, state.activeRoute?.path ?? state.path);
-          state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
-          state.pathParams = fakePathParams;
+          // TODO: look into whether we need the above code still
+          // const nextPath = fakePathParams.reduce((accPath, param) => {
+          //   if (param.enabled) {
+          //     return accPath.replace(`:${param.key}`, param.value || param.key);
+          //   }
+          //   return accPath;
+          // }, state.activeRoute?.path ?? state.path);
+          // state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
+          params.pathParams = fakePathParams;
         }
       });
     } catch (e) {
@@ -97,9 +112,32 @@ export const requestResponseSlice: StateCreator<
     }
   },
 
-  setAuthorizationId: (authorizationId: string | null) =>
+  // _getOrCreateCurrentRequest(): RequestParameters {
+  //   // const { path, method, requestParameters } = get();const ate
+  //   const id = getRouteId(get());
+  //   const { requestParameters} = get();
+
+  //   if (id in requestParameters) {
+  //     return requestParameters[id];
+  //   }
+
+  //   set((state) => {
+  //     state
+  //     // state.requestParameters[id] = createRequestParameters();
+  //   });
+  // },
+
+  // TODO update it so it works
+  setCurrentAuthorizationId: (authorizationId: string | null) =>
     set((state) => {
-      state.authorizationId = authorizationId;
+      const id = getRouteId(state);
+      const { requestParameters } = state;
+      if (id in requestParameters === false) {
+        requestParameters[id] = createRequestParameters();
+      }
+
+      const params = requestParameters[id];
+      params.authorizationId = authorizationId;
     }),
 
   setServiceBaseUrl: (serviceBaseUrl) =>
@@ -125,7 +163,15 @@ export const requestResponseSlice: StateCreator<
 
       state.path = path;
       state.activeRoute = nextActiveRoute;
-      state.pathParams = nextPathParams;
+      const id = getRouteId(state);
+      const { requestParameters } = state;
+      if (id in requestParameters === false) {
+        requestParameters[id] = createRequestParameters();
+      }
+
+      const params = requestParameters[id];
+      params.pathParams = nextPathParams;
+      // state.pathParams = nextPathParams;
     }),
 
   updateMethod: (methodInputValue) =>
@@ -163,7 +209,8 @@ export const requestResponseSlice: StateCreator<
         : state.visibleRequestsPanelTabs[0];
     }),
 
-  setPathParams: (pathParams) =>
+  // TODO update it so it works
+  setCurrentPathParams: (pathParams) =>
     set((state) => {
       const nextPath = pathParams.reduce((accPath, param) => {
         if (param.enabled) {
@@ -172,12 +219,29 @@ export const requestResponseSlice: StateCreator<
         return accPath;
       }, state.activeRoute?.path ?? state.path);
       state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
-      state.pathParams = pathParams;
+      const id = getRouteId(state);
+      const { requestParameters } = state;
+      if (id in requestParameters === false) {
+        requestParameters[id] = createRequestParameters();
+      }
+
+      const params = requestParameters[id];
+      // state.pathParams = pathParams;
+      params.pathParams = pathParams;
     }),
 
-  updatePathParamValues: (pathParams) =>
+  // TODO: so that it works
+  updateCurrentPathParamValues: (pathParams) =>
     set((state) => {
-      state.pathParams = state.pathParams.map(
+      const id = getRouteId(state);
+      const { requestParameters } = state;
+      if (id in requestParameters === false) {
+        requestParameters[id] = createRequestParameters();
+      }
+
+      const params = requestParameters[id];
+
+      params.pathParams = params.pathParams.map(
         (pathParam: KeyValueParameter) => {
           const replacement = pathParams?.find((p) => p?.key === pathParam.key);
           if (!replacement) {
@@ -193,56 +257,88 @@ export const requestResponseSlice: StateCreator<
       );
     }),
 
-  clearPathParams: () =>
+  // TODO: update it so it works
+  clearCurrentPathParams: () =>
     set((state) => {
-      state.pathParams = state.pathParams.map((pathParam) => ({
+      const id = getRouteId(state);
+      const { requestParameters } = state;
+      if (id in requestParameters === false) {
+        requestParameters[id] = createRequestParameters();
+      }
+
+      const params = requestParameters[id];
+      params.pathParams = params.pathParams.map((pathParam) => ({
         ...pathParam,
         value: "",
         enabled: false,
       }));
     }),
 
-  setQueryParams: (queryParams) =>
+  // TODO: update it so it works
+  setCurrentQueryParams: (queryParams) =>
     set((state) => {
-      state.queryParams = enforceTerminalDraftParameter(queryParams);
-    }),
-
-  setRequestHeaders: (headers) =>
-    set((state) => {
-      // Merge persistent auth headers with request headers
-      const persistentHeaders = state.persistentAuthHeaders || [];
-      const mergedHeaders = [...headers];
-
-      // Add persistent headers if they don't already exist
-      for (const persistentHeader of persistentHeaders) {
-        if (persistentHeader.enabled) {
-          const headerExists = mergedHeaders.some(
-            (h) => h.key.toLowerCase() === persistentHeader.key.toLowerCase(),
-          );
-          if (!headerExists) {
-            mergedHeaders.push(persistentHeader);
-          }
-        }
+      const id = getRouteId(state);
+      const { requestParameters } = state;
+      if (id in requestParameters === false) {
+        requestParameters[id] = createRequestParameters();
       }
 
-      state.requestHeaders = enforceTerminalDraftParameter(mergedHeaders);
+      const params = requestParameters[id];
+      params.queryParams = enforceTerminalDraftParameter(queryParams);
     }),
 
-  setBody: (body) =>
+  // TODO: update it so it works
+  setCurrentRequestHeaders: (headers) =>
     set((state) => {
+      // Merge persistent auth headers with request headers
+      // const persistentHeaders = state.persistentAuthHeaders || [];
+      const mergedHeaders = [...headers];
+
+      // // Add persistent headers if they don't already exist
+      // for (const persistentHeader of persistentHeaders) {
+      //   if (persistentHeader.enabled) {
+      //     const headerExists = mergedHeaders.some(
+      //       (h) => h.key.toLowerCase() === persistentHeader.key.toLowerCase(),
+      //     );
+      //     if (!headerExists) {
+      //       mergedHeaders.push(persistentHeader);
+      //     }
+      //   }
+      // }
+
+      const id = getRouteId(state);
+      const { requestParameters } = state;
+      if (id in requestParameters === false) {
+        requestParameters[id] = createRequestParameters();
+      }
+
+      const params = requestParameters[id];
+      params.requestHeaders = enforceTerminalDraftParameter(mergedHeaders);
+    }),
+
+  // TODO: update it so it works
+  setCurrentBody: (body) =>
+    set((state) => {
+      const id = getRouteId(state);
+      const { requestParameters } = state;
+      if (id in requestParameters === false) {
+        requestParameters[id] = createRequestParameters();
+      }
+
+      const params = requestParameters[id];
       if (body === undefined) {
-        state.body =
-          state.body.type === "form-data"
+        params.body =
+          params.body.type === "form-data"
             ? {
                 type: "form-data",
                 value: enforceFormDataTerminalDraftParameter([]),
-                isMultipart: state.body.isMultipart,
+                isMultipart: params.body.isMultipart,
               }
-            : state.body.type === "file"
-              ? { type: state.body.type, value: undefined }
-              : { type: state.body.type, value: "" };
+            : params.body.type === "file"
+              ? { type: params.body.type, value: undefined }
+              : { type: params.body.type, value: "" };
       } else if (typeof body === "string") {
-        state.body = { type: "text", value: body };
+        params.body = { type: "text", value: body };
       } else {
         if (body.type === "form-data") {
           const nextBodyValue = enforceFormDataTerminalDraftParameter(
@@ -251,7 +347,7 @@ export const requestResponseSlice: StateCreator<
           const shouldForceMultipart = nextBodyValue.some(
             (param) => param.value.value instanceof File,
           );
-          state.body = {
+          params.body = {
             type: body.type,
             isMultipart: shouldForceMultipart || body.isMultipart,
             value: nextBodyValue,
@@ -259,10 +355,10 @@ export const requestResponseSlice: StateCreator<
           updateContentTypeHeaderInState(state);
         } else if (body.type === "file") {
           // When the user adds a file, we want to use the file's type as the content type header
-          state.body = body;
+          params.body = body;
           updateContentTypeHeaderInState(state);
         } else {
-          state.body = body;
+          params.body = body;
         }
       }
     }),
@@ -300,3 +396,25 @@ export const requestResponseSlice: StateCreator<
       state.sessionHistory.push(traceId);
     }),
 });
+
+export function createRequestParameters(): RequestParameters {
+  console.log("creating params");
+  return {
+    authorizationId: null,
+    body: {
+      type: "json",
+      value: "",
+    },
+    pathParams: [],
+    queryParams: enforceTerminalDraftParameter([]),
+    requestHeaders: enforceTerminalDraftParameter([]),
+  };
+}
+
+export function getRouteId({
+  method,
+  path,
+}: Pick<RequestResponseSlice, "method" | "path">): string {
+  console.log("route id", method, path);
+  return `${method.toUpperCase()}_${path}`;
+}

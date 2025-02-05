@@ -8,6 +8,8 @@ import {
   useStudioStore,
   useStudioStoreRaw,
 } from "./store";
+import { useRequestParameters } from "./store/hooks/useStudioStore";
+import { getRouteId } from "./store/slices/requestResponseSlice";
 
 export function usePlaygroundSubmitHandler({
   makeRequest,
@@ -18,26 +20,23 @@ export function usePlaygroundSubmitHandler({
 
   const {
     activeRoute,
-    body,
+    // body,
     path,
     method,
-    pathParams,
-    queryParams,
-    requestHeaders,
-  } = useStudioStore(
-    "activeRoute",
-    "body",
-    "path",
-    "method",
-    "pathParams",
-    "queryParams",
-    "requestHeaders",
-  );
+    // pathParams,
+    // queryParams,
+    // requestHeaders,
+  } = useStudioStore("activeRoute", "path", "method");
+  const { body, pathParams, queryParams, requestHeaders } =
+    useRequestParameters("body", "pathParams", "queryParams", "requestHeaders");
 
   const authorization = useStudioStoreRaw(
     useShallow((state) => {
+      const id = getRouteId(state);
+      const { requestParameters } = state;
+      const params = requestParameters[id];
       const authorizationId = getPreferredAuthorizationId(
-        state.authorizationId,
+        params?.authorizationId ?? null,
         state.authorizations,
       );
 

@@ -1,6 +1,7 @@
 import { enforceTerminalDraftParameter } from "../KeyValueForm";
 import { isDraftParameter } from "../KeyValueForm/data";
-import type { RequestResponseSlice } from "./slices/types";
+import { getRouteId } from "./slices/requestResponseSlice";
+import type { RequestParameters, RequestResponseSlice } from "./slices/types";
 import type { KeyValueParameter, PlaygroundBody } from "./types";
 
 /**
@@ -19,8 +20,11 @@ import type { KeyValueParameter, PlaygroundBody } from "./types";
  * - If the body is a text, we want to set/update the content type to text/plain
  */
 export function updateContentTypeHeaderInState(state: RequestResponseSlice) {
-  const currentHeaders = state.requestHeaders;
-  const currentContentTypeHeader = getCurrentContentType(state);
+  const { requestParameters } = state;
+  const id = getRouteId(state);
+  const params = requestParameters[id];
+  const currentHeaders = params.requestHeaders;
+  const currentContentTypeHeader = getCurrentContentType(params);
 
   const updateOperation = getUpdateOperation(state, currentContentTypeHeader);
 
@@ -35,7 +39,7 @@ export function updateContentTypeHeaderInState(state: RequestResponseSlice) {
     nextHeaders = removeHeader(currentHeaders, updateOperation.value);
   }
 
-  state.requestHeaders = enforceTerminalDraftParameter(nextHeaders);
+  params.requestHeaders = enforceTerminalDraftParameter(nextHeaders);
 }
 
 function addHeader(
@@ -84,7 +88,7 @@ function mapBodyToContentType(body: PlaygroundBody) {
   return "text/plain";
 }
 
-function getCurrentContentType(state: RequestResponseSlice) {
+function getCurrentContentType(state: RequestParameters) {
   const currentContentType = state.requestHeaders.find(
     (header) => header.key?.toLowerCase() === "content-type",
   );
@@ -110,7 +114,8 @@ function getUpdateOperation(
       : null;
   }
 
-  const currentBody = state.body;
+  const params = state.requestParameters[getRouteId(state)];
+  const currentBody = params.body;
   const nextContentTypeValue = mapBodyToContentType(currentBody);
 
   // `null` means "no change"

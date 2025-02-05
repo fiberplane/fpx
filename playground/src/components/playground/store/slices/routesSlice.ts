@@ -5,7 +5,7 @@ import { updateContentTypeHeaderInState } from "../content-type";
 import { getVisibleRequestPanelTabs } from "../tabs";
 import {
   addBaseUrl,
-  extractMatchedPathParams,
+  // extractMatchedPathParams,
   extractPathParams,
   mapPathParamKey,
   removeBaseUrl,
@@ -15,6 +15,7 @@ import {
   filterDisabledEmptyQueryParams,
 } from "../utils-openapi";
 import type { RoutesSlice, StudioState } from "./types";
+import { createRequestParameters, getRouteId } from "./requestResponseSlice";
 
 export const routesSlice: StateCreator<
   StudioState,
@@ -27,6 +28,7 @@ export const routesSlice: StateCreator<
 
   setRoutes: (routes) =>
     set((state) => {
+      console.log("set routes", routes.length);
       const matchedRoute = findMatchedRoute(
         routes,
         removeBaseUrl(state.serviceBaseUrl, state.path),
@@ -34,17 +36,26 @@ export const routesSlice: StateCreator<
         state.requestType,
       );
       const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
-      const nextPathParams = matchedRoute
-        ? extractMatchedPathParams(matchedRoute)
-        : extractPathParams(state.path).map(mapPathParamKey);
+      // TODO: set next path params
+      // const nextPathParams = matchedRoute
+      //   ? extractMatchedPathParams(matchedRoute)
+      //   : extractPathParams(state.path).map(mapPathParamKey);
 
       state.appRoutes = routes;
+
       state.activeRoute = nextSelectedRoute;
-      state.pathParams = nextPathParams;
+      for (const route of routes) {
+        const id = getRouteId(route);
+        if (id in state.requestParameters === false) {
+          state.requestParameters[id] = createRequestParameters();
+        }
+      }
+      // state.pathParams = nextPathParams;
     }),
 
   setActiveRoute: (route) =>
     set((state) => {
+      console.log("set active route");
       const nextMethod = probedRouteToInputMethod(route);
       const nextRequestType = route.requestType;
 
@@ -54,16 +65,25 @@ export const routesSlice: StateCreator<
       });
       state.method = nextMethod;
       state.requestType = nextRequestType;
-      state.pathParams = extractPathParams(route.path).map(mapPathParamKey);
-      state.activeResponse = null;
-      // Filter out disabled and empty query params
-      // TODO - Only do this if the route has an open api definition?
-      state.queryParams = filterDisabledEmptyQueryParams(state.queryParams);
-      // Extract query params from the open api definition, if it exists
-      state.queryParams = extractQueryParamsFromOpenApiDefinition(
-        state.queryParams,
-        route,
-      );
+
+      const id = getRouteId(state);
+      const { requestParameters } = state;
+      if (id in requestParameters === false) {
+        requestParameters[id] = createRequestParameters();
+      }
+
+      const params = requestParameters[id];
+
+      // params.pathParams = extractPathParams(route.path).map(mapPathParamKey);
+      // state.activeResponse = null;
+      // // Filter out disabled and empty query params
+      // // TODO - Only do this if the route has an open api definition?
+      // params.queryParams = filterDisabledEmptyQueryParams(params.queryParams);
+      // // Extract query params from the open api definition, if it exists
+      // params.queryParams = extractQueryParamsFromOpenApiDefinition(
+      //   params.queryParams,
+      //   route,
+      // );
 
       // TODO - Instead of automatically setting body here,
       //        have a button? Idk.
