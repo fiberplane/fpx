@@ -1,9 +1,5 @@
 import { z } from "zod";
-import {
-  ApiRouteSchema,
-  RequestMethodSchema,
-  RequestTypeSchema,
-} from "../types";
+import { ApiRouteSchema, RequestMethodSchema } from "../types";
 import { PlaygroundBodySchema } from "./request-body";
 import { RequestsPanelTabSchema, ResponsePanelTabSchema } from "./tabs";
 
@@ -96,7 +92,6 @@ export const PlaygroundStateSchema = z.object({
   serviceBaseUrl: z.string().describe("Base URL for requests"),
   path: z.string().describe("Path input"),
   method: RequestMethodSchema.describe("Method input"),
-  requestType: RequestTypeSchema.describe("Request type input"),
   body: PlaygroundBodySchema.describe("Body"),
   pathParams: z
     .array(KeyValueParameterSchema)

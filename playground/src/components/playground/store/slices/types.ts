@@ -5,11 +5,7 @@ import type {
   ResponsePanelTab,
 } from "..";
 import type { ApiRoute } from "../../types";
-import type {
-  RequestMethod,
-  RequestMethodInputValue,
-  RequestType,
-} from "../../types";
+import type { RequestMethod, RequestMethodInputValue } from "../../types";
 import type { KeyValueParameter, PlaygroundActiveResponse } from "../types";
 import type { SettingsSlice } from "./settingsSlice";
 
@@ -19,7 +15,6 @@ export interface RequestResponseSlice {
   serviceBaseUrl: string;
   path: string;
   method: RequestMethod;
-  requestType: RequestType;
   body: PlaygroundBody;
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];

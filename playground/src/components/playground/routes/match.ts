@@ -34,15 +34,9 @@ export function findMatchedRoute(
   routes: ApiRoute[],
   pathname: string | undefined,
   method: string | undefined,
-  requestType: "http" | "websocket",
 ): MatchedRouteResult {
   if (pathname && method) {
-    const smartMatch = findFirstSmartRouterMatch(
-      routes,
-      pathname,
-      method,
-      requestType,
-    );
+    const smartMatch = findFirstSmartRouterMatch(routes, pathname, method);
 
     if (smartMatch?.route) {
       return { route: smartMatch.route, pathParams: smartMatch.pathParams };
@@ -51,11 +45,7 @@ export function findMatchedRoute(
 
   // HACK - This is a backup in case the smart router throws an error
   for (const route of routes) {
-    if (
-      route.path === pathname &&
-      route.method === method &&
-      route.requestType === requestType
-    ) {
+    if (route.path === pathname && route.method === method) {
       return { route };
     }
   }
@@ -70,12 +60,8 @@ export function findFirstSmartRouterMatch(
   routes: ApiRoute[],
   pathname: string,
   method: string,
-  requestType: "http" | "websocket",
 ) {
-  return (
-    findAllSmartRouterMatches(routes, pathname, method, requestType)?.[0] ??
-    null
-  );
+  return findAllSmartRouterMatches(routes, pathname, method)?.[0] ?? null;
 }
 
 /**
@@ -85,7 +71,6 @@ export function findAllSmartRouterMatches(
   unsortedRoutes: ApiRoute[],
   pathname: string,
   method: string,
-  requestType: "http" | "websocket",
 ) {
   // HACK - Sort with registered routes first, then unregistered routes
   //        Look at the sortRoutesForMatching function for more details
@@ -97,14 +82,12 @@ export function findAllSmartRouterMatches(
   const routers = [new RegExpRouter(), new TrieRouter()];
   const router = new SmartRouter({ routers });
   for (const route of routes) {
-    if (route.requestType === requestType) {
-      if (route.method && route.path) {
-        const handler = () => {};
-        router.add(route.method, route.path, handler);
-        // Add the noop handler to the lookup table,
-        // so if there's a match, we can use the handler to look up the OG route definition
-        functionHandlerLookupTable.set(handler, route);
-      }
+    if (route.method && route.path) {
+      const handler = () => {};
+      router.add(route.method, route.path, handler);
+      // Add the noop handler to the lookup table,
+      // so if there's a match, we can use the handler to look up the OG route definition
+      functionHandlerLookupTable.set(handler, route);
     }
   }
 

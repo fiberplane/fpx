@@ -30,7 +30,6 @@ export const requestResponseSlice: StateCreator<
   serviceBaseUrl: "http://localhost:8787",
   path: "",
   method: "GET",
-  requestType: "http",
   body: {
     type: "json",
     value: "",
@@ -116,7 +115,6 @@ export const requestResponseSlice: StateCreator<
         state.appRoutes,
         removeBaseUrl(state.serviceBaseUrl, path),
         state.method,
-        state.requestType,
       );
       const nextActiveRoute = matchedRoute ? matchedRoute.route : null;
       const nextPathParams = matchedRoute
@@ -130,11 +128,9 @@ export const requestResponseSlice: StateCreator<
 
   updateMethod: (methodInputValue) =>
     set((state) => {
-      const requestType = methodInputValue === "WS" ? "websocket" : "http";
       const method = methodInputValue === "WS" ? "GET" : methodInputValue;
 
       state.method = method;
-      state.requestType = requestType;
 
       // Update other state properties based on the new method and request type
       // (e.g., activeRoute, visibleRequestsPanelTabs, activeRequestsPanelTab, etc.)
@@ -143,14 +139,12 @@ export const requestResponseSlice: StateCreator<
         state.appRoutes,
         removeBaseUrl(state.serviceBaseUrl, state.path),
         state.method,
-        state.requestType,
       );
       const nextActiveRoute = matchedRoute ? matchedRoute.route : null;
       state.activeRoute = nextActiveRoute;
 
       // Update visibleRequestsPanelTabs based on the new method and request type
       state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
-        requestType,
         method,
         openApiSpec: state.activeRoute?.openApiSpec,
       });

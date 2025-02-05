@@ -33,16 +33,12 @@ export type RequestMethodInputValue = z.infer<
   typeof RequestMethodInputValueSchema
 >;
 
-export const RequestTypeSchema = z.enum(["http", "websocket"]);
-export type RequestType = z.infer<typeof RequestTypeSchema>;
-
 export const ApiRouteSchema = z.object({
   id: z.number(),
   path: z.string(),
   method: RequestMethodSchema,
   registrationOrder: z.number().default(-1),
   openApiSpec: z.string().nullish().optional(),
-  requestType: RequestTypeSchema,
 });
 
 export type ApiRoute = z.infer<typeof ApiRouteSchema>;

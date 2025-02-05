@@ -31,7 +31,6 @@ export const routesSlice: StateCreator<
         routes,
         removeBaseUrl(state.serviceBaseUrl, state.path),
         state.method,
-        state.requestType,
       );
       const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
       const nextPathParams = matchedRoute
@@ -46,14 +45,10 @@ export const routesSlice: StateCreator<
   setActiveRoute: (route) =>
     set((state) => {
       const nextMethod = apiRouteToInputMethod(route);
-      const nextRequestType = route.requestType;
 
       state.activeRoute = route;
-      state.path = addBaseUrl(state.serviceBaseUrl, route.path, {
-        requestType: nextRequestType,
-      });
+      state.path = addBaseUrl(state.serviceBaseUrl, route.path);
       state.method = nextMethod;
-      state.requestType = nextRequestType;
       state.pathParams = extractPathParams(route.path).map(mapPathParamKey);
       state.activeResponse = null;
       // Filter out disabled and empty query params
@@ -73,7 +68,6 @@ export const routesSlice: StateCreator<
 
       // Update tabs (you might want to move this logic to a separate slice)
       state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
-        requestType: nextRequestType,
         method: nextMethod,
         openApiSpec: route?.openApiSpec,
       });

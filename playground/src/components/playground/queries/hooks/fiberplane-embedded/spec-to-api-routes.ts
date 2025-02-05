@@ -32,7 +32,6 @@ export function specToApiRoutes(
           id,
           path: transformedPath,
           method: upperMethod,
-          requestType: "http",
           registrationOrder: id,
           openApiSpec: operation
             ? JSON.stringify(dereferencedOperation)
