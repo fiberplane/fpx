@@ -1,2 +1,2 @@
 export { useRoutes } from "./hooks";
-export { findMatchedRoute, findAllSmartRouterMatches } from "./match";
+export { findMatchedRoute } from "./match";
