@@ -15,7 +15,6 @@ export const _getActiveRoute = (state: PlaygroundState): ApiRoute => {
       handlerType: "route",
       currentlyRegistered: false,
       registrationOrder: -1,
-      routeOrigin: "custom",
     }
   );
 };

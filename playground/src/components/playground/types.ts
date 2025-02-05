@@ -44,7 +44,6 @@ export const ApiRouteSchema = z.object({
   handlerType: z.enum(["route", "middleware"]),
   currentlyRegistered: z.boolean(),
   registrationOrder: z.number().default(-1),
-  routeOrigin: z.enum(["discovered", "custom", "open_api"]),
   openApiSpec: z.string().nullish().optional(),
   requestType: RequestTypeSchema,
 });

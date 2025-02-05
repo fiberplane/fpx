@@ -37,7 +37,6 @@ export function specToApiRoutes(
           handlerType: "route",
           currentlyRegistered: true,
           registrationOrder: id,
-          routeOrigin: "discovered",
           openApiSpec: operation
             ? JSON.stringify(dereferencedOperation)
             : undefined,

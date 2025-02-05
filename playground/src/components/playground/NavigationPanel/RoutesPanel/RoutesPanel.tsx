@@ -23,10 +23,9 @@ export function RoutesPanel() {
     return routes.filter((r) => r.path.toLowerCase().includes(cleanFilter));
   }, [filterValue, routes]);
 
+  // TODO - Remove the notion of "detected" routes, since this is a holdover from Studio
   const detectedRoutes = useMemo(() => {
-    const detected = filteredRoutes.filter(
-      (r) => r.routeOrigin === "discovered" && r.currentlyRegistered,
-    );
+    const detected = [...filteredRoutes];
     // NOTE - This preserves the order the routes were registered in the Hono api
     detected.sort((a, b) => a.registrationOrder - b.registrationOrder);
     return detected;
