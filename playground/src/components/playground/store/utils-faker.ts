@@ -2,6 +2,7 @@ import type {
   OpenAPIOperation,
   OpenAPISchema,
 } from "../RequestPanel/RouteDocumentation";
+import { extractPathParams } from "./utils";
 
 type FakeDataOutput = {
   queryParams: Record<string, string>;
@@ -9,11 +10,6 @@ type FakeDataOutput = {
   pathParams: Record<string, string>;
   body: unknown;
 };
-
-function extractPathParams(path: string): string[] {
-  const matches = path.match(/:[a-zA-Z_][a-zA-Z0-9_]*/g);
-  return matches ? matches.map((m) => m.slice(1)) : [];
-}
 
 function generateSmartFakeValue(
   schema: OpenAPISchema,

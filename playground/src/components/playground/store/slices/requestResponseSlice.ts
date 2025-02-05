@@ -11,9 +11,9 @@ import {
   addBaseUrl,
   extractMatchedPathParams,
   extractPathParams,
-  insertPathParams,
   mapPathParamKey,
   removeBaseUrl,
+  resolvePathWithParameters,
 } from "../utils";
 import {
   generateFakeData,
@@ -60,7 +60,6 @@ export const requestResponseSlice: StateCreator<
       }
 
       const fakeData = generateFakeData(openApiSpec, activeRoute.path);
-
       // Transform data to match form state types
       set((state) => {
         state.body = transformToFormBody(fakeData.body);
@@ -81,8 +80,8 @@ export const requestResponseSlice: StateCreator<
           }),
         );
         if (fakePathParams.length > 0) {
-          // NOTE - Do not call `setPathParams` here, it messes with the form
-          const nextPath = insertPathParams(
+          // NOTE - Do not call `state.setPathParams(...)` here, it messes with the form inputs and clears the path params
+          const nextPath = resolvePathWithParameters(
             state.activeRoute?.path ?? state.path,
             fakePathParams,
           );
@@ -157,7 +156,7 @@ export const requestResponseSlice: StateCreator<
 
   setPathParams: (pathParams) =>
     set((state) => {
-      const nextPath = insertPathParams(
+      const nextPath = resolvePathWithParameters(
         state.activeRoute?.path ?? state.path,
         pathParams,
       );

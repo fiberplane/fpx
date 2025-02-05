@@ -88,7 +88,11 @@ export function extractMatchedPathParams(
   });
 }
 
-export function insertPathParams(
+/**
+ * Given an OpenAPI path and a list of path parameters,
+ * replace the path parameters in the path with the actual values
+ */
+export function resolvePathWithParameters(
   path: string,
   pathParams: KeyValueParameter[],
 ) {
