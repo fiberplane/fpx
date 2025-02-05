@@ -4,8 +4,7 @@ import type {
   RequestsPanelTab,
   ResponsePanelTab,
 } from "..";
-import type { ApiRoute } from "../../types";
-import type { RequestMethod, RequestMethodInputValue } from "../../types";
+import type { ApiRoute, RequestMethod } from "../../types";
 import type { KeyValueParameter, PlaygroundActiveResponse } from "../types";
 import type { SettingsSlice } from "./settingsSlice";
 
@@ -23,7 +22,7 @@ export interface RequestResponseSlice {
   fillInFakeData: () => void;
   setServiceBaseUrl: (serviceBaseUrl: string) => void;
   updatePath: (path: string) => void;
-  updateMethod: (methodInputValue: RequestMethodInputValue) => void;
+  updateMethod: (method: RequestMethod) => void;
   setPathParams: (pathParams: KeyValueParameter[]) => void;
   updatePathParamValues: (pathParams: { key: string; value: string }[]) => void;
   clearPathParams: () => void;

@@ -16,7 +16,7 @@ export const RequestMethodSchema = z.enum([
   "OPTIONS",
   "PATCH",
   "HEAD",
-  "ALL",
+  "TRACE",
 ]);
 
 export type RequestMethod = z.infer<typeof RequestMethodSchema>;
@@ -24,14 +24,6 @@ export type RequestMethod = z.infer<typeof RequestMethodSchema>;
 export const isRequestMethod = (method: unknown): method is RequestMethod => {
   return RequestMethodSchema.safeParse(method).success;
 };
-
-export const RequestMethodInputValueSchema = z.union([
-  RequestMethodSchema,
-  z.literal("WS"),
-]);
-export type RequestMethodInputValue = z.infer<
-  typeof RequestMethodInputValueSchema
->;
 
 export const ApiRouteSchema = z.object({
   id: z.number(),

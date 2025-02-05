@@ -126,10 +126,8 @@ export const requestResponseSlice: StateCreator<
       state.pathParams = nextPathParams;
     }),
 
-  updateMethod: (methodInputValue) =>
+  updateMethod: (method) =>
     set((state) => {
-      const method = methodInputValue === "WS" ? "GET" : methodInputValue;
-
       state.method = method;
 
       // Update other state properties based on the new method and request type

@@ -2,7 +2,7 @@ import { Layout } from "@/Layout";
 import { PlaygroundPage } from "@/components/playground";
 import { useStudioStore } from "@/components/playground/store";
 import { useSettingsOpen } from "@/hooks";
-import { RequestMethodInputValueSchema } from "@/types";
+import { RequestMethodSchema } from "@/types";
 import { useHandler } from "@fiberplane/hooks";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect } from "react";
@@ -75,8 +75,9 @@ function Index() {
 
   useEffect(() => {
     if (method && uri) {
+      // NOTE - Defaults to GET if the method is invalid
       const validatedMethod =
-        RequestMethodInputValueSchema.safeParse(method).data || "GET";
+        RequestMethodSchema.safeParse(method?.toUpperCase()).data || "GET";
       updateMethod(validatedMethod);
       updatePath(uri);
       clearPathParams();
