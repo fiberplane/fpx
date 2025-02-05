@@ -11,6 +11,7 @@ import {
   addBaseUrl,
   extractMatchedPathParams,
   extractPathParams,
+  insertPathParams,
   mapPathParamKey,
   removeBaseUrl,
 } from "../utils";
@@ -80,12 +81,11 @@ export const requestResponseSlice: StateCreator<
           }),
         );
         if (fakePathParams.length > 0) {
-          const nextPath = fakePathParams.reduce((accPath, param) => {
-            if (param.enabled) {
-              return accPath.replace(`:${param.key}`, param.value || param.key);
-            }
-            return accPath;
-          }, state.activeRoute?.path ?? state.path);
+          // NOTE - Do not call `setPathParams` here, it messes with the form
+          const nextPath = insertPathParams(
+            state.activeRoute?.path ?? state.path,
+            fakePathParams,
+          );
           state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
           state.pathParams = fakePathParams;
         }
@@ -157,12 +157,10 @@ export const requestResponseSlice: StateCreator<
 
   setPathParams: (pathParams) =>
     set((state) => {
-      const nextPath = pathParams.reduce((accPath, param) => {
-        if (param.enabled) {
-          return accPath.replace(`:${param.key}`, param.value || param.key);
-        }
-        return accPath;
-      }, state.activeRoute?.path ?? state.path);
+      const nextPath = insertPathParams(
+        state.activeRoute?.path ?? state.path,
+        pathParams,
+      );
       state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
       state.pathParams = pathParams;
     }),
