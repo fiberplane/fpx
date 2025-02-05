@@ -1,11 +1,15 @@
 import { Button } from "@/components/ui/button";
-import { Tabs } from "@/components/ui/tabs";
+import {
+  FpTabs,
+  FpTabsContent,
+  FpTabsList,
+  FpTabsTrigger,
+} from "@/components/ui/tabs";
 import { cn } from "@/utils";
 import { EraserIcon } from "@radix-ui/react-icons";
 import { memo, useMemo } from "react";
 import { FormDataForm } from "../FormDataForm";
 import { KeyValueForm } from "../KeyValueForm";
-import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { PlaygroundBody, RequestsPanelTab } from "../store";
 import { BottomToolbar } from "./BottomToolbar";
 import { FileUploadForm } from "./FileUploadForm";
@@ -94,7 +98,7 @@ export const RequestPanel = memo(function RequestPanel(
   const shouldShowDocs = isOpenApiOperation(openApiSpec);
 
   return (
-    <Tabs
+    <FpTabs
       value={activeRequestsPanelTab}
       onValueChange={setActiveRequestsPanelTab}
       className={cn(
@@ -103,41 +107,39 @@ export const RequestPanel = memo(function RequestPanel(
         "max-h-full",
       )}
     >
-      <CustomTabsList>
-        <CustomTabTrigger value="params">
+      <FpTabsList>
+        <FpTabsTrigger value="params">
           Params
           {queryParams?.length > 1 && (
             <span className="ml-1 font-mono text-xs text-muted-foreground">
               ({queryParams.length - 1})
             </span>
           )}
-        </CustomTabTrigger>
+        </FpTabsTrigger>
         {shouldShowBody && (
-          <CustomTabTrigger value="body">
+          <FpTabsTrigger value="body">
             Body
             {!isBodyEmpty(body) && (
               <span className="inline-block w-2 h-2 ml-2 bg-accent/75 rounded-full" />
             )}
-          </CustomTabTrigger>
+          </FpTabsTrigger>
         )}
-        <CustomTabTrigger value="auth">Auth</CustomTabTrigger>
-        <CustomTabTrigger value="headers">
+        <FpTabsTrigger value="auth">Auth</FpTabsTrigger>
+        <FpTabsTrigger value="headers">
           Headers
           {requestHeaders?.length > 1 && (
             <span className="ml-1 font-mono text-xs text-muted-foreground">
               ({requestHeaders.length - 1})
             </span>
           )}
-        </CustomTabTrigger>
-        {shouldShowDocs && (
-          <CustomTabTrigger value="docs">Docs</CustomTabTrigger>
-        )}
+        </FpTabsTrigger>
+        {shouldShowDocs && <FpTabsTrigger value="docs">Docs</FpTabsTrigger>}
 
         <div className="flex items-center justify-end flex-grow ml-auto">
           <Faker />
         </div>
-      </CustomTabsList>
-      <CustomTabsContent
+      </FpTabsList>
+      <FpTabsContent
         value="params"
         className={cn(
           // Need a lil bottom padding to avoid clipping the inputs of the last row in the form
@@ -179,11 +181,11 @@ export const RequestPanel = memo(function RequestPanel(
             />
           </>
         ) : null}
-      </CustomTabsContent>
-      <CustomTabsContent value="auth">
+      </FpTabsContent>
+      <FpTabsContent value="auth">
         <AuthSelector />
-      </CustomTabsContent>
-      <CustomTabsContent value="headers">
+      </FpTabsContent>
+      <FpTabsContent value="headers">
         <PanelSectionHeader
           title="Request Headers"
           handleClearData={() => {
@@ -202,9 +204,9 @@ export const RequestPanel = memo(function RequestPanel(
           keyInputType="header-key"
           valueInputType="header-value"
         />
-      </CustomTabsContent>
+      </FpTabsContent>
       {shouldShowBody && (
-        <CustomTabsContent
+        <FpTabsContent
           value="body"
           className={cn(
             // HACK - Padding for the bottom toolbar
@@ -266,12 +268,12 @@ export const RequestPanel = memo(function RequestPanel(
               }}
             />
           )}
-        </CustomTabsContent>
+        </FpTabsContent>
       )}
       {shouldShowDocs && (
-        <CustomTabsContent value="docs">
+        <FpTabsContent value="docs">
           <RouteDocumentation openApiSpec={openApiSpec} route={activeRoute} />
-        </CustomTabsContent>
+        </FpTabsContent>
       )}
 
       <BottomToolbar
@@ -282,7 +284,7 @@ export const RequestPanel = memo(function RequestPanel(
         queryParams={queryParams}
         requestHeaders={requestHeaders}
       />
-    </Tabs>
+    </FpTabs>
   );
 });
 

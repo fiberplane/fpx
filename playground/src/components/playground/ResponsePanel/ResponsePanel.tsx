@@ -9,11 +9,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs } from "@/components/ui/tabs";
+import { FpTabs } from "@/components/ui/tabs";
+import { FpTabsContent, FpTabsList, FpTabsTrigger } from "@/components/ui/tabs";
 import { SENSITIVE_HEADERS, cn } from "@/utils";
 import { Icon } from "@iconify/react";
 import { memo } from "react";
-import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { useServiceBaseUrl } from "../store";
 import { useStudioStore } from "../store";
 import {
@@ -47,26 +47,26 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
 
   return (
     <div className="overflow-x-hidden overflow-y-auto h-full relative">
-      <Tabs
+      <FpTabs
         value={activeResponsePanelTab}
         onValueChange={setActiveResponsePanelTab}
         className="grid grid-rows-[auto_1fr] overflow-hidden h-full"
       >
-        <CustomTabsList className="max-w-full">
-          <CustomTabTrigger value="response" className="flex items-center">
+        <FpTabsList className="max-w-full">
+          <FpTabsTrigger value="response" className="flex items-center">
             Response
-          </CustomTabTrigger>
+          </FpTabsTrigger>
 
           {responseToRender && (
             <>
-              <CustomTabTrigger value="headers">
+              <FpTabsTrigger value="headers">
                 Headers
                 {responseHeaders && Object.keys(responseHeaders).length > 1 && (
                   <span className="ml-1 text-muted-foreground font-mono text-xs">
                     ({Object.keys(responseHeaders).length})
                   </span>
                 )}
-              </CustomTabTrigger>
+              </FpTabsTrigger>
 
               <div className="grow inline-flex items-center justify-end">
                 <Dialog>
@@ -109,8 +109,8 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
               </div>
             </>
           )}
-        </CustomTabsList>
-        <CustomTabsContent value="response" className="h-full">
+        </FpTabsList>
+        <FpTabsContent value="response" className="h-full">
           <TabContentInner
             isLoading={isLoading}
             isEmpty={!responseToRender}
@@ -136,8 +136,8 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
               />
             </div>
           </TabContentInner>
-        </CustomTabsContent>
-        <CustomTabsContent value="headers">
+        </FpTabsContent>
+        <FpTabsContent value="headers">
           {responseHeaders ? (
             <KeyValueTable
               sensitiveKeys={SENSITIVE_HEADERS}
@@ -146,8 +146,8 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
           ) : (
             !responseToRender && <NoResponse />
           )}
-        </CustomTabsContent>
-      </Tabs>
+        </FpTabsContent>
+      </FpTabs>
     </div>
   );
 });
