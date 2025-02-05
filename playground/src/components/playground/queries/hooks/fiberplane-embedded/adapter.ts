@@ -1,7 +1,7 @@
 import PLACEGOOSE_API_SPEC from "@/lib/placegoose.json";
 import TIGHTKNIT_API_SPEC from "@/lib/tightknit.json";
-import { specToProbedRoutes } from "./spec-to-probed-routes";
-import type { OpenAPISpec, ProbedRoutesResponse } from "./types";
+import { specToApiRoutes } from "./spec-to-api-routes";
+import type { OpenAPISpec, ApiRoutesResponse } from "./types";
 import type { ResolvedSpecResult } from "./types";
 
 const MOCK_API_SPEC =
@@ -10,7 +10,7 @@ const MOCK_API_SPEC =
     : TIGHTKNIT_API_SPEC; // Render tightknit as mock api spec in development
 
 /**
- * Adapter module for converting OpenAPI specs into ProbedRoutesResponse format.
+ * Adapter module for converting OpenAPI specs into ApiRoutesResponse format.
  *
  * Handles fetching specs from either mock data or DOM elements, parsing them,
  * and transforming them into a standardized route format for the playground.
@@ -19,10 +19,10 @@ const MOCK_API_SPEC =
  * The spec is assumed to be serialized into the DOM by the fiberplane Hono embeddable playground middleware
  * `@fiberplane/embedded`
  */
-export async function getProbedRoutesFromOpenApiSpec(
+export async function getApiRoutesFromOpenApiSpec(
   useMockApiSpec: boolean,
   openapi: string,
-): Promise<ProbedRoutesResponse> {
+): Promise<ApiRoutesResponse> {
   // This is the generated ID for the converted routes
   let id = 1;
   const generateId = () => id++;
@@ -40,7 +40,7 @@ export async function getProbedRoutesFromOpenApiSpec(
     return handleSpecError(result, generateId);
   }
 
-  return specToProbedRoutes(result.spec, generateId);
+  return specToApiRoutes(result.spec, generateId);
 }
 
 /**
@@ -78,7 +78,7 @@ function getOpenApiSpec(
 async function handleSpecError(
   result: ResolvedSpecResult & { type: "error" },
   generateId: () => number,
-): Promise<ProbedRoutesResponse> {
+): Promise<ApiRoutesResponse> {
   if (result.retryable && result.attemptedUrl) {
     console.log(
       "Fetching the spec failed on the server, let's retry here",
@@ -86,7 +86,7 @@ async function handleSpecError(
     );
     try {
       const spec = await fetch(result.attemptedUrl).then((res) => res.json());
-      return specToProbedRoutes(spec, generateId);
+      return specToApiRoutes(spec, generateId);
     } catch (_err) {
       console.warn(
         "Fetching the spec failed on the server, and the retry failed",

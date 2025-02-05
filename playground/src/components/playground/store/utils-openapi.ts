@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { enforceTerminalDraftParameter } from "../KeyValueForm";
-import type { ProbedRoute } from "../types";
+import type { ApiRoute } from "../types";
 import type { KeyValueParameter, PlaygroundBody } from "./types";
 
 /**
@@ -27,7 +27,7 @@ export function filterDisabledEmptyQueryParams(
  */
 export function extractQueryParamsFromOpenApiDefinition(
   currentQueryParams: KeyValueParameter[],
-  route: ProbedRoute,
+  route: ApiRoute,
 ) {
   if (!route.openApiSpec) {
     return enforceTerminalDraftParameter(currentQueryParams);
@@ -137,7 +137,7 @@ function safeParseOpenApiSpec(openApiSpec: string, routePath: string) {
  */
 export function extractJsonBodyFromOpenApiDefinition(
   currentBody: PlaygroundBody,
-  route: ProbedRoute,
+  route: ApiRoute,
 ): PlaygroundBody {
   // If no OpenAPI spec exists, return current body
   if (!route.openApiSpec) {

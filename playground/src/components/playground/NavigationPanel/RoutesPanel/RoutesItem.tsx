@@ -1,13 +1,13 @@
 import { cn, getHttpMethodTextColor } from "@/utils";
 import { Link } from "@tanstack/react-router";
 import { memo, useEffect, useRef } from "react";
-import type { ProbedRoute } from "../../types";
+import type { ApiRoute } from "../../types";
 
 type RoutesItemProps = {
   index: number;
-  route: ProbedRoute;
-  activeRoute: ProbedRoute | null;
-  selectedRoute: ProbedRoute | null;
+  route: ApiRoute;
+  activeRoute: ApiRoute | null;
+  selectedRoute: ApiRoute | null;
   setSelectedRouteIndex: (index: number | null) => void;
 };
 

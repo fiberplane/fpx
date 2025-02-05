@@ -1,4 +1,4 @@
-import type { ProbedRoute, RequestMethod, RequestType } from "../types";
+import type { ApiRoute, RequestMethod, RequestType } from "../types";
 import { findFirstSmartRouterMatch } from "./match";
 
 const toRoute = (
@@ -21,7 +21,7 @@ const toRoute = (
 });
 
 describe("findSmartRouterMatch", () => {
-  const routes: ProbedRoute[] = [
+  const routes: ApiRoute[] = [
     toRoute("/test", "GET", "http"),
     toRoute("/test", "POST", "http"),
     toRoute("/users/:userId", "GET", "http"),
@@ -60,7 +60,7 @@ describe("findSmartRouterMatch", () => {
 });
 
 describe("findFirstSmartRouterMatch - registered routes precedence", () => {
-  const routes: ProbedRoute[] = [
+  const routes: ApiRoute[] = [
     // Unregesterd route - should not be matched first
     toRoute("/test/:k", "GET", "http", false, -1),
     // Registered route - should be matched first
@@ -73,26 +73,3 @@ describe("findFirstSmartRouterMatch - registered routes precedence", () => {
     expect(match?.route?.path).toBe("/test/:key");
   });
 });
-
-// describe("findMatchedRoute", () => {
-//   const routes: ProbedRoute[] = [
-//     { path: "/test", method: "GET", isWs: false },
-//     { path: "/test", method: "POST", isWs: false },
-//     { path: "/ws", method: "GET", isWs: true },
-//   ];
-
-//   it("should return the correct route for given pathname and method", () => {
-//     const result = findMatchedRoute(routes, "/test", "GET", false);
-//     expect(result).toEqual({ path: "/test", method: "GET", isWs: false });
-//   });
-
-//   it("should return undefined if no matching route is found", () => {
-//     const result = findMatchedRoute(routes, "/nonexistent", "GET", false);
-//     expect(result).toBeUndefined();
-//   });
-
-//   it("should return the correct WebSocket route", () => {
-//     const result = findMatchedRoute(routes, "/ws", "GET", true);
-//     expect(result).toEqual({ path: "/ws", method: "GET", isWs: true });
-//   });
-// });

@@ -2,10 +2,10 @@ import type { ParamIndexMap, ParamStash } from "hono/router";
 import { RegExpRouter } from "hono/router/reg-exp-router";
 import { SmartRouter } from "hono/router/smart-router";
 import { TrieRouter } from "hono/router/trie-router";
-import type { ProbedRoute } from "../types";
+import type { ApiRoute } from "../types";
 
 type MatchedRouteResult = {
-  route: ProbedRoute;
+  route: ApiRoute;
   pathParams?:
     | Record<string, string | string[]>
     | Record<string, string | number>;
@@ -31,7 +31,7 @@ type MatchedRouteResult = {
  * @returns
  */
 export function findMatchedRoute(
-  routes: ProbedRoute[],
+  routes: ApiRoute[],
   pathname: string | undefined,
   method: string | undefined,
   requestType: "http" | "websocket",
@@ -67,7 +67,7 @@ export function findMatchedRoute(
  * Return the first matching route (or middleware!) from the smart router
  */
 export function findFirstSmartRouterMatch(
-  routes: ProbedRoute[],
+  routes: ApiRoute[],
   pathname: string,
   method: string,
   requestType: "http" | "websocket",
@@ -82,7 +82,7 @@ export function findFirstSmartRouterMatch(
  * Returns all matching routes (or middleware!) from the smart router
  */
 export function findAllSmartRouterMatches(
-  unsortedRoutes: ProbedRoute[],
+  unsortedRoutes: ApiRoute[],
   pathname: string,
   method: string,
   requestType: "http" | "websocket",
@@ -91,8 +91,8 @@ export function findAllSmartRouterMatches(
   //        Look at the sortRoutesForMatching function for more details
   const routes = sortRoutesForMatching(unsortedRoutes);
 
-  // HACK - We need to be able to associate route handlers back to the ProbedRoute definition
-  const functionHandlerLookupTable: Map<() => void, ProbedRoute> = new Map();
+  // HACK - We need to be able to associate route handlers back to the ApiRoute definition
+  const functionHandlerLookupTable: Map<() => void, ApiRoute> = new Map();
 
   const routers = [new RegExpRouter(), new TrieRouter()];
   const router = new SmartRouter({ routers });
@@ -170,7 +170,7 @@ const isMatchResultEmpty = <R extends SmartRouter<T>, T>(
  *
  * @NOTE - Creates a new array, does not mutate the input
  */
-function sortRoutesForMatching(unsortedRoutes: ProbedRoute[]) {
+function sortRoutesForMatching(unsortedRoutes: ApiRoute[]) {
   const routes = [...unsortedRoutes];
 
   routes.sort((a, b) => {

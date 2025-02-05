@@ -1,10 +1,10 @@
 import type { findMatchedRoute } from "../routes";
-import type { ProbedRoute } from "../types";
+import type { ApiRoute } from "../types";
 import type { RequestMethod, RequestType } from "../types";
 import type { Authorization } from "./slices/settingsSlice";
 import type { PlaygroundState } from "./types";
 
-export const _getActiveRoute = (state: PlaygroundState): ProbedRoute => {
+export const _getActiveRoute = (state: PlaygroundState): ApiRoute => {
   return (
     state.activeRoute ?? {
       id: Number.NEGATIVE_INFINITY,
@@ -21,7 +21,7 @@ export const _getActiveRoute = (state: PlaygroundState): ProbedRoute => {
   );
 };
 
-export function probedRouteToInputMethod(route: ProbedRoute): RequestMethod {
+export function apiRouteToInputMethod(route: ApiRoute): RequestMethod {
   const method = route.method.toUpperCase();
   switch (method) {
     case "GET":

@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
-import { useProbedRoutes } from "../queries";
+import { useApiRoutes } from "../queries";
 import { useStudioStore } from "../store";
-import type { ProbedRoute } from "../types";
+import type { ApiRoute } from "../types";
 
 /**
  * Filter the routes that we want to show in the UI
@@ -9,7 +9,7 @@ import type { ProbedRoute } from "../types";
  * - The upgrade websocket middleware (hacky)
  * - A route handler (NOT middleware)
  */
-const filterRoutes = (routes: ProbedRoute[]) => {
+const filterRoutes = (routes: ApiRoute[]) => {
   return routes.filter((r) => {
     if (r.handlerType === "route") {
       return true;
@@ -22,7 +22,7 @@ const filterRoutes = (routes: ProbedRoute[]) => {
 /**
  * Filter the routes and middleware that are currently registered.
  */
-const filterActive = (routesAndMiddleware: ProbedRoute[]) => {
+const filterActive = (routesAndMiddleware: ApiRoute[]) => {
   return routesAndMiddleware.filter((r) => {
     return r.currentlyRegistered;
   });
@@ -41,7 +41,7 @@ export function useRoutes() {
     "setRoutesAndMiddleware",
   );
 
-  const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
+  const { data: routesAndMiddleware, isLoading, isError } = useApiRoutes();
 
   const routes = useMemo(() => {
     const routes = filterRoutes(routesAndMiddleware?.routes ?? []);

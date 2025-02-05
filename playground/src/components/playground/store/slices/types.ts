@@ -4,7 +4,7 @@ import type {
   RequestsPanelTab,
   ResponsePanelTab,
 } from "..";
-import type { ProbedRoute } from "../../types";
+import type { ApiRoute } from "../../types";
 import type {
   RequestMethod,
   RequestMethodInputValue,
@@ -53,12 +53,12 @@ export interface RequestResponseSlice {
 }
 
 export interface RoutesSlice {
-  appRoutes: ProbedRoute[];
-  activeRoute: ProbedRoute | null;
-  setRoutes: (routes: ProbedRoute[]) => void;
-  setActiveRoute: (route: ProbedRoute) => void;
-  routesAndMiddleware: ProbedRoute[];
-  setRoutesAndMiddleware: (routesAndMiddleware: ProbedRoute[]) => void;
+  appRoutes: ApiRoute[];
+  activeRoute: ApiRoute | null;
+  setRoutes: (routes: ApiRoute[]) => void;
+  setActiveRoute: (route: ApiRoute) => void;
+  routesAndMiddleware: ApiRoute[];
+  setRoutesAndMiddleware: (routesAndMiddleware: ApiRoute[]) => void;
 }
 
 export interface TabsSlice {

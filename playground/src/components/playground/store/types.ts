@@ -1,6 +1,6 @@
 import { z } from "zod";
 import {
-  ProbedRouteSchema,
+  ApiRouteSchema,
   RequestMethodSchema,
   RequestTypeSchema,
 } from "../types";
@@ -84,11 +84,11 @@ export const KeyValueParameterSchema = z.object({
 export type KeyValueParameter = z.infer<typeof KeyValueParameterSchema>;
 
 export const PlaygroundStateSchema = z.object({
-  appRoutes: z.array(ProbedRouteSchema).describe("All routes"),
+  appRoutes: z.array(ApiRouteSchema).describe("All routes"),
   routesAndMiddleware: z
-    .array(ProbedRouteSchema)
+    .array(ApiRouteSchema)
     .describe("All routes and middleware"),
-  activeRoute: ProbedRouteSchema.nullable().describe(
+  activeRoute: ApiRouteSchema.nullable().describe(
     "Indicates which route to highlight in the routes panel",
   ),
 

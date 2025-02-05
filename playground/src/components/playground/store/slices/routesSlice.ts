@@ -1,10 +1,10 @@
 import type { StateCreator } from "zustand";
 import { findMatchedRoute } from "../../routes";
-import type { ProbedRoute, RequestMethod } from "../../types";
 import { updateContentTypeHeaderInState } from "../content-type";
 import { getVisibleRequestPanelTabs } from "../tabs";
 import {
   addBaseUrl,
+  apiRouteToInputMethod,
   extractMatchedPathParams,
   extractPathParams,
   mapPathParamKey,
@@ -45,7 +45,7 @@ export const routesSlice: StateCreator<
 
   setActiveRoute: (route) =>
     set((state) => {
-      const nextMethod = probedRouteToInputMethod(route);
+      const nextMethod = apiRouteToInputMethod(route);
       const nextRequestType = route.requestType;
 
       state.activeRoute = route;
@@ -99,23 +99,3 @@ export const routesSlice: StateCreator<
       state.routesAndMiddleware = routesAndMiddleware;
     }),
 });
-
-const SUPPORTED_METHODS: Array<RequestMethod> = [
-  "GET",
-  "POST",
-  "PUT",
-  "DELETE",
-  "OPTIONS",
-  "PATCH",
-  "HEAD",
-];
-// Helper functions
-function probedRouteToInputMethod(route: ProbedRoute): RequestMethod {
-  const method = route.method.toUpperCase() as RequestMethod;
-  // Validate that the method is supported
-  if (SUPPORTED_METHODS.includes(method)) {
-    return method;
-  }
-
-  return "GET";
-}
