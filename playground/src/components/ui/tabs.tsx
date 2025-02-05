@@ -3,9 +3,11 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const Tabs = TabsPrimitive.Root;
+const TAB_HEIGHT = "h-8";
 
-const TabsList = React.forwardRef<
+const FpTabs = TabsPrimitive.Root;
+
+const FpTabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
 >(({ className, ...props }, ref) => (
@@ -13,14 +15,16 @@ const TabsList = React.forwardRef<
     ref={ref}
     className={cn(
       "inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground",
+      "w-full justify-start rounded-none border-b space-x-6",
+      TAB_HEIGHT,
       className,
     )}
     {...props}
   />
 ));
-TabsList.displayName = TabsPrimitive.List.displayName;
+FpTabsList.displayName = TabsPrimitive.List.displayName;
 
-const TabsTrigger = React.forwardRef<
+const FpTabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 >(({ className, ...props }, ref) => (
@@ -33,14 +37,28 @@ const TabsTrigger = React.forwardRef<
       "disabled:pointer-events-none disabled:opacity-50",
       "enabled:hover:text-foreground",
       "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow",
+      "py-2",
+      "px-0",
+      "text-left",
+      TAB_HEIGHT,
+      "ml-2",
+      "text-xs",
+      "font-normal",
+      "border-b",
+      "border-transparent",
+      "data-[state=active]:text-foreground",
+      "data-[state=active]:shadow-none",
+      "data-[state=active]:bg-inherit",
+      "data-[state=active]:rounded-none",
+      "data-[state=active]:border-primary",
       className,
     )}
     {...props}
   />
 ));
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
+FpTabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 
-const TabsContent = React.forwardRef<
+const FpTabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
 >(({ className, ...props }, ref) => (
@@ -48,11 +66,13 @@ const TabsContent = React.forwardRef<
     ref={ref}
     className={cn(
       "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      "px-3 py-2 data-[state=active]:h-full data-[state=inactive]:hidden",
+      "overflow-y-auto max-h-full",
       className,
     )}
     {...props}
   />
 ));
-TabsContent.displayName = TabsPrimitive.Content.displayName;
+FpTabsContent.displayName = TabsPrimitive.Content.displayName;
 
-export { Tabs, TabsList, TabsTrigger, TabsContent };
+export { FpTabs, FpTabsList, FpTabsTrigger, FpTabsContent };
