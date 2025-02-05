@@ -71,7 +71,7 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
       <span
         className={cn("text-xs", "min-w-12", getHttpMethodTextColor(method))}
       >
-        {method}
+        {method === "DELETE" ? "DEL" : method}
       </span>
       <TooltipProvider>
         <Tooltip>
