@@ -15,9 +15,6 @@ export function specToApiRoutes(
 
   // Iterate through paths and methods to create ApiRoute objects
   for (const [path, pathItem] of Object.entries(spec.paths)) {
-    // Convert {param} to :param in path
-    const transformedPath = path.replace(/\{([^}]+)\}/g, ":$1");
-
     for (const [method, operation] of Object.entries(pathItem)) {
       const upperMethod = method.toUpperCase();
       if (isValidMethod(upperMethod)) {
@@ -28,9 +25,10 @@ export function specToApiRoutes(
           new Set(),
           new Map(),
         );
+
         routes.push({
           id,
-          path: transformedPath,
+          path,
           method: upperMethod,
           // `summary` is the succint title of the operation
           summary: dereferencedOperation.summary,
