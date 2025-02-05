@@ -51,8 +51,6 @@ export interface RoutesSlice {
   activeRoute: ApiRoute | null;
   setRoutes: (routes: ApiRoute[]) => void;
   setActiveRoute: (route: ApiRoute) => void;
-  routesAndMiddleware: ApiRoute[];
-  setRoutesAndMiddleware: (routesAndMiddleware: ApiRoute[]) => void;
 }
 
 export interface TabsSlice {

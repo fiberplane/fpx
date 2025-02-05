@@ -81,9 +81,6 @@ export type KeyValueParameter = z.infer<typeof KeyValueParameterSchema>;
 
 export const PlaygroundStateSchema = z.object({
   appRoutes: z.array(ApiRouteSchema).describe("All routes"),
-  routesAndMiddleware: z
-    .array(ApiRouteSchema)
-    .describe("All routes and middleware"),
   activeRoute: ApiRouteSchema.nullable().describe(
     "Indicates which route to highlight in the routes panel",
   ),

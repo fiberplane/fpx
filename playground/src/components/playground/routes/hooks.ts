@@ -3,35 +3,23 @@ import { useApiRoutes } from "../queries";
 import { useStudioStore } from "../store";
 
 export function useRoutes() {
-  const {
-    setRoutes,
-    setActiveRoute,
-    setServiceBaseUrl,
-    setRoutesAndMiddleware,
-  } = useStudioStore(
+  const { setRoutes, setActiveRoute, setServiceBaseUrl } = useStudioStore(
     "setRoutes",
     "setActiveRoute",
     "setServiceBaseUrl",
-    "setRoutesAndMiddleware",
   );
 
-  const { data: routesAndMiddleware, isLoading, isError } = useApiRoutes();
+  const { data: apiRoutes, isLoading, isError } = useApiRoutes();
 
   // TODO - Remove notion of "routes" since this is a holdover from Studio to distinguish between routes and middleware
   const routes = useMemo(() => {
-    const routes = routesAndMiddleware?.routes ?? [];
+    const routes = apiRoutes?.routes ?? [];
     return routes;
-  }, [routesAndMiddleware]);
-
-  // TODO - Remove notion of active routes, since this is a holdover from Studio
-  const activeRoutesAndMiddleware = useMemo(() => {
-    const activeRoutes = routesAndMiddleware?.routes ?? [];
-    return activeRoutes;
-  }, [routesAndMiddleware]);
+  }, [apiRoutes]);
 
   // HACK - Antipattern, add serviceBaseUrl to the reducer based off of external changes
   //        Defaults to window.location.origin if not set
-  const serviceBaseUrl = routesAndMiddleware?.baseUrl ?? window.location.origin;
+  const serviceBaseUrl = apiRoutes?.baseUrl ?? window.location.origin;
   useEffect(() => {
     setServiceBaseUrl(serviceBaseUrl);
   }, [serviceBaseUrl, setServiceBaseUrl]);
@@ -44,11 +32,6 @@ export function useRoutes() {
       setActiveRoute(routes[0]);
     }
   }, [routes, setRoutes, setActiveRoute]);
-
-  // HACK - Antipattern, add routes and middleware to the reducer based off of external changes
-  useEffect(() => {
-    setRoutesAndMiddleware(activeRoutesAndMiddleware);
-  }, [activeRoutesAndMiddleware, setRoutesAndMiddleware]);
 
   return {
     isError,
