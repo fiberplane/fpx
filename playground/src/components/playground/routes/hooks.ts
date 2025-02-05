@@ -1,32 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useApiRoutes } from "../queries";
 import { useStudioStore } from "../store";
-import type { ApiRoute } from "../types";
-
-/**
- * Filter the routes that we want to show in the UI
- * For now, only keeps the route if it's either
- * - The upgrade websocket middleware (hacky)
- * - A route handler (NOT middleware)
- */
-const filterRoutes = (routes: ApiRoute[]) => {
-  return routes.filter((r) => {
-    if (r.handlerType === "route") {
-      return true;
-    }
-
-    return false;
-  });
-};
-
-/**
- * Filter the routes and middleware that are currently registered.
- */
-const filterActive = (routesAndMiddleware: ApiRoute[]) => {
-  return routesAndMiddleware.filter((r) => {
-    return r.currentlyRegistered;
-  });
-};
 
 export function useRoutes() {
   const {
@@ -43,13 +17,15 @@ export function useRoutes() {
 
   const { data: routesAndMiddleware, isLoading, isError } = useApiRoutes();
 
+  // TODO - Remove notion of "routes" since this is a holdover from Studio to distinguish between routes and middleware
   const routes = useMemo(() => {
-    const routes = filterRoutes(routesAndMiddleware?.routes ?? []);
+    const routes = routesAndMiddleware?.routes ?? [];
     return routes;
   }, [routesAndMiddleware]);
 
+  // TODO - Remove notion of active routes, since this is a holdover from Studio
   const activeRoutesAndMiddleware = useMemo(() => {
-    const activeRoutes = filterActive(routesAndMiddleware?.routes ?? []);
+    const activeRoutes = routesAndMiddleware?.routes ?? [];
     activeRoutes.sort((a, b) => b.registrationOrder - a.registrationOrder);
     return activeRoutes;
   }, [routesAndMiddleware]);

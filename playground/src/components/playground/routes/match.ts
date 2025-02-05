@@ -174,19 +174,6 @@ function sortRoutesForMatching(unsortedRoutes: ApiRoute[]) {
   const routes = [...unsortedRoutes];
 
   routes.sort((a, b) => {
-    const aIsRegistered = a.currentlyRegistered;
-    const bIsRegistered = b.currentlyRegistered;
-
-    // First, sort by registration status
-    if (aIsRegistered !== bIsRegistered) {
-      return aIsRegistered ? -1 : 1;
-    }
-
-    // Then, sort by registration order
-    if (aIsRegistered && bIsRegistered) {
-      return a.registrationOrder - b.registrationOrder;
-    }
-
     // If both registration and draft status are the same, sort by registration order
     return a.registrationOrder - b.registrationOrder;
   });
