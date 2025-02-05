@@ -8,12 +8,14 @@ on:
       - "api/**"
       - "packages/client-library-otel/**"
       - "studio/**"
+      - "playground/**"
   push:
     branches: ["main", "release-*"]
     paths:
       - "api/**"
       - "packages/client-library-otel/**"
       - "studio/**"
+      - "playground/**"
 
 env:
   CARGO_TERM_COLOR: always
@@ -65,6 +67,9 @@ jobs:
         run: pnpm --recursive typecheck
 
       # Testing
+
+      - name: Test Playground
+        run: pnpm --filter @fiberplane/playground test
 
       - name: Test Studio API
         run: pnpm --filter @fiberplane/studio test
