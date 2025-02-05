@@ -13,6 +13,7 @@ import {
   extractPathParams,
   mapPathParamKey,
   removeBaseUrl,
+  resolvePathWithParameters,
 } from "../utils";
 import {
   generateFakeData,
@@ -59,7 +60,6 @@ export const requestResponseSlice: StateCreator<
       }
 
       const fakeData = generateFakeData(openApiSpec, activeRoute.path);
-
       // Transform data to match form state types
       set((state) => {
         state.body = transformToFormBody(fakeData.body);
@@ -80,12 +80,11 @@ export const requestResponseSlice: StateCreator<
           }),
         );
         if (fakePathParams.length > 0) {
-          const nextPath = fakePathParams.reduce((accPath, param) => {
-            if (param.enabled) {
-              return accPath.replace(`:${param.key}`, param.value || param.key);
-            }
-            return accPath;
-          }, state.activeRoute?.path ?? state.path);
+          // NOTE - Do not call `state.setPathParams(...)` here, it messes with the form inputs and clears the path params
+          const nextPath = resolvePathWithParameters(
+            state.activeRoute?.path ?? state.path,
+            fakePathParams,
+          );
           state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
           state.pathParams = fakePathParams;
         }
@@ -157,12 +156,10 @@ export const requestResponseSlice: StateCreator<
 
   setPathParams: (pathParams) =>
     set((state) => {
-      const nextPath = pathParams.reduce((accPath, param) => {
-        if (param.enabled) {
-          return accPath.replace(`:${param.key}`, param.value || param.key);
-        }
-        return accPath;
-      }, state.activeRoute?.path ?? state.path);
+      const nextPath = resolvePathWithParameters(
+        state.activeRoute?.path ?? state.path,
+        pathParams,
+      );
       state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
       state.pathParams = pathParams;
     }),

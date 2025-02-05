@@ -2,7 +2,7 @@ import type { findMatchedRoute } from "../routes";
 import type { ApiRoute } from "../types";
 import type { RequestMethod } from "../types";
 import type { Authorization } from "./slices/settingsSlice";
-import type { PlaygroundState } from "./types";
+import type { KeyValueParameter, PlaygroundState } from "./types";
 
 export const _getActiveRoute = (state: PlaygroundState): ApiRoute => {
   return (
@@ -40,18 +40,16 @@ export function apiRouteToInputMethod(route: ApiRoute): RequestMethod {
 }
 
 /**
- * Extracts path parameters from a path
- *
- * @TODO - Rewrite to use Hono router
+ * Extracts path parameters from a path using OpenAPI-style format
+ * e.g. /users/{id} instead of /users/:id
  *
  * @param path
  * @returns
  */
 export function extractPathParams(path: string) {
-  const regex = /\/(:[a-zA-Z0-9_-]+)/g;
+  const regex = /\/{([^}]+)}/g;
 
   const result: Array<string> = [];
-  // let match = regex.exec(path);
   let lastIndex = -1;
   while (true) {
     const match = regex.exec(path);
@@ -66,9 +64,9 @@ export function extractPathParams(path: string) {
     }
     lastIndex = regex.lastIndex;
 
-    // HACK - Remove the `:` at the beginning of the match, to make things consistent with Hono router path param matching
-    const keyWithoutColon = match[1].slice(1);
-    result.push(keyWithoutColon);
+    // Extract the parameter name from inside the curly braces
+    const paramName = match[1];
+    result.push(paramName);
   }
   return result;
 }
@@ -81,13 +79,26 @@ export function extractMatchedPathParams(
   matchedRoute: ReturnType<typeof findMatchedRoute>,
 ) {
   return Object.entries(matchedRoute?.pathParams ?? {}).map(([key, value]) => {
-    const nextValue = value === `:${key}` ? "" : value;
+    const nextValue = value === `{${key}}` ? "" : value;
     return {
       ...mapPathParamKey(key),
       value: nextValue,
       enabled: !!nextValue,
     };
   });
+}
+
+/**
+ * Given an OpenAPI path and a list of path parameters,
+ * replace the path parameters in the path with the actual values
+ */
+export function resolvePathWithParameters(
+  path: string,
+  pathParams: KeyValueParameter[],
+) {
+  return pathParams.reduce((acc, param) => {
+    return acc.replace(`{${param.key}}`, param.value || param.key);
+  }, path);
 }
 
 /**
