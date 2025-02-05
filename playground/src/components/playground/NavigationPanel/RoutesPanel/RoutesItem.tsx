@@ -1,13 +1,19 @@
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn, getHttpMethodTextColor } from "@/utils";
 import { Link } from "@tanstack/react-router";
 import { memo, useEffect, useRef } from "react";
-import type { ProbedRoute } from "../../types";
+import type { ApiRoute } from "../../types";
 
 type RoutesItemProps = {
   index: number;
-  route: ProbedRoute;
-  activeRoute: ProbedRoute | null;
-  selectedRoute: ProbedRoute | null;
+  route: ApiRoute;
+  activeRoute: ApiRoute | null;
+  selectedRoute: ApiRoute | null;
   setSelectedRouteIndex: (index: number | null) => void;
 };
 
@@ -30,6 +36,11 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
       buttonRef.current.focus();
     }
   }, [isSelected]);
+
+  const displayText = route.summary || route.path;
+  const tooltipText = route.summary
+    ? `${route.summary}\n${route.path}`
+    : route.path;
 
   return (
     <Link
@@ -60,11 +71,20 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
       <span
         className={cn("text-xs", "min-w-12", getHttpMethodTextColor(method))}
       >
-        {method}
+        {method === "DELETE" ? "DEL" : method}
       </span>
-      <span className="overflow-hidden text-ellipsis whitespace-nowrap block">
-        {route.path}
-      </span>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="overflow-hidden text-ellipsis whitespace-nowrap block">
+              {displayText}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="whitespace-pre-line">{tooltipText}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </Link>
   );
 });

@@ -1,9 +1,9 @@
 import type { OpenAPIComponents } from "@fiberplane/fpx-types";
-import type { ProbedRoute } from "../../../types";
+import type { ApiRoute } from "../../../types";
 
-export type ProbedRoutesResponse = {
+export type ApiRoutesResponse = {
   baseUrl: string;
-  routes: ProbedRoute[];
+  routes: ApiRoute[];
 };
 
 export type OpenAPIOperation = {
@@ -19,6 +19,7 @@ export type OpenAPIOperation = {
     };
   }>;
   responses: Record<string, unknown>;
+  tags?: Array<string>;
 };
 
 export type OpenAPIPathItem = {

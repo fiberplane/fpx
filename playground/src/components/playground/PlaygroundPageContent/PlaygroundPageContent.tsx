@@ -18,7 +18,6 @@ import { usePlaygroundSubmitHandler } from "../usePlaygroundSubmitHandler";
 import { getMainSectionWidth } from "./util";
 
 export const PlaygroundPageContent: React.FC = (_props) => {
-  // const appRouteRef = useLatest<ProbedRoute | undefined>(appRoute);
   const {
     setShortcutsOpen,
     setActiveRequestsPanelTab,

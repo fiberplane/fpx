@@ -1,10 +1,10 @@
 import type { StateCreator } from "zustand";
 import { findMatchedRoute } from "../../routes";
-import type { ProbedRoute, RequestMethod } from "../../types";
 import { updateContentTypeHeaderInState } from "../content-type";
 import { getVisibleRequestPanelTabs } from "../tabs";
 import {
   addBaseUrl,
+  apiRouteToInputMethod,
   extractMatchedPathParams,
   extractPathParams,
   mapPathParamKey,
@@ -31,7 +31,6 @@ export const routesSlice: StateCreator<
         routes,
         removeBaseUrl(state.serviceBaseUrl, state.path),
         state.method,
-        state.requestType,
       );
       const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
       const nextPathParams = matchedRoute
@@ -45,15 +44,11 @@ export const routesSlice: StateCreator<
 
   setActiveRoute: (route) =>
     set((state) => {
-      const nextMethod = probedRouteToInputMethod(route);
-      const nextRequestType = route.requestType;
+      const nextMethod = apiRouteToInputMethod(route);
 
       state.activeRoute = route;
-      state.path = addBaseUrl(state.serviceBaseUrl, route.path, {
-        requestType: nextRequestType,
-      });
+      state.path = addBaseUrl(state.serviceBaseUrl, route.path);
       state.method = nextMethod;
-      state.requestType = nextRequestType;
       state.pathParams = extractPathParams(route.path).map(mapPathParamKey);
       state.activeResponse = null;
       // Filter out disabled and empty query params
@@ -73,7 +68,6 @@ export const routesSlice: StateCreator<
 
       // Update tabs (you might want to move this logic to a separate slice)
       state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
-        requestType: nextRequestType,
         method: nextMethod,
         openApiSpec: route?.openApiSpec,
       });
@@ -92,30 +86,4 @@ export const routesSlice: StateCreator<
       // Add content type header (you might want to move this to a separate function)
       updateContentTypeHeaderInState(state);
     }),
-
-  routesAndMiddleware: [],
-  setRoutesAndMiddleware: (routesAndMiddleware) =>
-    set((state) => {
-      state.routesAndMiddleware = routesAndMiddleware;
-    }),
 });
-
-const SUPPORTED_METHODS: Array<RequestMethod> = [
-  "GET",
-  "POST",
-  "PUT",
-  "DELETE",
-  "OPTIONS",
-  "PATCH",
-  "HEAD",
-];
-// Helper functions
-function probedRouteToInputMethod(route: ProbedRoute): RequestMethod {
-  const method = route.method.toUpperCase() as RequestMethod;
-  // Validate that the method is supported
-  if (SUPPORTED_METHODS.includes(method)) {
-    return method;
-  }
-
-  return "GET";
-}

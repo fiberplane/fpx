@@ -1,9 +1,5 @@
 import { z } from "zod";
-import {
-  ProbedRouteSchema,
-  RequestMethodSchema,
-  RequestTypeSchema,
-} from "../types";
+import { ApiRouteSchema, RequestMethodSchema } from "../types";
 import { PlaygroundBodySchema } from "./request-body";
 import { RequestsPanelTabSchema, ResponsePanelTabSchema } from "./tabs";
 
@@ -84,11 +80,8 @@ export const KeyValueParameterSchema = z.object({
 export type KeyValueParameter = z.infer<typeof KeyValueParameterSchema>;
 
 export const PlaygroundStateSchema = z.object({
-  appRoutes: z.array(ProbedRouteSchema).describe("All routes"),
-  routesAndMiddleware: z
-    .array(ProbedRouteSchema)
-    .describe("All routes and middleware"),
-  activeRoute: ProbedRouteSchema.nullable().describe(
+  appRoutes: z.array(ApiRouteSchema).describe("All routes"),
+  activeRoute: ApiRouteSchema.nullable().describe(
     "Indicates which route to highlight in the routes panel",
   ),
 
@@ -96,7 +89,6 @@ export const PlaygroundStateSchema = z.object({
   serviceBaseUrl: z.string().describe("Base URL for requests"),
   path: z.string().describe("Path input"),
   method: RequestMethodSchema.describe("Method input"),
-  requestType: RequestTypeSchema.describe("Request type input"),
   body: PlaygroundBodySchema.describe("Body"),
   pathParams: z
     .array(KeyValueParameterSchema)

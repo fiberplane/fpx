@@ -1,27 +1,21 @@
 import type { findMatchedRoute } from "../routes";
-import type { ProbedRoute } from "../types";
-import type { RequestMethod, RequestType } from "../types";
+import type { ApiRoute } from "../types";
+import type { RequestMethod } from "../types";
 import type { Authorization } from "./slices/settingsSlice";
 import type { PlaygroundState } from "./types";
 
-export const _getActiveRoute = (state: PlaygroundState): ProbedRoute => {
+export const _getActiveRoute = (state: PlaygroundState): ApiRoute => {
   return (
     state.activeRoute ?? {
       id: Number.NEGATIVE_INFINITY,
       path: state.path,
       method: state.method,
-      requestType: state.requestType,
-      handler: "",
-      handlerType: "route",
-      currentlyRegistered: false,
-      registrationOrder: -1,
-      routeOrigin: "custom",
-      isDraft: true,
+      openApiSpec: null,
     }
   );
 };
 
-export function probedRouteToInputMethod(route: ProbedRoute): RequestMethod {
+export function apiRouteToInputMethod(route: ApiRoute): RequestMethod {
   const method = route.method.toUpperCase();
   switch (method) {
     case "GET":
@@ -38,6 +32,8 @@ export function probedRouteToInputMethod(route: ProbedRoute): RequestMethod {
       return "PATCH";
     case "HEAD":
       return "HEAD";
+    case "TRACE":
+      return "TRACE";
     default:
       return "GET";
   }
@@ -120,17 +116,18 @@ export const removeBaseUrl = (serviceBaseUrl: string, path: string) => {
   return path;
 };
 
+type AddBaseUrlOptions = {
+  forceChangeHost?: boolean;
+};
+
 export const addBaseUrl = (
   serviceBaseUrl: string,
   path: string,
-  {
-    requestType: _requestType,
-    forceChangeHost,
-  }: { requestType?: RequestType; forceChangeHost?: boolean } = {
-    requestType: "http",
+  options: AddBaseUrlOptions = {
     forceChangeHost: false,
   },
 ) => {
+  const { forceChangeHost } = options;
   // NOTE - This is necessary to allow the user to type new base urls... even though we replace the base url whenever they switch routes
   if (pathHasValidBaseUrl(path) && !forceChangeHost) {
     return path;

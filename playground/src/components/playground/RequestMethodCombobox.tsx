@@ -15,10 +15,10 @@ import { getHttpMethodTextColor } from "@/utils";
 import { CheckIcon } from "@radix-ui/react-icons";
 import * as React from "react";
 import { forwardRef } from "react";
-import type { RequestMethodInputValue } from "./types";
+import type { RequestMethod } from "./types";
 
 type InputOption = {
-  value: RequestMethodInputValue;
+  value: RequestMethod;
   label: string;
 };
 
@@ -51,13 +51,17 @@ const methods: InputOption[] = [
     value: "HEAD",
     label: "HEAD",
   },
+  {
+    value: "TRACE",
+    label: "TRACE",
+  },
 ];
 
 export const RequestMethodCombobox = forwardRef<
   HTMLButtonElement,
   {
-    method: RequestMethodInputValue;
-    handleMethodChange: (method: RequestMethodInputValue) => void;
+    method: RequestMethod;
+    handleMethodChange: (method: RequestMethod) => void;
     allowUserToChange?: boolean;
     className?: string;
   }
@@ -108,7 +112,7 @@ export const RequestMethodCombobox = forwardRef<
                   key={inputMethod.value}
                   value={inputMethod.value}
                   onSelect={(currentValue: string) => {
-                    handleMethodChange(currentValue as RequestMethodInputValue);
+                    handleMethodChange(currentValue as RequestMethod);
                     setOpen(false);
                   }}
                   className="data-[selected=true]:bg-secondary"

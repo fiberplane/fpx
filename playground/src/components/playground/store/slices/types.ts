@@ -4,12 +4,7 @@ import type {
   RequestsPanelTab,
   ResponsePanelTab,
 } from "..";
-import type { ProbedRoute } from "../../types";
-import type {
-  RequestMethod,
-  RequestMethodInputValue,
-  RequestType,
-} from "../../types";
+import type { ApiRoute, RequestMethod } from "../../types";
 import type { KeyValueParameter, PlaygroundActiveResponse } from "../types";
 import type { SettingsSlice } from "./settingsSlice";
 
@@ -19,7 +14,6 @@ export interface RequestResponseSlice {
   serviceBaseUrl: string;
   path: string;
   method: RequestMethod;
-  requestType: RequestType;
   body: PlaygroundBody;
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
@@ -28,7 +22,7 @@ export interface RequestResponseSlice {
   fillInFakeData: () => void;
   setServiceBaseUrl: (serviceBaseUrl: string) => void;
   updatePath: (path: string) => void;
-  updateMethod: (methodInputValue: RequestMethodInputValue) => void;
+  updateMethod: (method: RequestMethod) => void;
   setPathParams: (pathParams: KeyValueParameter[]) => void;
   updatePathParamValues: (pathParams: { key: string; value: string }[]) => void;
   clearPathParams: () => void;
@@ -53,12 +47,10 @@ export interface RequestResponseSlice {
 }
 
 export interface RoutesSlice {
-  appRoutes: ProbedRoute[];
-  activeRoute: ProbedRoute | null;
-  setRoutes: (routes: ProbedRoute[]) => void;
-  setActiveRoute: (route: ProbedRoute) => void;
-  routesAndMiddleware: ProbedRoute[];
-  setRoutesAndMiddleware: (routesAndMiddleware: ProbedRoute[]) => void;
+  appRoutes: ApiRoute[];
+  activeRoute: ApiRoute | null;
+  setRoutes: (routes: ApiRoute[]) => void;
+  setActiveRoute: (route: ApiRoute) => void;
 }
 
 export interface TabsSlice {
