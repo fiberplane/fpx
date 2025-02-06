@@ -8,7 +8,7 @@ import {
   useStudioStore,
   useStudioStoreRaw,
 } from "./store";
-import { useApiCallData } from "./store/hooks/useStudioStore";
+import { useApiCallData } from "./store/hooks/useApiCallData";
 import { getRouteId } from "./store/slices/requestResponseSlice";
 
 export function usePlaygroundSubmitHandler({
@@ -36,7 +36,7 @@ export function usePlaygroundSubmitHandler({
 
   const authorization = useStudioStoreRaw(
     useShallow((state) => {
-      const id = getRouteId(state);
+      const id = getRouteId(state.activeRoute || state);
       const { apiCallState } = state;
       const params = apiCallState[id];
       const authorizationId = getPreferredAuthorizationId(

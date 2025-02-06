@@ -1,7 +1,7 @@
 import { enforceFormDataTerminalDraftParameter } from "../FormDataForm";
 import type { PlaygroundBodyType } from "./request-body";
 import { getRouteId } from "./slices/requestResponseSlice";
-import type { RequestResponseSlice } from "./slices/types";
+import type { RequestResponseSlice, RoutesSlice } from "./slices/types";
 
 /**
  * This reducer is responsible for setting the body type of the request.
@@ -10,7 +10,7 @@ import type { RequestResponseSlice } from "./slices/types";
  * We have big plans for this reducer function. Big plans.
  */
 export function setBodyTypeInState(
-  state: RequestResponseSlice,
+  state: RequestResponseSlice & Pick<RoutesSlice, "activeRoute">,
   {
     type: newBodyType,
     isMultipart,
@@ -19,7 +19,7 @@ export function setBodyTypeInState(
     isMultipart?: boolean;
   },
 ): void {
-  const id = getRouteId(state);
+  const id = getRouteId(state.activeRoute || state);
   const params = state.apiCallState[id];
   const oldBodyValue = params.body.value;
   const oldBodyType = params.body.type;

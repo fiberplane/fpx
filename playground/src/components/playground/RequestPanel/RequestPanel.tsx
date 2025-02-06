@@ -21,7 +21,7 @@ import {
 } from "@/components/CodeMirrorEditor";
 import { useHandler } from "@fiberplane/hooks";
 import { useStudioStore } from "../store";
-import { useApiCallData } from "../store/hooks/useStudioStore";
+import { useApiCallData } from "../store/hooks/useApiCallData";
 import { AuthSelector } from "./AuthSelector";
 import { Faker } from "./Faker";
 import { RouteDocumentation, isOpenApiOperation } from "./RouteDocumentation";
@@ -36,8 +36,8 @@ export const RequestPanel = memo(function RequestPanel(
   const { onSubmit } = props;
 
   const {
-    path,
-    method,
+    // path,
+    // method,
     setCurrentBody: setBody,
     setCurrentRequestHeaders: setRequestHeaders,
     setCurrentQueryParams: setQueryParams,
@@ -51,8 +51,8 @@ export const RequestPanel = memo(function RequestPanel(
     togglePanel,
     fillInFakeData,
   } = useStudioStore(
-    "path",
-    "method",
+    // "path",
+    // "method",
     "setCurrentBody",
     "setCurrentRequestHeaders",
     "setCurrentQueryParams",
@@ -277,12 +277,12 @@ export const RequestPanel = memo(function RequestPanel(
       )}
 
       <BottomToolbar
-        body={body}
+        // body={body}
         handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-        method={method}
-        path={path}
-        queryParams={queryParams}
-        requestHeaders={requestHeaders}
+        // method={method}
+        // path={path}
+        // queryParams={queryParams}
+        // requestHeaders={requestHeaders}
       />
     </FpTabs>
   );

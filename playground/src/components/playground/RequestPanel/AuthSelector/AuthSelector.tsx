@@ -18,7 +18,8 @@ export function AuthSelector() {
   const { setSettingsOpen } = useSettingsOpen();
   const preferredAuthorizationId = useStudioStoreRaw(
     useShallow((state) => {
-      const params = state.apiCallState[getRouteId(state)];
+      const id = getRouteId(state.activeRoute || state);
+      const params = state.apiCallState[id];
       return getPreferredAuthorizationId(
         params.authorizationId,
         state.authorizations,

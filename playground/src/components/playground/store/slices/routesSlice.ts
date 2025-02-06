@@ -61,7 +61,7 @@ export const routesSlice: StateCreator<
       state.path = addBaseUrl(state.serviceBaseUrl, route.path);
       state.method = nextMethod;
 
-      const id = getRouteId(state);
+      const id = getRouteId(state.activeRoute || state);
       const { apiCallState } = state;
       if (id in apiCallState === false) {
         console.log("id", id, Object.keys(state.apiCallState));

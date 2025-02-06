@@ -1,8 +1,10 @@
+import { createObjectFromKeyValueParameters } from "@/utils";
 import type { StateCreator } from "zustand";
 import { enforceFormDataTerminalDraftParameter } from "../../FormDataForm";
 import { enforceTerminalDraftParameter } from "../../KeyValueForm";
 import { isOpenApiOperation } from "../../RequestPanel/RouteDocumentation";
 import { findMatchedRoute } from "../../routes";
+import type { ApiRoute } from "../../types";
 import { updateContentTypeHeaderInState } from "../content-type";
 import { setBodyTypeInState } from "../set-body-type";
 import { getVisibleRequestPanelTabs } from "../tabs";
@@ -60,7 +62,7 @@ export const requestResponseSlice: StateCreator<
       const fakeData = generateFakeData(openApiSpec, activeRoute.path);
       // Transform data to match form state types
       set((state) => {
-        const id = getRouteId(state);
+        const id = getRouteId(state.activeRoute || state);
         const { apiCallState } = state;
         if (id in apiCallState === false) {
           apiCallState[id] = createInitialApiCallData();
@@ -107,7 +109,8 @@ export const requestResponseSlice: StateCreator<
   // TODO update it so it works
   setCurrentAuthorizationId: (authorizationId: string | null) =>
     set((state) => {
-      const id = getRouteId(state);
+      const id = getRouteId(state.activeRoute || state);
+
       const { apiCallState } = state;
       if (id in apiCallState === false) {
         apiCallState[id] = createInitialApiCallData();
@@ -129,7 +132,7 @@ export const requestResponseSlice: StateCreator<
 
       // The path might be changed, so verify that there's a default
       // `apiCallState` value
-      const id = getRouteId(state);
+      const id = getRouteId(state.activeRoute || state);
       if (id in state.apiCallState === false) {
         state.apiCallState[id] = createInitialApiCallData();
       }
@@ -149,7 +152,8 @@ export const requestResponseSlice: StateCreator<
 
       state.path = path;
       state.activeRoute = nextActiveRoute;
-      const id = getRouteId(state);
+      const id = getRouteId(state.activeRoute || state);
+
       const { apiCallState } = state;
       if (id in apiCallState === false) {
         apiCallState[id] = createInitialApiCallData();
@@ -174,7 +178,8 @@ export const requestResponseSlice: StateCreator<
       const nextActiveRoute = matchedRoute ? matchedRoute.route : null;
       state.activeRoute = nextActiveRoute;
 
-      const id = getRouteId(state);
+      const id = getRouteId(state.activeRoute || state);
+
       const { apiCallState } = state;
       if (id in apiCallState === false) {
         apiCallState[id] = createInitialApiCallData();
@@ -202,7 +207,8 @@ export const requestResponseSlice: StateCreator<
         pathParams,
       );
       state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
-      const id = getRouteId(state);
+      const id = getRouteId(state.activeRoute || state);
+
       const { apiCallState } = state;
       if (id in apiCallState === false) {
         apiCallState[id] = createInitialApiCallData();
@@ -216,7 +222,8 @@ export const requestResponseSlice: StateCreator<
   // TODO: so that it works
   updateCurrentPathParamValues: (pathParams) =>
     set((state) => {
-      const id = getRouteId(state);
+      const id = getRouteId(state.activeRoute || state);
+
       const { apiCallState } = state;
       if (id in apiCallState === false) {
         apiCallState[id] = createInitialApiCallData();
@@ -243,7 +250,8 @@ export const requestResponseSlice: StateCreator<
   // TODO: update it so it works
   clearCurrentPathParams: () =>
     set((state) => {
-      const id = getRouteId(state);
+      const id = getRouteId(state.activeRoute || state);
+
       const { apiCallState } = state;
       if (id in apiCallState === false) {
         apiCallState[id] = createInitialApiCallData();
@@ -260,7 +268,8 @@ export const requestResponseSlice: StateCreator<
   // TODO: update it so it works
   setCurrentQueryParams: (queryParams) =>
     set((state) => {
-      const id = getRouteId(state);
+      const id = getRouteId(state.activeRoute || state);
+
       const { apiCallState } = state;
       if (id in apiCallState === false) {
         apiCallState[id] = createInitialApiCallData();
@@ -289,7 +298,8 @@ export const requestResponseSlice: StateCreator<
       //   }
       // }
 
-      const id = getRouteId(state);
+      const id = getRouteId(state.activeRoute || state);
+
       const { apiCallState } = state;
       if (id in apiCallState === false) {
         apiCallState[id] = createInitialApiCallData();
@@ -302,7 +312,8 @@ export const requestResponseSlice: StateCreator<
   // TODO: update it so it works
   setCurrentBody: (body) =>
     set((state) => {
-      const id = getRouteId(state);
+      const id = getRouteId(state.activeRoute || state);
+
       const { apiCallState } = state;
       if (id in apiCallState === false) {
         apiCallState[id] = createInitialApiCallData();
@@ -361,7 +372,8 @@ export const requestResponseSlice: StateCreator<
   setActiveResponse: (response) =>
     set((state) => {
       const { apiCallState } = state;
-      const id = getRouteId(state);
+      const id = getRouteId(state.activeRoute || state);
+
       if (id in apiCallState === false) {
         apiCallState[id] = createInitialApiCallData();
       }
@@ -402,4 +414,21 @@ export function getRouteId({
   path,
 }: Pick<RequestResponseSlice, "method" | "path">): string {
   return `${method.toUpperCase()}_${path}`;
+}
+
+export function constructFullPath(
+  serviceBaseUrl: string,
+  route: ApiRoute,
+  data: ApiCallData,
+): string {
+  let fullPath = addBaseUrl(serviceBaseUrl, route.path);
+  fullPath = resolvePathWithParameters(fullPath, data.pathParams);
+  // const url = new URL(fullPath);
+  const searchParams = new URLSearchParams(
+    createObjectFromKeyValueParameters(data.queryParams),
+  );
+
+  return searchParams.size > 0
+    ? `${fullPath}?${searchParams.toString()}`
+    : fullPath;
 }

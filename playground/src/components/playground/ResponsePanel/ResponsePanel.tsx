@@ -16,7 +16,7 @@ import { Icon } from "@iconify/react";
 import { memo } from "react";
 import { useServiceBaseUrl } from "../store";
 import { useStudioStore } from "../store";
-import { useApiCallData } from "../store/hooks/useStudioStore";
+import { useApiCallData } from "../store/hooks/useApiCallData";
 import {
   type PlaygroundActiveResponse,
   isPlaygroundActiveResponse,

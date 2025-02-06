@@ -10,6 +10,7 @@ import { cn, isMac } from "@/utils";
 import { Icon } from "@iconify/react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { useStudioStore } from "./store";
+import { useUrlPreview } from "./store/hooks/useUrlPreview";
 
 type PlaygroundInputProps = {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -24,11 +25,11 @@ export function PlaygroundInput({
 }: PlaygroundInputProps) {
   const {
     method,
-    path,
+    // path,
     updatePath: handlePathInputChange,
     updateMethod: handleMethodChange,
   } = useStudioStore("method", "path", "updatePath", "updateMethod");
-
+  const path = useUrlPreview() ?? "";
   return (
     <form
       ref={formRef}
