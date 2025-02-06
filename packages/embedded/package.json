@@ -1,6 +1,10 @@
 {
   "name": "@fiberplane/embedded",
+<<<<<<< HEAD
   "version": "0.0.30-alpha.6",
+=======
+  "version": "0.0.30-alpha.3",
+>>>>>>> 78781c2a (Bump embedded package.json to alpha.3)
   "type": "module",
   "exports": {
     ".": {
