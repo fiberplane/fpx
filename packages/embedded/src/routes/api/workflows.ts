@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { PLAYGROUND_SERVICES_URL } from "@/const.js";
+import { PLAYGROUND_SERVICES_URL } from "../../constants.js";
 
-export default function createWorkflowApiRoute(apiKey: string) {
+export default function createWorkflowsApiRoute(apiKey: string) {
   const app = new Hono();
   
   // Proxy all requests to fp-services but attach a token
