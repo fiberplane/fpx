@@ -91,7 +91,7 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
             <CommandGroup heading="Workflows" className="py-2">
               <CustomCommandItem
                 onSelect={() => {
-                  navigate({ to: "/workflow" });
+                  navigate({ to: "/workflows" });
                   setOpen(false);
                 }}
               >

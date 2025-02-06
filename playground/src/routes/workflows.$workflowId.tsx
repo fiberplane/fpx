@@ -45,7 +45,7 @@ import { useShallow } from "zustand/react/shallow";
 import { isOpenApiV2, isOpenApiV3x } from "../lib/isOpenApiV2";
 
 type OpenAPIOperation = OpenAPI.Operation;
-export const Route = createFileRoute("/workflow/$workflowId")({
+export const Route = createFileRoute("/workflows/$workflowId")({
   validateSearch: z.object({
     stepId: z.string().optional(),
   }),
@@ -793,7 +793,10 @@ function StepDetails({
 function ListSection({
   title,
   children,
-}: { title: ReactNode; children: ReactNode }) {
+}: {
+  title: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <div className="py-1.5 pb-2 rounded-lg bg-muted">
       <div className="grid items-center mx-2">
@@ -809,7 +812,10 @@ type ExecutionStatus = "pending" | "success" | "error";
 function StatusBadge({
   status,
   title,
-}: { status: ExecutionStatus; title?: string }) {
+}: {
+  status: ExecutionStatus;
+  title?: string;
+}) {
   const statusConfig = {
     pending: { color: "bg-blue-100 text-blue-800", label: "Running" },
     success: { color: "bg-green-100 text-green-800", label: "Success" },
@@ -1057,7 +1063,10 @@ const NOT_FOUND = Symbol("NOT_FOUND");
 function OutputItem({
   output,
   stepId,
-}: { output: { key: string; value: string }; stepId?: string }) {
+}: {
+  output: { key: string; value: string };
+  stepId?: string;
+}) {
   const fullStepId = stepId
     ? `$steps.${stepId}.outputs.${output.key}`
     : output.key;

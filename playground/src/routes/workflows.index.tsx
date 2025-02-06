@@ -1,8 +1,8 @@
 import { workflowsQueryOptions } from "@/lib/hooks/useWorkflows";
 import { createFileRoute } from "@tanstack/react-router";
-import { NewWorkflow } from "./workflow.new";
+import { NewWorkflow } from "./workflows.new";
 
-export const Route = createFileRoute("/workflow/")({
+export const Route = createFileRoute("/workflows/")({
   component: WorkflowOverview,
   loader: async ({ context: { queryClient } }) => {
     const response = await queryClient.ensureQueryData(workflowsQueryOptions());

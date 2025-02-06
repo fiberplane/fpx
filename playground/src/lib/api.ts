@@ -26,7 +26,7 @@ function getBasePrefix(): string {
 export const api = {
   getWorkflows: async () => {
     const basePrefix = getBasePrefix();
-    const response = await fetch(`${basePrefix}/api/workflow`);
+    const response = await fetch(`${basePrefix}/api/workflows`);
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message);
@@ -36,7 +36,7 @@ export const api = {
 
   getWorkflow: async (id: string): Promise<ApiResponse<Workflow>> => {
     const basePrefix = getBasePrefix();
-    const response = await fetch(`${basePrefix}/api/workflow/${id}`);
+    const response = await fetch(`${basePrefix}/api/workflows/${id}`);
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message);
@@ -51,7 +51,7 @@ export const api = {
     description?: string;
   }): Promise<ApiResponse<Workflow>> => {
     const basePrefix = getBasePrefix();
-    const response = await fetch(`${basePrefix}/api/workflow/create`, {
+    const response = await fetch(`${basePrefix}/api/workflows/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -77,7 +77,7 @@ export const api = {
     },
   ): Promise<ApiResponse<Workflow>> => {
     const basePrefix = getBasePrefix();
-    const response = await fetch(`${basePrefix}/api/workflow/${id}`, {
+    const response = await fetch(`${basePrefix}/api/workflows/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -95,7 +95,7 @@ export const api = {
 
   deleteWorkflow: async (id: string): Promise<void> => {
     const basePrefix = getBasePrefix();
-    const response = await fetch(`${basePrefix}/api/workflow/${id}`, {
+    const response = await fetch(`${basePrefix}/api/workflows/${id}`, {
       method: "DELETE",
     });
 
@@ -171,7 +171,7 @@ export const api = {
     // return { data: {} };
 
     const basePrefix = getBasePrefix();
-    const response = await fetch(`${basePrefix}/api/report/create`, {
+    const response = await fetch(`${basePrefix}/api/reports/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
