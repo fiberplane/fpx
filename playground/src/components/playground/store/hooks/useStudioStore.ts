@@ -10,11 +10,11 @@ import {
   tabsSlice,
   uiSlice,
 } from "../slices";
-import type { RequestParameters } from "../slices/types";
 import {
   createRequestParameters,
   getRouteId,
 } from "../slices/requestResponseSlice";
+import type { RequestParameters } from "../slices/types";
 
 export function useStudioStore<
   T extends StudioState,
@@ -62,12 +62,11 @@ export function useRequestParameters<
       if (id in requestParameters === false) {
         console.warn("Id not found in request parameters", id);
       }
+      // params can be undefined, that's why we use the ugly `createRequestParameters` function call
       const params = requestParameters[id] ?? createRequestParameters();
-      //   // requestParameters[id] = createRequestParameters();
 
       //   throw new Error("Params not set, this should not happen");
 
-      // const params = requestParameters[id];
       const result = {} as Pick<T, K>;
       for (const item of items) {
         result[item as K] = params[item] as T[K];

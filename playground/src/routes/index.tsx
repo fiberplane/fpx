@@ -31,15 +31,7 @@ function Index() {
     appRoutes,
     clearCurrentPathParams: clearPathParams,
     setActiveRoute,
-    updateMethod,
-    updatePath,
-  } = useStudioStore(
-    "appRoutes",
-    "clearCurrentPathParams",
-    "setActiveRoute",
-    "updateMethod",
-    "updatePath",
-  );
+  } = useStudioStore("appRoutes", "clearCurrentPathParams", "setActiveRoute");
 
   const { setSettingsOpen } = useSettingsOpen();
 
@@ -57,15 +49,13 @@ function Index() {
 
   const setDefault = useHandler(() => {
     clearPathParams();
-    if (appRoutes.length > 0) {
-      const route = appRoutes[0];
-      updateMethod(route.method);
-      updatePath(route.path);
-      setActiveRoute(route);
-    } else {
-      updateMethod("GET");
-      updatePath("");
+    if (appRoutes.length === 0) {
+      // If there are no routes there isn't much to reset to.
+      console.warn("Attempting to reset when there are no routes");
+      return;
     }
+    const route = appRoutes[0];
+    setActiveRoute(route);
   });
 
   const { settings: showSettings = false, method, uri } = search || {};
@@ -78,22 +68,12 @@ function Index() {
       // NOTE - Defaults to GET if the method is invalid
       const validatedMethod =
         RequestMethodSchema.safeParse(method?.toUpperCase()).data || "GET";
-      updateMethod(validatedMethod);
-      updatePath(uri);
       clearPathParams();
       updateActiveRoute(validatedMethod, uri);
     } else {
       setDefault();
     }
-  }, [
-    method,
-    uri,
-    updateMethod,
-    updatePath,
-    updateActiveRoute,
-    setDefault,
-    clearPathParams,
-  ]);
+  }, [method, uri, updateActiveRoute, setDefault, clearPathParams]);
 
   return (
     <Layout>

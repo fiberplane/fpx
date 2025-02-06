@@ -35,7 +35,12 @@ export const requestResponseSlice: StateCreator<
   serviceBaseUrl: "http://localhost:8787",
   path: "",
   method: "GET",
-  requestParameters: {},
+  requestParameters: {
+    // This is needed to avoid the case where there are no routes yet loaded
+    // and so path/method is still set to the default value
+    // the key should be whatever the `getRouteId` function would generate based on the state
+    GET_: createRequestParameters(),
+  },
 
   // HACK - This setter has a bunch of side effects (logs, alerts)
   //        I moved it to the store so that it'd be a static handler.
@@ -118,10 +123,20 @@ export const requestResponseSlice: StateCreator<
 
   setServiceBaseUrl: (serviceBaseUrl) =>
     set((state) => {
+      if (state.serviceBaseUrl === serviceBaseUrl) {
+        return;
+      }
       state.serviceBaseUrl = serviceBaseUrl;
       state.path = addBaseUrl(serviceBaseUrl, state.path, {
         forceChangeHost: true,
       });
+
+      // The path might be changed, so verify that there's a default
+      // `requestParameters` value
+      const id = getRouteId(state);
+      if (id in state.requestParameters === false) {
+        state.requestParameters[id] = createRequestParameters();
+      }
     }),
 
   updatePath: (path) =>
@@ -146,7 +161,6 @@ export const requestResponseSlice: StateCreator<
 
       const params = requestParameters[id];
       params.pathParams = nextPathParams;
-      // state.pathParams = nextPathParams;
     }),
 
   updateMethod: (method) =>
@@ -163,6 +177,12 @@ export const requestResponseSlice: StateCreator<
       );
       const nextActiveRoute = matchedRoute ? matchedRoute.route : null;
       state.activeRoute = nextActiveRoute;
+
+      const id = getRouteId(state);
+      const { requestParameters } = state;
+      if (id in requestParameters === false) {
+        requestParameters[id] = createRequestParameters();
+      }
 
       // Update visibleRequestsPanelTabs based on the new method and request type
       state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
@@ -365,7 +385,11 @@ export const requestResponseSlice: StateCreator<
 });
 
 export function createRequestParameters(): RequestParameters {
-  console.log("creating params");
+  // try {
+  //   throw new Error("create request parameters");
+  // } catch (e) {
+  //   console.log(e);
+  // }
   return {
     authorizationId: null,
     body: {
@@ -382,6 +406,5 @@ export function getRouteId({
   method,
   path,
 }: Pick<RequestResponseSlice, "method" | "path">): string {
-  console.log("route id", method, path);
   return `${method.toUpperCase()}_${path}`;
 }

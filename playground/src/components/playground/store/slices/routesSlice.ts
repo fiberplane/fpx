@@ -2,21 +2,11 @@ import type { StateCreator } from "zustand";
 import { findMatchedRoute } from "../../routes";
 import { updateContentTypeHeaderInState } from "../content-type";
 import { getVisibleRequestPanelTabs } from "../tabs";
-import {
-  addBaseUrl,
-  apiRouteToInputMethod,
-  extractMatchedPathParams,
-  extractPathParams,
-  mapPathParamKey,
-  removeBaseUrl,
-} from "../utils";
+import { addBaseUrl, apiRouteToInputMethod, removeBaseUrl } from "../utils";
 
-import {
-  extractQueryParamsFromOpenApiDefinition,
-  filterDisabledEmptyQueryParams,
-} from "../utils-openapi";
-import type { RoutesSlice, StudioState } from "./types";
+import type { ApiRoute } from "../../types";
 import { createRequestParameters, getRouteId } from "./requestResponseSlice";
+import type { RoutesSlice, StudioState } from "./types";
 
 export const routesSlice: StateCreator<
   StudioState,
@@ -29,7 +19,6 @@ export const routesSlice: StateCreator<
   tagOrder: [],
   setRoutes: (routes) =>
     set((state) => {
-      console.log("set routes", routes.length);
       const matchedRoute = findMatchedRoute(
         routes,
         removeBaseUrl(state.serviceBaseUrl, state.path),
@@ -45,7 +34,13 @@ export const routesSlice: StateCreator<
 
       state.activeRoute = nextSelectedRoute;
       for (const route of routes) {
-        const id = getRouteId(route);
+        const id = getRouteId({
+          method: route.method,
+          path: addBaseUrl(state.serviceBaseUrl, route.path, {
+            forceChangeHost: true,
+          }),
+        });
+
         if (id in state.requestParameters === false) {
           state.requestParameters[id] = createRequestParameters();
         }
@@ -58,9 +53,8 @@ export const routesSlice: StateCreator<
       state.tagOrder = tagOrder;
     }),
 
-  setActiveRoute: (route) =>
+  setActiveRoute: (route: ApiRoute) =>
     set((state) => {
-      console.log("set active route");
       const nextMethod = apiRouteToInputMethod(route);
 
       state.activeRoute = route;
@@ -70,6 +64,7 @@ export const routesSlice: StateCreator<
       const id = getRouteId(state);
       const { requestParameters } = state;
       if (id in requestParameters === false) {
+        console.log("id", id, Object.keys(state.requestParameters));
         requestParameters[id] = createRequestParameters();
       }
 

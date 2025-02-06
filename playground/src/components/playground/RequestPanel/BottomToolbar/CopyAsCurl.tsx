@@ -8,13 +8,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { StudioState } from "../../store";
-import { getBodyValue } from "./utils";
 import type { RequestParameters } from "../../store/slices/types";
+import { getBodyValue } from "./utils";
 
-export type CopyAsCurlProps = Pick<
-  StudioState,
-  "method" | "path"
-> & Pick<RequestParameters, "body" | "requestHeaders" | "queryParams">;
+export type CopyAsCurlProps = Pick<StudioState, "method" | "path"> &
+  Pick<RequestParameters, "body" | "requestHeaders" | "queryParams">;
 
 /**
  * Copy the current request as a cURL command to the clipboard.
