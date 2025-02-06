@@ -9,8 +9,8 @@ import {
   isFailedToFetchError,
   parseErrorResponse,
 } from "./errors";
-import { safeParseBodyText } from "./utils";
 import { fpFetch } from "./fetch";
+import { safeParseBodyText } from "./utils";
 
 export const api = {
   getWorkflows: async (): Promise<ApiResponse<Workflow[]>> => {
