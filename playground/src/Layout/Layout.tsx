@@ -2,15 +2,15 @@ import { useStudioStore } from "@/components/playground/store";
 import { Button } from "@/components/ui/button";
 import { createLink, useMatches } from "@tanstack/react-router";
 import { UserCircle } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, forwardRef } from "react";
 import { cn } from "../utils";
 import { BottomBar } from "./BottomBar";
 import { SettingsScreen } from "./Settings";
 
-const NavButtonComponent = ({
-  className,
-  ...props
-}: React.ComponentProps<"a">) => {
+const NavButtonComponent = forwardRef<
+  HTMLAnchorElement,
+  React.ComponentProps<"a">
+>(({ className, ...props }, ref) => {
   const matches = useMatches();
   const isActive = matches.some((match) => match.routeId === props.href);
 
@@ -21,10 +21,12 @@ const NavButtonComponent = ({
       className={cn("h-6 hover:bg-input", isActive && "bg-input")}
       asChild
     >
-      <a {...props} className={cn(className)} />
+      <a {...props} ref={ref} className={cn(className)} />
     </Button>
   );
-};
+});
+
+NavButtonComponent.displayName = "NavButtonComponent";
 
 const NavButton = createLink(NavButtonComponent);
 
