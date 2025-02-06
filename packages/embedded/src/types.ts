@@ -1,5 +1,13 @@
 export interface EmbeddedOptions {
-  apiKey: string;
+  /**
+   * (Optional) The API key to use for the embedded playground.
+   *
+   * If not provided, certain features like the Workflow Builder will be disabled.
+   */
+  apiKey?: string;
+  /**
+   * (Optional) The URL of the CDN to use for the embedded playground UI.
+   */
   cdn?: string;
   openapi?: OpenAPIOptions;
 }
@@ -16,8 +24,9 @@ export interface OpenAPIOptions {
   /**
    * The URL of the (JSON) OpenAPI spec.
    *
-   * Example: "/openapi.json" if on the same origin
-   * Example: "http://api.myapp.biz/openapi.json" if on a different origin
+   * Examples:
+   * - Same origin: "/openapi.json"
+   * - Different origin: "http://api.myapp.biz/openapi.json"
    */
   url?: string;
   /**
