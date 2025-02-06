@@ -10,7 +10,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useIsLgScreen } from "@/hooks";
-import { isFpApiError } from "@/lib/api";
+import { isFeatureDisabledError } from "@/lib/api";
 import { workflowsQueryOptions } from "@/lib/hooks/useWorkflows";
 import { cn } from "@/lib/utils";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/workflows")({
     };
   },
   errorComponent: ({ error }) => {
-    if (isFpApiError(error) && error.statusCode === 402) {
+    if (isFeatureDisabledError(error)) {
       return (
         <FeatureDisabledScreen
           error={error}
