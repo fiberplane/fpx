@@ -53,7 +53,7 @@ export async function fpFetch<T>(
 /**
  * Returns the fiberplane api base path, unless we're running in dev mode.
  */
-function getFpApiBasePath(): string {
+export function getFpApiBasePath(): string {
   // If we're running the SPA in dev mode directly, there's no need to add the base path
   if (import.meta.env.DEV) {
     return "";

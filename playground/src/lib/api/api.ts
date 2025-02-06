@@ -4,28 +4,17 @@ import {
   TraceListResponseSchema,
   TraceSummarySchema,
 } from "@fiberplane/fpx-types";
-import {
-  FetchOpenApiSpecError,
-  isFailedToFetchError,
-  parseErrorResponse,
-} from "./errors";
-import { fpFetch } from "./fetch";
+import { FetchOpenApiSpecError, isFailedToFetchError } from "./errors";
+import { baseFetch, fpFetch, getFpApiBasePath } from "./fetch";
 import { safeParseBodyText } from "./utils";
 
 export const api = {
   getWorkflows: async (): Promise<ApiResponse<Workflow[]>> => {
-    const response = await fpFetch<ApiResponse<Workflow[]>>("/api/workflows");
-    return response;
+    return fpFetch<ApiResponse<Workflow[]>>("/api/workflows");
   },
 
   getWorkflow: async (id: string): Promise<ApiResponse<Workflow>> => {
-    const basePrefix = getFpApiBasePath();
-    const response = await fetch(`${basePrefix}/api/workflows/${id}`);
-    if (!response.ok) {
-      const error = await parseErrorResponse(response);
-      throw error;
-    }
-    return response.json();
+    return fpFetch<ApiResponse<Workflow>>(`/api/workflows/${id}`);
   },
 
   createWorkflow: async (data: {
@@ -34,21 +23,13 @@ export const api = {
     summary?: string;
     description?: string;
   }): Promise<ApiResponse<Workflow>> => {
-    const basePrefix = getFpApiBasePath();
-    const response = await fetch(`${basePrefix}/api/workflows/create`, {
+    return fpFetch<ApiResponse<Workflow>>("/api/workflows/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
-
-    if (!response.ok) {
-      const error = await parseErrorResponse(response);
-      throw error;
-    }
-
-    return response.json();
   },
 
   updateWorkflow: async (
@@ -60,46 +41,33 @@ export const api = {
       description?: string;
     },
   ): Promise<ApiResponse<Workflow>> => {
-    const basePrefix = getFpApiBasePath();
-    const response = await fetch(`${basePrefix}/api/workflows/${id}`, {
+    return fpFetch<ApiResponse<Workflow>>(`/api/workflows/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
-
-    if (!response.ok) {
-      const error = await parseErrorResponse(response);
-      throw error;
-    }
-
-    return response.json();
   },
 
   deleteWorkflow: async (id: string): Promise<void> => {
-    const basePrefix = getFpApiBasePath();
-    const response = await fetch(`${basePrefix}/api/workflows/${id}`, {
-      method: "DELETE",
-    });
-
-    if (!response.ok) {
-      const error = await parseErrorResponse(response);
-      throw error;
-    }
+    const transformEmptyResponse = async () => {};
+    return fpFetch(
+      `/api/workflows/${id}`,
+      {
+        method: "DELETE",
+      },
+      transformEmptyResponse,
+    );
   },
 
+  // TODO - Clarify the use of fpxEndpointHost, I already forgot how that param is used
   getTraces: async (fpxEndpointHost: string) => {
     const basePrefix = getFpApiBasePath();
     const tracesUrl = fpxEndpointHost
       ? `${fpxEndpointHost}/v1/traces`
       : `${basePrefix}/api/traces`;
-    const response = await fetch(tracesUrl);
-    if (!response.ok) {
-      const error = await parseErrorResponse(response);
-      throw error;
-    }
-    const data = await response.json();
+    const data = await baseFetch(tracesUrl);
     return {
       data: TraceListResponseSchema.parse(data),
     };
@@ -114,12 +82,7 @@ export const api = {
       ? `${fpxEndpointHost}/v1/traces/${id}/spans`
       : `${basePrefix}/api/traces/${id}/spans`;
 
-    const response = await fetch(tracesUrl);
-    if (!response.ok) {
-      const error = await parseErrorResponse(response);
-      throw error;
-    }
-    const data = await response.json();
+    const data = await baseFetch(tracesUrl);
     const parsedTrace = TraceSummarySchema.parse({
       traceId: id,
       spans: data,
@@ -129,6 +92,7 @@ export const api = {
     };
   },
 
+  // NOTE - This uses browser fetch, since it does some specific error handling of the response
   getOpenApiSpec: async (path: string): Promise<string> => {
     try {
       const response = await fetch(path);
@@ -159,46 +123,37 @@ export const api = {
   },
 
   post: async <T>(path: string, data: unknown): Promise<T> => {
-    const response = await fetch(path, {
+    return baseFetch(path, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
-
-    if (!response.ok) {
-      const error = await parseErrorResponse(response);
-      throw error;
-    }
-
-    return response.json();
   },
 
+  // TODO - Return actual response data, with a report id (once we have it)
   createReport: async (data: {
     traceId: string;
     description: string;
-  }): Promise<ApiResponse<void>> => {
+  }) => {
     // NOTE - For testing the flow in the UI
     // TODO - Remove this once ui is more finalized
     // window.alert("hello");
     // return { data: {} };
 
-    const basePrefix = getFpApiBasePath();
-    const response = await fetch(`${basePrefix}/api/reports/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    return fpFetch(
+      "/api/reports/create",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        // HACK - Pass a noop as a response parser
       },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const error = await parseErrorResponse(response);
-      throw error;
-    }
-
-    return response.json();
+      async () => {},
+    );
   },
 
   getTraceSummary: async (data: {
@@ -214,38 +169,12 @@ export const api = {
     //   },
     // };
     // // biome-ignore lint/correctness/noUnreachable: FOR TESTING PURPOSES
-    const basePrefix = getFpApiBasePath();
-    const response = await fetch(`${basePrefix}/api/assistant/trace-summary`, {
+    return fpFetch("/api/assistant/trace-summary", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
-
-    if (!response.ok) {
-      const error = await parseErrorResponse(response);
-      throw error;
-    }
-
-    return response.json();
   },
 };
-
-function getFpApiBasePath(): string {
-  // if we're running on localhost directly - skip this
-  if (import.meta.env.DEV) {
-    return "";
-  }
-
-  const rootElement = document.getElementById("root");
-  if (!rootElement?.dataset.options) {
-    return "";
-  }
-
-  const { mountedPath } = JSON.parse(rootElement.dataset.options) as {
-    mountedPath: string;
-  };
-
-  return mountedPath;
-}
