@@ -1,12 +1,14 @@
 export interface EmbeddedOptions {
   /**
-   * (Optional) The API key to use for the embedded playground.
+   * (Optional) Fiberplane API key to use for the embedded playground api.
    *
    * If not provided, certain features like the Workflow Builder will be disabled.
    */
   apiKey?: string;
   /**
-   * (Optional) The URL of the CDN to use for the embedded playground UI.
+   * (Optional) URL of a custom CDN to use for the embedded playground UI.
+   *
+   * If not provided, the default CDN will be used.
    */
   cdn?: string;
   openapi?: OpenAPIOptions;
