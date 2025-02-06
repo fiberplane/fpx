@@ -95,7 +95,8 @@ export function SettingsPage() {
                   Workflows
                 </label>
                 <p className="text-sm text-muted-foreground">
-                  Enable support for creating and managing API workflows.
+                  Enable support for creating and managing API workflow.
+                  Requires an API key from Fiberplane.
                 </p>
               </div>
             </div>
@@ -118,7 +119,7 @@ export function SettingsPage() {
                 </label>
                 <p className="text-sm text-muted-foreground">
                   Enable visualization and analysis of OpenTelemetry traces for
-                  your API requests.
+                  your API requests. Contact Fiberplane to set this up.
                 </p>
               </div>
             </div>
