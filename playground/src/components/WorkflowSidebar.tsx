@@ -41,7 +41,7 @@ export function WorkflowSidebar() {
             itemCount={filteredWorkflows.length}
           />
           <Button variant="ghost" size="icon" asChild>
-            <Link to="/workflow/new">
+            <Link to="/workflows/new">
               <PlusIcon className="w-3 h-3" />
             </Link>
           </Button>
@@ -63,7 +63,7 @@ export function WorkflowSidebar() {
                 className="relative group grid grid-cols-[1fr_auto] items-center gap-2"
               >
                 <Link
-                  to="/workflow/$workflowId"
+                  to="/workflows/$workflowId"
                   params={{ workflowId: workflow.workflowId }}
                   className="flex items-start justify-between p-2 text-sm rounded cursor-pointer hover:bg-muted transition-all"
                 >

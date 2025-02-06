@@ -34,7 +34,7 @@ export function useCreateWorkflow() {
     onSuccess: (response: ApiResponse<Workflow>) => {
       queryClient.invalidateQueries({ queryKey: [WORKFLOWS_KEY] });
       navigate({
-        to: "/workflow/$workflowId",
+        to: "/workflows/$workflowId",
         params: { workflowId: response.data.workflowId },
       });
     },
@@ -64,7 +64,7 @@ export function useDeleteWorkflow() {
     mutationFn: api.deleteWorkflow,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [WORKFLOWS_KEY] });
-      navigate({ to: "/workflow" });
+      navigate({ to: "/workflows" });
     },
   });
 }
