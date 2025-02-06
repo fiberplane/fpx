@@ -1,18 +1,18 @@
 import { useStudioStore } from "@/components/playground/store";
 import { Button } from "@/components/ui/button";
-import { Link, useMatches } from "@tanstack/react-router";
+import { createLink, useMatches } from "@tanstack/react-router";
 import { UserCircle } from "lucide-react";
-import type React from "react";
+import type { ReactNode } from "react";
 import { cn } from "../utils";
 import { BottomBar } from "./BottomBar";
 import { SettingsScreen } from "./Settings";
 
-function NavButton({
-  to,
-  children,
-}: { to: string; children: React.ReactNode }) {
+const NavButtonComponent = ({
+  className,
+  ...props
+}: React.ComponentProps<"a">) => {
   const matches = useMatches();
-  const isActive = matches.some((match) => match.routeId === to);
+  const isActive = matches.some((match) => match.routeId === props.href);
 
   return (
     <Button
@@ -21,12 +21,14 @@ function NavButton({
       className={cn("h-6 hover:bg-input", isActive && "bg-input")}
       asChild
     >
-      <Link to={to}>{children}</Link>
+      <a {...props} className={cn(className)} />
     </Button>
   );
-}
+};
 
-export function Layout({ children }: { children?: React.ReactNode }) {
+const NavButton = createLink(NavButtonComponent);
+
+export function Layout({ children }: { children?: ReactNode }) {
   const { isWorkflowsEnabled, isTracingEnabled, shouldShowTopNav } =
     useStudioStore(
       "isWorkflowsEnabled",
@@ -41,7 +43,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
           <div className="flex items-center gap-2">
             <NavButton to="/">Playground</NavButton>
             {isWorkflowsEnabled && (
-              <NavButton to="/workflow">Workflows</NavButton>
+              <NavButton to="/workflows">Workflows</NavButton>
             )}
             {isTracingEnabled && <NavButton to="/traces">Traces</NavButton>}
           </div>
