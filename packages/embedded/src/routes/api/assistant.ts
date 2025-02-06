@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { PLAYGROUND_SERVICES_URL } from "@/const.js";
+import { PLAYGROUND_SERVICES_URL } from "../../constants.js";
 
 export default function createAssistantApiRoute(apiKey: string) {
   const app = new Hono();

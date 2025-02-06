@@ -9,9 +9,6 @@
     "lib": ["ESNext"],
     "esModuleInterop": true,
     "outDir": "./dist",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
     "rootDir": "./src",
     "declaration": true,
     "jsxImportSource": "hono/jsx"

@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { PLAYGROUND_SERVICES_URL } from "@/const.js";
+import { PLAYGROUND_SERVICES_URL } from "../../constants.js";
 
 export default function createReportsApiRoute(apiKey: string) {
   const app = new Hono();
@@ -12,7 +12,6 @@ export default function createReportsApiRoute(apiKey: string) {
     const headers = new Headers();
     // Only include the bare minimum authentication and content-type headers
     headers.set("Authorization", `Bearer ${apiKey}`);
-    headers.set("x-fpx-token", apiKey);
     if (contentType) {
       headers.set("content-type", contentType);
     }
