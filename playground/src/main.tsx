@@ -36,7 +36,7 @@ declare module "@tanstack/react-router" {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <TooltipProvider>
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />

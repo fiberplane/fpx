@@ -45,7 +45,7 @@ function WorkflowLayout() {
   // const maxSize = Math.min(50, (500 / width) * 100);
 
   return (
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <Layout>
         <div className={cn("h-[calc(100vh-70px)]", "grid", "gap-2", "p-2")}>
           <CommandBar open={commandBarOpen} setOpen={setCommandBarOpen} />
