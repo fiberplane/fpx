@@ -3,11 +3,13 @@ import { useApiRoutes } from "../queries";
 import { useStudioStore } from "../store";
 
 export function useRoutes() {
-  const { setRoutes, setActiveRoute, setServiceBaseUrl } = useStudioStore(
-    "setRoutes",
-    "setActiveRoute",
-    "setServiceBaseUrl",
-  );
+  const { setRoutes, setTagOrder, setActiveRoute, setServiceBaseUrl } =
+    useStudioStore(
+      "setRoutes",
+      "setTagOrder",
+      "setActiveRoute",
+      "setServiceBaseUrl",
+    );
 
   const { data: apiRoutes, isLoading, isError } = useApiRoutes();
 
@@ -24,7 +26,7 @@ export function useRoutes() {
     setServiceBaseUrl(serviceBaseUrl);
   }, [serviceBaseUrl, setServiceBaseUrl]);
 
-  // HACK - Antipattern, add routes to the reducer based off of external changes
+  // HACK - Antipattern, add routes to the store based off of external changes
   // NOTE - This will only add routes if they don't exist
   useEffect(() => {
     setRoutes(routes);
@@ -32,6 +34,11 @@ export function useRoutes() {
       setActiveRoute(routes[0]);
     }
   }, [routes, setRoutes, setActiveRoute]);
+
+  // HACK - Antipattern, add tag ordering to the store based off of external changes
+  useEffect(() => {
+    setTagOrder(apiRoutes?.tagOrder ?? []);
+  }, [apiRoutes, setTagOrder]);
 
   return {
     isError,

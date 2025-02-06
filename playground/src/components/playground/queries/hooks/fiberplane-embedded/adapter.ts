@@ -33,6 +33,7 @@ export async function getApiRoutesFromOpenApiSpec(
     return {
       baseUrl: window.location.origin,
       routes: [],
+      tagOrder: [],
     };
   }
 

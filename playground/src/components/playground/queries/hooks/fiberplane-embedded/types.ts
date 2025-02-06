@@ -4,6 +4,7 @@ import type { ApiRoute } from "../../../types";
 export type ApiRoutesResponse = {
   baseUrl: string;
   routes: ApiRoute[];
+  tagOrder: string[];
 };
 
 export type OpenAPIOperation = {
@@ -45,6 +46,10 @@ export type OpenAPISpec = {
   }>;
   paths: Record<string, OpenAPIPathItem>;
   components: OpenAPIComponents;
+  tags?: Array<{
+    name: string;
+    description?: string;
+  }>;
 };
 
 export const VALID_METHODS = [
