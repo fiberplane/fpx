@@ -20,11 +20,7 @@ import {
   transformToFormBody,
   transformToFormParams,
 } from "../utils-faker";
-import type {
-  RequestParameters,
-  RequestResponseSlice,
-  StudioState,
-} from "./types";
+import type { ApiCallData, RequestResponseSlice, StudioState } from "./types";
 
 export const requestResponseSlice: StateCreator<
   StudioState,
@@ -35,11 +31,11 @@ export const requestResponseSlice: StateCreator<
   serviceBaseUrl: "http://localhost:8787",
   path: "",
   method: "GET",
-  requestParameters: {
+  apiCallState: {
     // This is needed to avoid the case where there are no routes yet loaded
     // and so path/method is still set to the default value
     // the key should be whatever the `getRouteId` function would generate based on the state
-    GET_: createRequestParameters(),
+    GET_: createInitialApiCallData(),
   },
 
   // HACK - This setter has a bunch of side effects (logs, alerts)
@@ -65,12 +61,12 @@ export const requestResponseSlice: StateCreator<
       // Transform data to match form state types
       set((state) => {
         const id = getRouteId(state);
-        const { requestParameters } = state;
-        if (id in requestParameters === false) {
-          requestParameters[id] = createRequestParameters();
+        const { apiCallState } = state;
+        if (id in apiCallState === false) {
+          apiCallState[id] = createInitialApiCallData();
         }
 
-        const params = requestParameters[id];
+        const params = apiCallState[id];
 
         params.body = transformToFormBody(fakeData.body);
         const fakeQueryParams = transformToFormParams(fakeData.queryParams);
@@ -112,12 +108,12 @@ export const requestResponseSlice: StateCreator<
   setCurrentAuthorizationId: (authorizationId: string | null) =>
     set((state) => {
       const id = getRouteId(state);
-      const { requestParameters } = state;
-      if (id in requestParameters === false) {
-        requestParameters[id] = createRequestParameters();
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData();
       }
 
-      const params = requestParameters[id];
+      const params = apiCallState[id];
       params.authorizationId = authorizationId;
     }),
 
@@ -132,10 +128,10 @@ export const requestResponseSlice: StateCreator<
       });
 
       // The path might be changed, so verify that there's a default
-      // `requestParameters` value
+      // `apiCallState` value
       const id = getRouteId(state);
-      if (id in state.requestParameters === false) {
-        state.requestParameters[id] = createRequestParameters();
+      if (id in state.apiCallState === false) {
+        state.apiCallState[id] = createInitialApiCallData();
       }
     }),
 
@@ -154,12 +150,12 @@ export const requestResponseSlice: StateCreator<
       state.path = path;
       state.activeRoute = nextActiveRoute;
       const id = getRouteId(state);
-      const { requestParameters } = state;
-      if (id in requestParameters === false) {
-        requestParameters[id] = createRequestParameters();
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData();
       }
 
-      const params = requestParameters[id];
+      const params = apiCallState[id];
       params.pathParams = nextPathParams;
     }),
 
@@ -179,9 +175,9 @@ export const requestResponseSlice: StateCreator<
       state.activeRoute = nextActiveRoute;
 
       const id = getRouteId(state);
-      const { requestParameters } = state;
-      if (id in requestParameters === false) {
-        requestParameters[id] = createRequestParameters();
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData();
       }
 
       // Update visibleRequestsPanelTabs based on the new method and request type
@@ -207,12 +203,12 @@ export const requestResponseSlice: StateCreator<
       );
       state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
       const id = getRouteId(state);
-      const { requestParameters } = state;
-      if (id in requestParameters === false) {
-        requestParameters[id] = createRequestParameters();
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData();
       }
 
-      const params = requestParameters[id];
+      const params = apiCallState[id];
       // state.pathParams = pathParams;
       params.pathParams = pathParams;
     }),
@@ -221,12 +217,12 @@ export const requestResponseSlice: StateCreator<
   updateCurrentPathParamValues: (pathParams) =>
     set((state) => {
       const id = getRouteId(state);
-      const { requestParameters } = state;
-      if (id in requestParameters === false) {
-        requestParameters[id] = createRequestParameters();
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData();
       }
 
-      const params = requestParameters[id];
+      const params = apiCallState[id];
 
       params.pathParams = params.pathParams.map(
         (pathParam: KeyValueParameter) => {
@@ -248,12 +244,12 @@ export const requestResponseSlice: StateCreator<
   clearCurrentPathParams: () =>
     set((state) => {
       const id = getRouteId(state);
-      const { requestParameters } = state;
-      if (id in requestParameters === false) {
-        requestParameters[id] = createRequestParameters();
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData();
       }
 
-      const params = requestParameters[id];
+      const params = apiCallState[id];
       params.pathParams = params.pathParams.map((pathParam) => ({
         ...pathParam,
         value: "",
@@ -265,12 +261,12 @@ export const requestResponseSlice: StateCreator<
   setCurrentQueryParams: (queryParams) =>
     set((state) => {
       const id = getRouteId(state);
-      const { requestParameters } = state;
-      if (id in requestParameters === false) {
-        requestParameters[id] = createRequestParameters();
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData();
       }
 
-      const params = requestParameters[id];
+      const params = apiCallState[id];
       params.queryParams = enforceTerminalDraftParameter(queryParams);
     }),
 
@@ -294,12 +290,12 @@ export const requestResponseSlice: StateCreator<
       // }
 
       const id = getRouteId(state);
-      const { requestParameters } = state;
-      if (id in requestParameters === false) {
-        requestParameters[id] = createRequestParameters();
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData();
       }
 
-      const params = requestParameters[id];
+      const params = apiCallState[id];
       params.requestHeaders = enforceTerminalDraftParameter(mergedHeaders);
     }),
 
@@ -307,12 +303,12 @@ export const requestResponseSlice: StateCreator<
   setCurrentBody: (body) =>
     set((state) => {
       const id = getRouteId(state);
-      const { requestParameters } = state;
-      if (id in requestParameters === false) {
-        requestParameters[id] = createRequestParameters();
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData();
       }
 
-      const params = requestParameters[id];
+      const params = apiCallState[id];
       if (body === undefined) {
         params.body =
           params.body.type === "form-data"
@@ -360,20 +356,18 @@ export const requestResponseSlice: StateCreator<
   removeServiceUrlFromPath: (path: string) =>
     removeBaseUrl(get().serviceBaseUrl, path),
 
-  activeResponse: null,
-  showResponseBodyFromHistory: (traceId) =>
-    set((state) => {
-      // Recall that an 'active response' is one for which we will have the body we received from the service
-      // This means it can contain binary data, whereas the history response will not
-      // We should prefer to keep the active response as response to render, so long as its traceId matches the current history response traceId
-      const activeTraceId = state.activeResponse?.traceId;
-      if (!activeTraceId || activeTraceId !== traceId) {
-        state.activeResponse = null;
-      }
-    }),
+  // activeResponse: null,
+
   setActiveResponse: (response) =>
     set((state) => {
-      state.activeResponse = response;
+      const { apiCallState } = state;
+      const id = getRouteId(state);
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData();
+      }
+
+      const apiData = apiCallState[id];
+      apiData.activeResponse = response;
     }),
 
   /** Session history related state */
@@ -384,7 +378,7 @@ export const requestResponseSlice: StateCreator<
     }),
 });
 
-export function createRequestParameters(): RequestParameters {
+export function createInitialApiCallData(): ApiCallData {
   // try {
   //   throw new Error("create request parameters");
   // } catch (e) {
@@ -399,6 +393,7 @@ export function createRequestParameters(): RequestParameters {
     pathParams: [],
     queryParams: enforceTerminalDraftParameter([]),
     requestHeaders: enforceTerminalDraftParameter([]),
+    activeResponse: null,
   };
 }
 

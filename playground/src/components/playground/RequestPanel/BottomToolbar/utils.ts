@@ -1,4 +1,4 @@
-import type { RequestParameters } from "../../store/slices/types";
+import type { ApiCallData } from "../../store/slices/types";
 import type { PlaygroundState } from "../../store/types";
 
 /**
@@ -8,7 +8,7 @@ import type { PlaygroundState } from "../../store/types";
 export function getBodyValue({
   body,
   method,
-}: Pick<RequestParameters, "body"> & Pick<PlaygroundState, "method">) {
+}: Pick<ApiCallData, "body"> & Pick<PlaygroundState, "method">) {
   // Prevent sending JSON body for GET and HEAD requests, as they're the only
   // methods where providing data is invalid.
   if (method === "GET" || method === "HEAD" || !body.value) {

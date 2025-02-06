@@ -89,7 +89,7 @@ export const PlaygroundStateSchema = z.object({
   serviceBaseUrl: z.string().describe("Base URL for requests"),
   path: z.string().describe("Path input"),
   method: RequestMethodSchema.describe("Method input"),
-  requestParameters: z.record(
+  apiCallState: z.record(
     z.string(),
     z.object({
       body: PlaygroundBodySchema.describe("Body"),
@@ -102,6 +102,10 @@ export const PlaygroundStateSchema = z.object({
       requestHeaders: z
         .array(KeyValueParameterSchema)
         .describe("Headers to be sent with the request"),
+      // NOTE - This is used to force us to show a response body for a request that was most recently made
+      activeResponse: PlaygroundActiveResponseSchema.nullable().describe(
+        "The response to show in the response panel",
+      ),
     }),
   ),
 
@@ -119,11 +123,6 @@ export const PlaygroundStateSchema = z.object({
   visibleResponsePanelTabs: z
     .array(ResponsePanelTabSchema)
     .describe("The tabs to show in the response panel"),
-
-  // NOTE - This is used to force us to show a response body for a request that was most recently made
-  activeResponse: PlaygroundActiveResponseSchema.nullable().describe(
-    "The response to show in the response panel",
-  ),
 });
 
 export type PlaygroundState = z.infer<typeof PlaygroundStateSchema>;

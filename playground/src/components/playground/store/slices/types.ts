@@ -14,7 +14,7 @@ export interface RequestResponseSlice {
   serviceBaseUrl: string;
   path: string;
   method: RequestMethod;
-  requestParameters: Record<string, RequestParameters>;
+  apiCallState: Record<string, ApiCallData>;
   setCurrentPathParams: (pathParams: KeyValueParameter[]) => void;
   updateCurrentPathParamValues: (
     pathParams: { key: string; value: string }[],
@@ -34,9 +34,6 @@ export interface RequestResponseSlice {
   ) => void;
   /** Response related state */
 
-  activeResponse: PlaygroundActiveResponse | null;
-
-  showResponseBodyFromHistory: (traceId: string) => void;
   setActiveResponse: (response: PlaygroundActiveResponse | null) => void;
 
   /** Session history related state */
@@ -46,12 +43,13 @@ export interface RequestResponseSlice {
 
 // Stores all request (path) specific parameters
 // Like query string parameters, path parameters, body, etc...
-export type RequestParameters = {
+export type ApiCallData = {
   body: PlaygroundBody;
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
   requestHeaders: KeyValueParameter[];
   authorizationId: "none" | string | null;
+  activeResponse: PlaygroundActiveResponse | null;
 };
 
 export interface RoutesSlice {

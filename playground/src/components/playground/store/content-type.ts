@@ -1,7 +1,7 @@
 import { enforceTerminalDraftParameter } from "../KeyValueForm";
 import { isDraftParameter } from "../KeyValueForm/data";
 import { getRouteId } from "./slices/requestResponseSlice";
-import type { RequestParameters, RequestResponseSlice } from "./slices/types";
+import type { ApiCallData, RequestResponseSlice } from "./slices/types";
 import type { KeyValueParameter, PlaygroundBody } from "./types";
 
 /**
@@ -20,9 +20,9 @@ import type { KeyValueParameter, PlaygroundBody } from "./types";
  * - If the body is a text, we want to set/update the content type to text/plain
  */
 export function updateContentTypeHeaderInState(state: RequestResponseSlice) {
-  const { requestParameters } = state;
+  const { apiCallState } = state;
   const id = getRouteId(state);
-  const params = requestParameters[id];
+  const params = apiCallState[id];
   const currentHeaders = params.requestHeaders;
   const currentContentTypeHeader = getCurrentContentType(params);
 
@@ -88,7 +88,7 @@ function mapBodyToContentType(body: PlaygroundBody) {
   return "text/plain";
 }
 
-function getCurrentContentType(state: RequestParameters) {
+function getCurrentContentType(state: ApiCallData) {
   const currentContentType = state.requestHeaders.find(
     (header) => header.key?.toLowerCase() === "content-type",
   );
@@ -114,7 +114,7 @@ function getUpdateOperation(
       : null;
   }
 
-  const params = state.requestParameters[getRouteId(state)];
+  const params = state.apiCallState[getRouteId(state)];
   const currentBody = params.body;
   const nextContentTypeValue = mapBodyToContentType(currentBody);
 

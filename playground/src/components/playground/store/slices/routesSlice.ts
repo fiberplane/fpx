@@ -5,7 +5,7 @@ import { getVisibleRequestPanelTabs } from "../tabs";
 import { addBaseUrl, apiRouteToInputMethod, removeBaseUrl } from "../utils";
 
 import type { ApiRoute } from "../../types";
-import { createRequestParameters, getRouteId } from "./requestResponseSlice";
+import { createInitialApiCallData, getRouteId } from "./requestResponseSlice";
 import type { RoutesSlice, StudioState } from "./types";
 
 export const routesSlice: StateCreator<
@@ -41,8 +41,8 @@ export const routesSlice: StateCreator<
           }),
         });
 
-        if (id in state.requestParameters === false) {
-          state.requestParameters[id] = createRequestParameters();
+        if (id in state.apiCallState === false) {
+          state.apiCallState[id] = createInitialApiCallData();
         }
       }
       // state.pathParams = nextPathParams;
@@ -62,13 +62,13 @@ export const routesSlice: StateCreator<
       state.method = nextMethod;
 
       const id = getRouteId(state);
-      const { requestParameters } = state;
-      if (id in requestParameters === false) {
-        console.log("id", id, Object.keys(state.requestParameters));
-        requestParameters[id] = createRequestParameters();
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        console.log("id", id, Object.keys(state.apiCallState));
+        apiCallState[id] = createInitialApiCallData();
       }
 
-      // const params = requestParameters[id];
+      // const params = apiCallState[id];
 
       // Is this still needed?
       // params.pathParams = extractPathParams(route.path).map(mapPathParamKey);

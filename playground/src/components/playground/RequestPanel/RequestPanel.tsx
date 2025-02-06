@@ -21,7 +21,7 @@ import {
 } from "@/components/CodeMirrorEditor";
 import { useHandler } from "@fiberplane/hooks";
 import { useStudioStore } from "../store";
-import { useRequestParameters } from "../store/hooks/useStudioStore";
+import { useApiCallData } from "../store/hooks/useStudioStore";
 import { AuthSelector } from "./AuthSelector";
 import { Faker } from "./Faker";
 import { RouteDocumentation, isOpenApiOperation } from "./RouteDocumentation";
@@ -67,8 +67,12 @@ export const RequestPanel = memo(function RequestPanel(
     "fillInFakeData",
   );
 
-  const { body, pathParams, queryParams, requestHeaders } =
-    useRequestParameters("body", "pathParams", "queryParams", "requestHeaders");
+  const { body, pathParams, queryParams, requestHeaders } = useApiCallData(
+    "body",
+    "pathParams",
+    "queryParams",
+    "requestHeaders",
+  );
 
   const toggleSideBar = useHandler(() => {
     togglePanel("sidePanel");

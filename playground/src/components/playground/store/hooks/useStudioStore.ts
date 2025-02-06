@@ -11,10 +11,10 @@ import {
   uiSlice,
 } from "../slices";
 import {
-  createRequestParameters,
+  createInitialApiCallData,
   getRouteId,
 } from "../slices/requestResponseSlice";
-import type { RequestParameters } from "../slices/types";
+import type { ApiCallData } from "../slices/types";
 
 export function useStudioStore<
   T extends StudioState,
@@ -50,20 +50,20 @@ export const useStudioStoreRaw = create<StudioState>()(
 // Provide a way to get the store state outside of a component
 export const getStudioStoreState = useStudioStoreRaw.getState;
 
-export function useRequestParameters<
-  T extends RequestParameters,
-  K extends keyof RequestParameters,
+export function useApiCallData<
+  T extends ApiCallData,
+  K extends keyof ApiCallData,
 >(...items: Array<K>): Pick<T, K> {
   return useStudioStoreRaw(
     useShallow((state) => {
       const id = getRouteId(state);
-      const { requestParameters } = state;
+      const { apiCallState } = state;
 
-      if (id in requestParameters === false) {
+      if (id in apiCallState === false) {
         console.warn("Id not found in request parameters", id);
       }
-      // params can be undefined, that's why we use the ugly `createRequestParameters` function call
-      const params = requestParameters[id] ?? createRequestParameters();
+      // params may be undefined, that's why we use the ugly `createInitialApiCallData` function call
+      const params = apiCallState[id] ?? createInitialApiCallData();
 
       //   throw new Error("Params not set, this should not happen");
 

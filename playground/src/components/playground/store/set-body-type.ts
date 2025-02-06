@@ -20,7 +20,7 @@ export function setBodyTypeInState(
   },
 ): void {
   const id = getRouteId(state);
-  const params = state.requestParameters[id];
+  const params = state.apiCallState[id];
   const oldBodyValue = params.body.value;
   const oldBodyType = params.body.type;
 
