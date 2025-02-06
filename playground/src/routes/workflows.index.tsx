@@ -1,6 +1,6 @@
 import { workflowsQueryOptions } from "@/lib/hooks/useWorkflows";
 import { createFileRoute } from "@tanstack/react-router";
-import { NewWorkflow } from "./workflow.new";
+import { NewWorkflow } from "./workflows.new";
 
 export const Route = createFileRoute("/workflow/")({
   component: WorkflowOverview,
