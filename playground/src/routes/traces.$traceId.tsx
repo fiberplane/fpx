@@ -381,12 +381,9 @@ export const Route = createFileRoute("/traces/$traceId")({
     spanId: z.string().optional(),
   }),
   component: TraceDetail,
-  loader: async ({
-    context: { queryClient, fpxEndpointHost },
-    params: { traceId },
-  }) => {
+  loader: async ({ context: { queryClient }, params: { traceId } }) => {
     const response = await queryClient.ensureQueryData(
-      traceQueryOptions(fpxEndpointHost ?? "", traceId),
+      traceQueryOptions(traceId),
     );
     return { trace: { traceId, spans: response.data } };
   },

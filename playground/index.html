@@ -21,10 +21,7 @@
           // and passing in a JSON-stringified object representing an OpenAPI spec
           //
           // content: __fpGetRawOpenApiSpec(),
-        },
-        // NOTE - This option here is **only for local development** to be able to test the tracing UI in the playground
-        // Assumes you have Fiberplane Studio running as a sidecar to ingest traces on :8788
-        fpxEndpoint: "http://localhost:8788/v1/traces",
+        }
       };
 
       document.getElementById("root").dataset.options = JSON.stringify(options);

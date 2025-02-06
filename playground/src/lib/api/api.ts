@@ -5,7 +5,7 @@ import {
   TraceSummarySchema,
 } from "@fiberplane/fpx-types";
 import { FetchOpenApiSpecError, isFailedToFetchError } from "./errors";
-import { baseFetch, fpFetch, getFpApiBasePath } from "./fetch";
+import { baseFetch, fpFetch } from "./fetch";
 import { safeParseBodyText } from "./utils";
 
 export const api = {
@@ -61,28 +61,17 @@ export const api = {
     );
   },
 
-  // TODO - Clarify the use of fpxEndpointHost, I already forgot how that param is used
-  getTraces: async (fpxEndpointHost: string) => {
-    const basePrefix = getFpApiBasePath();
-    const tracesUrl = fpxEndpointHost
-      ? `${fpxEndpointHost}/v1/traces`
-      : `${basePrefix}/api/traces`;
-    const data = await baseFetch(tracesUrl);
+  getTraces: async () => {
+    const data = await fpFetch("/api/traces");
     return {
       data: TraceListResponseSchema.parse(data),
     };
   },
 
   getTrace: async (
-    fpxEndpointHost: string,
     id: string,
   ): Promise<ApiResponse<TraceDetailSpansResponse>> => {
-    const basePrefix = getFpApiBasePath();
-    const tracesUrl = fpxEndpointHost
-      ? `${fpxEndpointHost}/v1/traces/${id}/spans`
-      : `${basePrefix}/api/traces/${id}/spans`;
-
-    const data = await baseFetch(tracesUrl);
+    const data = await fpFetch(`/api/traces/${id}/spans`);
     const parsedTrace = TraceSummarySchema.parse({
       traceId: id,
       spans: data,

@@ -15,7 +15,6 @@ export const Route = createRootRouteWithContext<{
         content?: string;
       }
     | undefined;
-  fpxEndpointHost?: string;
 }>()({
   component: RootComponent,
   loader: async ({ context }) => {
