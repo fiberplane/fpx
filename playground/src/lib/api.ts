@@ -23,13 +23,25 @@ function getBasePrefix(): string {
   return mountedPath;
 }
 
+export class FpApiError extends Error {
+  statusCode?: number;
+  details?: string;
+
+  constructor(message: string, statusCode?: number, details?: string) {
+    super(message);
+    this.name = "FpApiError";
+    this.statusCode = statusCode;
+    this.details = details;
+  }
+}
+
 export const api = {
   getWorkflows: async () => {
     const basePrefix = getBasePrefix();
     const response = await fetch(`${basePrefix}/api/workflows`);
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
+      const error = await parseErrorResponse(response);
+      throw error;
     }
     return response.json();
   },
@@ -38,8 +50,8 @@ export const api = {
     const basePrefix = getBasePrefix();
     const response = await fetch(`${basePrefix}/api/workflows/${id}`);
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
+      const error = await parseErrorResponse(response);
+      throw error;
     }
     return response.json();
   },
@@ -60,8 +72,8 @@ export const api = {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
+      const error = await parseErrorResponse(response);
+      throw error;
     }
 
     return response.json();
@@ -86,8 +98,8 @@ export const api = {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
+      const error = await parseErrorResponse(response);
+      throw error;
     }
 
     return response.json();
@@ -100,8 +112,8 @@ export const api = {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
+      const error = await parseErrorResponse(response);
+      throw error;
     }
   },
 
@@ -112,8 +124,8 @@ export const api = {
       : `${basePrefix}/api/traces`;
     const response = await fetch(tracesUrl);
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
+      const error = await parseErrorResponse(response);
+      throw error;
     }
     const data = await response.json();
     return {
@@ -132,16 +144,16 @@ export const api = {
 
     const response = await fetch(tracesUrl);
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
+      const error = await parseErrorResponse(response);
+      throw error;
     }
     const data = await response.json();
-    const aaagagagag = TraceSummarySchema.parse({
+    const parsedTrace = TraceSummarySchema.parse({
       traceId: id,
       spans: data,
     });
     return {
-      data: aaagagagag.spans,
+      data: parsedTrace.spans,
     };
   },
 
@@ -155,7 +167,8 @@ export const api = {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to make request");
+      const error = await parseErrorResponse(response);
+      throw error;
     }
 
     return response.json();
@@ -180,8 +193,8 @@ export const api = {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
+      const error = await parseErrorResponse(response);
+      throw error;
     }
 
     return response.json();
@@ -210,10 +223,37 @@ export const api = {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
+      const error = await parseErrorResponse(response);
+      throw error;
     }
 
     return response.json();
   },
 };
+
+/**
+ * Parses an error response from the API into an `FpApiError`.
+ */
+async function parseErrorResponse(response: Response): Promise<FpApiError> {
+  const contentType = response.headers.get("content-type");
+  let message = `Request failed with status ${response.status}`;
+  let details: string | undefined;
+
+  try {
+    if (contentType?.includes("application/json")) {
+      const error = await response.json();
+      message = error.message || message;
+      details = JSON.stringify(error);
+    } else if (contentType?.includes("text/")) {
+      message = await response.text();
+    }
+  } catch (e) {
+    // If parsing fails, retain the default message
+  }
+
+  return new FpApiError(message, response.status, details);
+}
+
+export function isFpApiError(error: unknown): error is FpApiError {
+  return error instanceof FpApiError;
+}

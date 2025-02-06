@@ -1,6 +1,6 @@
 import { WorkflowCommand } from "@/components/WorkflowCommand";
 import { openApiSpecQueryOptions } from "@/lib/hooks/useOpenApiSpec";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import type { QueryClient } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import React from "react";
