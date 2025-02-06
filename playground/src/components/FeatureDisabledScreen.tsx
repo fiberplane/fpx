@@ -2,12 +2,10 @@ import { Icon } from "@iconify/react";
 
 export function FeatureDisabledScreen(props: {
   error: Error;
-  title?: string;
+  title: string;
   message: string;
 }) {
-  const { error: _error, message } = props;
-  const title = props.title ?? "Feature Disabled";
-
+  const { error: _error, message, title } = props;
   return (
     <div className="min-h-screen bg-background">
       <div className="flex flex-col items-center justify-center h-screen gap-2">
