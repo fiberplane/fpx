@@ -11,20 +11,20 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as WorkflowImport } from './routes/workflow'
+import { Route as WorkflowsImport } from './routes/workflows'
 import { Route as TracesImport } from './routes/traces'
 import { Route as IndexImport } from './routes/index'
-import { Route as WorkflowIndexImport } from './routes/workflow.index'
+import { Route as WorkflowsIndexImport } from './routes/workflows.index'
 import { Route as TracesIndexImport } from './routes/traces.index'
-import { Route as WorkflowNewImport } from './routes/workflow.new'
-import { Route as WorkflowWorkflowIdImport } from './routes/workflow.$workflowId'
+import { Route as WorkflowsNewImport } from './routes/workflows.new'
+import { Route as WorkflowsWorkflowIdImport } from './routes/workflows.$workflowId'
 import { Route as TracesTraceIdImport } from './routes/traces.$traceId'
 
 // Create/Update Routes
 
-const WorkflowRoute = WorkflowImport.update({
-  id: '/workflow',
-  path: '/workflow',
+const WorkflowsRoute = WorkflowsImport.update({
+  id: '/workflows',
+  path: '/workflows',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -40,10 +40,10 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const WorkflowIndexRoute = WorkflowIndexImport.update({
+const WorkflowsIndexRoute = WorkflowsIndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => WorkflowRoute,
+  getParentRoute: () => WorkflowsRoute,
 } as any)
 
 const TracesIndexRoute = TracesIndexImport.update({
@@ -52,16 +52,16 @@ const TracesIndexRoute = TracesIndexImport.update({
   getParentRoute: () => TracesRoute,
 } as any)
 
-const WorkflowNewRoute = WorkflowNewImport.update({
+const WorkflowsNewRoute = WorkflowsNewImport.update({
   id: '/new',
   path: '/new',
-  getParentRoute: () => WorkflowRoute,
+  getParentRoute: () => WorkflowsRoute,
 } as any)
 
-const WorkflowWorkflowIdRoute = WorkflowWorkflowIdImport.update({
+const WorkflowsWorkflowIdRoute = WorkflowsWorkflowIdImport.update({
   id: '/$workflowId',
   path: '/$workflowId',
-  getParentRoute: () => WorkflowRoute,
+  getParentRoute: () => WorkflowsRoute,
 } as any)
 
 const TracesTraceIdRoute = TracesTraceIdImport.update({
@@ -88,11 +88,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TracesImport
       parentRoute: typeof rootRoute
     }
-    '/workflow': {
-      id: '/workflow'
-      path: '/workflow'
-      fullPath: '/workflow'
-      preLoaderRoute: typeof WorkflowImport
+    '/workflows': {
+      id: '/workflows'
+      path: '/workflows'
+      fullPath: '/workflows'
+      preLoaderRoute: typeof WorkflowsImport
       parentRoute: typeof rootRoute
     }
     '/traces/$traceId': {
@@ -102,19 +102,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TracesTraceIdImport
       parentRoute: typeof TracesImport
     }
-    '/workflow/$workflowId': {
-      id: '/workflow/$workflowId'
+    '/workflows/$workflowId': {
+      id: '/workflows/$workflowId'
       path: '/$workflowId'
-      fullPath: '/workflow/$workflowId'
-      preLoaderRoute: typeof WorkflowWorkflowIdImport
-      parentRoute: typeof WorkflowImport
+      fullPath: '/workflows/$workflowId'
+      preLoaderRoute: typeof WorkflowsWorkflowIdImport
+      parentRoute: typeof WorkflowsImport
     }
-    '/workflow/new': {
-      id: '/workflow/new'
+    '/workflows/new': {
+      id: '/workflows/new'
       path: '/new'
-      fullPath: '/workflow/new'
-      preLoaderRoute: typeof WorkflowNewImport
-      parentRoute: typeof WorkflowImport
+      fullPath: '/workflows/new'
+      preLoaderRoute: typeof WorkflowsNewImport
+      parentRoute: typeof WorkflowsImport
     }
     '/traces/': {
       id: '/traces/'
@@ -123,12 +123,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TracesIndexImport
       parentRoute: typeof TracesImport
     }
-    '/workflow/': {
-      id: '/workflow/'
+    '/workflows/': {
+      id: '/workflows/'
       path: '/'
-      fullPath: '/workflow/'
-      preLoaderRoute: typeof WorkflowIndexImport
-      parentRoute: typeof WorkflowImport
+      fullPath: '/workflows/'
+      preLoaderRoute: typeof WorkflowsIndexImport
+      parentRoute: typeof WorkflowsImport
     }
   }
 }
@@ -148,52 +148,52 @@ const TracesRouteChildren: TracesRouteChildren = {
 const TracesRouteWithChildren =
   TracesRoute._addFileChildren(TracesRouteChildren)
 
-interface WorkflowRouteChildren {
-  WorkflowWorkflowIdRoute: typeof WorkflowWorkflowIdRoute
-  WorkflowNewRoute: typeof WorkflowNewRoute
-  WorkflowIndexRoute: typeof WorkflowIndexRoute
+interface WorkflowsRouteChildren {
+  WorkflowsWorkflowIdRoute: typeof WorkflowsWorkflowIdRoute
+  WorkflowsNewRoute: typeof WorkflowsNewRoute
+  WorkflowsIndexRoute: typeof WorkflowsIndexRoute
 }
 
-const WorkflowRouteChildren: WorkflowRouteChildren = {
-  WorkflowWorkflowIdRoute: WorkflowWorkflowIdRoute,
-  WorkflowNewRoute: WorkflowNewRoute,
-  WorkflowIndexRoute: WorkflowIndexRoute,
+const WorkflowsRouteChildren: WorkflowsRouteChildren = {
+  WorkflowsWorkflowIdRoute: WorkflowsWorkflowIdRoute,
+  WorkflowsNewRoute: WorkflowsNewRoute,
+  WorkflowsIndexRoute: WorkflowsIndexRoute,
 }
 
-const WorkflowRouteWithChildren = WorkflowRoute._addFileChildren(
-  WorkflowRouteChildren,
+const WorkflowsRouteWithChildren = WorkflowsRoute._addFileChildren(
+  WorkflowsRouteChildren,
 )
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/traces': typeof TracesRouteWithChildren
-  '/workflow': typeof WorkflowRouteWithChildren
+  '/workflows': typeof WorkflowsRouteWithChildren
   '/traces/$traceId': typeof TracesTraceIdRoute
-  '/workflow/$workflowId': typeof WorkflowWorkflowIdRoute
-  '/workflow/new': typeof WorkflowNewRoute
+  '/workflows/$workflowId': typeof WorkflowsWorkflowIdRoute
+  '/workflows/new': typeof WorkflowsNewRoute
   '/traces/': typeof TracesIndexRoute
-  '/workflow/': typeof WorkflowIndexRoute
+  '/workflows/': typeof WorkflowsIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/traces/$traceId': typeof TracesTraceIdRoute
-  '/workflow/$workflowId': typeof WorkflowWorkflowIdRoute
-  '/workflow/new': typeof WorkflowNewRoute
+  '/workflows/$workflowId': typeof WorkflowsWorkflowIdRoute
+  '/workflows/new': typeof WorkflowsNewRoute
   '/traces': typeof TracesIndexRoute
-  '/workflow': typeof WorkflowIndexRoute
+  '/workflows': typeof WorkflowsIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/traces': typeof TracesRouteWithChildren
-  '/workflow': typeof WorkflowRouteWithChildren
+  '/workflows': typeof WorkflowsRouteWithChildren
   '/traces/$traceId': typeof TracesTraceIdRoute
-  '/workflow/$workflowId': typeof WorkflowWorkflowIdRoute
-  '/workflow/new': typeof WorkflowNewRoute
+  '/workflows/$workflowId': typeof WorkflowsWorkflowIdRoute
+  '/workflows/new': typeof WorkflowsNewRoute
   '/traces/': typeof TracesIndexRoute
-  '/workflow/': typeof WorkflowIndexRoute
+  '/workflows/': typeof WorkflowsIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -201,43 +201,43 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/traces'
-    | '/workflow'
+    | '/workflows'
     | '/traces/$traceId'
-    | '/workflow/$workflowId'
-    | '/workflow/new'
+    | '/workflows/$workflowId'
+    | '/workflows/new'
     | '/traces/'
-    | '/workflow/'
+    | '/workflows/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/traces/$traceId'
-    | '/workflow/$workflowId'
-    | '/workflow/new'
+    | '/workflows/$workflowId'
+    | '/workflows/new'
     | '/traces'
-    | '/workflow'
+    | '/workflows'
   id:
     | '__root__'
     | '/'
     | '/traces'
-    | '/workflow'
+    | '/workflows'
     | '/traces/$traceId'
-    | '/workflow/$workflowId'
-    | '/workflow/new'
+    | '/workflows/$workflowId'
+    | '/workflows/new'
     | '/traces/'
-    | '/workflow/'
+    | '/workflows/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TracesRoute: typeof TracesRouteWithChildren
-  WorkflowRoute: typeof WorkflowRouteWithChildren
+  WorkflowsRoute: typeof WorkflowsRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TracesRoute: TracesRouteWithChildren,
-  WorkflowRoute: WorkflowRouteWithChildren,
+  WorkflowsRoute: WorkflowsRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -252,7 +252,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/traces",
-        "/workflow"
+        "/workflows"
       ]
     },
     "/": {
@@ -265,33 +265,33 @@ export const routeTree = rootRoute
         "/traces/"
       ]
     },
-    "/workflow": {
-      "filePath": "workflow.tsx",
+    "/workflows": {
+      "filePath": "workflows.tsx",
       "children": [
-        "/workflow/$workflowId",
-        "/workflow/new",
-        "/workflow/"
+        "/workflows/$workflowId",
+        "/workflows/new",
+        "/workflows/"
       ]
     },
     "/traces/$traceId": {
       "filePath": "traces.$traceId.tsx",
       "parent": "/traces"
     },
-    "/workflow/$workflowId": {
-      "filePath": "workflow.$workflowId.tsx",
-      "parent": "/workflow"
+    "/workflows/$workflowId": {
+      "filePath": "workflows.$workflowId.tsx",
+      "parent": "/workflows"
     },
-    "/workflow/new": {
-      "filePath": "workflow.new.tsx",
-      "parent": "/workflow"
+    "/workflows/new": {
+      "filePath": "workflows.new.tsx",
+      "parent": "/workflows"
     },
     "/traces/": {
       "filePath": "traces.index.tsx",
       "parent": "/traces"
     },
-    "/workflow/": {
-      "filePath": "workflow.index.tsx",
-      "parent": "/workflow"
+    "/workflows/": {
+      "filePath": "workflows.index.tsx",
+      "parent": "/workflows"
     }
   }
 }

@@ -4,7 +4,7 @@ import { useCreateWorkflow } from "@/lib/hooks/useWorkflows";
 import { createFileRoute, useRouteContext } from "@tanstack/react-router";
 import { useState } from "react";
 
-export const Route = createFileRoute("/workflow/new")({
+export const Route = createFileRoute("/workflows/new")({
   component: NewWorkflow,
 });
 

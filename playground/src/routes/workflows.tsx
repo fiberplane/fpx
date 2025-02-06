@@ -15,7 +15,7 @@ import { useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 // TODO: change this once we have a better type
 
-export const Route = createFileRoute("/workflow")({
+export const Route = createFileRoute("/workflows")({
   component: WorkflowLayout,
   loader: async ({ context: { queryClient } }) => {
     const workflowsResponse = await queryClient.ensureQueryData(
