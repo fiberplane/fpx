@@ -35,6 +35,24 @@ export class FpApiError extends Error {
   }
 }
 
+export class FetchOpenApiSpecError extends Error {
+  path?: string;
+  statusCode?: number;
+  details?: string;
+
+  constructor(
+    message: string,
+    path?: string,
+    statusCode?: number,
+    details?: string,
+  ) {
+    super(message);
+    this.name = "FetchOpenApiSpecError";
+    this.path = path;
+    this.statusCode = statusCode;
+    this.details = details;
+  }
+}
 export const api = {
   getWorkflows: async () => {
     const basePrefix = getBasePrefix();
@@ -157,6 +175,35 @@ export const api = {
     };
   },
 
+  getOpenApiSpec: async (path: string): Promise<string> => {
+    try {
+      const response = await fetch(path);
+      if (!response.ok) {
+        const bodyText = await safeParseBodyText(response);
+        throw new FetchOpenApiSpecError(
+          `Error ${response.status} fetching OpenAPI spec at ${path}`,
+          path,
+          response.status,
+          bodyText,
+        );
+      }
+
+      return response.text();
+    } catch (error) {
+      if (isFailedToFetchError(error)) {
+        throw new FetchOpenApiSpecError(
+          `OpenAPI Spec unreachable at ${path}`,
+          path,
+        );
+      }
+
+      throw new FetchOpenApiSpecError(
+        `Unknown error fetching OpenAPI spec at ${path}`,
+        path,
+      );
+    }
+  },
+
   post: async <T>(path: string, data: unknown): Promise<T> => {
     const response = await fetch(path, {
       method: "POST",
@@ -256,4 +303,20 @@ async function parseErrorResponse(response: Response): Promise<FpApiError> {
 
 export function isFpApiError(error: unknown): error is FpApiError {
   return error instanceof FpApiError;
+}
+
+export function isFetchOpenApiSpecError(error: unknown) {
+  return error instanceof FetchOpenApiSpecError;
+}
+
+function isFailedToFetchError(error: unknown) {
+  return error instanceof Error && error.message === "Failed to fetch";
+}
+
+async function safeParseBodyText(response: Response) {
+  try {
+    return await response.text();
+  } catch (error) {
+    return undefined;
+  }
 }

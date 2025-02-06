@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { api } from "../api";
 
 export const OPENAPI_CACHE_KEY = ["openapi-spec"];
 
@@ -19,12 +20,8 @@ export function openApiSpecQueryOptions(openapi: OpenApiContext | undefined) {
         return undefined;
       }
 
-      const response = await fetch(openapi.url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return response.text();
+      const stringifiedSpec = await api.getOpenApiSpec(openapi.url);
+      return stringifiedSpec;
     },
     enabled: !!openapi?.url || !!openapi?.content,
     staleTime: Number.POSITIVE_INFINITY,
