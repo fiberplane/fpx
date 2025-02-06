@@ -32,6 +32,9 @@ export function SettingsScreen() {
                   </Button>
                 </DialogClose>
               </div>
+              <DialogDescription className="sr-only">
+                Manage your settings and preferences.
+              </DialogDescription>
             </div>
 
             <SettingsPage />
