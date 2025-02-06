@@ -9,7 +9,9 @@ export function specToApiRoutes(
 ): {
   baseUrl: string;
   routes: ApiRoute[];
+  tagOrder: string[];
 } {
+  const tagOrder = spec.tags?.map((tag) => tag.name) ?? [];
   const routes: ApiRoute[] = [];
   const baseUrl = spec.servers?.[0]?.url ?? window.location.origin;
 
@@ -47,5 +49,6 @@ export function specToApiRoutes(
   return {
     baseUrl,
     routes,
+    tagOrder,
   };
 }

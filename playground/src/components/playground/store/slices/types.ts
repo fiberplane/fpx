@@ -57,8 +57,10 @@ export type RequestParameters = {
 export interface RoutesSlice {
   appRoutes: ApiRoute[];
   activeRoute: ApiRoute | null;
+  tagOrder: string[];
   setRoutes: (routes: ApiRoute[]) => void;
   setActiveRoute: (route: ApiRoute) => void;
+  setTagOrder: (tagOrder: string[]) => void;
 }
 
 export interface TabsSlice {

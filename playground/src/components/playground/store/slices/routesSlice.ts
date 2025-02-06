@@ -26,7 +26,7 @@ export const routesSlice: StateCreator<
 > = (set) => ({
   appRoutes: [],
   activeRoute: null,
-
+  tagOrder: [],
   setRoutes: (routes) =>
     set((state) => {
       console.log("set routes", routes.length);
@@ -51,6 +51,11 @@ export const routesSlice: StateCreator<
         }
       }
       // state.pathParams = nextPathParams;
+    }),
+
+  setTagOrder: (tagOrder) =>
+    set((state) => {
+      state.tagOrder = tagOrder;
     }),
 
   setActiveRoute: (route) =>
