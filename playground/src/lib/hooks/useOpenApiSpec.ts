@@ -12,7 +12,7 @@ export function openApiSpecQueryOptions(openapi: OpenApiContext | undefined) {
     queryKey: OPENAPI_CACHE_KEY,
     queryFn: async () => {
       if (openapi?.content) {
-        return JSON.stringify(openapi.content);
+        return openapi.content;
       }
 
       if (!openapi?.url) {

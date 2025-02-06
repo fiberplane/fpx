@@ -13,24 +13,177 @@
       const options = {
         mountedPath: "/",
         openapi: {
-          // NOTE - This config assumes you have a local server running on :8787 with the OpenAPI spec exposed at /openapi.json
+          // This config assumes you have a local server running on :8787 with the OpenAPI spec exposed at /openapi.json
+          //
           url: "http://localhost:8787/openapi.json",
-          // NOTE - You can test a raw spec by using the `content` property instead of `url`, 
-          //        and passing in an object representing an OpenAPI spec
-          // content: JSON.stringify({
-          //   openapi: "3.1.0",
-          //   info: {
-          //     title: "Test API",
-          //     version: "1.0.0",
-          //   },
-          //   // ...
-          // }),
+
+          // You can also test a raw spec by using the `content` property instead of `url`, 
+          // and passing in a JSON-stringified object representing an OpenAPI spec
+          //
+          // content: __fpGetRawOpenApiSpec(),
         },
         // NOTE - This option here is **only for local development** to be able to test the tracing UI in the playground
         // Assumes you have Fiberplane Studio running as a sidecar to ingest traces on :8788
         fpxEndpoint: "http://localhost:8788/v1/traces",
       };
+
       document.getElementById("root").dataset.options = JSON.stringify(options);
+
+      /**
+       * A helper function to get a JSON-stringified object representing an OpenAPI spec
+       * Since this index.html is not ultimately used by the embedded package,
+       * it's safe to include a global helper function like this.
+       */
+      function __fpGetRawOpenApiSpec() {
+        return JSON.stringify({
+          openapi: "3.0.0",
+          info: {
+            title: "Music Library API",
+            description: "API for managing a music library with artists, albums, and songs",
+            version: "1.0.0"
+          },
+          tags: [
+            {
+              name: "Artists",
+              description: "Operations about artists"
+            },
+            {
+              name: "Albums",
+              description: "Operations about albums"
+            },
+            {
+              name: "Songs",
+              description: "Operations about songs"
+            }
+          ],
+          // servers: [
+          //   {
+          //     url: "http://localhost:8787",
+          //     description: "Local server"
+          //   }
+          // ],
+          paths: {
+            "/api/artists": {
+              get: {
+                tags: ["Artists"],
+                summary: "List artists",
+                description: "Retrieve a paginated list of artists. Can be filtered by genre to find artists of a specific musical style.",
+                parameters: [
+                  {
+                    name: "genre",
+                    in: "query",
+                    description: "Filter artists by genre",
+                    required: false,
+                    schema: {
+                      type: "string"
+                    }
+                  }
+                ],
+                responses: {
+                  "200": {
+                    description: "List of artists",
+                    content: {
+                      "application/json": {
+                        schema: {
+                          type: "object",
+                          properties: {
+                            artists: {
+                              type: "array",
+                              items: {
+                                $ref: "#/components/schemas/Artist"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              post: {
+                tags: ["Artists"],
+                summary: "Create a new artist",
+                description: "Add a new artist to the music library with their basic information and biography.",
+                requestBody: {
+                  required: true,
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/NewArtist"
+                      }
+                    }
+                  }
+                },
+                responses: {
+                  "201": {
+                    description: "Artist created",
+                    content: {
+                      "application/json": {
+                        schema: {
+                          $ref: "#/components/schemas/Artist"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+          },
+          components: {
+            schemas: {
+              NewArtist: {
+                type: "object",
+                required: ["name", "genre"],
+                properties: {
+                  name: {
+                    type: "string",
+                    example: "The Beatles"
+                  },
+                  genre: {
+                    type: "string",
+                    example: "Rock"
+                  },
+                  country: {
+                    type: "string",
+                    example: "United Kingdom"
+                  },
+                  biography: {
+                    type: "string"
+                  }
+                }
+              },
+              Artist: {
+                allOf: [
+                  { $ref: "#/components/schemas/NewArtist" },
+                  {
+                    type: "object",
+                    required: ["id", "createdAt"],
+                    properties: {
+                      id: {
+                        type: "integer",
+                        example: 1
+                      },
+                      createdAt: {
+                        type: "string",
+                        format: "date-time"
+                      }
+                    }
+                  }
+                ]
+              },
+              Error: {
+                type: "object",
+                properties: {
+                  error: {
+                    type: "string",
+                    example: "Resource not found"
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
     </script>
   </body>
 </html>
