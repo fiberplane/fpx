@@ -4,12 +4,7 @@ import type {
   RequestsPanelTab,
   ResponsePanelTab,
 } from "..";
-import type { ProbedRoute } from "../../types";
-import type {
-  RequestMethod,
-  RequestMethodInputValue,
-  RequestType,
-} from "../../types";
+import type { ApiRoute, RequestMethod } from "../../types";
 import type { KeyValueParameter, PlaygroundActiveResponse } from "../types";
 import type { SettingsSlice } from "./settingsSlice";
 
@@ -19,12 +14,7 @@ export interface RequestResponseSlice {
   serviceBaseUrl: string;
   path: string;
   method: RequestMethod;
-  requestType: RequestType;
   requestParameters: Record<string, RequestParameters>;
-  fillInFakeData: () => void;
-  setServiceBaseUrl: (serviceBaseUrl: string) => void;
-  updatePath: (path: string) => void;
-  updateMethod: (methodInputValue: RequestMethodInputValue) => void;
   setCurrentPathParams: (pathParams: KeyValueParameter[]) => void;
   updateCurrentPathParamValues: (
     pathParams: { key: string; value: string }[],
@@ -34,6 +24,10 @@ export interface RequestResponseSlice {
   setCurrentRequestHeaders: (headers: KeyValueParameter[]) => void;
   setCurrentAuthorizationId: (authorizationId: string | null) => void;
   setCurrentBody: (body: undefined | string | PlaygroundBody) => void;
+  fillInFakeData: () => void;
+  setServiceBaseUrl: (serviceBaseUrl: string) => void;
+  updatePath: (path: string) => void;
+  updateMethod: (method: RequestMethod) => void;
   handleRequestBodyTypeChange: (
     requestBodyType: PlaygroundBodyType,
     isMultipart?: boolean,
@@ -61,12 +55,10 @@ export type RequestParameters = {
 };
 
 export interface RoutesSlice {
-  appRoutes: ProbedRoute[];
-  activeRoute: ProbedRoute | null;
-  setRoutes: (routes: ProbedRoute[]) => void;
-  setActiveRoute: (route: ProbedRoute) => void;
-  routesAndMiddleware: ProbedRoute[];
-  setRoutesAndMiddleware: (routesAndMiddleware: ProbedRoute[]) => void;
+  appRoutes: ApiRoute[];
+  activeRoute: ApiRoute | null;
+  setRoutes: (routes: ApiRoute[]) => void;
+  setActiveRoute: (route: ApiRoute) => void;
 }
 
 export interface TabsSlice {

@@ -1,15 +1,16 @@
 import type { StateCreator } from "zustand";
 import { findMatchedRoute } from "../../routes";
-import type { ProbedRoute, RequestMethod } from "../../types";
 import { updateContentTypeHeaderInState } from "../content-type";
 import { getVisibleRequestPanelTabs } from "../tabs";
 import {
   addBaseUrl,
-  // extractMatchedPathParams,
+  apiRouteToInputMethod,
+  extractMatchedPathParams,
   extractPathParams,
   mapPathParamKey,
   removeBaseUrl,
 } from "../utils";
+
 import {
   extractQueryParamsFromOpenApiDefinition,
   filterDisabledEmptyQueryParams,
@@ -33,7 +34,6 @@ export const routesSlice: StateCreator<
         routes,
         removeBaseUrl(state.serviceBaseUrl, state.path),
         state.method,
-        state.requestType,
       );
       const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
       // TODO: set next path params
@@ -56,15 +56,11 @@ export const routesSlice: StateCreator<
   setActiveRoute: (route) =>
     set((state) => {
       console.log("set active route");
-      const nextMethod = probedRouteToInputMethod(route);
-      const nextRequestType = route.requestType;
+      const nextMethod = apiRouteToInputMethod(route);
 
       state.activeRoute = route;
-      state.path = addBaseUrl(state.serviceBaseUrl, route.path, {
-        requestType: nextRequestType,
-      });
+      state.path = addBaseUrl(state.serviceBaseUrl, route.path);
       state.method = nextMethod;
-      state.requestType = nextRequestType;
 
       const id = getRouteId(state);
       const { requestParameters } = state;
@@ -72,8 +68,9 @@ export const routesSlice: StateCreator<
         requestParameters[id] = createRequestParameters();
       }
 
-      const params = requestParameters[id];
+      // const params = requestParameters[id];
 
+      // Is this still needed?
       // params.pathParams = extractPathParams(route.path).map(mapPathParamKey);
       // state.activeResponse = null;
       // // Filter out disabled and empty query params
@@ -93,7 +90,6 @@ export const routesSlice: StateCreator<
 
       // Update tabs (you might want to move this logic to a separate slice)
       state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
-        requestType: nextRequestType,
         method: nextMethod,
         openApiSpec: route?.openApiSpec,
       });
@@ -112,30 +108,4 @@ export const routesSlice: StateCreator<
       // Add content type header (you might want to move this to a separate function)
       updateContentTypeHeaderInState(state);
     }),
-
-  routesAndMiddleware: [],
-  setRoutesAndMiddleware: (routesAndMiddleware) =>
-    set((state) => {
-      state.routesAndMiddleware = routesAndMiddleware;
-    }),
 });
-
-const SUPPORTED_METHODS: Array<RequestMethod> = [
-  "GET",
-  "POST",
-  "PUT",
-  "DELETE",
-  "OPTIONS",
-  "PATCH",
-  "HEAD",
-];
-// Helper functions
-function probedRouteToInputMethod(route: ProbedRoute): RequestMethod {
-  const method = route.method.toUpperCase() as RequestMethod;
-  // Validate that the method is supported
-  if (SUPPORTED_METHODS.includes(method)) {
-    return method;
-  }
-
-  return "GET";
-}

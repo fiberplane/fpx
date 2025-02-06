@@ -13,6 +13,7 @@ import {
   extractPathParams,
   mapPathParamKey,
   removeBaseUrl,
+  resolvePathWithParameters,
 } from "../utils";
 import {
   generateFakeData,
@@ -34,16 +35,7 @@ export const requestResponseSlice: StateCreator<
   serviceBaseUrl: "http://localhost:8787",
   path: "",
   method: "GET",
-  requestType: "http",
   requestParameters: {},
-  // body: {
-  //   type: "json",
-  //   value: "",
-  // },
-  // pathParams: [],
-  // queryParams: enforceTerminalDraftParameter([]),
-  // requestHeaders: enforceTerminalDraftParameter([]),
-  // authorizationId: null,
 
   // HACK - This setter has a bunch of side effects (logs, alerts)
   //        I moved it to the store so that it'd be a static handler.
@@ -65,7 +57,6 @@ export const requestResponseSlice: StateCreator<
       }
 
       const fakeData = generateFakeData(openApiSpec, activeRoute.path);
-
       // Transform data to match form state types
       set((state) => {
         const id = getRouteId(state);
@@ -95,14 +86,14 @@ export const requestResponseSlice: StateCreator<
         );
 
         if (fakePathParams.length > 0) {
-          // TODO: look into whether we need the above code still
-          // const nextPath = fakePathParams.reduce((accPath, param) => {
-          //   if (param.enabled) {
-          //     return accPath.replace(`:${param.key}`, param.value || param.key);
-          //   }
-          //   return accPath;
-          // }, state.activeRoute?.path ?? state.path);
+          // TODO: check if this can be safely removed
+          // // NOTE - Do not call `state.setPathParams(...)` here, it messes with the form inputs and clears the path params
+          // const nextPath = resolvePathWithParameters(
+          //   state.activeRoute?.path ?? state.path,
+          //   fakePathParams,
+          // );
           // state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
+          // state.pathParams = fakePathParams;
           params.pathParams = fakePathParams;
         }
       });
@@ -111,21 +102,6 @@ export const requestResponseSlice: StateCreator<
       window.alert("Error parsing OpenAPI spec");
     }
   },
-
-  // _getOrCreateCurrentRequest(): RequestParameters {
-  //   // const { path, method, requestParameters } = get();const ate
-  //   const id = getRouteId(get());
-  //   const { requestParameters} = get();
-
-  //   if (id in requestParameters) {
-  //     return requestParameters[id];
-  //   }
-
-  //   set((state) => {
-  //     state
-  //     // state.requestParameters[id] = createRequestParameters();
-  //   });
-  // },
 
   // TODO update it so it works
   setCurrentAuthorizationId: (authorizationId: string | null) =>
@@ -154,7 +130,6 @@ export const requestResponseSlice: StateCreator<
         state.appRoutes,
         removeBaseUrl(state.serviceBaseUrl, path),
         state.method,
-        state.requestType,
       );
       const nextActiveRoute = matchedRoute ? matchedRoute.route : null;
       const nextPathParams = matchedRoute
@@ -174,13 +149,9 @@ export const requestResponseSlice: StateCreator<
       // state.pathParams = nextPathParams;
     }),
 
-  updateMethod: (methodInputValue) =>
+  updateMethod: (method) =>
     set((state) => {
-      const requestType = methodInputValue === "WS" ? "websocket" : "http";
-      const method = methodInputValue === "WS" ? "GET" : methodInputValue;
-
       state.method = method;
-      state.requestType = requestType;
 
       // Update other state properties based on the new method and request type
       // (e.g., activeRoute, visibleRequestsPanelTabs, activeRequestsPanelTab, etc.)
@@ -189,14 +160,12 @@ export const requestResponseSlice: StateCreator<
         state.appRoutes,
         removeBaseUrl(state.serviceBaseUrl, state.path),
         state.method,
-        state.requestType,
       );
       const nextActiveRoute = matchedRoute ? matchedRoute.route : null;
       state.activeRoute = nextActiveRoute;
 
       // Update visibleRequestsPanelTabs based on the new method and request type
       state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
-        requestType,
         method,
         openApiSpec: state.activeRoute?.openApiSpec,
       });
@@ -212,12 +181,10 @@ export const requestResponseSlice: StateCreator<
   // TODO update it so it works
   setCurrentPathParams: (pathParams) =>
     set((state) => {
-      const nextPath = pathParams.reduce((accPath, param) => {
-        if (param.enabled) {
-          return accPath.replace(`:${param.key}`, param.value || param.key);
-        }
-        return accPath;
-      }, state.activeRoute?.path ?? state.path);
+      const nextPath = resolvePathWithParameters(
+        state.activeRoute?.path ?? state.path,
+        pathParams,
+      );
       state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
       const id = getRouteId(state);
       const { requestParameters } = state;

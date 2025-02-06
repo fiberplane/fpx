@@ -1,23 +1,20 @@
-import type { ProbedRoute } from "../../../types";
+import type { ApiRoute } from "../../../types";
 import { dereferenceSchema } from "./dereference-schema";
 import { isValidMethod } from "./types";
 import type { OpenAPIOperation, OpenAPISpec } from "./types";
 
-export function specToProbedRoutes(
+export function specToApiRoutes(
   spec: OpenAPISpec,
   generateId: () => number,
 ): {
   baseUrl: string;
-  routes: ProbedRoute[];
+  routes: ApiRoute[];
 } {
-  const routes: ProbedRoute[] = [];
+  const routes: ApiRoute[] = [];
   const baseUrl = spec.servers?.[0]?.url ?? window.location.origin;
 
-  // Iterate through paths and methods to create ProbedRoute objects
+  // Iterate through paths and methods to create ApiRoute objects
   for (const [path, pathItem] of Object.entries(spec.paths)) {
-    // Convert {param} to :param in path
-    const transformedPath = path.replace(/\{([^}]+)\}/g, ":$1");
-
     for (const [method, operation] of Object.entries(pathItem)) {
       const upperMethod = method.toUpperCase();
       if (isValidMethod(upperMethod)) {
@@ -28,17 +25,17 @@ export function specToProbedRoutes(
           new Set(),
           new Map(),
         );
+
         routes.push({
           id,
-          path: transformedPath,
+          path,
           method: upperMethod,
-          requestType: "http",
-          handler: "",
-          handlerType: "route",
-          currentlyRegistered: true,
-          registrationOrder: id,
-          routeOrigin: "discovered",
-          isDraft: false,
+          // `summary` is the succint title of the operation
+          summary: dereferencedOperation.summary,
+          // `description` is the more long-form description of the operation
+          description: dereferencedOperation.description,
+          // TODO - Dereference tags? (Make sure they're in the Schema)
+          tags: dereferencedOperation.tags,
           openApiSpec: operation
             ? JSON.stringify(dereferencedOperation)
             : undefined,

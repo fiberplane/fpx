@@ -6,11 +6,6 @@ import { Method } from "@/components/Method";
 import { Button } from "@/components/ui/button";
 import type { OpenAPI } from "openapi-types";
 
-import {
-  CustomTabTrigger,
-  CustomTabsContent,
-  CustomTabsList,
-} from "@/components/playground/Tabs";
 // import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Collapsible,
@@ -18,7 +13,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
-import { Tabs } from "@/components/ui/tabs";
+import { FpTabsContent, FpTabsList, FpTabsTrigger } from "@/components/ui/tabs";
+import { FpTabs } from "@/components/ui/tabs";
 import { useShake } from "@/hooks";
 import { useOpenApiParse } from "@/lib/hooks/useOpenApiParse";
 import { useOpenApiSpec } from "@/lib/hooks/useOpenApiSpec";
@@ -687,7 +683,7 @@ function StepDetails({
                   )}
 
                   {(!!result || !!stepState) && (
-                    <Tabs
+                    <FpTabs
                       value={responseView}
                       onValueChange={(value) =>
                         setResponseView(value as "body" | "headers")
@@ -711,23 +707,23 @@ function StepDetails({
                           }
                         />
                       </div>
-                      <CustomTabsList className="mx-2">
-                        <CustomTabTrigger
+                      <FpTabsList className="mx-2">
+                        <FpTabsTrigger
                           key="body"
                           value="body"
                           className="flex items-center"
                         >
                           Body
-                        </CustomTabTrigger>
-                        <CustomTabTrigger
+                        </FpTabsTrigger>
+                        <FpTabsTrigger
                           key="headers"
                           value="headers"
                           className="flex items-center"
                         >
                           Headers
-                        </CustomTabTrigger>
-                      </CustomTabsList>
-                      <CustomTabsContent value="headers" className="h-full">
+                        </FpTabsTrigger>
+                      </FpTabsList>
+                      <FpTabsContent value="headers" className="h-full">
                         <div className="overflow-x-auto">
                           <pre className="p-3 text-sm rounded-md bg-background">
                             {String(
@@ -741,8 +737,8 @@ function StepDetails({
                             )}
                           </pre>
                         </div>
-                      </CustomTabsContent>
-                      <CustomTabsContent value="body" className="h-full">
+                      </FpTabsContent>
+                      <FpTabsContent value="body" className="h-full">
                         <div className="overflow-x-auto">
                           <pre className="p-3 text-sm rounded-md bg-background">
                             {String(
@@ -755,8 +751,8 @@ function StepDetails({
                             )}
                           </pre>
                         </div>
-                      </CustomTabsContent>
-                    </Tabs>
+                      </FpTabsContent>
+                    </FpTabs>
                   )}
                 </div>
               </div>

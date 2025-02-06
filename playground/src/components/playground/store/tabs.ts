@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { RequestMethod, RequestType } from "../types";
+import type { RequestMethod } from "../types";
 
 export const RequestsPanelTabSchema = z.enum([
   "params",
@@ -16,7 +16,6 @@ export const isRequestsPanelTab = (tab: unknown): tab is RequestsPanelTab => {
 };
 
 export const getVisibleRequestPanelTabs = (route: {
-  requestType: RequestType;
   method: RequestMethod;
   openApiSpec: unknown | undefined;
 }): RequestsPanelTab[] => {
