@@ -10,16 +10,12 @@ import {
   parseErrorResponse,
 } from "./errors";
 import { safeParseBodyText } from "./utils";
+import { fpFetch } from "./fetch";
 
 export const api = {
-  getWorkflows: async () => {
-    const basePrefix = getFpApiBasePath();
-    const response = await fetch(`${basePrefix}/api/workflows`);
-    if (!response.ok) {
-      const error = await parseErrorResponse(response);
-      throw error;
-    }
-    return response.json();
+  getWorkflows: async (): Promise<ApiResponse<Workflow[]>> => {
+    const response = await fpFetch<ApiResponse<Workflow[]>>("/api/workflows");
+    return response;
   },
 
   getWorkflow: async (id: string): Promise<ApiResponse<Workflow>> => {
