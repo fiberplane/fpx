@@ -12,7 +12,11 @@ export function useApiCallData<
 >(...items: Array<K>): Pick<T, K> {
   return useStudioStoreRaw(
     useShallow((state) => {
-      const id = getRouteId(state.activeRoute || state);
+      if (!state.activeRoute) {
+        throw new Error("No active route");
+      }
+
+      const id = getRouteId(state.activeRoute);
       const { apiCallState } = state;
 
       if (id in apiCallState === false) {

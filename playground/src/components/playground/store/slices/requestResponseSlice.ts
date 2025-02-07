@@ -31,8 +31,6 @@ export const requestResponseSlice: StateCreator<
   RequestResponseSlice
 > = (set, get) => ({
   serviceBaseUrl: "http://localhost:8787",
-  path: "",
-  method: "GET",
   apiCallState: {
     // This is needed to avoid the case where there are no routes yet loaded
     // and so path/method is still set to the default value
@@ -62,7 +60,11 @@ export const requestResponseSlice: StateCreator<
       const fakeData = generateFakeData(openApiSpec, activeRoute.path);
       // Transform data to match form state types
       set((state) => {
-        const id = getRouteId(state.activeRoute || state);
+        if (!state.activeRoute) {
+          console.warn("Can't fill in fake data, there is no active route");
+          return;
+        }
+        const id = getRouteId(state.activeRoute);
         const { apiCallState } = state;
         if (id in apiCallState === false) {
           apiCallState[id] = createInitialApiCallData();
@@ -109,6 +111,10 @@ export const requestResponseSlice: StateCreator<
   // TODO update it so it works
   setCurrentAuthorizationId: (authorizationId: string | null) =>
     set((state) => {
+      if (!state.activeRoute) {
+        console.warn("Can't set current authorization id, no active route");
+        return;
+      }
       const id = getRouteId(state.activeRoute || state);
 
       const { apiCallState } = state;
@@ -125,14 +131,16 @@ export const requestResponseSlice: StateCreator<
       if (state.serviceBaseUrl === serviceBaseUrl) {
         return;
       }
+
       state.serviceBaseUrl = serviceBaseUrl;
-      state.path = addBaseUrl(serviceBaseUrl, state.path, {
-        forceChangeHost: true,
-      });
+
+      if (!state.activeRoute) {
+        return;
+      }
 
       // The path might be changed, so verify that there's a default
       // `apiCallState` value
-      const id = getRouteId(state.activeRoute || state);
+      const id = getRouteId(state.activeRoute);
       if (id in state.apiCallState === false) {
         state.apiCallState[id] = createInitialApiCallData();
       }
@@ -202,12 +210,12 @@ export const requestResponseSlice: StateCreator<
   // TODO update it so it works
   setCurrentPathParams: (pathParams) =>
     set((state) => {
-      const nextPath = resolvePathWithParameters(
-        state.activeRoute?.path ?? state.path,
-        pathParams,
-      );
-      state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
-      const id = getRouteId(state.activeRoute || state);
+      if (!state.activeRoute) {
+        console.warn("Unable to set current path parameters: no active route");
+        return;
+      }
+
+      const id = getRouteId(state.activeRoute);
 
       const { apiCallState } = state;
       if (id in apiCallState === false) {
@@ -215,13 +223,16 @@ export const requestResponseSlice: StateCreator<
       }
 
       const params = apiCallState[id];
-      // state.pathParams = pathParams;
       params.pathParams = pathParams;
     }),
 
   // TODO: so that it works
   updateCurrentPathParamValues: (pathParams) =>
     set((state) => {
+      if (!state.activeRoute) {
+        console.warn("Unable to update current path parameter values");
+        return;
+      }
       const id = getRouteId(state.activeRoute || state);
 
       const { apiCallState } = state;
@@ -250,7 +261,11 @@ export const requestResponseSlice: StateCreator<
   // TODO: update it so it works
   clearCurrentPathParams: () =>
     set((state) => {
-      const id = getRouteId(state.activeRoute || state);
+      if (!state.activeRoute) {
+        console.warn("No active route");
+        return;
+      }
+      const id = getRouteId(state.activeRoute);
 
       const { apiCallState } = state;
       if (id in apiCallState === false) {
@@ -268,7 +283,11 @@ export const requestResponseSlice: StateCreator<
   // TODO: update it so it works
   setCurrentQueryParams: (queryParams) =>
     set((state) => {
-      const id = getRouteId(state.activeRoute || state);
+      if (!state.activeRoute) {
+        console.warn("No active route");
+        return;
+      }
+      const id = getRouteId(state.activeRoute);
 
       const { apiCallState } = state;
       if (id in apiCallState === false) {
@@ -297,8 +316,11 @@ export const requestResponseSlice: StateCreator<
       //     }
       //   }
       // }
-
-      const id = getRouteId(state.activeRoute || state);
+      if (!state.activeRoute) {
+        console.warn("No active route");
+        return;
+      }
+      const id = getRouteId(state.activeRoute);
 
       const { apiCallState } = state;
       if (id in apiCallState === false) {
@@ -312,7 +334,11 @@ export const requestResponseSlice: StateCreator<
   // TODO: update it so it works
   setCurrentBody: (body) =>
     set((state) => {
-      const id = getRouteId(state.activeRoute || state);
+      if (!state.activeRoute) {
+        console.warn("No active route");
+        return;
+      }
+      const id = getRouteId(state.activeRoute);
 
       const { apiCallState } = state;
       if (id in apiCallState === false) {
@@ -371,8 +397,13 @@ export const requestResponseSlice: StateCreator<
 
   setActiveResponse: (response) =>
     set((state) => {
-      const { apiCallState } = state;
-      const id = getRouteId(state.activeRoute || state);
+      const { apiCallState, activeRoute } = state;
+      if (!activeRoute) {
+        throw new Error("Unable to set active response: no active route");
+        // return;
+      }
+
+      const id = getRouteId(activeRoute);
 
       if (id in apiCallState === false) {
         apiCallState[id] = createInitialApiCallData();
@@ -407,7 +438,7 @@ export function createInitialApiCallData(): ApiCallData {
 export function getRouteId({
   method,
   path,
-}: Pick<RequestResponseSlice, "method" | "path">): string {
+}: Pick<ApiRoute, "method" | "path">): string {
   return `${method.toUpperCase()}_${path}`;
 }
 

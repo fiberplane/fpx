@@ -27,7 +27,11 @@ export function updateContentTypeHeaderInState(
   state: RequestResponseSlice & Pick<RoutesSlice, "activeRoute">,
 ) {
   const { apiCallState } = state;
-  const id = getRouteId(state.activeRoute || state);
+  if (!state.activeRoute) {
+    console.warn("Cannot update content type headers. There is no activeRoute");
+    return;
+  }
+  const id = getRouteId(state.activeRoute);
   const params = apiCallState[id];
   const currentHeaders = params.requestHeaders;
   const currentContentTypeHeader = getCurrentContentType(params);
@@ -108,10 +112,12 @@ function getUpdateOperation(
   state: RequestResponseSlice & Pick<RoutesSlice, "activeRoute">,
   currentContentTypeHeader: KeyValueParameter | null,
 ) {
-  const canHaveBody = state.method !== "GET" && state.method !== "HEAD";
+  const { activeRoute } = state;
+  const canHaveBody =
+    activeRoute?.method !== "GET" && activeRoute?.method !== "HEAD";
 
   // Handle the case where the method doesn't support a body, so we don't want to add the content type header
-  if (!canHaveBody) {
+  if (!canHaveBody || !activeRoute) {
     return currentContentTypeHeader
       ? {
           type: "remove",
@@ -120,7 +126,7 @@ function getUpdateOperation(
       : null;
   }
 
-  const id = getRouteId(state.activeRoute || state);
+  const id = getRouteId(activeRoute || state);
 
   const params = state.apiCallState[id];
   const currentBody = params.body;
@@ -152,7 +158,7 @@ function getUpdateOperation(
   }
 
   // If the method is GET or HEAD, we don't want to add the content type header
-  if (state.method === "GET" || state.method === "HEAD") {
+  if (activeRoute.method === "GET" || activeRoute.method === "HEAD") {
     return {
       type: "remove",
       value: currentContentTypeHeader,

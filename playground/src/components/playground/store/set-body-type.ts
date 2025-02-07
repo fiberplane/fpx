@@ -19,6 +19,10 @@ export function setBodyTypeInState(
     isMultipart?: boolean;
   },
 ): void {
+  if (!state.activeRoute) {
+    console.warn("Set body type in state, no active route");
+    return;
+  }
   const id = getRouteId(state.activeRoute || state);
   const params = state.apiCallState[id];
   const oldBodyValue = params.body.value;

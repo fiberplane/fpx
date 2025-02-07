@@ -19,15 +19,7 @@ export function usePlaygroundSubmitHandler({
 }) {
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();
 
-  const {
-    activeRoute,
-    // body,
-    // path,
-    // method,
-    // pathParams,
-    // queryParams,
-    // requestHeaders,
-  } = useStudioStore("activeRoute", "path", "method");
+  const { activeRoute } = useStudioStore("activeRoute");
   const path = useUrlPreview();
   const { body, pathParams, queryParams, requestHeaders } = useApiCallData(
     "body",
@@ -38,7 +30,11 @@ export function usePlaygroundSubmitHandler({
 
   const authorization = useStudioStoreRaw(
     useShallow((state) => {
-      const id = getRouteId(state.activeRoute || state);
+      if (!state.activeRoute) {
+        return null;
+      }
+
+      const id = getRouteId(state.activeRoute);
       const { apiCallState } = state;
       const params = apiCallState[id];
       const authorizationId = getPreferredAuthorizationId(

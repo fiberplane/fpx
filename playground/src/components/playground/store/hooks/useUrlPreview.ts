@@ -6,7 +6,12 @@ export function useUrlPreview(): string | null {
   return useStudioStoreRaw(
     useShallow((state) => {
       const { activeRoute, serviceBaseUrl, apiCallState } = state;
-      const id = getRouteId(state.activeRoute || state);
+      if (!state.activeRoute) {
+        console.warn("No active route");
+        return null;
+      }
+
+      const id = getRouteId(state.activeRoute);
       const data = apiCallState[id];
 
       if (!activeRoute || !data) {

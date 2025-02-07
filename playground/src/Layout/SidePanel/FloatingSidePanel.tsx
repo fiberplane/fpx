@@ -21,7 +21,6 @@ export function FloatingSidePanel() {
   const { sidePanel, togglePanel } = useStudioStore(
     "sidePanel",
     "togglePanel",
-    "path",
   );
 
   const isLgScreen = useIsLgScreen();

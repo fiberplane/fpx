@@ -29,10 +29,12 @@ export const routesSlice: StateCreator<
   tagOrder: [],
   setRoutes: (routes) =>
     set((state) => {
+      const path = state.activeRoute?.path || "";
+      const method = state.activeRoute?.method || "GET";
       const matchedRoute = findMatchedRoute(
         routes,
-        removeBaseUrl(state.serviceBaseUrl, state.path),
-        state.method,
+        removeBaseUrl(state.serviceBaseUrl, path),
+        method,
       );
       const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
       // TODO: set next path params
@@ -80,8 +82,6 @@ export const routesSlice: StateCreator<
       const nextMethod = apiRouteToInputMethod(route);
 
       state.activeRoute = route;
-      state.path = addBaseUrl(state.serviceBaseUrl, route.path);
-      state.method = nextMethod;
 
       const id = getRouteId(state.activeRoute || state);
       const { apiCallState } = state;

@@ -35,9 +35,13 @@ export function CopyAsCurl() {
     body.type === "file" || (body.type === "form-data" && body.isMultipart);
 
   const handleCopy = async () => {
+    if (!activeRoute) {
+      return;
+    }
+
     const payload = getBodyValue({
       body,
-      method: activeRoute?.method ?? "GET",
+      method: activeRoute.method,
     });
 
     const headers = requestHeaders.reduce((acc, { enabled, key, value }) => {

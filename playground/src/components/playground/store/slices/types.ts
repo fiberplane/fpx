@@ -4,7 +4,7 @@ import type {
   RequestsPanelTab,
   ResponsePanelTab,
 } from "..";
-import type { ApiRoute, RequestMethod } from "../../types";
+import type { ApiRoute } from "../../types";
 import type { KeyValueParameter, PlaygroundActiveResponse } from "../types";
 import type { SettingsSlice } from "./settingsSlice";
 
@@ -12,8 +12,6 @@ type TraceId = string;
 
 export interface RequestResponseSlice {
   serviceBaseUrl: string;
-  path: string;
-  method: RequestMethod;
   apiCallState: Record<string, ApiCallData>;
   setCurrentPathParams: (pathParams: KeyValueParameter[]) => void;
   updateCurrentPathParamValues: (
