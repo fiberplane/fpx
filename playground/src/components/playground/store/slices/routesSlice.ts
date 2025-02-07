@@ -13,6 +13,7 @@ import {
 import type { ApiRoute } from "../../types";
 import { createInitialApiCallData, getRouteId } from "./requestResponseSlice";
 import type { RoutesSlice, StudioState } from "./types";
+import { extractQueryParamsFromOpenApiDefinition } from "../utils-openapi";
 
 export const routesSlice: StateCreator<
   StudioState,
@@ -52,6 +53,11 @@ export const routesSlice: StateCreator<
           params.pathParams = extractPathParams(route.path).map(
             mapPathParamKey,
           );
+          debugger;
+          params.queryParams = extractQueryParamsFromOpenApiDefinition(
+            params.queryParams,
+            route,
+          );
           state.apiCallState[id] = params;
           // params.pathParams = extractPathParams(route.path).map(mapPathParamKey);
         }
@@ -75,9 +81,12 @@ export const routesSlice: StateCreator<
       const id = getRouteId(state.activeRoute || state);
       const { apiCallState } = state;
       if (id in apiCallState === false) {
-        console.log("id", id, Object.keys(state.apiCallState));
         const params = createInitialApiCallData();
         params.pathParams = extractPathParams(route.path).map(mapPathParamKey);
+        params.queryParams = extractQueryParamsFromOpenApiDefinition(
+          params.queryParams,
+          route,
+        );
         state.apiCallState[id] = params;
       }
 

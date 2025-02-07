@@ -11,6 +11,7 @@ import { Icon } from "@iconify/react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { useStudioStore } from "./store";
 import { useUrlPreview } from "./store/hooks/useUrlPreview";
+import { Method } from "../Method";
 
 type PlaygroundInputProps = {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -24,16 +25,11 @@ export function PlaygroundInput({
   formRef,
 }: PlaygroundInputProps) {
   const {
-    method,
-    // path,
-    // updatePath: handlePathInputChange,
-    updateMethod: handleMethodChange,
+    activeRoute,
   } = useStudioStore(
-    "method",
-    "path",
-    // "updatePath",
-    "updateMethod",
+    "activeRoute",
   );
+
   const path = useUrlPreview() ?? "";
   return (
     <form
@@ -43,21 +39,18 @@ export function PlaygroundInput({
       //        That's why we add `m-0` to the form element.
       className="flex items-center justify-between bg-input border rounded-lg m-0"
     >
-      <div className="flex flex-grow items-center space-x-0">
-        <RequestMethodCombobox
-          method={method}
-          handleMethodChange={handleMethodChange}
-          allowUserToChange
+      <div className="flex flex-grow items-center gap-2">
+        <Method
+          method={activeRoute?.method || "GET"}
+          className="ml-2 text-sm"
         />
-        <Input
+        <div className="flex w-full my-2"><Input
           type="text"
           value={path}
           disabled
-          // onChange={(e) => {
-          //   handlePathInputChange(e.target.value);
-          // }}
-          className="flex-grow text-xs w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0 disabled:cursor-text"
+          className="flex-initial text-xs w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0 disabled:cursor-text disabled:bg-muted py-0"
         />
+        </div>
       </div>
       <div className="flex items-center space-x-2 px-2 py-0">
         <Tooltip>
