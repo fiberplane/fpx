@@ -3,8 +3,8 @@ import type { MakePlaygroundRequestQueryFn } from "./queries";
 import type { KeyValueParameter, PlaygroundBody } from "./store";
 import { useServiceBaseUrl, useStudioStore } from "./store";
 import { useApiCallData } from "./store/hooks/useApiCallData";
-import { useUrlPreview } from "./store/hooks/useUrlPreview";
 import { useCurrentAuthorization } from "./store/hooks/useCurrentAuthorization";
+import { useUrlPreview } from "./store/hooks/useUrlPreview";
 
 export function usePlaygroundSubmitHandler({
   makeRequest,

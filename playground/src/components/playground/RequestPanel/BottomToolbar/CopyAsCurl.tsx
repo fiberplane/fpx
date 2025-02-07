@@ -19,10 +19,7 @@ export function CopyAsCurl() {
   const [isCopied, setIsCopied] = useState(false);
   const timeout = useRef<ReturnType<typeof setTimeout>>();
 
-  const { body, requestHeaders } = useApiCallData(
-    "body",
-    "requestHeaders",
-  );
+  const { body, requestHeaders } = useApiCallData("body", "requestHeaders");
   const { activeRoute } = useStudioStore("activeRoute");
 
   const method = activeRoute?.method ?? "GET";

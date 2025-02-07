@@ -2,19 +2,9 @@ import type { StateCreator } from "zustand";
 import { findMatchedRoute } from "../../routes";
 import { updateContentTypeHeaderInState } from "../content-type";
 import { getVisibleRequestPanelTabs } from "../tabs";
-import {
-  addBaseUrl,
-  apiRouteToInputMethod,
-  extractPathParams,
-  mapPathParamKey,
-  removeBaseUrl,
-} from "../utils";
+import { addBaseUrl, apiRouteToInputMethod, removeBaseUrl } from "../utils";
 
 import type { ApiRoute } from "../../types";
-import {
-  extractJsonBodyFromOpenApiDefinition,
-  extractQueryParamsFromOpenApiDefinition,
-} from "../utils-openapi";
 import { createInitialApiCallData, getRouteId } from "./requestResponseSlice";
 import type { RoutesSlice, StudioState } from "./types";
 
@@ -77,12 +67,6 @@ export const routesSlice: StateCreator<
         const params = createInitialApiCallData(route);
         state.apiCallState[id] = params;
       }
-
-      // TODO - Instead of automatically setting body here,
-      //        have a button? Idk.
-      //        All I know is it'd take some bookkeeping to do "automagical bodies" elegantly
-      //
-      // state.body = extractJsonBodyFromOpenApiDefinition(state.body, route);
 
       // Update tabs (you might want to move this logic to a separate slice)
       state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({

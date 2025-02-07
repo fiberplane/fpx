@@ -1,7 +1,7 @@
 import { useShallow } from "zustand/react/shallow";
-import { useStudioStoreRaw } from "./useStudioStore";
 import { getRouteId } from "../slices/requestResponseSlice";
 import { getPreferredAuthorizationId } from "../utils";
+import { useStudioStoreRaw } from "./useStudioStore";
 
 export function useCurrentAuthorization() {
   return useStudioStoreRaw(

@@ -19,11 +19,11 @@ import {
   transformToFormBody,
   transformToFormParams,
 } from "../utils-faker";
-import type { ApiCallData, RequestResponseSlice, StudioState } from "./types";
 import {
   extractJsonBodyFromOpenApiDefinition,
   extractQueryParamsFromOpenApiDefinition,
 } from "../utils-openapi";
+import type { ApiCallData, RequestResponseSlice, StudioState } from "./types";
 
 export const requestResponseSlice: StateCreator<
   StudioState,
