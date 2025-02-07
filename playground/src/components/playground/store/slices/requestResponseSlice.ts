@@ -422,7 +422,10 @@ export function constructFullPath(
   data: ApiCallData,
 ): string {
   let fullPath = addBaseUrl(serviceBaseUrl, route.path);
-  fullPath = resolvePathWithParameters(fullPath, data.pathParams);
+  fullPath = resolvePathWithParameters(
+    fullPath,
+    data.pathParams.filter((param) => param.enabled),
+  );
   // const url = new URL(fullPath);
   const searchParams = new URLSearchParams(
     createObjectFromKeyValueParameters(data.queryParams),

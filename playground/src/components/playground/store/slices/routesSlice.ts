@@ -2,7 +2,13 @@ import type { StateCreator } from "zustand";
 import { findMatchedRoute } from "../../routes";
 import { updateContentTypeHeaderInState } from "../content-type";
 import { getVisibleRequestPanelTabs } from "../tabs";
-import { addBaseUrl, apiRouteToInputMethod, removeBaseUrl } from "../utils";
+import {
+  addBaseUrl,
+  apiRouteToInputMethod,
+  extractPathParams,
+  mapPathParamKey,
+  removeBaseUrl,
+} from "../utils";
 
 import type { ApiRoute } from "../../types";
 import { createInitialApiCallData, getRouteId } from "./requestResponseSlice";
@@ -42,7 +48,12 @@ export const routesSlice: StateCreator<
         });
 
         if (id in state.apiCallState === false) {
-          state.apiCallState[id] = createInitialApiCallData();
+          const params = createInitialApiCallData();
+          params.pathParams = extractPathParams(route.path).map(
+            mapPathParamKey,
+          );
+          state.apiCallState[id] = params;
+          // params.pathParams = extractPathParams(route.path).map(mapPathParamKey);
         }
       }
       // state.pathParams = nextPathParams;
@@ -65,7 +76,9 @@ export const routesSlice: StateCreator<
       const { apiCallState } = state;
       if (id in apiCallState === false) {
         console.log("id", id, Object.keys(state.apiCallState));
-        apiCallState[id] = createInitialApiCallData();
+        const params = createInitialApiCallData();
+        params.pathParams = extractPathParams(route.path).map(mapPathParamKey);
+        state.apiCallState[id] = params;
       }
 
       // const params = apiCallState[id];

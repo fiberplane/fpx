@@ -26,9 +26,14 @@ export function PlaygroundInput({
   const {
     method,
     // path,
-    updatePath: handlePathInputChange,
+    // updatePath: handlePathInputChange,
     updateMethod: handleMethodChange,
-  } = useStudioStore("method", "path", "updatePath", "updateMethod");
+  } = useStudioStore(
+    "method",
+    "path",
+    // "updatePath",
+    "updateMethod",
+  );
   const path = useUrlPreview() ?? "";
   return (
     <form
@@ -47,10 +52,11 @@ export function PlaygroundInput({
         <Input
           type="text"
           value={path}
-          onChange={(e) => {
-            handlePathInputChange(e.target.value);
-          }}
-          className="flex-grow text-xs w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
+          disabled
+          // onChange={(e) => {
+          //   handlePathInputChange(e.target.value);
+          // }}
+          className="flex-grow text-xs w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0 disabled:cursor-text"
         />
       </div>
       <div className="flex items-center space-x-2 px-2 py-0">

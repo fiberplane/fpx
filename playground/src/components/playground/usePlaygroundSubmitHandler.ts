@@ -9,6 +9,7 @@ import {
   useStudioStoreRaw,
 } from "./store";
 import { useApiCallData } from "./store/hooks/useApiCallData";
+import { useUrlPreview } from "./store/hooks/useUrlPreview";
 import { getRouteId } from "./store/slices/requestResponseSlice";
 
 export function usePlaygroundSubmitHandler({
@@ -21,12 +22,13 @@ export function usePlaygroundSubmitHandler({
   const {
     activeRoute,
     // body,
-    path,
-    method,
+    // path,
+    // method,
     // pathParams,
     // queryParams,
     // requestHeaders,
   } = useStudioStore("activeRoute", "path", "method");
+  const path = useUrlPreview();
   const { body, pathParams, queryParams, requestHeaders } = useApiCallData(
     "body",
     "pathParams",
@@ -57,8 +59,13 @@ export function usePlaygroundSubmitHandler({
   // NOTE - We make the submit handler optional to make it easier to call this as a standalone function
   return useHandler((e?: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault?.();
+    if (path === null || activeRoute === null) {
+      console.warn("No path defined");
+      return;
+    }
     // TODO - Make it clear in the UI that we're auto-adding these headers
-    const canHaveBody = !["GET", "DELETE"].includes(method);
+    const canHaveBody =
+      activeRoute !== null && !["GET", "DELETE"].includes(activeRoute.method);
     const contentTypeHeader = canHaveBody ? getContentTypeHeader(body) : null;
     const contentLength = canHaveBody ? getContentLength(body) : null;
     const modifiedHeaders = [
@@ -97,7 +104,7 @@ export function usePlaygroundSubmitHandler({
         // HACK - Temporary until this is removed...
         addServiceUrlIfBarePath,
         path,
-        method,
+        method: activeRoute.method,
         body,
         headers: modifiedHeaders,
         pathParams,

@@ -97,7 +97,7 @@ export function resolvePathWithParameters(
   pathParams: KeyValueParameter[],
 ) {
   return pathParams.reduce((acc, param) => {
-    return acc.replace(`{${param.key}}`, param.value || param.key);
+    return acc.replace(`{${param.key}}`, encodeURIComponent(param.value));
   }, path);
 }
 
