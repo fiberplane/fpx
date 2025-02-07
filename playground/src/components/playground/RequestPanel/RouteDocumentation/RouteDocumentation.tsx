@@ -396,16 +396,16 @@ function SchemaViewer({ schema, className }: SchemaViewerProps) {
   }
 
   // Debug logging to help diagnose schema type issues
-  console.log(
-    "Schema type:",
-    schema.type,
-    "Has properties:",
-    !!schema.properties,
-    "Is array:",
-    isArraySchema(schema),
-    "Is object:",
-    isObjectSchema(schema),
-  );
+  // console.log(
+  //   "Schema type:",
+  //   schema.type,
+  //   "Has properties:",
+  //   !!schema.properties,
+  //   "Is array:",
+  //   isArraySchema(schema),
+  //   "Is object:",
+  //   isObjectSchema(schema),
+  // );
 
   return (
     <div className={cn("font-mono text-sm", className)}>
