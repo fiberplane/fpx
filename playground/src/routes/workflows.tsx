@@ -1,4 +1,6 @@
 import { Layout } from "@/Layout";
+import { ErrorScreen } from "@/components/ErrorScreen";
+import { FeatureDisabledScreen } from "@/components/FeatureDisabledScreen";
 import { WorkflowSidebar } from "@/components/WorkflowSidebar";
 import { CommandBar } from "@/components/playground/CommandBar/CommandBar";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -8,6 +10,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useIsLgScreen } from "@/hooks";
+import { isFeatureDisabledError } from "@/lib/api";
 import { workflowsQueryOptions } from "@/lib/hooks/useWorkflows";
 import { cn } from "@/lib/utils";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
@@ -18,12 +21,32 @@ import { useHotkeys } from "react-hotkeys-hook";
 export const Route = createFileRoute("/workflows")({
   component: WorkflowLayout,
   loader: async ({ context: { queryClient } }) => {
+    // FIXME - The types are wonky here, `workflowsResponse` is `any`
     const workflowsResponse = await queryClient.ensureQueryData(
       workflowsQueryOptions(),
     );
+
     return {
       workflows: workflowsResponse.data,
     };
+  },
+  errorComponent: ({ error }) => {
+    if (isFeatureDisabledError(error)) {
+      return (
+        <FeatureDisabledScreen
+          error={error}
+          title="Workflows are Disabled"
+          message="To use workflows, configure Fiberplane with an API key."
+        />
+      );
+    }
+    return (
+      <ErrorScreen
+        error={error}
+        title="Error loading Workflows"
+        message="An unknown error occurred, which is our least favourite kind of error."
+      />
+    );
   },
 });
 
@@ -45,7 +68,7 @@ function WorkflowLayout() {
   // const maxSize = Math.min(50, (500 / width) * 100);
 
   return (
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <Layout>
         <div className={cn("h-[calc(100vh-70px)]", "grid", "gap-2", "p-2")}>
           <CommandBar open={commandBarOpen} setOpen={setCommandBarOpen} />

@@ -33,9 +33,11 @@ import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/traces/")({
   component: TracesOverview,
-  loader: async ({ context: { queryClient, fpxEndpointHost } }) => {
+  loader: async ({ context: { queryClient } }) => {
+    // TODO - Pull this from the store
+    const tracingEnabled = true;
     const response = await queryClient.ensureQueryData(
-      tracesQueryOptions(fpxEndpointHost ?? ""),
+      tracesQueryOptions(tracingEnabled),
     );
     return { traces: response.data };
   },
@@ -163,14 +165,10 @@ export function ErrorBoundary(props: {
 }) {
   const { error } = props;
   const [isOpen, setIsOpen] = useState(false);
-  const { fpxEndpointHost, mountedPath, openapi, parseError } = useDebugInfo();
+  const { mountedPath, openapi, parseError } = useDebugInfo();
 
-  let message = "Make sure you have a Fiberplane sidecar running";
-  if (!fpxEndpointHost) {
-    message = "Fiberplane tracing endpoint is not set";
-  } else if (error) {
-    message = error.message;
-  }
+  // TODO - Make more friendly errors
+  const message = error.message;
 
   return (
     <div className="flex flex-col items-center justify-center h-full p-4">
@@ -226,16 +224,6 @@ export function ErrorBoundary(props: {
                   </code>
                 </CardContent>
               </Card>
-              <Card className="bg-muted/50">
-                <CardContent className="p-3">
-                  <p className="mb-1 text-xs font-medium text-muted-foreground">
-                    Tracing Endpoint Host ((Local only))
-                  </p>
-                  <code className="text-sm">
-                    {fpxEndpointHost ?? "not found"}
-                  </code>
-                </CardContent>
-              </Card>
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -245,7 +233,6 @@ export function ErrorBoundary(props: {
 }
 
 type DebugInfo = {
-  fpxEndpointHost: string | undefined | null;
   mountedPath: string | undefined | null;
   openapi: Record<string, unknown> | undefined | null;
   parseError: Error | null | unknown;
@@ -257,7 +244,6 @@ function useDebugInfo(): DebugInfo {
       const rootElement = document.getElementById("root");
       if (!rootElement) {
         return {
-          fpxEndpointHost: null,
           mountedPath: null,
           openapi: null,
           parseError: { message: "Root element not found" },
@@ -269,7 +255,6 @@ function useDebugInfo(): DebugInfo {
       };
     } catch (parseError) {
       return {
-        fpxEndpointHost: null,
         mountedPath: null,
         openapi: null,
         parseError,

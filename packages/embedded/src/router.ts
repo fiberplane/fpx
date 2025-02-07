@@ -16,7 +16,13 @@ export function createRouter<E extends Env>(
   // We therefore remove the apiKey
   const { apiKey, fpxEndpoint, ...sanitizedOptions } = options;
 
-  app.route("/api", createApiRoutes(apiKey, fpxEndpoint));
+  if (apiKey) {
+    app.route("/api", createApiRoutes(apiKey, fpxEndpoint));
+  } else {
+    app.use("/api/*", async (c) => {
+      return c.json({ error: "Fiberplane API key is not set" }, 402);
+    });
+  }
 
   const embeddedPlayground = createEmbeddedPlayground(sanitizedOptions);
   app.route("/", embeddedPlayground);
