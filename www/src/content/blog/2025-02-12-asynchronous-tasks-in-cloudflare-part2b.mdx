@@ -2,7 +2,7 @@
 title: "Scaling Up Different Functionalities in a Single Worker using Queues"
 description: Learn how to scale different functions within a single Cloudflare Worker using Queues
 slug: single-worker-using-queues
-date: 2025-01-30
+date: 2025-02-12
 author: Nele Uhlemann
 tags:
   - Hono.js
@@ -18,17 +18,17 @@ import PackageManagers from "@/components/PackageManagers.astro";
 import videoSingleWorkerQueueArchitecture from "../../assets/blog/2025-01-30-single-worker-qeue.mov"
 
 
-In the last blog post, I demonstrated how to decompose the sign-up and send-mail functions into two separate workers. 
+In the [last blog post](https://fiberplane.com/blog/asynchronous-tasks-in-cloudflare-part2/), I demonstrated how to decompose the sign-up and send-mail functions into two separate workers. 
 One reason was to use Cloudflare Queues to scale the Workers logically independently. 
 
 Thanks to [Harshil](https://x.com/harshil1712) from Cloudflare, I recently learned that it's also possible to scale up different functions within a single worker if they use a Queue. 
-Meaning you can include the code of your Producer and Consumer into the same worker and they execute separately
+Meaning you can include the code of your Producer and Consumer into the same worker and they execute separately.
 
 Coming from a service-oriented mindset, this was mind-blowing and new to me, and I'm still quite amazed by it. So let's break it down. 
 
 ## How does this work
 Every worker in Cloudflare is single-threaded. 
-When a worker produces a message to a Queue and the same worker also implements a consumer to handle the message, a new Worker instance will be created for each message batch.
+When a worker produces a message to a Queue and the same worker also implements a consumer to handle the message, Cloudflare handles concurrency and makes sure each message get processed by scalling up the workers automatically.
 This mechanism allows you to scale up different functions within a single worker.
 <LinkCard
   title="Follow along on GitHub"
@@ -41,7 +41,7 @@ This mechanism allows you to scale up different functions within a single worker
 ## Example
 Let's move the code back into a single worker and implement newsletter functionality for all signed-up users. This functionality will retrieve all existing users from the database and send them newsletters using our `sendMail` function. Instead of calling the function directly from the index.tsx file, we send a message for each database entry to the Queue. In addition, we implement in the same worker a consumer that will handle the messages in batches from the Queue.
 
-When a worker produces a message to a Queue and implements a consumer, Cloudflare will automatically create new instances of our worker. These instances process message batches in parallel. This means our worker can scale horizontally based on the Queue's workload.
+When a worker produces a message to a Queue and implements a consumer, Cloudflare will automatically scale up the worker when needed. This means our worker can scale horizontally based on the Queue's workload.
 
 <figure>
   <video
