@@ -3,17 +3,17 @@ import type { StateCreator } from "zustand";
 import { enforceFormDataTerminalDraftParameter } from "../../FormDataForm";
 import { enforceTerminalDraftParameter } from "../../KeyValueForm";
 import { isOpenApiOperation } from "../../RequestPanel/RouteDocumentation";
-import { findMatchedRoute } from "../../routes";
+// import { findMatchedRoute } from "../../routes";
 import type { ApiRoute } from "../../types";
 import { updateContentTypeHeaderInState } from "../content-type";
 import { setBodyTypeInState } from "../set-body-type";
-import { getVisibleRequestPanelTabs } from "../tabs";
+// import { getVisibleRequestPanelTabs } from "../tabs";
 import type { KeyValueParameter } from "../types";
 import {
   addBaseUrl,
-  extractMatchedPathParams,
-  extractPathParams,
-  mapPathParamKey,
+  // extractMatchedPathParams,
+  // extractPathParams,
+  // mapPathParamKey,
   removeBaseUrl,
   resolvePathWithParameters,
 } from "../utils";
@@ -138,66 +138,66 @@ export const requestResponseSlice: StateCreator<
       }
     }),
 
-  updatePath: (path) =>
-    set((state) => {
-      const matchedRoute = findMatchedRoute(
-        state.appRoutes,
-        removeBaseUrl(state.serviceBaseUrl, path),
-        state.method,
-      );
-      const nextActiveRoute = matchedRoute ? matchedRoute.route : null;
-      const nextPathParams = matchedRoute
-        ? extractMatchedPathParams(matchedRoute)
-        : extractPathParams(path).map(mapPathParamKey);
+  // updatePath: (path) =>
+  //   set((state) => {
+  //     const matchedRoute = findMatchedRoute(
+  //       state.appRoutes,
+  //       removeBaseUrl(state.serviceBaseUrl, path),
+  //       state.method,
+  //     );
+  //     const nextActiveRoute = matchedRoute ? matchedRoute.route : null;
+  //     const nextPathParams = matchedRoute
+  //       ? extractMatchedPathParams(matchedRoute)
+  //       : extractPathParams(path).map(mapPathParamKey);
 
-      state.path = path;
-      state.activeRoute = nextActiveRoute;
-      const id = getRouteId(state.activeRoute || state);
+  //     state.path = path;
+  //     state.activeRoute = nextActiveRoute;
+  //     const id = getRouteId(state.activeRoute || state);
 
-      const { apiCallState } = state;
-      if (id in apiCallState === false) {
-        apiCallState[id] = createInitialApiCallData();
-      }
+  //     const { apiCallState } = state;
+  //     if (id in apiCallState === false) {
+  //       apiCallState[id] = createInitialApiCallData();
+  //     }
 
-      const params = apiCallState[id];
-      params.pathParams = nextPathParams;
-    }),
+  //     const params = apiCallState[id];
+  //     params.pathParams = nextPathParams;
+  //   }),
 
-  updateMethod: (method) =>
-    set((state) => {
-      state.method = method;
+  // updateMethod: (method) =>
+  //   set((state) => {
+  //     state.method = method;
 
-      // Update other state properties based on the new method and request type
-      // (e.g., activeRoute, visibleRequestsPanelTabs, activeRequestsPanelTab, etc.)
-      // You might want to move some of this logic to separate functions or slices
-      const matchedRoute = findMatchedRoute(
-        state.appRoutes,
-        removeBaseUrl(state.serviceBaseUrl, state.path),
-        state.method,
-      );
-      const nextActiveRoute = matchedRoute ? matchedRoute.route : null;
-      state.activeRoute = nextActiveRoute;
+  //     // Update other state properties based on the new method and request type
+  //     // (e.g., activeRoute, visibleRequestsPanelTabs, activeRequestsPanelTab, etc.)
+  //     // You might want to move some of this logic to separate functions or slices
+  //     const matchedRoute = findMatchedRoute(
+  //       state.appRoutes,
+  //       removeBaseUrl(state.serviceBaseUrl, state.path),
+  //       state.method,
+  //     );
+  //     const nextActiveRoute = matchedRoute ? matchedRoute.route : null;
+  //     state.activeRoute = nextActiveRoute;
 
-      const id = getRouteId(state.activeRoute || state);
+  //     const id = getRouteId(state.activeRoute || state);
 
-      const { apiCallState } = state;
-      if (id in apiCallState === false) {
-        apiCallState[id] = createInitialApiCallData();
-      }
+  //     const { apiCallState } = state;
+  //     if (id in apiCallState === false) {
+  //       apiCallState[id] = createInitialApiCallData();
+  //     }
 
-      // Update visibleRequestsPanelTabs based on the new method and request type
-      state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
-        method,
-        openApiSpec: state.activeRoute?.openApiSpec,
-      });
+  //     // Update visibleRequestsPanelTabs based on the new method and request type
+  //     state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
+  //       method,
+  //       openApiSpec: state.activeRoute?.openApiSpec,
+  //     });
 
-      // Ensure the activeRequestsPanelTab is valid
-      state.activeRequestsPanelTab = state.visibleRequestsPanelTabs.includes(
-        state.activeRequestsPanelTab,
-      )
-        ? state.activeRequestsPanelTab
-        : state.visibleRequestsPanelTabs[0];
-    }),
+  //     // Ensure the activeRequestsPanelTab is valid
+  //     state.activeRequestsPanelTab = state.visibleRequestsPanelTabs.includes(
+  //       state.activeRequestsPanelTab,
+  //     )
+  //       ? state.activeRequestsPanelTab
+  //       : state.visibleRequestsPanelTabs[0];
+  //   }),
 
   // TODO update it so it works
   setCurrentPathParams: (pathParams) =>
