@@ -21,10 +21,7 @@ export function CopyAsCurl() {
 
   const { body, requestHeaders } = useApiCallData(
     "body",
-    // "pathParams",
-    // "queryParams",
     "requestHeaders",
-    // "authorizationId",
   );
   const { activeRoute } = useStudioStore("activeRoute");
 
@@ -51,13 +48,6 @@ export function CopyAsCurl() {
 
       return `${acc} -H "${key}: ${value}"`;
     }, "");
-
-    // const url = new URL(path);
-    // for (const { enabled, key, value } of queryParams) {
-    //   if (enabled) {
-    //     url.searchParams.append(key, value);
-    //   }
-    // }
 
     const data = payload ? `-d ${payload}` : "";
     const curlCommand = `curl -X ${method} '${url}' ${headers} ${data}`;

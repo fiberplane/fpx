@@ -36,8 +36,6 @@ export const RequestPanel = memo(function RequestPanel(
   const { onSubmit } = props;
 
   const {
-    // path,
-    // method,
     setCurrentBody: setBody,
     setCurrentRequestHeaders: setRequestHeaders,
     setCurrentQueryParams: setQueryParams,
@@ -51,8 +49,6 @@ export const RequestPanel = memo(function RequestPanel(
     togglePanel,
     fillInFakeData,
   } = useStudioStore(
-    // "path",
-    // "method",
     "setCurrentBody",
     "setCurrentRequestHeaders",
     "setCurrentQueryParams",
@@ -277,12 +273,7 @@ export const RequestPanel = memo(function RequestPanel(
       )}
 
       <BottomToolbar
-        // body={body}
         handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-        // method={method}
-        // path={path}
-        // queryParams={queryParams}
-        // requestHeaders={requestHeaders}
       />
     </FpTabs>
   );

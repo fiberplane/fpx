@@ -54,22 +54,10 @@ export const routesSlice: StateCreator<
         });
 
         if (id in state.apiCallState === false) {
-          const params = createInitialApiCallData();
-          params.pathParams = extractPathParams(route.path).map(
-            mapPathParamKey,
-          );
-          params.queryParams = extractQueryParamsFromOpenApiDefinition(
-            params.queryParams,
-            route,
-          );
-          params.body = extractJsonBodyFromOpenApiDefinition(
-            params.body,
-            route,
-          );
+          const params = createInitialApiCallData(route);
           state.apiCallState[id] = params;
         }
       }
-      // state.pathParams = nextPathParams;
     }),
 
   setTagOrder: (tagOrder) =>
@@ -86,13 +74,7 @@ export const routesSlice: StateCreator<
       const id = getRouteId(state.activeRoute || state);
       const { apiCallState } = state;
       if (id in apiCallState === false) {
-        const params = createInitialApiCallData();
-        params.pathParams = extractPathParams(route.path).map(mapPathParamKey);
-        params.queryParams = extractQueryParamsFromOpenApiDefinition(
-          params.queryParams,
-          route,
-        );
-        params.body = extractJsonBodyFromOpenApiDefinition(params.body, route);
+        const params = createInitialApiCallData(route);
         state.apiCallState[id] = params;
       }
 

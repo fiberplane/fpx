@@ -13,12 +13,7 @@ type BottomToolbarProps = Omit<
 >;
 
 export function BottomToolbar({
-  // body,
   handleRequestBodyTypeChange,
-  // method,
-  // path,
-  // queryParams,
-  // requestHeaders,
 }: BottomToolbarProps) {
   const { method } = useActiveRoute();
   const { body } = useApiCallData("body");

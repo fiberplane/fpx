@@ -30,7 +30,6 @@ type Props = {
 
 export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
   const { activeResponsePanelTab, setActiveResponsePanelTab } = useStudioStore(
-    // "activeResponse",
     "activeResponsePanelTab",
     "setActiveResponsePanelTab",
   );

@@ -73,9 +73,6 @@ export function PlaygroundInput({
                   <div
                     className={cn(
                       "flex-grow grid grid-cols-[2.5rem_auto] items-center gap-2 px-2 rounded-md",
-                      {
-                        // "bg-muted": route.method === activeRoute?.method && route.path === activeRoute.path
-                      },
                     )}
                   >
                     <Method method={route.method} className="ml-2 text-sm" />

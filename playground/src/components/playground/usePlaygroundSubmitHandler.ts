@@ -1,16 +1,10 @@
 import { useHandler } from "@fiberplane/hooks";
-import { useShallow } from "zustand/react/shallow";
 import type { MakePlaygroundRequestQueryFn } from "./queries";
 import type { KeyValueParameter, PlaygroundBody } from "./store";
-import {
-  getPreferredAuthorizationId,
-  useServiceBaseUrl,
-  useStudioStore,
-  useStudioStoreRaw,
-} from "./store";
+import { useServiceBaseUrl, useStudioStore } from "./store";
 import { useApiCallData } from "./store/hooks/useApiCallData";
 import { useUrlPreview } from "./store/hooks/useUrlPreview";
-import { getRouteId } from "./store/slices/requestResponseSlice";
+import { useCurrentAuthorization } from "./store/hooks/useCurrentAuthorization";
 
 export function usePlaygroundSubmitHandler({
   makeRequest,
@@ -28,30 +22,7 @@ export function usePlaygroundSubmitHandler({
     "requestHeaders",
   );
 
-  const authorization = useStudioStoreRaw(
-    useShallow((state) => {
-      if (!state.activeRoute) {
-        return null;
-      }
-
-      const id = getRouteId(state.activeRoute);
-      const { apiCallState } = state;
-      const params = apiCallState[id];
-      const authorizationId = getPreferredAuthorizationId(
-        params?.authorizationId ?? null,
-        state.authorizations,
-      );
-
-      if (authorizationId === "none") {
-        return null;
-      }
-
-      return (
-        state.authorizations.find((auth) => auth.id === authorizationId) || null
-      );
-    }),
-  );
-
+  const authorization = useCurrentAuthorization();
   // NOTE - We make the submit handler optional to make it easier to call this as a standalone function
   return useHandler((e?: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault?.();
