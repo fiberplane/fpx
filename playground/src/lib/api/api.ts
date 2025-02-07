@@ -126,11 +126,6 @@ export const api = {
     traceId: string;
     description: string;
   }) => {
-    // NOTE - For testing the flow in the UI
-    // TODO - Remove this once ui is more finalized
-    // window.alert("hello");
-    // return { data: {} };
-
     return fpFetch(
       "/api/reports/create",
       {
