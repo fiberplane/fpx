@@ -13,7 +13,7 @@ export function useApiCallData<
   return useStudioStoreRaw(
     useShallow((state) => {
       if (!state.activeRoute) {
-        throw new Error("No active route");
+        throw new Error("No active route (useApiCallData)");
       }
 
       const id = getRouteId(state.activeRoute);

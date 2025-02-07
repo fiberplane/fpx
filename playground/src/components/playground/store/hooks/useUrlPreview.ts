@@ -7,7 +7,7 @@ export function useUrlPreview(): string | null {
     useShallow((state) => {
       const { activeRoute, serviceBaseUrl, apiCallState } = state;
       if (!state.activeRoute) {
-        console.warn("No active route");
+        console.warn("No active route (useUrlPreview)");
         return null;
       }
 

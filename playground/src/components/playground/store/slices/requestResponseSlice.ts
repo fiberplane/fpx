@@ -262,7 +262,7 @@ export const requestResponseSlice: StateCreator<
   clearCurrentPathParams: () =>
     set((state) => {
       if (!state.activeRoute) {
-        console.warn("No active route");
+        console.warn("No active route (clearCurrentPathParams)");
         return;
       }
       const id = getRouteId(state.activeRoute);
@@ -284,7 +284,7 @@ export const requestResponseSlice: StateCreator<
   setCurrentQueryParams: (queryParams) =>
     set((state) => {
       if (!state.activeRoute) {
-        console.warn("No active route");
+        console.warn("No active route (setCurrentQueryParams)");
         return;
       }
       const id = getRouteId(state.activeRoute);
@@ -317,7 +317,7 @@ export const requestResponseSlice: StateCreator<
       //   }
       // }
       if (!state.activeRoute) {
-        console.warn("No active route");
+        console.warn("No active route (setCurrentRequestHeaders)");
         return;
       }
       const id = getRouteId(state.activeRoute);
@@ -335,7 +335,7 @@ export const requestResponseSlice: StateCreator<
   setCurrentBody: (body) =>
     set((state) => {
       if (!state.activeRoute) {
-        console.warn("No active route");
+        console.warn("No active route (setCurrentBody)");
         return;
       }
       const id = getRouteId(state.activeRoute);
