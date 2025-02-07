@@ -11,9 +11,12 @@ import {
 } from "../utils";
 
 import type { ApiRoute } from "../../types";
+import {
+  extractJsonBodyFromOpenApiDefinition,
+  extractQueryParamsFromOpenApiDefinition,
+} from "../utils-openapi";
 import { createInitialApiCallData, getRouteId } from "./requestResponseSlice";
 import type { RoutesSlice, StudioState } from "./types";
-import { extractQueryParamsFromOpenApiDefinition } from "../utils-openapi";
 
 export const routesSlice: StateCreator<
   StudioState,
@@ -53,13 +56,15 @@ export const routesSlice: StateCreator<
           params.pathParams = extractPathParams(route.path).map(
             mapPathParamKey,
           );
-          debugger;
           params.queryParams = extractQueryParamsFromOpenApiDefinition(
             params.queryParams,
             route,
           );
+          params.body = extractJsonBodyFromOpenApiDefinition(
+            params.body,
+            route,
+          );
           state.apiCallState[id] = params;
-          // params.pathParams = extractPathParams(route.path).map(mapPathParamKey);
         }
       }
       // state.pathParams = nextPathParams;
@@ -87,22 +92,9 @@ export const routesSlice: StateCreator<
           params.queryParams,
           route,
         );
+        params.body = extractJsonBodyFromOpenApiDefinition(params.body, route);
         state.apiCallState[id] = params;
       }
-
-      // const params = apiCallState[id];
-
-      // Is this still needed?
-      // params.pathParams = extractPathParams(route.path).map(mapPathParamKey);
-      // state.activeResponse = null;
-      // // Filter out disabled and empty query params
-      // // TODO - Only do this if the route has an open api definition?
-      // params.queryParams = filterDisabledEmptyQueryParams(params.queryParams);
-      // // Extract query params from the open api definition, if it exists
-      // params.queryParams = extractQueryParamsFromOpenApiDefinition(
-      //   params.queryParams,
-      //   route,
-      // );
 
       // TODO - Instead of automatically setting body here,
       //        have a button? Idk.

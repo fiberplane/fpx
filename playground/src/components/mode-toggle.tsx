@@ -2,10 +2,10 @@ import { Moon, Sun } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+  FpDropdownMenu,
+  FpDropdownMenuContent,
+  FpDropdownMenuItem,
+  FpDropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "./theme-provider";
 
@@ -14,8 +14,8 @@ export function ModeToggle() {
 
   return (
     <div className="flex items-center gap-2">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+      <FpDropdownMenu>
+        <FpDropdownMenuTrigger asChild>
           <Button
             variant="outline"
             size="icon"
@@ -25,19 +25,19 @@ export function ModeToggle() {
             <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             <span className="sr-only">Toggle theme</span>
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setTheme("light")}>
+        </FpDropdownMenuTrigger>
+        <FpDropdownMenuContent align="end">
+          <FpDropdownMenuItem onClick={() => setTheme("light")}>
             Light
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("dark")}>
+          </FpDropdownMenuItem>
+          <FpDropdownMenuItem onClick={() => setTheme("dark")}>
             Dark
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("system")}>
+          </FpDropdownMenuItem>
+          <FpDropdownMenuItem onClick={() => setTheme("system")}>
             System
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          </FpDropdownMenuItem>
+        </FpDropdownMenuContent>
+      </FpDropdownMenu>
     </div>
   );
 }

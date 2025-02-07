@@ -391,11 +391,6 @@ export const requestResponseSlice: StateCreator<
 });
 
 export function createInitialApiCallData(): ApiCallData {
-  // try {
-  //   throw new Error("create request parameters");
-  // } catch (e) {
-  //   console.log(e);
-  // }
   return {
     authorizationId: null,
     body: {
