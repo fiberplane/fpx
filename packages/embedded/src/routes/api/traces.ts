@@ -13,7 +13,6 @@ export default function createTracesApiRoute(fpxEndpoint?: string) {
     try {
       const fpxBaseUrl = new URL(fpxEndpoint).origin;
       const requestUrl = `${fpxBaseUrl}/v1/traces`;
-      console.log("GET /traces - requestUrl", requestUrl);
       const response = await fetch(requestUrl, {
         headers: {
           "Content-Type": "application/json",
@@ -36,7 +35,6 @@ export default function createTracesApiRoute(fpxEndpoint?: string) {
       const fpxBaseUrl = new URL(fpxEndpoint).origin;
       const traceId = c.req.param("traceId");
       const requestUrl = `${fpxBaseUrl}/v1/traces/${traceId}/spans`;
-      console.log("GET /traces/:traceId/spans - requestUrl", requestUrl);
       const response = await fetch(requestUrl, {
         headers: {
           "Content-Type": "application/json",

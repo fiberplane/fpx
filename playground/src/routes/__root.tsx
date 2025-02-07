@@ -1,6 +1,8 @@
+import { ErrorScreen } from "@/components/ErrorScreen";
 import { WorkflowCommand } from "@/components/WorkflowCommand";
+import { isFetchOpenApiSpecError } from "@/lib/api";
 import { openApiSpecQueryOptions } from "@/lib/hooks/useOpenApiSpec";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import type { QueryClient } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import React from "react";
@@ -13,7 +15,6 @@ export const Route = createRootRouteWithContext<{
         content?: string;
       }
     | undefined;
-  fpxEndpointHost?: string;
 }>()({
   component: RootComponent,
   loader: async ({ context }) => {
@@ -40,6 +41,18 @@ export const Route = createRootRouteWithContext<{
     console.error("Error loading openapi spec", error);
   },
   errorComponent: ({ error, info }) => {
+    if (isFetchOpenApiSpecError(error)) {
+      return (
+        <ErrorScreen
+          error={error}
+          title="Error fetching OpenAPI spec"
+          message={
+            error.message ??
+            "Something went wrong while loading the OpenAPI spec."
+          }
+        />
+      );
+    }
     return (
       <ErrorBoundary
         error={error}
@@ -78,7 +91,7 @@ function ErrorBoundary({
         />
         <p className="text-lg">
           {error.message}
-          {info?.componentStack}
+          {process.env.NODE_ENV !== "production" ? info?.componentStack : null}
         </p>
       </div>
       {/*  Commented out because they're annoying but leaving them here in case you need them */}

@@ -5,7 +5,8 @@ import {
   FEATURE_FLAG_WORKFLOWS,
   type FeatureFlag,
 } from "@/constants";
-import { safeParseJson } from "@/utils";
+// HACK - Importing this from a separate file from within the root utils dir is a hack to avoid circular dependencies.
+import { safeParseJson } from "@/utils/safe-parse-json";
 import { z } from "zod";
 import type { StateCreator } from "zustand";
 import { enforceTerminalDraftParameter } from "../../KeyValueForm";

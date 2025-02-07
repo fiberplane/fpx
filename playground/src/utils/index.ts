@@ -11,9 +11,12 @@ import { twMerge } from "tailwind-merge";
 export * from "./screen-size";
 export * from "./otel-helpers";
 export * from "./vendorify-traces";
+export { isSensitiveEnvVar } from "./env-vars";
 export { renderFullLogMessage } from "./render-log-message";
 export { truncateWithEllipsis } from "./truncate";
 export { parseEmbeddedConfig } from "./config-parser";
+export { getHttpMethodTextColor } from "./http-method-color";
+export { safeParseJson } from "./safe-parse-json";
 export function formatDate(d: Date | string) {
   return format(new Date(d), "HH:mm:ss.SSS");
 }
@@ -194,51 +197,6 @@ export function formatHeaders(headers: Record<string, string>): string {
   return Object.entries(headers)
     .map(([key, value]) => `${key}: ${value}`)
     .join("\n");
-}
-
-export const safeParseJson = (jsonString: string) => {
-  try {
-    const parsed = JSON.parse(jsonString);
-    return parsed;
-  } catch (error) {
-    console.error("Failed to parse JSON:", error);
-    return null;
-  }
-};
-
-export function getHttpMethodTextColor(method: string) {
-  return {
-    GET: "text-info",
-    POST: "text-success",
-    PUT: "text-warning",
-    PATCH: "text-warning",
-    DELETE: "text-danger",
-    OPTIONS: "text-info",
-    HEAD: "text-info",
-    WS: "text-success",
-  }[String(method).toUpperCase()];
-}
-
-export function isSensitiveEnvVar(key: string) {
-  if (!key) {
-    return false;
-  }
-
-  return (
-    key.includes("APIKEY") ||
-    key.includes("API_KEY") ||
-    key.includes("ACCESS") ||
-    key.includes("AUTH_") ||
-    key.includes("CREDENTIALS") ||
-    key.includes("CERTIFICATE") ||
-    key.includes("PASSPHRASE") ||
-    key.includes("DATABASE_URL") ||
-    key.includes("CONNECTION_STRING") ||
-    key.includes("SECRET") ||
-    key.includes("PASSWORD") ||
-    key.includes("PRIVATE") ||
-    key.includes("TOKEN")
-  );
 }
 
 export function constructPlaygroundBody(bodyValue: string): PlaygroundBody {
