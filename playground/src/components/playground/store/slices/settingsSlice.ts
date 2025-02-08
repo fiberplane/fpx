@@ -53,7 +53,6 @@ const getInitialAuthHeaders = () =>
 const loadSettingsFromStorage = (): {
   persistentAuthHeaders: KeyValueParameter[];
   authorizations: Authorization[];
-  useMockApiSpec: boolean;
   enabledFeatures: FeatureFlag[];
   isWorkflowsEnabled: boolean;
   isTracingEnabled: boolean;
@@ -65,7 +64,6 @@ const loadSettingsFromStorage = (): {
     return {
       persistentAuthHeaders: getInitialAuthHeaders(),
       authorizations: [],
-      useMockApiSpec: false,
       enabledFeatures: [],
       isWorkflowsEnabled: false,
       isTracingEnabled: false,
@@ -79,7 +77,6 @@ const loadSettingsFromStorage = (): {
     return {
       persistentAuthHeaders: getInitialAuthHeaders(),
       authorizations: [],
-      useMockApiSpec: false,
       enabledFeatures: [],
       isWorkflowsEnabled: false,
       isTracingEnabled: false,
@@ -108,7 +105,6 @@ const loadSettingsFromStorage = (): {
       parsed.persistentAuthHeaders || [],
     ),
     authorizations,
-    useMockApiSpec: parsed.useMockApiSpec || false,
     enabledFeatures,
     isWorkflowsEnabled,
     isTracingEnabled,
@@ -123,8 +119,6 @@ export interface SettingsSlice {
   // Auth tokens that can be used in requests
   // These are stored in local storage
   authorizations: Authorization[];
-  // Whether to use mock API spec instead of loading programmatically
-  useMockApiSpec: boolean;
 
   // Feature flags
   isWorkflowsEnabled: boolean;
@@ -140,7 +134,6 @@ export interface SettingsSlice {
   updateAuthorization: (authorization: Authorization) => void;
   removeAuthorization: (id: string) => void;
   setPersistentAuthHeaders: (headers: KeyValueParameter[]) => void;
-  setUseMockApiSpec: (useMock: boolean) => void;
   setFeatureEnabled: (feature: FeatureFlag, enabled: boolean) => void;
 }
 
@@ -221,18 +214,6 @@ export const settingsSlice: StateCreator<
           JSON.stringify({
             ...state,
             persistentAuthHeaders: state.persistentAuthHeaders,
-          }),
-        );
-      }),
-
-    setUseMockApiSpec: (useMock) =>
-      set((state) => {
-        state.useMockApiSpec = useMock;
-        localStorage.setItem(
-          SETTINGS_STORAGE_KEY,
-          JSON.stringify({
-            ...state,
-            useMockApiSpec: useMock,
           }),
         );
       }),
