@@ -57,6 +57,6 @@ export function logIfDebug(
   ...params: unknown[]
 ) {
   if (debug) {
-    console.debug(message, params);
+    console.debug(message, ...params);
   }
 }
