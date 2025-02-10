@@ -134,6 +134,10 @@ const FpDropdownMenuRadioItem = React.forwardRef<
 ));
 FpDropdownMenuRadioItem.displayName = `Fp${DropdownMenuPrimitive.RadioItem.displayName}`;
 
+/**
+ * This is a dropdown menu that mimics the behavior of the one with a radio button
+ * but doesn't render one
+ **/
 const FpMinimalDropdownMenuRadioItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>
@@ -146,11 +150,6 @@ const FpMinimalDropdownMenuRadioItem = React.forwardRef<
     )}
     {...props}
   >
-    {/* <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-      <DropdownMenuPrimitive.ItemIndicator>
-        <Circle className="h-2 w-2 fill-current" />
-      </DropdownMenuPrimitive.ItemIndicator>
-    </span> */}
     {children}
   </DropdownMenuPrimitive.RadioItem>
 ));

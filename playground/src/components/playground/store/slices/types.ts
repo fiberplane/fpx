@@ -24,8 +24,6 @@ export interface RequestResponseSlice {
   setCurrentBody: (body: undefined | string | PlaygroundBody) => void;
   fillInFakeData: () => void;
   setServiceBaseUrl: (serviceBaseUrl: string) => void;
-  // updatePath: (path: string) => void;
-  // updateMethod: (method: RequestMethod) => void;
   handleRequestBodyTypeChange: (
     requestBodyType: PlaygroundBodyType,
     isMultipart?: boolean,

@@ -27,11 +27,6 @@ export const routesSlice: StateCreator<
         method,
       );
       const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
-      // TODO: set next path params
-      // const nextPathParams = matchedRoute
-      //   ? extractMatchedPathParams(matchedRoute)
-      //   : extractPathParams(state.path).map(mapPathParamKey);
-
       state.appRoutes = routes;
 
       state.activeRoute = nextSelectedRoute;
