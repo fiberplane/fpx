@@ -126,7 +126,7 @@ function getUpdateOperation(
       : null;
   }
 
-  const id = getRouteId(activeRoute || state);
+  const id = getRouteId(activeRoute);
 
   const params = state.apiCallState[id];
   const currentBody = params.body;
