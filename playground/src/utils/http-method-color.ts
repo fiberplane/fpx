@@ -7,6 +7,6 @@ export function getHttpMethodTextColor(method: string) {
     DELETE: "text-danger",
     OPTIONS: "text-info",
     HEAD: "text-info",
-    WS: "text-success",
+    TRACE: "text-info",
   }[String(method).toUpperCase()];
 }

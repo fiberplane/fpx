@@ -4,7 +4,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn, getHttpMethodTextColor } from "@/utils";
+import { cn, getHttpMethodString, getHttpMethodTextColor } from "@/utils";
 import { Link } from "@tanstack/react-router";
 import { memo, useEffect, useRef } from "react";
 import type { ApiRoute } from "../../types";
@@ -71,7 +71,7 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
       <span
         className={cn("text-xs", "min-w-12", getHttpMethodTextColor(method))}
       >
-        {method === "DELETE" ? "DEL" : method}
+        {getHttpMethodString(method)}
       </span>
       <TooltipProvider>
         <Tooltip>

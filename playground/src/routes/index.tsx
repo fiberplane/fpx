@@ -2,7 +2,6 @@ import { Layout } from "@/Layout";
 import { PlaygroundPage } from "@/components/playground";
 import { useStudioStore } from "@/components/playground/store";
 import { useSettingsOpen } from "@/hooks";
-import { RequestMethodSchema } from "@/types";
 import { useHandler } from "@fiberplane/hooks";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect } from "react";
@@ -27,18 +26,10 @@ export const Route = createFileRoute("/")({
  */
 function Index() {
   const search = Route.useSearch();
-  const {
-    appRoutes,
-    clearPathParams,
-    setActiveRoute,
-    updateMethod,
-    updatePath,
-  } = useStudioStore(
+  const { appRoutes, clearCurrentPathParams, setActiveRoute } = useStudioStore(
     "appRoutes",
-    "clearPathParams",
+    "clearCurrentPathParams",
     "setActiveRoute",
-    "updateMethod",
-    "updatePath",
   );
 
   const { setSettingsOpen } = useSettingsOpen();
@@ -56,16 +47,14 @@ function Index() {
   );
 
   const setDefault = useHandler(() => {
-    clearPathParams();
-    if (appRoutes.length > 0) {
-      const route = appRoutes[0];
-      updateMethod(route.method);
-      updatePath(route.path);
-      setActiveRoute(route);
-    } else {
-      updateMethod("GET");
-      updatePath("");
+    clearCurrentPathParams();
+    if (appRoutes.length === 0) {
+      // If there are no routes there isn't much to reset to.
+      console.warn("Attempting to reset when there are no routes");
+      return;
     }
+    const route = appRoutes[0];
+    setActiveRoute(route);
   });
 
   const { settings: showSettings = false, method, uri } = search || {};
@@ -75,25 +64,11 @@ function Index() {
 
   useEffect(() => {
     if (method && uri) {
-      // NOTE - Defaults to GET if the method is invalid
-      const validatedMethod =
-        RequestMethodSchema.safeParse(method?.toUpperCase()).data || "GET";
-      updateMethod(validatedMethod);
-      updatePath(uri);
-      clearPathParams();
-      updateActiveRoute(validatedMethod, uri);
+      updateActiveRoute(method, uri);
     } else {
       setDefault();
     }
-  }, [
-    method,
-    uri,
-    updateMethod,
-    updatePath,
-    updateActiveRoute,
-    setDefault,
-    clearPathParams,
-  ]);
+  }, [method, uri, updateActiveRoute, setDefault]);
 
   return (
     <Layout>

@@ -7,21 +7,29 @@ import {
   useStudioStore,
   useStudioStoreRaw,
 } from "../../store";
+import { getRouteId } from "../../store/slices/requestResponseSlice";
 import { AuthorizationItem } from "./AuthorizationItem";
 import { AuthorizationOption } from "./AuthorizationOption";
 
 export function AuthSelector() {
-  const { authorizations, setAuthorizationId } = useStudioStore(
-    "authorizations",
-    "authorizationId",
-    "setAuthorizationId",
-  );
+  const { authorizations, setCurrentAuthorizationId: setAuthorizationId } =
+    useStudioStore("authorizations", "setCurrentAuthorizationId");
 
   const { setSettingsOpen } = useSettingsOpen();
   const preferredAuthorizationId = useStudioStoreRaw(
-    useShallow((state) =>
-      getPreferredAuthorizationId(state.authorizationId, state.authorizations),
-    ),
+    useShallow((state) => {
+      // No activeRoute? No (currently) preferred auth
+      if (!state.activeRoute) {
+        return null;
+      }
+
+      const id = getRouteId(state.activeRoute);
+      const params = state.apiCallState[id];
+      return getPreferredAuthorizationId(
+        params.authorizationId,
+        state.authorizations,
+      );
+    }),
   );
 
   if (authorizations.length === 0) {

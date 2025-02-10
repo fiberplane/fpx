@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ApiRouteSchema, RequestMethodSchema } from "../types";
+import { ApiRouteSchema } from "../types";
 import { PlaygroundBodySchema } from "./request-body";
 import { RequestsPanelTabSchema, ResponsePanelTabSchema } from "./tabs";
 
@@ -87,18 +87,29 @@ export const PlaygroundStateSchema = z.object({
 
   // Request form
   serviceBaseUrl: z.string().describe("Base URL for requests"),
-  path: z.string().describe("Path input"),
-  method: RequestMethodSchema.describe("Method input"),
-  body: PlaygroundBodySchema.describe("Body"),
-  pathParams: z
-    .array(KeyValueParameterSchema)
-    .describe("Path parameters and their corresponding values"),
-  queryParams: z
-    .array(KeyValueParameterSchema)
-    .describe("Query parameters to be sent with the request"),
-  requestHeaders: z
-    .array(KeyValueParameterSchema)
-    .describe("Headers to be sent with the request"),
+  apiCallState: z.record(
+    z.string(),
+    z
+      .object({
+        body: PlaygroundBodySchema.describe("Body"),
+        pathParams: z
+          .array(KeyValueParameterSchema)
+          .describe("Path parameters and their corresponding values"),
+        queryParams: z
+          .array(KeyValueParameterSchema)
+          .describe("Query parameters to be sent with the request"),
+        requestHeaders: z
+          .array(KeyValueParameterSchema)
+          .describe("Headers to be sent with the request"),
+        // NOTE - This is used to force us to show a response body for a request that was most recently made
+        activeResponse: PlaygroundActiveResponseSchema.nullable().describe(
+          "The response to show in the response panel",
+        ),
+      })
+      .describe(
+        "Form data for a request against a given route, allows us to scope form data by route",
+      ),
+  ),
 
   // Tabs
   activeRequestsPanelTab: RequestsPanelTabSchema.describe(
@@ -114,14 +125,9 @@ export const PlaygroundStateSchema = z.object({
   visibleResponsePanelTabs: z
     .array(ResponsePanelTabSchema)
     .describe("The tabs to show in the response panel"),
-
-  // NOTE - This is used to force us to show a response body for a request that was most recently made
-  activeResponse: PlaygroundActiveResponseSchema.nullable().describe(
-    "The response to show in the response panel",
-  ),
 });
 
 export type PlaygroundState = z.infer<typeof PlaygroundStateSchema>;
 
-export type PlaygroundBody = PlaygroundState["body"];
+export type PlaygroundBody = z.infer<typeof PlaygroundBodySchema>;
 export type NavigationRoutesView = "list" | "fileTree";

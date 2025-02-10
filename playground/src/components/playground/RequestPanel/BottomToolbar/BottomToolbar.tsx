@@ -1,21 +1,22 @@
 import { cn } from "@/utils";
-import { CopyAsCurl, type CopyAsCurlProps } from "./CopyAsCurl";
+import { useActiveRoute } from "../../store";
+import { useApiCallData } from "../../store/hooks/useApiCallData";
+import { CopyAsCurl } from "./CopyAsCurl";
 import {
   RequestBodyTypeDropdown,
   type RequestBodyTypeDropdownProps,
 } from "./RequestBodyCombobox";
 
-type BottomToolbarProps = CopyAsCurlProps &
-  Omit<RequestBodyTypeDropdownProps, "isDisabled" | "requestBody">;
+type BottomToolbarProps = Omit<
+  RequestBodyTypeDropdownProps,
+  "isDisabled" | "requestBody"
+>;
 
 export function BottomToolbar({
-  body,
   handleRequestBodyTypeChange,
-  method,
-  path,
-  queryParams,
-  requestHeaders,
 }: BottomToolbarProps) {
+  const { method } = useActiveRoute();
+  const { body } = useApiCallData("body");
   const isDropdownDisabled = method === "GET" || method === "HEAD";
 
   return (
@@ -31,13 +32,7 @@ export function BottomToolbar({
         isDisabled={isDropdownDisabled}
       />
 
-      <CopyAsCurl
-        method={method}
-        body={body}
-        path={path}
-        queryParams={queryParams}
-        requestHeaders={requestHeaders}
-      />
+      <CopyAsCurl />
     </div>
   );
 }

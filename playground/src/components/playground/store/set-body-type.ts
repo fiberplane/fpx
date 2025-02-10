@@ -1,6 +1,7 @@
 import { enforceFormDataTerminalDraftParameter } from "../FormDataForm";
 import type { PlaygroundBodyType } from "./request-body";
-import type { RequestResponseSlice } from "./slices/types";
+import { getRouteId } from "./slices/requestResponseSlice";
+import type { RequestResponseSlice, RoutesSlice } from "./slices/types";
 
 /**
  * This reducer is responsible for setting the body type of the request.
@@ -9,7 +10,7 @@ import type { RequestResponseSlice } from "./slices/types";
  * We have big plans for this reducer function. Big plans.
  */
 export function setBodyTypeInState(
-  state: RequestResponseSlice,
+  state: RequestResponseSlice & Pick<RoutesSlice, "activeRoute">,
   {
     type: newBodyType,
     isMultipart,
@@ -18,14 +19,20 @@ export function setBodyTypeInState(
     isMultipart?: boolean;
   },
 ): void {
-  const oldBodyValue = state.body.value;
-  const oldBodyType = state.body.type;
+  if (!state.activeRoute) {
+    console.warn("Set body type in state, no active route");
+    return;
+  }
+  const id = getRouteId(state.activeRoute || state);
+  const params = state.apiCallState[id];
+  const oldBodyValue = params.body.value;
+  const oldBodyType = params.body.type;
 
   // Handle the case where the body type is the same, but the multipart flag is different
   if (oldBodyType === newBodyType) {
     // HACK - Refactor
-    if (state.body.type === "form-data") {
-      state.body.isMultipart = !!isMultipart;
+    if (params.body.type === "form-data") {
+      params.body.isMultipart = !!isMultipart;
     }
 
     return;
@@ -33,7 +40,7 @@ export function setBodyTypeInState(
 
   // Handle the case where the body type is changing to form-data, so we want to clear the body value
   if (newBodyType === "form-data") {
-    state.body = {
+    params.body = {
       type: newBodyType,
       isMultipart: !!isMultipart,
       value: enforceFormDataTerminalDraftParameter([]),
@@ -43,7 +50,7 @@ export function setBodyTypeInState(
 
   // Handle the case where the body type is changing to file, so we want to clear the body value and make it undefined
   if (newBodyType === "file") {
-    state.body = { type: newBodyType, value: undefined };
+    params.body = { type: newBodyType, value: undefined };
     return;
   }
 
@@ -51,7 +58,7 @@ export function setBodyTypeInState(
   // Let's handle the case where the body type is changing to text or json,
   // meaning we want to clear the body value and make it an empty string
   if (oldBodyType === "form-data") {
-    state.body = { type: newBodyType, value: "" }; //,
+    params.body = { type: newBodyType, value: "" }; //,
     return;
   }
 
@@ -59,5 +66,5 @@ export function setBodyTypeInState(
   const isNonTextOldBody =
     Array.isArray(oldBodyValue) || oldBodyValue instanceof File;
   const newBodyValue = isNonTextOldBody ? "" : oldBodyValue;
-  state.body = { type: newBodyType, value: newBodyValue }; //,
+  params.body = { type: newBodyType, value: newBodyValue }; //,
 }

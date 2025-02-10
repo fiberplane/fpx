@@ -16,6 +16,7 @@ export { renderFullLogMessage } from "./render-log-message";
 export { truncateWithEllipsis } from "./truncate";
 export { parseEmbeddedConfig } from "./config-parser";
 export { getHttpMethodTextColor } from "./http-method-color";
+export { getHttpMethodString } from "./http-method-string";
 export { safeParseJson } from "./safe-parse-json";
 export function formatDate(d: Date | string) {
   return format(new Date(d), "HH:mm:ss.SSS");

@@ -1,13 +1,10 @@
 import { useHandler } from "@fiberplane/hooks";
-import { useShallow } from "zustand/react/shallow";
 import type { MakePlaygroundRequestQueryFn } from "./queries";
 import type { KeyValueParameter, PlaygroundBody } from "./store";
-import {
-  getPreferredAuthorizationId,
-  useServiceBaseUrl,
-  useStudioStore,
-  useStudioStoreRaw,
-} from "./store";
+import { useServiceBaseUrl, useStudioStore } from "./store";
+import { useApiCallData } from "./store/hooks/useApiCallData";
+import { useCurrentAuthorization } from "./store/hooks/useCurrentAuthorization";
+import { useUrlPreview } from "./store/hooks/useUrlPreview";
 
 export function usePlaygroundSubmitHandler({
   makeRequest,
@@ -16,46 +13,26 @@ export function usePlaygroundSubmitHandler({
 }) {
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();
 
-  const {
-    activeRoute,
-    body,
-    path,
-    method,
-    pathParams,
-    queryParams,
-    requestHeaders,
-  } = useStudioStore(
-    "activeRoute",
+  const { activeRoute } = useStudioStore("activeRoute");
+  const path = useUrlPreview();
+  const { body, pathParams, queryParams, requestHeaders } = useApiCallData(
     "body",
-    "path",
-    "method",
     "pathParams",
     "queryParams",
     "requestHeaders",
   );
 
-  const authorization = useStudioStoreRaw(
-    useShallow((state) => {
-      const authorizationId = getPreferredAuthorizationId(
-        state.authorizationId,
-        state.authorizations,
-      );
-
-      if (authorizationId === "none") {
-        return null;
-      }
-
-      return (
-        state.authorizations.find((auth) => auth.id === authorizationId) || null
-      );
-    }),
-  );
-
+  const authorization = useCurrentAuthorization();
   // NOTE - We make the submit handler optional to make it easier to call this as a standalone function
   return useHandler((e?: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault?.();
+    if (path === null || activeRoute === null) {
+      console.warn("No path defined");
+      return;
+    }
     // TODO - Make it clear in the UI that we're auto-adding these headers
-    const canHaveBody = !["GET", "DELETE"].includes(method);
+    const canHaveBody =
+      activeRoute !== null && !["GET", "DELETE"].includes(activeRoute.method);
     const contentTypeHeader = canHaveBody ? getContentTypeHeader(body) : null;
     const contentLength = canHaveBody ? getContentLength(body) : null;
     const modifiedHeaders = [
@@ -94,7 +71,7 @@ export function usePlaygroundSubmitHandler({
         // HACK - Temporary until this is removed...
         addServiceUrlIfBarePath,
         path,
-        method,
+        method: activeRoute.method,
         body,
         headers: modifiedHeaders,
         pathParams,
