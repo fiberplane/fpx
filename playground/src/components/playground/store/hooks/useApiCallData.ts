@@ -40,8 +40,6 @@ export function useApiCallData<
       // params may be undefined, that's why we use the ugly `createInitialApiCallData` function call
       const params = apiCallState[id] ?? createInitialApiCallData();
 
-      //   throw new Error("Params not set, this should not happen");
-
       const result = {} as Pick<T, K>;
       for (const item of items) {
         result[item as K] = params[item] as T[K];

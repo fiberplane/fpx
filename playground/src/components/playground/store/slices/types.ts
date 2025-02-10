@@ -36,7 +36,6 @@ export interface RequestResponseSlice {
 
   /** Response related state */
   setActiveResponse: (response: PlaygroundActiveResponse | null) => void;
-
 }
 
 /**
