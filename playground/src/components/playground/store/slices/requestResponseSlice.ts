@@ -320,13 +320,6 @@ export const requestResponseSlice: StateCreator<
       const apiData = apiCallState[id];
       apiData.activeResponse = response;
     }),
-
-  /** Session history related state */
-  sessionHistory: [],
-  recordRequestInSessionHistory: (traceId: string) =>
-    set((state) => {
-      state.sessionHistory.push(traceId);
-    }),
 });
 
 export function createInitialApiCallData(route?: ApiRoute): ApiCallData {

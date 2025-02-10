@@ -8,8 +8,6 @@ import type { ApiRoute } from "../../types";
 import type { KeyValueParameter, PlaygroundActiveResponse } from "../types";
 import type { SettingsSlice } from "./settingsSlice";
 
-type TraceId = string;
-
 export interface RequestResponseSlice {
   serviceBaseUrl: string;
   /**
@@ -39,9 +37,6 @@ export interface RequestResponseSlice {
   /** Response related state */
   setActiveResponse: (response: PlaygroundActiveResponse | null) => void;
 
-  /** Session history related state */
-  sessionHistory: TraceId[];
-  recordRequestInSessionHistory: (traceId: TraceId) => void;
 }
 
 /**
