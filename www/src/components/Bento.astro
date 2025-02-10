@@ -1,6 +1,21 @@
+---
+import autoDetectedRoutesDark from "@/assets/bento-auto-detected-routes-dark.jpg?url";
+---
+
 <section class="container">
   <div class="bento-grid">
-    <article class="bento-grid-item"></article>
+    <article class="bento-grid-item">
+      <h3>Auto detected routes</h3>
+      <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit?</p>
+
+      <div class="bento-grid-item-image">
+        <img
+          src={autoDetectedRoutesDark}
+          alt="Screenshot of auto detected routes in FPX Studio"
+        />
+      </div>
+    </article>
+
     <article class="bento-grid-item"></article>
     <article class="bento-grid-item"></article>
     <article class="bento-grid-item"></article>
@@ -9,6 +24,9 @@
 
 <style>
   .container {
+    --bento-item-radius: 1.5rem;
+    --bento-item-padding: 2rem;
+
     container: bento-container / inline-size;
     max-width: 60rem;
     margin-inline: auto;
@@ -17,21 +35,49 @@
   .bento-grid {
     display: grid;
     grid-template: auto auto / repeat(7, 1fr);
-    gap: 1rem;
-
-    height: 25rem;
+    gap: 1.5rem;
   }
 
   .bento-grid-item {
+    /* Override Starlight's margin */
     margin: 0 !important;
-    grid-column: span 3;
-    background-color: var(--bg-secondary);
+
+    grid-column: span 4;
+
+    border-radius: var(--bento-item-radius);
     border-radius: var(--border-radius);
-    border-radius: 1.5rem;
+    border: 1px solid var(--sl-color-hairline-shade);
+
+    background-color: var(--bg-secondary);
+    padding-block-start: var(--bento-item-padding);
+    padding-inline: var(--bento-item-padding);
+
+    overflow: hidden;
 
     &:nth-child(4n + 1),
     &:nth-child(4n) {
-      grid-column: span 4;
+      grid-column: span 3;
+      aspect-ratio: 3 / 4;
+    }
+  }
+
+  .bento-grid-item-image {
+    overflow: hidden;
+    position: relative;
+    height: 100%;
+    width: calc(100% + var(--bento-item-padding));
+    border-top-left-radius: var(--border-radius);
+
+    border-style: solid;
+    border-color: var(--sl-color-hairline-shade);
+    border-width: 1px;
+    border-right: none;
+    border-bottom: none;
+
+    box-shadow: 0px 6px 24px 0px var(--bg-emphasis);
+
+    img {
+      position: absolute;
     }
   }
 </style>
