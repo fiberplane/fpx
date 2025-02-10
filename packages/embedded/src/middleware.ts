@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import { createMiddleware } from "hono/factory";
 import type { Env, MiddlewareHandler } from "hono/types";
 import packageJson from "../package.json" assert { type: "json" };
 import { createRouter } from "./router.js";
@@ -7,9 +8,10 @@ import type { EmbeddedOptions, ResolvedEmbeddedOptions } from "./types.js";
 const VERSION = packageJson.version;
 const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/embedded@${VERSION}/dist/playground/`;
 
-export const createMiddleware =
-  <E extends Env>(options: EmbeddedOptions): MiddlewareHandler<E> =>
-  async (c, next) => {
+export const createFiberplane = <E extends Env>(
+  options: EmbeddedOptions,
+): MiddlewareHandler<E> =>
+  createMiddleware(async (c, next) => {
     const { mountedPath, internalPath } = getPaths(c);
     const fpxEndpoint = getFpxEndpoint(c);
     // Forward request to embedded router, continuing middleware chain if no route matches
@@ -32,7 +34,7 @@ export const createMiddleware =
     }
 
     return response;
-  };
+  });
 
 // This middleware is designed to be mounted within another Hono app at any path.
 // Since the parent app determines the mount path, we need to extract and remove
