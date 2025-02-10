@@ -377,7 +377,7 @@ export function constructFullPath(
     fullPath,
     data.pathParams.filter((param) => param.enabled),
   );
-  // const url = new URL(fullPath);
+
   const searchParams = new URLSearchParams(
     createObjectFromKeyValueParameters(data.queryParams),
   );
