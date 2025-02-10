@@ -1,3 +1,6 @@
+import {Env} from "hono/types";
+import {Hono} from "hono";
+
 export interface EmbeddedOptions {
   /**
    * (Optional) Fiberplane API key to use for the embedded playground api.
@@ -12,6 +15,11 @@ export interface EmbeddedOptions {
    */
   cdn?: string;
   openapi?: OpenAPIOptions;
+
+  /**
+   * Enable debug statements
+   */
+  debug?: boolean
 }
 
 export interface ResolvedEmbeddedOptions extends EmbeddedOptions {
@@ -35,4 +43,18 @@ export interface OpenAPIOptions {
    * A JSON-stringified object representing an OpenAPI spec.
    */
   content?: string;
+}
+
+export interface FiberplaneAppType {
+  Variables: {
+    debug: boolean,
+  }
+}
+
+class FiberplaneHono<E extends Env = Env> extends Hono<E & FiberplaneAppType> {}
+
+export function logIfDebug(debug: boolean, message?: any, ...params: any[]) {
+  if (debug) {
+    console.debug(message, params);
+  }
 }
