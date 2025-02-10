@@ -45,7 +45,7 @@ export function PlaygroundInput({
       onSubmit={onSubmit}
       // NOTE - For some reason, in prod (not locally), we get a `margin-block-end: 1rem` on the form element from the user-agent-stylesheet
       //        That's why we add `m-0` to the form element.
-      className="flex items-center justify-between bg-input border rounded-lg mx-0 py-2"
+      className="flex items-center justify-between bg-input border rounded-lg mx-0 py-1"
     >
       <FpDropdownMenu>
         <FpDropdownMenuTrigger className="flex flex-grow items-center ml-2 gap-2 h-min hover:bg-muted data-[state=open]:bg-muted rounded-sm">
@@ -53,7 +53,7 @@ export function PlaygroundInput({
             method={activeRoute?.method || "GET"}
             className="ml-2 text-sm"
           />
-          <div className="flex w-full my-2 text-xs font-mono border-none shadow-none focus:ring-0 ml-0 py-0">
+          <div className="flex items-center w-full my-2 text-xs font-mono border-none shadow-none focus:ring-0 ml-0 py-0">
             {path}
           </div>
           <CaretSortIcon className="w-3 h-3 mr-1" />
@@ -68,17 +68,21 @@ export function PlaygroundInput({
                   key={getRouteId(route)}
                   onSelect={() => setActiveRoute(route)}
                   value={getRouteId(route)}
-                  className="aria-checked:bg-muted aria-checked:focus:text-accent-foreground focus:bg-muted "
+                  className={cn(
+                    "py-0.25",
+                    "focus:bg-muted",
+                    "aria-checked:bg-muted aria-checked:focus:text-accent-foreground",
+                  )}
                 >
                   <div
                     className={cn(
-                      "flex-grow grid grid-cols-[2.5rem_auto] items-center gap-2 px-2 rounded-md",
+                      "flex-grow grid grid-cols-[2.5rem_auto] items-center gap-1 px-1 rounded-md",
                     )}
                   >
-                    <Method method={route.method} className="ml-2 text-sm" />
+                    <Method method={route.method} className="ml-1 text-xs" />
                     <div className="flex w-full my-2">
                       <div className="flex-initial text-xs w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0 disabled:cursor-text disabled:bg-muted py-0">
-                        {route.description || route.title || route.path}
+                        {route.summary || route.description || route.path}
                       </div>
                     </div>
                   </div>

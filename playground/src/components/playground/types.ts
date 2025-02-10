@@ -30,8 +30,12 @@ export const ApiRouteSchema = z.object({
   path: z.string(),
   method: RequestMethodSchema,
   openApiSpec: z.string().nullish().optional(),
-  title: z.string().nullish(),
-  summary: z.string().nullish(),
+  summary: z
+    .string()
+    .nullish()
+    .describe(
+      "A short summary of the route from the OpenAPI spec (basically a 'title')",
+    ),
   description: z.string().nullish(),
   tags: z.array(z.string()).nullish(),
 });
