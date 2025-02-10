@@ -6,11 +6,11 @@ import type { EmbeddedOptions, ResolvedEmbeddedOptions } from "./types.js";
 const VERSION = packageJson.version;
 const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/embedded@${VERSION}/dist/playground/`;
 
-export const createFiberplane = (
-  options: EmbeddedOptions,
-): MiddlewareHandler =>
+export const createFiberplane =
+  (options: EmbeddedOptions): MiddlewareHandler =>
   async (c, next) => {
     const { mountedPath, internalPath } = getPaths(c);
+    const apiKey = options.apiKey ?? getApiKey(c);
     const fpxEndpoint = getFpxEndpoint(c);
     // Forward request to embedded router, continuing middleware chain if no route matches
     const router = createRouter({
@@ -18,6 +18,8 @@ export const createFiberplane = (
       mountedPath,
       fpxEndpoint,
       ...options,
+      // Add the api key with a fallback to the env var FIBERPLANE_API_KEY
+      apiKey,
     } satisfies ResolvedEmbeddedOptions);
 
     // Create a new request with the corrected (internal) path
@@ -49,4 +51,8 @@ function getPaths(c: Context): { mountedPath: string; internalPath: string } {
 
 function getFpxEndpoint(c: Context): string | undefined {
   return c?.env?.FPX_ENDPOINT;
+}
+
+function getApiKey(c: Context): string | undefined {
+  return c?.env?.FIBERPLANE_API_KEY;
 }

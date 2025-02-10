@@ -2,7 +2,9 @@ export interface EmbeddedOptions {
   /**
    * (Optional) Fiberplane API key to use for the embedded playground api.
    *
-   * If not provided, certain features like the Workflow Builder will be disabled.
+   * The middleware will attempt to fall back to the `FIBERPLANE_API_KEY` environment variable if not set as an option.
+   *
+   * _Without an API key, certain features like the Workflow Builder will be disabled._
    */
   apiKey?: string;
   /**
