@@ -8,12 +8,11 @@ export function Method({
     <span
       className={cn(
         "font-mono",
-        "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
         getHttpMethodTextColor(method?.toUpperCase?.()),
         className,
       )}
     >
-      {method}
+      {method === "DELETE" ? "DEL" : method}
     </span>
   );
 }
