@@ -1,12 +1,22 @@
 ---
 import autoDetectedRoutesDark from "@/assets/bento-auto-detected-routes-dark.jpg?url";
+import tracesDark from "@/assets/bento-traces-dark.jpg?url";
 ---
 
 <section class="container">
   <div class="bento-grid">
-    <article class="bento-grid-item">
-      <h3>Auto detected routes</h3>
-      <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit?</p>
+    <article class="bento-grid-item"></article>
+
+    <article class="bento-grid-item bento-grid-item--horizontal">
+      <div>
+        <h3>Auto detected routes</h3>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi saepe
+          dignissimos error recusandae non? Quisquam officiis velit voluptatem
+          nam ab blanditiis. Harum, eligendi. Quisquam odio numquam optio unde
+          necessitatibus distinctio.
+        </p>
+      </div>
 
       <div class="bento-grid-item-image">
         <img
@@ -16,25 +26,43 @@ import autoDetectedRoutesDark from "@/assets/bento-auto-detected-routes-dark.jpg
       </div>
     </article>
 
-    <article class="bento-grid-item"></article>
-    <article class="bento-grid-item"></article>
-    <article class="bento-grid-item"></article>
+    <article class="bento-grid-item">
+      <h3>Traces</h3>
+      <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit?</p>
+
+      <div class="bento-grid-item-image">
+        <img
+          src={tracesDark}
+          alt="Screenshot of auto detected routes in FPX Studio"
+        />
+      </div>
+    </article>
+
+    <article class="bento-grid-item">
+      <h3>Automatically generated routes</h3>
+      <p>
+        Lorem ipsum, dolor sit amet consectetur adipisicing elit. Magnam
+        dolorum, illum, consequuntur.
+      </p>
+
+      <div class="icon-container">✨</div>
+    </article>
   </div>
 </section>
 
 <style>
   .container {
     --bento-item-radius: 1.5rem;
-    --bento-item-padding: 2rem;
+    --bento-item-padding: 2.5rem;
 
     container: bento-container / inline-size;
-    max-width: 60rem;
+    max-width: 72rem;
     margin-inline: auto;
   }
 
   .bento-grid {
     display: grid;
-    grid-template: auto auto / repeat(7, 1fr);
+    grid-template: auto auto / repeat(5, 1fr);
     gap: 1.5rem;
   }
 
@@ -42,7 +70,7 @@ import autoDetectedRoutesDark from "@/assets/bento-auto-detected-routes-dark.jpg
     /* Override Starlight's margin */
     margin: 0 !important;
 
-    grid-column: span 4;
+    grid-column: span 3;
 
     border-radius: var(--bento-item-radius);
     border-radius: var(--border-radius);
@@ -56,9 +84,24 @@ import autoDetectedRoutesDark from "@/assets/bento-auto-detected-routes-dark.jpg
 
     &:nth-child(4n + 1),
     &:nth-child(4n) {
-      grid-column: span 3;
+      grid-column: span 2;
       aspect-ratio: 3 / 4;
+      aspect-ratio: 1;
     }
+  }
+
+  .bento-grid-item h3 {
+    font-size: 32px;
+  }
+
+  .bento-grid-item--horizontal {
+    div {
+      margin: 0 !important;
+    }
+
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .bento-grid-item-image {
@@ -79,5 +122,12 @@ import autoDetectedRoutesDark from "@/assets/bento-auto-detected-routes-dark.jpg
     img {
       position: absolute;
     }
+  }
+
+  .icon-container {
+    display: grid;
+    justify-content: center;
+    font-size: 6rem;
+    filter: hue-rotate(320deg) contrast(120%);
   }
 </style>
