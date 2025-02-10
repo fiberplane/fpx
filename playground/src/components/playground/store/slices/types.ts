@@ -35,8 +35,8 @@ export interface RequestResponseSlice {
     requestBodyType: PlaygroundBodyType,
     isMultipart?: boolean,
   ) => void;
-  /** Response related state */
 
+  /** Response related state */
   setActiveResponse: (response: PlaygroundActiveResponse | null) => void;
 
   /** Session history related state */

@@ -303,8 +303,6 @@ export const requestResponseSlice: StateCreator<
   removeServiceUrlFromPath: (path: string) =>
     removeBaseUrl(get().serviceBaseUrl, path),
 
-  // activeResponse: null,
-
   setActiveResponse: (response) =>
     set((state) => {
       const { apiCallState, activeRoute } = state;
