@@ -12,6 +12,13 @@ type TraceId = string;
 
 export interface RequestResponseSlice {
   serviceBaseUrl: string;
+  /**
+   * A map of "routeId" => request data
+   *
+   * This allows us to restore the state of the request form
+   * on a per-route basis while the user is navigating between
+   * different ApiRoutes.
+   */
   apiCallState: Record<string, ApiCallData>;
   setCurrentPathParams: (pathParams: KeyValueParameter[]) => void;
   updateCurrentPathParamValues: (
@@ -37,14 +44,22 @@ export interface RequestResponseSlice {
   recordRequestInSessionHistory: (traceId: TraceId) => void;
 }
 
-// Stores all request (path) specific parameters
-// Like query string parameters, path parameters, body, etc...
+/**
+ * Stores all recently used parameters, scoped to an ApiRoute
+ * (query string parameters, path parameters, body, etc.)
+ *
+ * This allows us to restore the state of the request form
+ * on a per-route basis while the user is navigating between
+ * different ApiRoutes.
+ */
 export type ApiCallData = {
   body: PlaygroundBody;
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
   requestHeaders: KeyValueParameter[];
+  /** ID of the user-defined auth scheme to use */
   authorizationId: "none" | string | null;
+  /** The response received by the playground from an actual request against the api */
   activeResponse: PlaygroundActiveResponse | null;
 };
 

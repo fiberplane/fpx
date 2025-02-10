@@ -89,22 +89,26 @@ export const PlaygroundStateSchema = z.object({
   serviceBaseUrl: z.string().describe("Base URL for requests"),
   apiCallState: z.record(
     z.string(),
-    z.object({
-      body: PlaygroundBodySchema.describe("Body"),
-      pathParams: z
-        .array(KeyValueParameterSchema)
-        .describe("Path parameters and their corresponding values"),
-      queryParams: z
-        .array(KeyValueParameterSchema)
-        .describe("Query parameters to be sent with the request"),
-      requestHeaders: z
-        .array(KeyValueParameterSchema)
-        .describe("Headers to be sent with the request"),
-      // NOTE - This is used to force us to show a response body for a request that was most recently made
-      activeResponse: PlaygroundActiveResponseSchema.nullable().describe(
-        "The response to show in the response panel",
+    z
+      .object({
+        body: PlaygroundBodySchema.describe("Body"),
+        pathParams: z
+          .array(KeyValueParameterSchema)
+          .describe("Path parameters and their corresponding values"),
+        queryParams: z
+          .array(KeyValueParameterSchema)
+          .describe("Query parameters to be sent with the request"),
+        requestHeaders: z
+          .array(KeyValueParameterSchema)
+          .describe("Headers to be sent with the request"),
+        // NOTE - This is used to force us to show a response body for a request that was most recently made
+        activeResponse: PlaygroundActiveResponseSchema.nullable().describe(
+          "The response to show in the response panel",
+        ),
+      })
+      .describe(
+        "Form data for a request against a given route, allows us to scope form data by route",
       ),
-    }),
   ),
 
   // Tabs

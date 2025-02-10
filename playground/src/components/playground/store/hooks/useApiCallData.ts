@@ -1,4 +1,5 @@
 import { useShallow } from "zustand/react/shallow";
+import type { ApiRoute } from "../../types";
 import {
   createInitialApiCallData,
   getRouteId,
@@ -6,6 +7,20 @@ import {
 import type { ApiCallData } from "../slices/types";
 import { useStudioStoreRaw } from "./useStudioStore";
 
+/**
+ * Retrieves specific API call data properties for the current active route from the studio store.
+ *
+ * This hook extracts the desired keys from the {@link ApiCallData} state associated with the active {@link ApiRoute} route.
+ *
+ * - Throws an error if there is no active route.
+ * - Uses the active route's ID to locate the corresponding API call state.
+ * - Logs a warning if the API call data is missing and then initializes it with a default value.
+ * - Returns an object containing only the requested properties.
+ *
+ * Using shallow comparison for state selection helps optimize performance.
+ *
+ * @param items - The keys of the {@link ApiCallData} to extract from the state.
+ */
 export function useApiCallData<
   T extends ApiCallData,
   K extends keyof ApiCallData,
