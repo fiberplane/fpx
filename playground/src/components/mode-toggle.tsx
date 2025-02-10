@@ -1,43 +1,47 @@
-import { Moon, Sun } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import {
-  FpDropdownMenu,
-  FpDropdownMenuContent,
-  FpDropdownMenuItem,
-  FpDropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { cn } from "@/lib/utils";
+import { Monitor, Moon, Sun } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useTheme } from "./theme-provider";
 
+interface ThemeOptionProps {
+  value: "light" | "dark" | "system";
+  label: string;
+  icon: LucideIcon;
+}
+
+function ThemeOption({ value, label, icon: Icon }: ThemeOptionProps) {
+  return (
+    <div>
+      <RadioGroupItem value={value} id={value} className="peer sr-only" />
+      <Label
+        htmlFor={value}
+        className={cn(
+          "flex flex-col items-center justify-between rounded-md border-2",
+          "border-muted bg-popover p-4 hover:bg-accent/10 hover:text-accent-foreground",
+          "peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary",
+        )}
+      >
+        <Icon className="mb-3 h-6 w-6" />
+        <span className="text-sm font-medium">{label}</span>
+      </Label>
+    </div>
+  );
+}
+
 export function ModeToggle() {
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   return (
-    <div className="flex items-center gap-2">
-      <FpDropdownMenu>
-        <FpDropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            className="hover:bg-transparent"
-          >
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-        </FpDropdownMenuTrigger>
-        <FpDropdownMenuContent align="end">
-          <FpDropdownMenuItem onClick={() => setTheme("light")}>
-            Light
-          </FpDropdownMenuItem>
-          <FpDropdownMenuItem onClick={() => setTheme("dark")}>
-            Dark
-          </FpDropdownMenuItem>
-          <FpDropdownMenuItem onClick={() => setTheme("system")}>
-            System
-          </FpDropdownMenuItem>
-        </FpDropdownMenuContent>
-      </FpDropdownMenu>
-    </div>
+    <RadioGroup
+      defaultValue={theme}
+      onValueChange={(value: "light" | "dark" | "system") => setTheme(value)}
+      className="grid grid-cols-3 gap-4"
+    >
+      <ThemeOption value="light" label="Light" icon={Sun} />
+      <ThemeOption value="dark" label="Dark" icon={Moon} />
+      <ThemeOption value="system" label="System" icon={Monitor} />
+    </RadioGroup>
   );
 }
