@@ -1,0 +1,37 @@
+<section class="container">
+  <div class="bento-grid">
+    <article class="bento-grid-item"></article>
+    <article class="bento-grid-item"></article>
+    <article class="bento-grid-item"></article>
+    <article class="bento-grid-item"></article>
+  </div>
+</section>
+
+<style>
+  .container {
+    container: bento-container / inline-size;
+    max-width: 60rem;
+    margin-inline: auto;
+  }
+
+  .bento-grid {
+    display: grid;
+    grid-template: auto auto / repeat(7, 1fr);
+    gap: 1rem;
+
+    height: 25rem;
+  }
+
+  .bento-grid-item {
+    margin: 0 !important;
+    grid-column: span 3;
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    border-radius: 1.5rem;
+
+    &:nth-child(4n + 1),
+    &:nth-child(4n) {
+      grid-column: span 4;
+    }
+  }
+</style>

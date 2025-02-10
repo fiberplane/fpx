@@ -30,19 +30,18 @@ const navEntries = nav?.entries || [];
   <div class="sl-hidden md:sl-flex right-group">
     <nav class="sl-flex nav-links">
       {
-        navEntries.length > 0 &&
-          navEntries.map(({ href, label }) => (
-            <LinkButton
-              href={href}
-              variant="minimal"
-              class:list={[
-                "nav-link",
-                { "is-active": Astro.url.pathname.startsWith(href) }
-              ]}
-            >
-              {label}
-            </LinkButton>
-          ))
+        navEntries.map(({ href, label }) => (
+          <LinkButton
+            href={href}
+            variant="minimal"
+            class:list={[
+              "nav-link",
+              { "is-active": Astro.url.pathname.startsWith(href) }
+            ]}
+          >
+            {label}
+          </LinkButton>
+        ))
       }
     </nav>
 
