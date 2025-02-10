@@ -19,19 +19,27 @@ export function createRouter<E extends Env>(
   const { apiKey, fpxEndpoint, debug, ...sanitizedOptions } = options;
 
   const app = new Hono<E & FiberplaneAppType>();
-  const debugEnabled = debug || false;
+  const isDebugEnabled = debug ?? false;
 
   app.use(async (c, next) => {
-    c.set("debug", debugEnabled);
+    c.set("debug", isDebugEnabled);
     await next();
   });
 
+  // If the API key is present, we create the internal API router
+  // Otherwise, we return a 402 error for all internal API requests
   if (apiKey) {
-    logIfDebug(debugEnabled, "creating router as api key is set");
+    logIfDebug(
+      isDebugEnabled,
+      "Fiberplane API Key Present. Creating internal API router.",
+    );
     app.route("/api", createApiRoutes(apiKey, fpxEndpoint));
   } else {
+    logIfDebug(
+      isDebugEnabled,
+      "Fiberplane API Key *Not* Present. Internal API router disabled.",
+    );
     app.use("/api/*", async (c) => {
-      logIfDebug(debugEnabled, "no api key is set, returning early");
       return c.json({ error: "Fiberplane API key is not set" }, 402);
     });
   }

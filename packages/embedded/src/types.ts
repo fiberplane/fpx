@@ -50,8 +50,16 @@ export interface FiberplaneAppType {
   };
 }
 
-export function logIfDebug(debug: boolean, message: unknown): void;
-export function logIfDebug(debug: Context, message: unknown): void;
+export function logIfDebug(
+  debug: boolean,
+  message: unknown,
+  ...params: unknown[]
+): void;
+export function logIfDebug(
+  debug: Context,
+  message: unknown,
+  ...params: unknown[]
+): void;
 export function logIfDebug(
   debug: boolean | Context,
   message: unknown,

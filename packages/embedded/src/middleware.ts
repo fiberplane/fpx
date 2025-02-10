@@ -2,7 +2,11 @@ import type { Context } from "hono";
 import type { Env, MiddlewareHandler } from "hono/types";
 import packageJson from "../package.json" assert { type: "json" };
 import { createRouter } from "./router.js";
-import type { EmbeddedOptions, ResolvedEmbeddedOptions } from "./types.js";
+import {
+  type EmbeddedOptions,
+  type ResolvedEmbeddedOptions,
+  logIfDebug,
+} from "./types.js";
 
 const VERSION = packageJson.version;
 const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/embedded@${VERSION}/dist/playground/`;
@@ -10,6 +14,9 @@ const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/embedded@${VERSION}/di
 export const createMiddleware =
   <E extends Env>(options: EmbeddedOptions): MiddlewareHandler<E> =>
   async (c, next) => {
+    const debug = options.debug ?? false;
+    logIfDebug(debug, "debug logs are enabled");
+
     const { mountedPath, internalPath } = getPaths(c);
     const fpxEndpoint = getFpxEndpoint(c);
     // Forward request to embedded router, continuing middleware chain if no route matches
@@ -24,7 +31,18 @@ export const createMiddleware =
     const newUrl = new URL(c.req.url);
     newUrl.pathname = internalPath;
     const newRequest = new Request(newUrl, c.req.raw);
+
+    logIfDebug(debug, "Making internal api request to", newUrl.toString());
+
     const response = await router.fetch(newRequest);
+
+    logIfDebug(
+      debug,
+      "Finished internal api request to",
+      newUrl.toString(),
+      "returned",
+      response.status,
+    );
 
     // Skip the middleware and continue if the embedded router doesn't match
     if (response.status === 404) {
