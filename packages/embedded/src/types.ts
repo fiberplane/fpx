@@ -1,5 +1,5 @@
-import {Env} from "hono/types";
-import {Hono} from "hono";
+import { Hono } from "hono";
+import type { Env } from "hono/types";
 
 export interface EmbeddedOptions {
   /**
@@ -19,7 +19,7 @@ export interface EmbeddedOptions {
   /**
    * Enable debug statements
    */
-  debug?: boolean
+  debug?: boolean;
 }
 
 export interface ResolvedEmbeddedOptions extends EmbeddedOptions {
@@ -47,13 +47,15 @@ export interface OpenAPIOptions {
 
 export interface FiberplaneAppType {
   Variables: {
-    debug: boolean,
-  }
+    debug: boolean;
+  };
 }
 
-class FiberplaneHono<E extends Env = Env> extends Hono<E & FiberplaneAppType> {}
-
-export function logIfDebug(debug: boolean, message?: any, ...params: any[]) {
+export function logIfDebug(
+  debug: boolean,
+  message?: unknown,
+  ...params: unknown[]
+) {
   if (debug) {
     console.debug(message, params);
   }

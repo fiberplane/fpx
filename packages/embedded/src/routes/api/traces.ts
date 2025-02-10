@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import {FiberplaneAppType, logIfDebug} from "../../types.js";
+import { type FiberplaneAppType, logIfDebug } from "../../types.js";
 
 // Using Record<string, unknown> as a simpler type for JSON data
 type ApiResponse = Record<string, unknown> | Array<Record<string, unknown>>;
@@ -22,7 +22,11 @@ export default function createTracesApiRoute(fpxEndpoint?: string) {
           Accept: "application/json",
         },
       });
-      logIfDebug(c.get("debug"), "API response from traces endpoint:", response);
+      logIfDebug(
+        c.get("debug"),
+        "API response from traces endpoint:",
+        response,
+      );
       const data = (await response.json()) as ApiResponse;
       return c.json(data);
     } catch (error) {

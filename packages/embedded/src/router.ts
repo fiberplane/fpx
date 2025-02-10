@@ -1,7 +1,11 @@
 import { type Env, Hono } from "hono";
 import createApiRoutes from "./routes/api/index.js";
 import createEmbeddedPlayground from "./routes/playground.js";
-import {FiberplaneAppType, logIfDebug, ResolvedEmbeddedOptions} from "./types.js";
+import {
+  type FiberplaneAppType,
+  type ResolvedEmbeddedOptions,
+  logIfDebug,
+} from "./types.js";
 
 // We use a factory pattern to create routes, which allows for clean dependency injection
 // of the apiKey. This keeps the implementation isolated and prevents us from having to

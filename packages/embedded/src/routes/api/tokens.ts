@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { FpService } from "../../services/index.js";
-import {FiberplaneAppType, logIfDebug} from "../../types.js";
+import { type FiberplaneAppType, logIfDebug } from "../../types.js";
 
 // Temporary implementation
 export default function createTokensApiRoute(apiKey: string) {
@@ -11,7 +11,7 @@ export default function createTokensApiRoute(apiKey: string) {
 
   app.get("/", async (c) => {
     logIfDebug(c.get("debug"), "tokens index was called (GET)");
-    c.json({ lol: "broek" })
+    c.json({ lol: "broek" });
   });
 
   app.put("/", async (c) => {

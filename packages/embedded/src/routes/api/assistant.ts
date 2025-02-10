@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { PLAYGROUND_SERVICES_URL } from "../../constants.js";
-import {FiberplaneAppType, logIfDebug} from "../../types.js";
+import { type FiberplaneAppType, logIfDebug } from "../../types.js";
 
 export default function createAssistantApiRoute(apiKey: string) {
   const app = new Hono<FiberplaneAppType>();
@@ -16,11 +16,15 @@ export default function createAssistantApiRoute(apiKey: string) {
     // Only include the bare minimum authentication and content-type headers
     headers.set("Authorization", `Bearer ${apiKey}`);
     if (contentType) {
-      logIfDebug(c.get("debug"), "content type attached to proxied request:", contentType);
+      logIfDebug(
+        c.get("debug"),
+        "content type attached to proxied request:",
+        contentType,
+      );
       headers.set("content-type", contentType);
     }
 
-    let result = fetch(url, {
+    const result = fetch(url, {
       method: c.req.method,
       headers,
       body: c.req.raw.body,
