@@ -7,7 +7,12 @@ export default function createReportsApiRoute(apiKey: string) {
 
   // Proxy all requests to fp-services but attach a token
   app.all("*", async (c) => {
-    logIfDebug(c.get("debug"), "fp-services proxy request called (reports)");
+    logIfDebug(
+      c,
+      "[reports]",
+      `- ${c.req.method} ${c.req.path} -`,
+      "Proxying request to fiberplane api",
+    );
 
     const url = `${PLAYGROUND_SERVICES_URL}${c.req.path}`;
 
@@ -17,7 +22,9 @@ export default function createReportsApiRoute(apiKey: string) {
     headers.set("Authorization", `Bearer ${apiKey}`);
     if (contentType) {
       logIfDebug(
-        c.get("debug"),
+        c,
+        "[reports]",
+        `- ${c.req.method} ${c.req.path} -`,
         "content type attached to proxied request:",
         contentType,
       );
@@ -30,7 +37,6 @@ export default function createReportsApiRoute(apiKey: string) {
       body: c.req.raw.body,
     });
 
-    logIfDebug(c.get("debug"), "proxied request sent off. response:", result);
     return result;
   });
 

@@ -8,9 +8,19 @@ export default function createTracesApiRoute(fpxEndpoint?: string) {
   const app = new Hono<FiberplaneAppType>();
 
   app.get("/", async (c) => {
-    logIfDebug(c.get("debug"), "traces endpoint called");
+    logIfDebug(
+      c,
+      "[traces]",
+      "- GET / -",
+      "Proxying request to fiberplane api",
+    );
     if (!fpxEndpoint) {
-      logIfDebug(c.get("debug"), "fpx endpoint undefined, returning early");
+      logIfDebug(
+        c,
+        "[traces]",
+        "- GET / -",
+        "fpx endpoint undefined, returning early",
+      );
       return c.json({ error: "Tracing is not enabled" }, 500);
     }
     try {
@@ -23,7 +33,9 @@ export default function createTracesApiRoute(fpxEndpoint?: string) {
         },
       });
       logIfDebug(
-        c.get("debug"),
+        c,
+        "[traces]",
+        "- GET / -",
         "API response from traces endpoint:",
         response,
       );
@@ -36,7 +48,12 @@ export default function createTracesApiRoute(fpxEndpoint?: string) {
   });
 
   app.get("/:traceId/spans", async (c) => {
-    logIfDebug(c.get("debug"), "span endpoint called");
+    logIfDebug(
+      c,
+      "[traces]",
+      "- GET /:traceId/spans -",
+      "Proxying request to fiberplane api",
+    );
     if (!fpxEndpoint) {
       return c.json({ error: "Tracing is not enabled" }, 500);
     }
@@ -50,7 +67,13 @@ export default function createTracesApiRoute(fpxEndpoint?: string) {
           Accept: "application/json",
         },
       });
-      logIfDebug(c.get("debug"), "API response from spans endpoint:", response);
+      logIfDebug(
+        c,
+        "[traces]",
+        "- GET /:traceId/spans -",
+        "API response from spans endpoint:",
+        response,
+      );
       const data = (await response.json()) as ApiResponse;
       return c.json(data);
     } catch (error) {
