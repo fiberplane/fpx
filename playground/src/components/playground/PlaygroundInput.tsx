@@ -47,51 +47,65 @@ export function PlaygroundInput({
       //        That's why we add `m-0` to the form element.
       className="flex items-center justify-between bg-input border rounded-lg mx-0 py-1"
     >
-      <FpDropdownMenu>
-        <FpDropdownMenuTrigger className="flex flex-grow items-center ml-2 gap-2 h-min hover:bg-muted data-[state=open]:bg-muted rounded-sm">
-          <Method
-            method={activeRoute?.method || "GET"}
-            className="ml-2 text-sm"
-          />
-          <div className="flex items-center w-full my-2 text-xs font-mono border-none shadow-none focus:ring-0 ml-0 py-0">
-            {path}
-          </div>
-          <CaretSortIcon className="w-3 h-3 mr-1" />
-        </FpDropdownMenuTrigger>
-        <FpDropdownMenuPortal>
-          <FpDropdownMenuContent align="start">
-            <FpDropdownMenuRadioGroup
-              value={activeRoute ? getRouteId(activeRoute) : ""}
-            >
-              {appRoutes.map((route) => (
-                <FpMinimalDropdownMenuRadioItem
-                  key={getRouteId(route)}
-                  onSelect={() => setActiveRoute(route)}
-                  value={getRouteId(route)}
-                  className={cn(
-                    "py-0.25",
-                    "focus:bg-muted",
-                    "aria-checked:bg-muted aria-checked:focus:text-accent-foreground",
-                  )}
-                >
-                  <div
+      <div className="flex-1 min-w-0">
+        <FpDropdownMenu>
+          <FpDropdownMenuTrigger
+            className={cn(
+              "flex",
+              "ml-2",
+              "items-center",
+              "gap-2",
+              "h-min",
+              "hover:bg-muted",
+              "data-[state=open]:bg-muted",
+              "rounded-sm",
+              "w-full",
+            )}
+          >
+            <Method
+              method={activeRoute?.method || "GET"}
+              className="ml-2 text-sm flex-shrink-0"
+            />
+            <div className="flex-1 justify-start min-w-0">
+              <div className="text-xs font-mono truncate text-left">{path}</div>
+            </div>
+            <CaretSortIcon className="w-3 h-3 mr-1 flex-shrink-0" />
+          </FpDropdownMenuTrigger>
+          <FpDropdownMenuPortal>
+            <FpDropdownMenuContent align="start">
+              <FpDropdownMenuRadioGroup
+                value={activeRoute ? getRouteId(activeRoute) : ""}
+              >
+                {appRoutes.map((route) => (
+                  <FpMinimalDropdownMenuRadioItem
+                    key={getRouteId(route)}
+                    onSelect={() => setActiveRoute(route)}
+                    value={getRouteId(route)}
                     className={cn(
-                      "flex-grow grid grid-cols-[2.5rem_auto] items-center gap-1 px-1 rounded-md",
+                      "py-0.25",
+                      "focus:bg-muted",
+                      "aria-checked:bg-muted aria-checked:focus:text-accent-foreground",
                     )}
                   >
-                    <Method method={route.method} className="ml-1 text-xs" />
-                    <div className="flex w-full my-2">
-                      <div className="flex-initial text-xs w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0 disabled:cursor-text disabled:bg-muted py-0">
-                        {route.summary || route.description || route.path}
+                    <div
+                      className={cn(
+                        "flex-grow grid grid-cols-[2.5rem_auto] items-center gap-1 px-1 rounded-md",
+                      )}
+                    >
+                      <Method method={route.method} className="ml-1 text-xs" />
+                      <div className="flex w-full my-2">
+                        <div className="flex-initial text-xs w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0 disabled:cursor-text disabled:bg-muted py-0">
+                          {route.summary || route.description || route.path}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </FpMinimalDropdownMenuRadioItem>
-              ))}
-            </FpDropdownMenuRadioGroup>
-          </FpDropdownMenuContent>
-        </FpDropdownMenuPortal>
-      </FpDropdownMenu>
+                  </FpMinimalDropdownMenuRadioItem>
+                ))}
+              </FpDropdownMenuRadioGroup>
+            </FpDropdownMenuContent>
+          </FpDropdownMenuPortal>
+        </FpDropdownMenu>
+      </div>
       <div className="flex items-center space-x-2 px-2 py-0">
         <Tooltip>
           <TooltipTrigger asChild>
