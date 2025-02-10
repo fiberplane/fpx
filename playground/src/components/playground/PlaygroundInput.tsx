@@ -64,7 +64,7 @@ export function PlaygroundInput({
           >
             <Method
               method={activeRoute?.method || "GET"}
-              className="ml-2 text-sm flex-shrink-0"
+              className="ml-2 text-sm flex-shrink-0 min-w-10 text-left"
             />
             <div className="flex-1 justify-start min-w-0">
               <div className="text-xs font-mono truncate text-left">{path}</div>
