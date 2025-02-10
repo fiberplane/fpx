@@ -8,7 +8,7 @@ import {FiberplaneAppType, logIfDebug, ResolvedEmbeddedOptions} from "./types.js
 // extend the consuming Hono app's context with our own variables and types.
 export function createRouter<E extends Env>(
   options: ResolvedEmbeddedOptions,
-): Hono<E> {
+): Hono<E & FiberplaneAppType> {
   // Important: whatever gets passed to createEmbeddedPlayground
   // is passed to the playground, aka is on the HTML
   // We therefore remove the apiKey
