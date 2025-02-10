@@ -1,4 +1,4 @@
-import { cn, getHttpMethodTextColor } from "@/utils";
+import { cn, getHttpMethodString, getHttpMethodTextColor } from "@/utils";
 
 export function Method({
   method,
@@ -12,7 +12,7 @@ export function Method({
         className,
       )}
     >
-      {method === "DELETE" ? "DEL" : method}
+      {getHttpMethodString(method)}
     </span>
   );
 }
