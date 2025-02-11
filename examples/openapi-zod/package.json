@@ -14,14 +14,14 @@
     "@fiberplane/hono-otel": "workspace:*",
     "@hono/zod-openapi": "^0.18.0",
     "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.35.3",
+    "drizzle-orm": "^0.39.3",
     "drizzle-zod": "^0.5.1",
     "hono": "^4.6.5",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241112.0",
-    "drizzle-kit": "^0.26.2",
+    "drizzle-kit": "^0.30.4",
     "wrangler": "^3.87.0"
   }
 }

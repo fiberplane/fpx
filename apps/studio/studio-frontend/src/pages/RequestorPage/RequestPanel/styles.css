@@ -1,0 +1,17 @@
+/* Define the pulse keyframes */
+@keyframes fpxpulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.7;
+  }
+}
+
+/* Apply the pulse animation */
+.fpx-pulse {
+  animation: fpxpulse .85s infinite;
+}
