@@ -1,13 +1,6 @@
-import PLACEGOOSE_API_SPEC from "@/lib/placegoose.json";
-import TIGHTKNIT_API_SPEC from "@/lib/tightknit.json";
 import { specToApiRoutes } from "./spec-to-api-routes";
 import type { ApiRoutesResponse, OpenAPISpec } from "./types";
 import type { ResolvedSpecResult } from "./types";
-
-const MOCK_API_SPEC =
-  process.env.NODE_ENV === "production"
-    ? PLACEGOOSE_API_SPEC // Render placegoose as mock api spec in production
-    : TIGHTKNIT_API_SPEC; // Render tightknit as mock api spec in development
 
 /**
  * Adapter module for converting OpenAPI specs into ApiRoutesResponse format.
@@ -20,14 +13,13 @@ const MOCK_API_SPEC =
  * `@fiberplane/embedded`
  */
 export async function getApiRoutesFromOpenApiSpec(
-  useMockApiSpec: boolean,
   openapi: string,
 ): Promise<ApiRoutesResponse> {
   // This is the generated ID for the converted routes
   let id = 1;
   const generateId = () => id++;
 
-  const result = getOpenApiSpec(useMockApiSpec, openapi);
+  const result = getOpenApiSpec(openapi);
 
   if (result.type === "empty") {
     return {
@@ -48,17 +40,7 @@ export async function getApiRoutesFromOpenApiSpec(
  * Attempts to get the OpenAPI spec either from a mock spec or from the route context.
  * Returns empty if no spec is found.
  */
-function getOpenApiSpec(
-  useMockApiSpec: boolean,
-  openapi: string,
-): ResolvedSpecResult {
-  if (useMockApiSpec) {
-    return {
-      type: "success",
-      spec: MOCK_API_SPEC as unknown as OpenAPISpec,
-    };
-  }
-
+function getOpenApiSpec(openapi: string): ResolvedSpecResult {
   if (!openapi) {
     return { type: "empty" };
   }
