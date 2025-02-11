@@ -41,7 +41,7 @@
       }
     },
     {
-      "include": ["studio", "lilo/lilo-frontend", "playground"],
+      "include": ["apps/studio/studio-frontend", "playground"],
       "linter": {
         "enabled": true,
         "rules": {
@@ -70,10 +70,9 @@
     {
       "include": [
         "packages/client-library-otel",
-        "api",
+        "apps/studio/studio-api",
         "apps/honc-code-gen",
-        "apps/fp-services",
-        "lilo/lilo-worker"
+        "apps/fp-services"
       ],
       "linter": {
         "enabled": true,
@@ -103,8 +102,6 @@
       "apps/honc-code-gen/storage/**/*",
       // Client library and website related
       "dist",
-      "lilo/lilo-frontend/dist",
-      "lilo/lilo-worker/public",
       "www/",
       ".astro",
       // ignore all tsconfig.json files

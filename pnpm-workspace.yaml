@@ -1,11 +1,10 @@
 packages:
-  - "studio"
-  - "api"
+  - "apps/studio/studio-frontend"
+  - "apps/studio/studio-api"
   - "apps/fp-services"
   - "apps/honc-code-gen"
   - "apps/webhonc"
   - "playground"
-  - "lilo/*"
   - "packages/*"
   - "examples/*"
   - "examples/service-bindings/*"
