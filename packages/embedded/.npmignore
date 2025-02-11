@@ -3,6 +3,9 @@ tsconfig.json
 .dev.vars
 .dev.vars.example
 
+# Ignore test files
+*.test.ts
+
 # do not publish source files, even though we point to them in the package.json
 src/
 

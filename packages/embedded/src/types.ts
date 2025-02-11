@@ -12,6 +12,11 @@ export interface EmbeddedOptions {
    */
   cdn?: string;
   openapi?: OpenAPIOptions;
+
+  /**
+   * Enable debug statements
+   */
+  debug?: boolean;
 }
 
 export interface ResolvedEmbeddedOptions extends EmbeddedOptions {
@@ -35,4 +40,10 @@ export interface OpenAPIOptions {
    * A JSON-stringified object representing an OpenAPI spec.
    */
   content?: string;
+}
+
+export interface FiberplaneAppType {
+  Variables: {
+    debug: boolean;
+  };
 }
