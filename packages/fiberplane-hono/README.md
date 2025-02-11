@@ -1,4 +1,4 @@
-<img src="./assets/fiberplane-logo.png" alt="Fiberplane Logo" width="50" />
+<img src="https://avatars.githubusercontent.com/u/61152955?s=200&v=4" alt="Fiberplane Logo" width="50" />
 
 # Fiberplane
 
