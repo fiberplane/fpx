@@ -1,7 +1,33 @@
-# `@fiberplane/hono`
+<img src="./assets/fiberplane-logo.png" alt="Fiberplane Logo" width="50" />
 
-Hono middleware for Fiberplane.
+# Fiberplane
 
-## Installation
+Fiberplane is an embeddable API explorer for Hono apis. Install `@fiberplane/hono`, point its middleware to your OpenAPI spec, and you're off to the races.
 
-> ...
+## Quick Start
+
+Install the package with your favorite package manager:
+
+```sh
+pnpm add @fiberplane/hono
+```
+
+Mount the middleware to your Hono app:
+
+```ts
+import { createFiberplane } from "@fiberplane/hono";
+
+const app = new Hono();
+
+app.get("/openapi.json", () => {
+  // ... return your openapi spec here ...
+});
+
+app.use("/fp/*", fiberplane({
+  openapi: { url: "/openapi.json" },
+}));
+
+export default app;
+```
+
+
