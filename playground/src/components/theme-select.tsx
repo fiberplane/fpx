@@ -26,6 +26,7 @@ function ThemeOption({ value, label }: ThemeOptionProps) {
           "flex cursor-pointer flex-col items-center rounded-lg p-2",
           "data-[state=checked]:bg-accent/5",
           "[&:has([data-state=checked])]:bg-accent/5",
+          "hover:bg-accent/5",
         )}
       >
         <Illustration className="w-full h-auto mb-2" />

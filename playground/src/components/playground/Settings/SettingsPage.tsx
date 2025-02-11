@@ -32,7 +32,7 @@ export function SettingsPage() {
               Customize the appearance of your application.
             </p>
           </div>
-          <div className="p-4 border rounded-lg ">
+          <div className="p-2 rounded-lg ">
             <ThemeSelect />
           </div>
         </div>
