@@ -1,4 +1,4 @@
-import { ModeToggle } from "@/components/mode-toggle";
+import { ThemeSelect } from "@/components/theme-select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -33,7 +33,7 @@ export function SettingsPage() {
             </p>
           </div>
           <div className="p-4 border rounded-lg ">
-            <ModeToggle />
+            <ThemeSelect />
           </div>
         </div>
         <Separator />
