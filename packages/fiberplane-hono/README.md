@@ -2,7 +2,7 @@
 
 # Fiberplane
 
-Fiberplane is an embeddable API explorer for Hono apis. Install `@fiberplane/hono`, point its middleware to your OpenAPI spec, and you're off to the races.
+Fiberplane is an embeddable API playground for Hono apis. Install `@fiberplane/hono`, point its middleware to your OpenAPI spec, and you're off to the races.
 
 ![CleanShot 2025-02-11 at 14 15 29@2x](https://github.com/user-attachments/assets/2a21daa4-a25d-4398-9cd1-01bcb1714210)
 
