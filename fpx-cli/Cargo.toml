@@ -6,6 +6,10 @@ authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 
+[[bin]]
+name = "fpx"
+path = "src/main.rs"
+
 [features]
 embed-studio = [] # When enabled it will embed Studio from frontend/dist
 
@@ -58,7 +62,7 @@ strum = { version = "0.26", features = ["derive"] }
 thiserror = { version = "2.0" }
 time = { version = "0.3.17", features = ["serde-human-readable"] }
 tokio = { version = "1.40", features = ["rt-multi-thread", "signal", "fs"] }
-tokio-tungstenite = { version = "0.21", features = [
+tokio-tungstenite = { version = "0.24", features = [
     "rustls-tls-webpki-roots",
 ] } # This should be kept the same as whatever Axum has
 toml = { version = "0.8" }
@@ -68,13 +72,6 @@ tracing = { version = "0.1" }
 tracing-opentelemetry = { version = "0.28" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 url = { version = "2.5" }
-
-[target.'cfg(windows)'.dependencies]
-libsql = { version = "0.6", default-features = false, features = [
-    "core",
-    "serde",
-    "replication",
-] }
 
 [dev-dependencies]
 test-log = { version = "0.2", default-features = false, features = ["trace"] }
