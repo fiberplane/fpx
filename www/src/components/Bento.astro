@@ -5,9 +5,15 @@ import tracesDark from "@/assets/bento-traces-dark.jpg?url";
 import tracesLight from "@/assets/bento-traces-light.jpg?url";
 ---
 
-<section class="container">
+<section class="container not-content">
   <div class="bento-grid">
-    <article class="bento-grid-item"></article>
+    <article class="bento-grid-item">
+      <h3>Other feature</h3>
+      <p>
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod nam, non
+        accusamus ex iure cupiditate.
+      </p>
+    </article>
 
     <article class="bento-grid-item bento-grid-item--horizontal">
       <div>
@@ -66,53 +72,54 @@ import tracesLight from "@/assets/bento-traces-light.jpg?url";
 
 <style>
   .container {
-    --bento-item-radius: 1.5rem;
+    --bento-item-radius: 1rem;
     --bento-item-padding: 2.5rem;
 
     container: bento-container / inline-size;
-    max-width: 72rem;
-    margin-inline: auto;
+    background-color: var(--bg-secondary);
+    margin-inline: calc(var(--sl-content-pad-x) * -1);
+    margin-block: 4rem !important;
+    padding-block: 6rem;
   }
 
   .bento-grid {
     display: grid;
     grid-template: auto auto / repeat(5, 1fr);
     gap: 1.5rem;
+    max-width: 72rem;
+    margin-inline: auto;
   }
 
   .bento-grid-item {
-    /* Override Starlight's margin */
-    margin: 0 !important;
-
     grid-column: span 3;
 
     border-radius: var(--bento-item-radius);
-    border-radius: var(--border-radius);
     border: 1px solid var(--sl-color-hairline-shade);
 
-    background-color: var(--bg-secondary);
-    padding-block-start: var(--bento-item-padding);
-    padding-inline: var(--bento-item-padding);
+    padding: var(--bento-item-padding);
+
+    background-color: var(--sl-color-bg);
+    background-image: radial-gradient(
+      circle at bottom center,
+      var(--bg-secondary),
+      rgb(from var(--sl-color-bg) r g b / 0.05)
+    );
 
     overflow: hidden;
 
     &:nth-child(4n + 1),
     &:nth-child(4n) {
       grid-column: span 2;
-      aspect-ratio: 3 / 4;
-      aspect-ratio: 1;
     }
   }
 
   .bento-grid-item h3 {
     font-size: 32px;
+    line-height: var(--sl-line-height-headings);
+    margin-bottom: 0.65em;
   }
 
   .bento-grid-item--horizontal {
-    div {
-      margin: 0 !important;
-    }
-
     display: grid;
     gap: 1.5rem;
     grid-template-columns: repeat(2, 1fr);
@@ -121,8 +128,10 @@ import tracesLight from "@/assets/bento-traces-light.jpg?url";
   .bento-grid-item-image {
     overflow: hidden;
     position: relative;
-    height: 100%;
+    min-height: 100%;
     width: calc(100% + var(--bento-item-padding));
+    margin-bottom: calc(var(--bento-item-padding) * -1);
+
     border-top-left-radius: var(--border-radius);
 
     border-style: solid;
@@ -134,8 +143,10 @@ import tracesLight from "@/assets/bento-traces-light.jpg?url";
     box-shadow: 0px 6px 24px 0px var(--bg-emphasis);
 
     img {
-      margin: 0 !important;
       position: absolute;
+      display: block;
+      max-width: 100%;
+      height: auto;
     }
   }
 
