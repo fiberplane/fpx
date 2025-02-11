@@ -30,4 +30,15 @@ app.use("/fp/*", fiberplane({
 export default app;
 ```
 
+Visit your app at `http://localhost:8787/fp` to see the Fiberplane UI.
 
+## Contributing
+
+Interested in contributing? Please get in touch via GitHub issues, or on the [Fiberplane Discord](https://discord.com/invite/cqdY6SpfVR). We are very responsive to feedback and suggestions!
+
+## License
+
+All code within the `fiberplane` repository is distributed under the terms of
+both the MIT license and the Apache License (Version 2.0).
+
+See [LICENSE-APACHE](LICENSE-APACHE) and [LICENSE-MIT](LICENSE-MIT).

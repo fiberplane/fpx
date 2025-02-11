@@ -57,10 +57,3 @@ Studio is designed to be used in conjunction with the [`@fiberplane/hono-otel` c
 ## Contributing
 
 See [`DEVELOPMENT.md`](./DEVELOPMENT.md) for more details on how to run the Studio locally. Please get in touch via GitHub issues, or on the [Fiberplane Discord](https://discord.com/invite/cqdY6SpfVR), if you have any feedback or suggestions!
-
-## License
-
-All code within the `fpx` repository is distributed under the terms of
-both the MIT license and the Apache License (Version 2.0).
-
-See [LICENSE-APACHE](LICENSE-APACHE) and [LICENSE-MIT](LICENSE-MIT).
