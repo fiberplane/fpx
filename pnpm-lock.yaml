@@ -35,12 +35,12 @@ importers:
       '@ai-sdk/openai':
         specifier: ^1.0.5
         version: 1.0.5(zod@3.24.1)
-      '@fiberplane/embedded':
-        specifier: workspace:*
-        version: link:../packages/embedded
       '@fiberplane/fpx-types':
         specifier: workspace:*
         version: link:../packages/types
+      '@fiberplane/hono':
+        specifier: workspace:*
+        version: link:../packages/embedded
       '@fiberplane/source-analysis':
         specifier: workspace:*
         version: link:../packages/source-analysis

@@ -17,7 +17,7 @@ const MOCK_API_SPEC =
  * Includes error handling (with retry) for spec parsing failures.
  *
  * The spec is assumed to be serialized into the DOM by the fiberplane Hono embeddable playground middleware
- * `@fiberplane/embedded`
+ * `@fiberplane/hono`
  */
 export async function getApiRoutesFromOpenApiSpec(
   useMockApiSpec: boolean,
