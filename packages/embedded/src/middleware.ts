@@ -5,7 +5,7 @@ import { createRouter } from "./router.js";
 import type { EmbeddedOptions, ResolvedEmbeddedOptions } from "./types.js";
 
 const VERSION = packageJson.version;
-const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/embedded@${VERSION}/dist/playground/`;
+const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/hono@${VERSION}/dist/playground/`;
 
 export const createFiberplane =
   (options: EmbeddedOptions): MiddlewareHandler =>
