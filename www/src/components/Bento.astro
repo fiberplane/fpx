@@ -1,8 +1,20 @@
 ---
-import autoDetectedRoutesDark from "@/assets/bento-auto-detected-routes-dark.jpg?url";
-import autoDetectedRoutesLight from "@/assets/bento-auto-detected-routes-light.jpg?url";
-import tracesDark from "@/assets/bento-traces-dark.jpg?url";
-import tracesLight from "@/assets/bento-traces-light.jpg?url";
+import type { Props } from "@astrojs/starlight/props";
+import { Image } from "astro:assets";
+import autoDetectedRoutesDark from "@/assets/bento-auto-detected-routes-dark.jpg";
+import autoDetectedRoutesLight from "@/assets/bento-auto-detected-routes-light.jpg";
+import tracesDark from "@/assets/bento-traces-dark.jpg";
+import tracesLight from "@/assets/bento-traces-light.jpg";
+
+const autoDetectedRoutesImage = {
+  light: autoDetectedRoutesLight,
+  dark: autoDetectedRoutesDark
+} as const;
+
+const tracesImage = {
+  light: tracesLight,
+  dark: tracesDark
+} as const;
 ---
 
 <section class="container not-content">
@@ -27,16 +39,22 @@ import tracesLight from "@/assets/bento-traces-light.jpg?url";
       </div>
 
       <div class="bento-grid-item-image">
-        <img
-          class="light:sl-hidden"
-          src={autoDetectedRoutesDark}
-          alt="Screenshot of auto detected routes in FPX Studio"
-        />
-        <img
-          class="dark:sl-hidden"
-          src={autoDetectedRoutesLight}
-          alt="Screenshot of auto detected routes in FPX Studio"
-        />
+        {
+          Object.entries(autoDetectedRoutesImage).map(([variant, src]) => (
+            <Image
+              src={src}
+              loading="lazy"
+              decoding="auto"
+              width="340"
+              quality="max"
+              class:list={[
+                { "light:sl-hidden": variant === "dark" },
+                { "dark:sl-hidden": variant === "light" }
+              ]}
+              alt="Screenshot of auto detected routes in FPX Studio"
+            />
+          ))
+        }
       </div>
     </article>
 
@@ -45,16 +63,22 @@ import tracesLight from "@/assets/bento-traces-light.jpg?url";
       <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit?</p>
 
       <div class="bento-grid-item-image">
-        <img
-          class="light:sl-hidden"
-          src={tracesDark}
-          alt="Screenshot of auto detected routes in FPX Studio"
-        />
-        <img
-          class="dark:sl-hidden"
-          src={tracesLight}
-          alt="Screenshot of auto detected routes in FPX Studio"
-        />
+        {
+          Object.entries(tracesImage).map(([variant, src]) => (
+            <Image
+              src={src}
+              loading="lazy"
+              decoding="auto"
+              width="640"
+              quality="max"
+              class:list={[
+                { "light:sl-hidden": variant === "dark" },
+                { "dark:sl-hidden": variant === "light" }
+              ]}
+              alt="Screenshot of auto detected routes in FPX Studio"
+            />
+          ))
+        }
       </div>
     </article>
 
@@ -119,6 +143,10 @@ import tracesLight from "@/assets/bento-traces-light.jpg?url";
     margin-bottom: 0.65em;
   }
 
+  .bento-grid-item:has(p + *) p {
+    margin-bottom: 1em;
+  }
+
   .bento-grid-item--horizontal {
     display: grid;
     gap: 1.5rem;
@@ -132,20 +160,17 @@ import tracesLight from "@/assets/bento-traces-light.jpg?url";
     width: calc(100% + var(--bento-item-padding));
     margin-bottom: calc(var(--bento-item-padding) * -1);
 
-    border-top-left-radius: var(--border-radius);
-
-    border-style: solid;
-    border-color: var(--sl-color-hairline-shade);
-    border-width: 1px;
+    border: 1px solid var(--sl-color-hairline-shade);
     border-right: none;
     border-bottom: none;
+    border-top-left-radius: var(--border-radius);
 
     box-shadow: 0px 6px 24px 0px var(--bg-emphasis);
 
     img {
       position: absolute;
       display: block;
-      max-width: 100%;
+      width: 100%;
       height: auto;
     }
   }
