@@ -4,6 +4,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { DISCORD_INVITE_URL } from "@/constants";
 import { useSettingsOpen } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Icon } from "@iconify/react";
@@ -33,7 +34,7 @@ export function BottomBar() {
 
         <div className="flex items-center gap-2">
           <BottomBarExternalLink
-            href="https://discord.com/invite/cqdY6SpfVR"
+            href={DISCORD_INVITE_URL}
             icon={<DiscordLogoIcon className="w-3.5 h-3.5" />}
             label="Fiberplane Discord"
           />
