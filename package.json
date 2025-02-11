@@ -5,7 +5,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "postinstall": "pnpm run build:types && pnpm run build:source-analysis",
-    "build:embedded": "pnpm build:playground && pnpm clean:embedded && pnpm --filter @fiberplane/hono build && cp -r packages/playground/dist packages/fiberplane-hono/dist/playground",
+    "build:fp-hono": "pnpm build:playground && pnpm clean:fp-hono && pnpm --filter @fiberplane/hono build && cp -r packages/playground/dist packages/fiberplane-hono/dist/playground",
     "build:playground": "pnpm --filter @fiberplane/playground build",
     "build:source-analysis": "pnpm --filter @fiberplane/source-analysis build",
     "build:studio": "pnpm clean:studio && pnpm build:studio-api && pnpm build:studio-frontend",
@@ -16,7 +16,7 @@
     "dev:www": "pnpm --filter www dev",
     "dev:studio": "pnpm --filter @fiberplane/studio-frontend dev",
     "dev:studio-api": "pnpm --filter @fiberplane/studio dev",
-    "clean:embedded": "rimraf packages/fiberplane-hono/dist",
+    "clean:fp-hono": "rimraf packages/fiberplane-hono/dist",
     "clean:studio": "pnpm clean:studio-api && pnpm clean:studio-frontend",
     "clean:studio-api": "rimraf apps/studio/studio-api/dist",
     "clean:studio-frontend": "rimraf apps/studio/studio-frontend/dist",

@@ -1,6 +1,6 @@
 # Fiberplane API Playground
 
-This is a single page application with the UI for Fiberplane's embedded api playground.
+This is a single page application with the UI for Fiberplane's embedded Hono api playground.
 
 Important bits:
 
@@ -27,6 +27,6 @@ Given the way we've set up the `index.html` file for local development here, we 
 
 The built assets for the playground are ultimately copied over to `@fiberplane/hono`'s `dist` folder, and then served from there when that package is published. (See: `packages/fiberplane-hono` in this monorepo.)
 
-In this monorepo's root, run `pnpm build:embedded` to build the playground and copy the assets over to `@fiberplane/hono`'s `dist` folder.
+In this monorepo's root, run `pnpm build:fp-hono` to build the playground and copy the assets over to `@fiberplane/hono`'s `dist` folder.
 
 Note that the `index.html` file in this package is not actually used in production. `@fiberplane/hono` renders script tags that point to the playground `js` and `css` files in its own html document.
