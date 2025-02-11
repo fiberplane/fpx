@@ -49,7 +49,8 @@ export function Layout({ children }: { children?: ReactNode }) {
             )}
             {isTracingEnabled && <NavButton to="/traces">Traces</NavButton>}
           </div>
-          <div>
+          {/* NOTE - This is hidden because we currently have no concept of a User in the Playground */}
+          <div className="hidden">
             <Button variant="ghost" size="sm" className="w-6 h-6 p-0">
               <UserCircle className="w-4 h-4" />
             </Button>
