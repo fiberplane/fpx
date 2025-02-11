@@ -72,7 +72,7 @@ const tracesImage = {
                 { "light:sl-hidden": variant === "dark" },
                 { "dark:sl-hidden": variant === "light" }
               ]}
-              alt="Screenshot of auto detected routes in FPX Studio"
+              alt="Screenshot of auto traces in FPX Studio"
             />
           ))
         }
@@ -94,7 +94,7 @@ const tracesImage = {
 <style>
   .container {
     --bento-item-radius: 1rem;
-    --bento-item-padding: 2.5rem;
+    --bento-item-padding: 1.5rem;
 
     container: bento-container / inline-size;
     background-color: var(--bg-secondary);
@@ -105,7 +105,6 @@ const tracesImage = {
 
   .bento-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
     gap: var(--sl-content-pad-x);
     max-width: 72rem;
     margin-inline: auto;
@@ -113,30 +112,20 @@ const tracesImage = {
   }
 
   .bento-grid-item {
-    grid-column: span 3;
-
+    overflow: hidden;
     border-radius: var(--bento-item-radius);
     border: 1px solid var(--sl-color-hairline-shade);
-
     padding: var(--bento-item-padding);
-
     background-color: var(--sl-color-bg);
     background-image: radial-gradient(
       circle at bottom center,
       var(--bg-secondary),
       rgb(from var(--sl-color-bg) r g b / 0.05)
     );
-
-    overflow: hidden;
-
-    &:nth-child(4n + 1),
-    &:nth-child(4n) {
-      grid-column: span 2;
-    }
   }
 
   .bento-grid-item h3 {
-    font-size: 32px;
+    font-size: 20px;
     line-height: var(--sl-line-height-headings);
     margin-bottom: 0.65em;
   }
@@ -180,11 +169,9 @@ const tracesImage = {
     filter: hue-rotate(320deg) contrast(120%);
   }
 
-  @container bento-container (width < 56rem) {
+  @container bento-container (width > 40rem) {
     .bento-grid {
       --bento-item-padding: 1.75rem;
-
-      background-color: green;
       grid-template-columns: repeat(2, 1fr);
     }
 
@@ -194,21 +181,30 @@ const tracesImage = {
       h3 {
         font-size: 24px;
       }
+
+      &:nth-child(4n + 1),
+      &:nth-child(4n) {
+        grid-column: span 2;
+      }
     }
   }
 
-  @container bento-container (width < 40rem) {
+  @container bento-container (width > 56rem) {
     .bento-grid {
-      --bento-item-padding: 1.5rem;
-
-      grid-template-columns: 1fr;
+      --bento-item-padding: 2.5rem;
+      grid-template-columns: repeat(5, 1fr);
     }
 
     .bento-grid-item {
-      grid-column: span 1;
+      grid-column: span 3;
 
       h3 {
-        font-size: 20px;
+        font-size: 32px;
+      }
+
+      &:nth-child(4n + 1),
+      &:nth-child(4n) {
+        grid-column: span 2;
       }
     }
   }
