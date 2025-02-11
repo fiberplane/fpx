@@ -25,7 +25,7 @@ Given the way we've set up the `index.html` file for local development here, we 
 
 ## Deploying
 
-The built assets for the playground are ultimately copied over to `@fiberplane/hono`'s `dist` folder, and then served from there when that package is published. (See: `packages/embedded` in this monorepo.)
+The built assets for the playground are ultimately copied over to `@fiberplane/hono`'s `dist` folder, and then served from there when that package is published. (See: `packages/fiberplane-hono` in this monorepo.)
 
 In this monorepo's root, run `pnpm build:embedded` to build the playground and copy the assets over to `@fiberplane/hono`'s `dist` folder.
 
