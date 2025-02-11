@@ -74,7 +74,7 @@ export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 px-2 ml-2 hover:bg-primary/70"
+                      className="h-8 px-2 ml-2"
                       title="Share feedback"
                     >
                       <Icon icon="lucide:share" className="w-4 h-4" />
