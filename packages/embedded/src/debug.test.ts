@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { Context } from "hono";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { logIfDebug } from "./debug.js";
 
 describe("logIfDebug", () => {
@@ -19,7 +19,7 @@ describe("logIfDebug", () => {
         "[fiberplane:debug] ",
         "test message",
         "param1",
-        "param2"
+        "param2",
       );
     });
 
@@ -40,7 +40,7 @@ describe("logIfDebug", () => {
         "[fiberplane:debug] ",
         "test message",
         "param1",
-        "param2"
+        "param2",
       );
     });
 
@@ -83,7 +83,7 @@ describe("logIfDebug", () => {
       logIfDebug(true, "test message");
       expect(console.debug).toHaveBeenCalledWith(
         "[fiberplane:debug] ",
-        "test message"
+        "test message",
       );
     });
 
@@ -102,4 +102,4 @@ describe("logIfDebug", () => {
       }
     });
   });
-}); 
+});
