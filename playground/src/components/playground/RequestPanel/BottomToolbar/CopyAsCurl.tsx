@@ -7,31 +7,36 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { StudioState } from "../../store";
+import { useStudioStore } from "../../store/hooks";
+import { useApiCallData } from "../../store/hooks/useApiCallData";
+import { useUrlPreview } from "../../store/hooks/useUrlPreview";
 import { getBodyValue } from "./utils";
-
-export type CopyAsCurlProps = Pick<
-  StudioState,
-  "body" | "method" | "path" | "requestHeaders" | "queryParams"
->;
 
 /**
  * Copy the current request as a cURL command to the clipboard.
  */
-export function CopyAsCurl({
-  body,
-  method,
-  path,
-  queryParams,
-  requestHeaders,
-}: CopyAsCurlProps) {
+export function CopyAsCurl() {
   const [isCopied, setIsCopied] = useState(false);
   const timeout = useRef<ReturnType<typeof setTimeout>>();
+
+  const { body, requestHeaders } = useApiCallData("body", "requestHeaders");
+  const { activeRoute } = useStudioStore("activeRoute");
+
+  const method = activeRoute?.method ?? "GET";
+
+  const url = useUrlPreview();
   const isUnsupportedBodyType =
     body.type === "file" || (body.type === "form-data" && body.isMultipart);
 
   const handleCopy = async () => {
-    const payload = getBodyValue({ body, method });
+    if (!activeRoute) {
+      return;
+    }
+
+    const payload = getBodyValue({
+      body,
+      method: activeRoute.method,
+    });
 
     const headers = requestHeaders.reduce((acc, { enabled, key, value }) => {
       if (!enabled) {
@@ -40,13 +45,6 @@ export function CopyAsCurl({
 
       return `${acc} -H "${key}: ${value}"`;
     }, "");
-
-    const url = new URL(path);
-    for (const { enabled, key, value } of queryParams) {
-      if (enabled) {
-        url.searchParams.append(key, value);
-      }
-    }
 
     const data = payload ? `-d ${payload}` : "";
     const curlCommand = `curl -X ${method} '${url}' ${headers} ${data}`;

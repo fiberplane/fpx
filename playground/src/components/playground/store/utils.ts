@@ -8,8 +8,8 @@ export const _getActiveRoute = (state: PlaygroundState): ApiRoute => {
   return (
     state.activeRoute ?? {
       id: Number.NEGATIVE_INFINITY,
-      path: state.path,
-      method: state.method,
+      path: "",
+      method: "GET",
       openApiSpec: null,
     }
   );
@@ -97,7 +97,7 @@ export function resolvePathWithParameters(
   pathParams: KeyValueParameter[],
 ) {
   return pathParams.reduce((acc, param) => {
-    return acc.replace(`{${param.key}}`, param.value || param.key);
+    return acc.replace(`{${param.key}}`, encodeURIComponent(param.value));
   }, path);
 }
 

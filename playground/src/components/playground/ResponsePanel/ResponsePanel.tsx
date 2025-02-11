@@ -16,6 +16,7 @@ import { Icon } from "@iconify/react";
 import { memo } from "react";
 import { useServiceBaseUrl } from "../store";
 import { useStudioStore } from "../store";
+import { useApiCallData } from "../store/hooks/useApiCallData";
 import {
   type PlaygroundActiveResponse,
   isPlaygroundActiveResponse,
@@ -28,13 +29,12 @@ type Props = {
 };
 
 export const ResponsePanel = memo(function ResponsePanel({ isLoading }: Props) {
-  const { activeResponse, activeResponsePanelTab, setActiveResponsePanelTab } =
-    useStudioStore(
-      "activeResponse",
-      "activeResponsePanelTab",
-      "setActiveResponsePanelTab",
-    );
+  const { activeResponsePanelTab, setActiveResponsePanelTab } = useStudioStore(
+    "activeResponsePanelTab",
+    "setActiveResponsePanelTab",
+  );
 
+  const { activeResponse } = useApiCallData("activeResponse");
   const { removeServiceUrlFromPath } = useServiceBaseUrl();
 
   // NOTE - If we have a "raw" response, we want to render that, so we can (e.g.,) show binary data

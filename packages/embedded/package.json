@@ -23,6 +23,7 @@
     "build": "tsc",
     "format": "biome check . --write",
     "lint": "biome lint .",
+    "test": "vitest --run",
     "typecheck": "tsc --noEmit",
     "watch": "nodemon --watch src --ext ts,js,json --exec \"pnpm run build\""
   },
@@ -33,7 +34,8 @@
     "hono": "^4.6.12",
     "nodemon": "^3.1.7",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "vitest": "^1.6.0"
   },
   "peerDependencies": {
     "hono": "^4.0"

@@ -18,11 +18,7 @@ import {
 } from "@radix-ui/react-dialog";
 
 export function FloatingSidePanel() {
-  const { sidePanel, togglePanel } = useStudioStore(
-    "sidePanel",
-    "togglePanel",
-    "path",
-  );
+  const { sidePanel, togglePanel } = useStudioStore("sidePanel", "togglePanel");
 
   const isLgScreen = useIsLgScreen();
 

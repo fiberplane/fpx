@@ -1,5 +1,6 @@
 import type { Context, MiddlewareHandler } from "hono";
 import packageJson from "../package.json" assert { type: "json" };
+import { logIfDebug } from "./debug.js";
 import { createRouter } from "./router.js";
 import type { EmbeddedOptions, ResolvedEmbeddedOptions } from "./types.js";
 
@@ -9,6 +10,9 @@ const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/embedded@${VERSION}/di
 export const createFiberplane =
   (options: EmbeddedOptions): MiddlewareHandler =>
   async (c, next) => {
+    const debug = options.debug ?? false;
+    logIfDebug(debug, "debug logs are enabled");
+
     const { mountedPath, internalPath } = getPaths(c);
     const apiKey = options.apiKey ?? getApiKey(c);
     const fpxEndpoint = getFpxEndpoint(c);
@@ -26,7 +30,18 @@ export const createFiberplane =
     const newUrl = new URL(c.req.url);
     newUrl.pathname = internalPath;
     const newRequest = new Request(newUrl, c.req.raw);
+
+    logIfDebug(debug, "Making internal api request to", newUrl.toString());
+
     const response = await router.fetch(newRequest);
+
+    logIfDebug(
+      debug,
+      "Finished internal api request to",
+      newUrl.toString(),
+      "returned",
+      response.status,
+    );
 
     // Skip the middleware and continue if the embedded router doesn't match
     if (response.status === 404) {

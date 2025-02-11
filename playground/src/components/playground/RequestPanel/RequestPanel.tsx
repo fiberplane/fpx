@@ -21,6 +21,7 @@ import {
 } from "@/components/CodeMirrorEditor";
 import { useHandler } from "@fiberplane/hooks";
 import { useStudioStore } from "../store";
+import { useApiCallData } from "../store/hooks/useApiCallData";
 import { AuthSelector } from "./AuthSelector";
 import { Faker } from "./Faker";
 import { RouteDocumentation, isOpenApiOperation } from "./RouteDocumentation";
@@ -35,17 +36,11 @@ export const RequestPanel = memo(function RequestPanel(
   const { onSubmit } = props;
 
   const {
-    path,
-    body,
-    method,
-    setBody,
-    pathParams,
-    queryParams,
-    requestHeaders,
-    setRequestHeaders,
-    setQueryParams,
-    setPathParams,
-    clearPathParams,
+    setCurrentBody: setBody,
+    setCurrentRequestHeaders: setRequestHeaders,
+    setCurrentQueryParams: setQueryParams,
+    setCurrentPathParams: setPathParams,
+    clearCurrentPathParams: clearPathParams,
     handleRequestBodyTypeChange,
     activeRequestsPanelTab,
     setActiveRequestsPanelTab,
@@ -54,17 +49,11 @@ export const RequestPanel = memo(function RequestPanel(
     togglePanel,
     fillInFakeData,
   } = useStudioStore(
-    "path",
-    "body",
-    "method",
-    "setBody",
-    "pathParams",
-    "queryParams",
-    "requestHeaders",
-    "setRequestHeaders",
-    "setQueryParams",
-    "setPathParams",
-    "clearPathParams",
+    "setCurrentBody",
+    "setCurrentRequestHeaders",
+    "setCurrentQueryParams",
+    "setCurrentPathParams",
+    "clearCurrentPathParams",
     "handleRequestBodyTypeChange",
     "activeRequestsPanelTab",
     "setActiveRequestsPanelTab",
@@ -72,6 +61,13 @@ export const RequestPanel = memo(function RequestPanel(
     "activeRoute",
     "togglePanel",
     "fillInFakeData",
+  );
+
+  const { body, pathParams, queryParams, requestHeaders } = useApiCallData(
+    "body",
+    "pathParams",
+    "queryParams",
+    "requestHeaders",
   );
 
   const toggleSideBar = useHandler(() => {
@@ -277,12 +273,7 @@ export const RequestPanel = memo(function RequestPanel(
       )}
 
       <BottomToolbar
-        body={body}
         handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-        method={method}
-        path={path}
-        queryParams={queryParams}
-        requestHeaders={requestHeaders}
       />
     </FpTabs>
   );

@@ -1,6 +1,11 @@
 import { enforceTerminalDraftParameter } from "../KeyValueForm";
 import { isDraftParameter } from "../KeyValueForm/data";
-import type { RequestResponseSlice } from "./slices/types";
+import { getRouteId } from "./slices/requestResponseSlice";
+import type {
+  ApiCallData,
+  RequestResponseSlice,
+  RoutesSlice,
+} from "./slices/types";
 import type { KeyValueParameter, PlaygroundBody } from "./types";
 
 /**
@@ -18,9 +23,18 @@ import type { KeyValueParameter, PlaygroundBody } from "./types";
  *
  * - If the body is a text, we want to set/update the content type to text/plain
  */
-export function updateContentTypeHeaderInState(state: RequestResponseSlice) {
-  const currentHeaders = state.requestHeaders;
-  const currentContentTypeHeader = getCurrentContentType(state);
+export function updateContentTypeHeaderInState(
+  state: RequestResponseSlice & Pick<RoutesSlice, "activeRoute">,
+) {
+  const { apiCallState } = state;
+  if (!state.activeRoute) {
+    console.warn("Cannot update content type headers. There is no activeRoute");
+    return;
+  }
+  const id = getRouteId(state.activeRoute);
+  const params = apiCallState[id];
+  const currentHeaders = params.requestHeaders;
+  const currentContentTypeHeader = getCurrentContentType(params);
 
   const updateOperation = getUpdateOperation(state, currentContentTypeHeader);
 
@@ -35,7 +49,7 @@ export function updateContentTypeHeaderInState(state: RequestResponseSlice) {
     nextHeaders = removeHeader(currentHeaders, updateOperation.value);
   }
 
-  state.requestHeaders = enforceTerminalDraftParameter(nextHeaders);
+  params.requestHeaders = enforceTerminalDraftParameter(nextHeaders);
 }
 
 function addHeader(
@@ -84,7 +98,7 @@ function mapBodyToContentType(body: PlaygroundBody) {
   return "text/plain";
 }
 
-function getCurrentContentType(state: RequestResponseSlice) {
+function getCurrentContentType(state: ApiCallData) {
   const currentContentType = state.requestHeaders.find(
     (header) => header.key?.toLowerCase() === "content-type",
   );
@@ -95,13 +109,15 @@ function getCurrentContentType(state: RequestResponseSlice) {
 }
 
 function getUpdateOperation(
-  state: RequestResponseSlice,
+  state: RequestResponseSlice & Pick<RoutesSlice, "activeRoute">,
   currentContentTypeHeader: KeyValueParameter | null,
 ) {
-  const canHaveBody = state.method !== "GET" && state.method !== "HEAD";
+  const { activeRoute } = state;
+  const canHaveBody =
+    activeRoute?.method !== "GET" && activeRoute?.method !== "HEAD";
 
   // Handle the case where the method doesn't support a body, so we don't want to add the content type header
-  if (!canHaveBody) {
+  if (!canHaveBody || !activeRoute) {
     return currentContentTypeHeader
       ? {
           type: "remove",
@@ -110,7 +126,10 @@ function getUpdateOperation(
       : null;
   }
 
-  const currentBody = state.body;
+  const id = getRouteId(activeRoute);
+
+  const params = state.apiCallState[id];
+  const currentBody = params.body;
   const nextContentTypeValue = mapBodyToContentType(currentBody);
 
   // `null` means "no change"
@@ -139,7 +158,7 @@ function getUpdateOperation(
   }
 
   // If the method is GET or HEAD, we don't want to add the content type header
-  if (state.method === "GET" || state.method === "HEAD") {
+  if (activeRoute.method === "GET" || activeRoute.method === "HEAD") {
     return {
       type: "remove",
       value: currentContentTypeHeader,

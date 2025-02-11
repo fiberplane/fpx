@@ -1,15 +1,14 @@
+import { createObjectFromKeyValueParameters } from "@/utils";
 import type { StateCreator } from "zustand";
 import { enforceFormDataTerminalDraftParameter } from "../../FormDataForm";
 import { enforceTerminalDraftParameter } from "../../KeyValueForm";
 import { isOpenApiOperation } from "../../RequestPanel/RouteDocumentation";
-import { findMatchedRoute } from "../../routes";
+import type { ApiRoute } from "../../types";
 import { updateContentTypeHeaderInState } from "../content-type";
 import { setBodyTypeInState } from "../set-body-type";
-import { getVisibleRequestPanelTabs } from "../tabs";
 import type { KeyValueParameter } from "../types";
 import {
   addBaseUrl,
-  extractMatchedPathParams,
   extractPathParams,
   mapPathParamKey,
   removeBaseUrl,
@@ -20,7 +19,11 @@ import {
   transformToFormBody,
   transformToFormParams,
 } from "../utils-faker";
-import type { RequestResponseSlice, StudioState } from "./types";
+import {
+  extractJsonBodyFromOpenApiDefinition,
+  extractQueryParamsFromOpenApiDefinition,
+} from "../utils-openapi";
+import type { ApiCallData, RequestResponseSlice, StudioState } from "./types";
 
 export const requestResponseSlice: StateCreator<
   StudioState,
@@ -29,16 +32,12 @@ export const requestResponseSlice: StateCreator<
   RequestResponseSlice
 > = (set, get) => ({
   serviceBaseUrl: "http://localhost:8787",
-  path: "",
-  method: "GET",
-  body: {
-    type: "json",
-    value: "",
+  apiCallState: {
+    // This is needed to avoid the case where there are no routes yet loaded
+    // and so path/method is still set to the default value
+    // the key should be whatever the `getRouteId` function would generate based on the state
+    GET_: createInitialApiCallData(),
   },
-  pathParams: [],
-  queryParams: enforceTerminalDraftParameter([]),
-  requestHeaders: enforceTerminalDraftParameter([]),
-  authorizationId: null,
 
   // HACK - This setter has a bunch of side effects (logs, alerts)
   //        I moved it to the store so that it'd be a static handler.
@@ -62,16 +61,28 @@ export const requestResponseSlice: StateCreator<
       const fakeData = generateFakeData(openApiSpec, activeRoute.path);
       // Transform data to match form state types
       set((state) => {
-        state.body = transformToFormBody(fakeData.body);
+        if (!state.activeRoute) {
+          console.warn("Can't fill in fake data, there is no active route");
+          return;
+        }
+        const id = getRouteId(state.activeRoute);
+        const { apiCallState } = state;
+        if (id in apiCallState === false) {
+          apiCallState[id] = createInitialApiCallData(state.activeRoute);
+        }
+
+        const params = apiCallState[id];
+
+        params.body = transformToFormBody(fakeData.body);
         const fakeQueryParams = transformToFormParams(fakeData.queryParams);
         if (fakeQueryParams.length > 0) {
-          state.queryParams = enforceTerminalDraftParameter(
+          params.queryParams = enforceTerminalDraftParameter(
             transformToFormParams(fakeData.queryParams),
           );
         }
         const fakeHeaders = transformToFormParams(fakeData.headers);
         if (fakeHeaders.length > 0) {
-          state.requestHeaders = enforceTerminalDraftParameter(fakeHeaders);
+          params.requestHeaders = enforceTerminalDraftParameter(fakeHeaders);
         }
         const fakePathParams = transformToFormParams(fakeData.pathParams).map(
           (param) => ({
@@ -79,14 +90,9 @@ export const requestResponseSlice: StateCreator<
             id: param.key,
           }),
         );
+
         if (fakePathParams.length > 0) {
-          // NOTE - Do not call `state.setPathParams(...)` here, it messes with the form inputs and clears the path params
-          const nextPath = resolvePathWithParameters(
-            state.activeRoute?.path ?? state.path,
-            fakePathParams,
-          );
-          state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
-          state.pathParams = fakePathParams;
+          params.pathParams = fakePathParams;
         }
       });
     } catch (e) {
@@ -95,78 +101,77 @@ export const requestResponseSlice: StateCreator<
     }
   },
 
-  setAuthorizationId: (authorizationId: string | null) =>
+  setCurrentAuthorizationId: (authorizationId: string | null) =>
     set((state) => {
-      state.authorizationId = authorizationId;
+      if (!state.activeRoute) {
+        console.warn("Can't set current authorization id, no active route");
+        return;
+      }
+      const id = getRouteId(state.activeRoute || state);
+
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData(state.activeRoute);
+      }
+
+      const params = apiCallState[id];
+      params.authorizationId = authorizationId;
     }),
 
   setServiceBaseUrl: (serviceBaseUrl) =>
     set((state) => {
+      if (state.serviceBaseUrl === serviceBaseUrl) {
+        return;
+      }
+
       state.serviceBaseUrl = serviceBaseUrl;
-      state.path = addBaseUrl(serviceBaseUrl, state.path, {
-        forceChangeHost: true,
-      });
+
+      if (!state.activeRoute) {
+        return;
+      }
+
+      // The path might be changed, so verify that there's a default
+      // `apiCallState` value
+      const id = getRouteId(state.activeRoute);
+      if (id in state.apiCallState === false) {
+        state.apiCallState[id] = createInitialApiCallData(state.activeRoute);
+      }
     }),
 
-  updatePath: (path) =>
+  setCurrentPathParams: (pathParams) =>
     set((state) => {
-      const matchedRoute = findMatchedRoute(
-        state.appRoutes,
-        removeBaseUrl(state.serviceBaseUrl, path),
-        state.method,
-      );
-      const nextActiveRoute = matchedRoute ? matchedRoute.route : null;
-      const nextPathParams = matchedRoute
-        ? extractMatchedPathParams(matchedRoute)
-        : extractPathParams(path).map(mapPathParamKey);
+      if (!state.activeRoute) {
+        console.warn("Unable to set current path parameters: no active route");
+        return;
+      }
 
-      state.path = path;
-      state.activeRoute = nextActiveRoute;
-      state.pathParams = nextPathParams;
+      const id = getRouteId(state.activeRoute);
+
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData(state.activeRoute);
+      }
+
+      const params = apiCallState[id];
+      params.pathParams = pathParams;
     }),
 
-  updateMethod: (method) =>
+  updateCurrentPathParamValues: (pathParams) =>
     set((state) => {
-      state.method = method;
+      if (!state.activeRoute) {
+        console.warn("Unable to update current path parameter values");
+        return;
+      }
+      const id = getRouteId(state.activeRoute || state);
 
-      // Update other state properties based on the new method and request type
-      // (e.g., activeRoute, visibleRequestsPanelTabs, activeRequestsPanelTab, etc.)
-      // You might want to move some of this logic to separate functions or slices
-      const matchedRoute = findMatchedRoute(
-        state.appRoutes,
-        removeBaseUrl(state.serviceBaseUrl, state.path),
-        state.method,
-      );
-      const nextActiveRoute = matchedRoute ? matchedRoute.route : null;
-      state.activeRoute = nextActiveRoute;
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData(state.activeRoute);
+      }
 
-      // Update visibleRequestsPanelTabs based on the new method and request type
-      state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
-        method,
-        openApiSpec: state.activeRoute?.openApiSpec,
-      });
+      const params = apiCallState[id];
 
-      // Ensure the activeRequestsPanelTab is valid
-      state.activeRequestsPanelTab = state.visibleRequestsPanelTabs.includes(
-        state.activeRequestsPanelTab,
-      )
-        ? state.activeRequestsPanelTab
-        : state.visibleRequestsPanelTabs[0];
-    }),
-
-  setPathParams: (pathParams) =>
-    set((state) => {
-      const nextPath = resolvePathWithParameters(
-        state.activeRoute?.path ?? state.path,
-        pathParams,
-      );
-      state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
-      state.pathParams = pathParams;
-    }),
-
-  updatePathParamValues: (pathParams) =>
-    set((state) => {
-      state.pathParams = state.pathParams.map(
+      params.pathParams = params.pathParams.map(
         (pathParam: KeyValueParameter) => {
           const replacement = pathParams?.find((p) => p?.key === pathParam.key);
           if (!replacement) {
@@ -182,56 +187,88 @@ export const requestResponseSlice: StateCreator<
       );
     }),
 
-  clearPathParams: () =>
+  clearCurrentPathParams: () =>
     set((state) => {
-      state.pathParams = state.pathParams.map((pathParam) => ({
+      if (!state.activeRoute) {
+        console.warn("No active route (clearCurrentPathParams)");
+        return;
+      }
+      const id = getRouteId(state.activeRoute);
+
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData(state.activeRoute);
+      }
+
+      const params = apiCallState[id];
+      params.pathParams = params.pathParams.map((pathParam) => ({
         ...pathParam,
         value: "",
         enabled: false,
       }));
     }),
 
-  setQueryParams: (queryParams) =>
+  setCurrentQueryParams: (queryParams) =>
     set((state) => {
-      state.queryParams = enforceTerminalDraftParameter(queryParams);
-    }),
+      if (!state.activeRoute) {
+        console.warn("No active route (setCurrentQueryParams)");
+        return;
+      }
+      const id = getRouteId(state.activeRoute);
 
-  setRequestHeaders: (headers) =>
-    set((state) => {
-      // Merge persistent auth headers with request headers
-      const persistentHeaders = state.persistentAuthHeaders || [];
-      const mergedHeaders = [...headers];
-
-      // Add persistent headers if they don't already exist
-      for (const persistentHeader of persistentHeaders) {
-        if (persistentHeader.enabled) {
-          const headerExists = mergedHeaders.some(
-            (h) => h.key.toLowerCase() === persistentHeader.key.toLowerCase(),
-          );
-          if (!headerExists) {
-            mergedHeaders.push(persistentHeader);
-          }
-        }
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData(state.activeRoute);
       }
 
-      state.requestHeaders = enforceTerminalDraftParameter(mergedHeaders);
+      const params = apiCallState[id];
+      params.queryParams = enforceTerminalDraftParameter(queryParams);
     }),
 
-  setBody: (body) =>
+  setCurrentRequestHeaders: (headers) =>
     set((state) => {
+      if (!state.activeRoute) {
+        console.warn("No active route (setCurrentRequestHeaders)");
+        return;
+      }
+      const id = getRouteId(state.activeRoute);
+
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData(state.activeRoute);
+      }
+
+      const params = apiCallState[id];
+      params.requestHeaders = enforceTerminalDraftParameter(headers);
+    }),
+
+  setCurrentBody: (body) =>
+    set((state) => {
+      if (!state.activeRoute) {
+        console.warn("No active route (setCurrentBody)");
+        return;
+      }
+      const id = getRouteId(state.activeRoute);
+
+      const { apiCallState } = state;
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData(state.activeRoute);
+      }
+
+      const params = apiCallState[id];
       if (body === undefined) {
-        state.body =
-          state.body.type === "form-data"
+        params.body =
+          params.body.type === "form-data"
             ? {
                 type: "form-data",
                 value: enforceFormDataTerminalDraftParameter([]),
-                isMultipart: state.body.isMultipart,
+                isMultipart: params.body.isMultipart,
               }
-            : state.body.type === "file"
-              ? { type: state.body.type, value: undefined }
-              : { type: state.body.type, value: "" };
+            : params.body.type === "file"
+              ? { type: params.body.type, value: undefined }
+              : { type: params.body.type, value: "" };
       } else if (typeof body === "string") {
-        state.body = { type: "text", value: body };
+        params.body = { type: "text", value: body };
       } else {
         if (body.type === "form-data") {
           const nextBodyValue = enforceFormDataTerminalDraftParameter(
@@ -240,7 +277,7 @@ export const requestResponseSlice: StateCreator<
           const shouldForceMultipart = nextBodyValue.some(
             (param) => param.value.value instanceof File,
           );
-          state.body = {
+          params.body = {
             type: body.type,
             isMultipart: shouldForceMultipart || body.isMultipart,
             value: nextBodyValue,
@@ -248,10 +285,10 @@ export const requestResponseSlice: StateCreator<
           updateContentTypeHeaderInState(state);
         } else if (body.type === "file") {
           // When the user adds a file, we want to use the file's type as the content type header
-          state.body = body;
+          params.body = body;
           updateContentTypeHeaderInState(state);
         } else {
-          state.body = body;
+          params.body = body;
         }
       }
     }),
@@ -266,26 +303,77 @@ export const requestResponseSlice: StateCreator<
   removeServiceUrlFromPath: (path: string) =>
     removeBaseUrl(get().serviceBaseUrl, path),
 
-  activeResponse: null,
-  showResponseBodyFromHistory: (traceId) =>
-    set((state) => {
-      // Recall that an 'active response' is one for which we will have the body we received from the service
-      // This means it can contain binary data, whereas the history response will not
-      // We should prefer to keep the active response as response to render, so long as its traceId matches the current history response traceId
-      const activeTraceId = state.activeResponse?.traceId;
-      if (!activeTraceId || activeTraceId !== traceId) {
-        state.activeResponse = null;
-      }
-    }),
   setActiveResponse: (response) =>
     set((state) => {
-      state.activeResponse = response;
-    }),
+      const { apiCallState, activeRoute } = state;
+      if (!activeRoute) {
+        throw new Error("Unable to set active response: no active route");
+        // return;
+      }
 
-  /** Session history related state */
-  sessionHistory: [],
-  recordRequestInSessionHistory: (traceId: string) =>
-    set((state) => {
-      state.sessionHistory.push(traceId);
+      const id = getRouteId(activeRoute);
+
+      if (id in apiCallState === false) {
+        apiCallState[id] = createInitialApiCallData(activeRoute);
+      }
+
+      const apiData = apiCallState[id];
+      apiData.activeResponse = response;
     }),
 });
+
+export function createInitialApiCallData(route?: ApiRoute): ApiCallData {
+  const data = createEmptyApiCallData();
+  if (!route) {
+    return data;
+  }
+
+  data.pathParams = extractPathParams(route.path).map(mapPathParamKey);
+  data.queryParams = extractQueryParamsFromOpenApiDefinition(
+    data.queryParams,
+    route,
+  );
+  data.body = extractJsonBodyFromOpenApiDefinition(data.body, route);
+  return data;
+}
+
+export function createEmptyApiCallData(): ApiCallData {
+  return {
+    authorizationId: null,
+    body: {
+      type: "json",
+      value: "",
+    },
+    pathParams: [],
+    queryParams: enforceTerminalDraftParameter([]),
+    requestHeaders: enforceTerminalDraftParameter([]),
+    activeResponse: null,
+  };
+}
+
+export function getRouteId({
+  method,
+  path,
+}: Pick<ApiRoute, "method" | "path">): string {
+  return `${method.toUpperCase()}_${path}`;
+}
+
+export function constructFullPath(
+  serviceBaseUrl: string,
+  route: ApiRoute,
+  data: ApiCallData,
+): string {
+  let fullPath = addBaseUrl(serviceBaseUrl, route.path);
+  fullPath = resolvePathWithParameters(
+    fullPath,
+    data.pathParams.filter((param) => param.enabled),
+  );
+
+  const searchParams = new URLSearchParams(
+    createObjectFromKeyValueParameters(data.queryParams),
+  );
+
+  return searchParams.size > 0
+    ? `${fullPath}?${searchParams.toString()}`
+    : fullPath;
+}

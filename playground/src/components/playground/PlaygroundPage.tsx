@@ -6,10 +6,11 @@ import {
 } from "@/components/ui/resizable";
 import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { useShallow } from "zustand/react/shallow";
 import { NavigationFrame, NavigationPanel } from "./NavigationPanel";
 import { PlaygroundPageContent } from "./PlaygroundPageContent";
 import { useRoutes } from "./routes";
-import { useStudioStore } from "./store";
+import { useStudioStore, useStudioStoreRaw } from "./store";
 
 /**
  * Estimate the size of the main section based on the window width
@@ -25,6 +26,9 @@ export const PlaygroundPage = () => {
   const { sidePanel, shouldShowTopNav } = useStudioStore(
     "sidePanel",
     "shouldShowTopNav",
+  );
+  const hasRoutes = useStudioStoreRaw(
+    useShallow((state) => state.appRoutes.length > 0 && state.activeRoute),
   );
 
   const width = getMainSectionWidth();
@@ -74,7 +78,7 @@ export const PlaygroundPage = () => {
         )}
         <ResizablePanel id="main" order={1}>
           <div className="flex flex-col h-full min-h-0">
-            <PlaygroundPageContent />
+            {hasRoutes && <PlaygroundPageContent />}
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
