@@ -23,7 +23,7 @@ axum = { workspace = true, default-features = false, features = [
     "tracing",
     "ws",
 ] }
-bytes = { version = "1.6" }
+bytes = { version = "1.10" }
 clap = { workspace = true, features = ["derive", "env"] }
 fpx = { version = "0.1.0", path = "../fpx", features = [
     "libsql",
@@ -39,26 +39,26 @@ libsql = { version = "0.6", default-features = false, features = [
     "core",
     "serde",
 ] }
-once_cell = { version = "1.19" }
-opentelemetry = { version = "0.27" }
-opentelemetry_sdk = { version = "0.27", features = ["rt-tokio"] }
-opentelemetry-otlp = { version = "0.27", features = [
+once_cell = { version = "1.20" }
+opentelemetry = { version = "0.28" }
+opentelemetry_sdk = { version = "0.28", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.28", features = [
     "http-json",
     "reqwest-client",
     "reqwest-rustls-webpki-roots",
 ] }
-opentelemetry-proto = { version = "0.27", features = [
+opentelemetry-proto = { version = "0.28", features = [
     "gen-tonic-messages",
     "with-serde",
     "with-schemars",
 ] }
 prost = { version = "0.13" }
-rand = { version = "0.8.5" }
+rand = { version = "0.9.0" }
 schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 serde_with = { version = "3.8.1" }
-strum = { version = "0.26", features = ["derive"] }
+strum = { version = "0.27", features = ["derive"] }
 thiserror = { version = "2.0" }
 time = { version = "0.3.17", features = ["serde-human-readable"] }
 tokio = { version = "1.40", features = ["rt-multi-thread", "signal", "fs"] }
