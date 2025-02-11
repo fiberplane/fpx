@@ -34,6 +34,15 @@ export default app;
 
 Visit your app at `http://localhost:8787/fp` to see the Fiberplane UI.
 
+## Features
+
+- Access built-in interactive documentation
+- Automatically discover routes via OpenAPI spec and show these as human readable CRUD operations
+- Generate a request to test end points in real time
+- Add authentication headers and re-use these throughout requests
+- Quickly navigate with keyboard navigation and shortcuts
+- Switch between beautiful themes for light and dark mode
+
 ## Contributing
 
 Interested in contributing? Please get in touch via GitHub issues, or on the [Fiberplane Discord](https://discord.com/invite/cqdY6SpfVR). We are very responsive to feedback and suggestions!
