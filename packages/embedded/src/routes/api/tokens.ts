@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import { z } from "zod";
+import { logIfDebug } from "../../debug.js";
 import { FpService } from "../../services/index.js";
-import { type FiberplaneAppType, logIfDebug } from "../../types.js";
+import type { FiberplaneAppType } from "../../types.js";
 
 // Temporary implementation
 export default function createTokensApiRoute(apiKey: string) {

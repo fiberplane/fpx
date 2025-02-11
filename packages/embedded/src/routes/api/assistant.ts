@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { PLAYGROUND_SERVICES_URL } from "../../constants.js";
-import { type FiberplaneAppType, logIfDebug } from "../../types.js";
+import { logIfDebug } from "../../debug.js";
+import type { FiberplaneAppType } from "../../types.js";
 
 export default function createAssistantApiRoute(apiKey: string) {
   const app = new Hono<FiberplaneAppType>();
