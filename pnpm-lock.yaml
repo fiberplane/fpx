@@ -38,9 +38,6 @@ importers:
       '@fiberplane/fpx-types':
         specifier: workspace:*
         version: link:../packages/types
-      '@fiberplane/hono':
-        specifier: workspace:*
-        version: link:../packages/embedded
       '@fiberplane/source-analysis':
         specifier: workspace:*
         version: link:../packages/source-analysis

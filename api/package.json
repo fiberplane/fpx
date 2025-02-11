@@ -43,7 +43,6 @@
     "@ai-sdk/mistral": "^1.0.3",
     "@ai-sdk/openai": "^1.0.5",
     "@fiberplane/fpx-types": "workspace:*",
-    "@fiberplane/hono": "workspace:*",
     "@fiberplane/source-analysis": "workspace:*",
     "@hono/node-server": "^1.13.7",
     "@hono/zod-validator": "^0.4.1",
