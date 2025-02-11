@@ -1,5 +1,4 @@
 ---
-import type { Props } from "@astrojs/starlight/props";
 import { Image } from "astro:assets";
 import autoDetectedRoutesDark from "@/assets/bento-auto-detected-routes-dark.jpg";
 import autoDetectedRoutesLight from "@/assets/bento-auto-detected-routes-light.jpg";
@@ -32,9 +31,7 @@ const tracesImage = {
         <h3>Auto detected routes</h3>
         <p>
           Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi saepe
-          dignissimos error recusandae non? Quisquam officiis velit voluptatem
-          nam ab blanditiis. Harum, eligendi. Quisquam odio numquam optio unde
-          necessitatibus distinctio.
+          dignissimos error recusandae non?
         </p>
       </div>
 
@@ -102,16 +99,17 @@ const tracesImage = {
     container: bento-container / inline-size;
     background-color: var(--bg-secondary);
     margin-inline: calc(var(--sl-content-pad-x) * -1);
-    margin-block: 4rem !important;
+    margin-block: 4rem;
     padding-block: 6rem;
   }
 
   .bento-grid {
     display: grid;
-    grid-template: auto auto / repeat(5, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--sl-content-pad-x);
     max-width: 72rem;
     margin-inline: auto;
+    padding-inline: var(--sl-content-pad-x);
   }
 
   .bento-grid-item {
@@ -180,5 +178,38 @@ const tracesImage = {
     justify-content: center;
     font-size: 6rem;
     filter: hue-rotate(320deg) contrast(120%);
+  }
+
+  @container bento-container (width < 56rem) {
+    .bento-grid {
+      --bento-item-padding: 1.75rem;
+
+      background-color: green;
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bento-grid-item {
+      grid-column: span 1;
+
+      h3 {
+        font-size: 24px;
+      }
+    }
+  }
+
+  @container bento-container (width < 40rem) {
+    .bento-grid {
+      --bento-item-padding: 1.5rem;
+
+      grid-template-columns: 1fr;
+    }
+
+    .bento-grid-item {
+      grid-column: span 1;
+
+      h3 {
+        font-size: 20px;
+      }
+    }
   }
 </style>
