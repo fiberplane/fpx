@@ -217,7 +217,7 @@ function WorkflowDetail() {
                     "flex items-center gap-1 text-sm text-muted-foreground p-1 rounded-sm",
                     stepIndex <= 0
                       ? "pointer-events-none"
-                      : "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary",
+                      : "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary/50",
                   )}
                   title="previous"
                   replace
@@ -239,7 +239,7 @@ function WorkflowDetail() {
                   className={cn(
                     "flex items-center gap-1 text-sm text-muted-foreground  p-1 rounded-sm",
                     stepIndex < workflow.steps.length - 1 && stepIndex !== -1
-                      ? "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary p-1 rounded-sm"
+                      ? "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary/50 p-1 rounded-sm"
                       : "pointer-events-none",
                   )}
                   title="next"
@@ -403,7 +403,7 @@ const StepperItem = (
       <div
         className={cn(
           "w-6 h-6 rounded-full flex items-center justify-center z-10 relative",
-          selected ? "bg-primary" : "bg-accent-foreground",
+          selected ? "bg-primary/30" : "bg-accent/95",
         )}
       >
         <span className="text-primary-foreground">{index + 1}</span>
@@ -606,7 +606,7 @@ function StepDetails({
                 className={cn(
                   "flex items-center gap-1 text-sm text-muted-foreground  p-1 rounded-sm",
                   previousStepId
-                    ? "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary"
+                    ? "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary/50"
                     : "pointer-events-none",
                 )}
                 search={(prev) => ({
@@ -621,7 +621,7 @@ function StepDetails({
                 className={cn(
                   "flex items-center gap-1 text-sm text-muted-foreground  p-1 rounded-sm",
                   nextStepId
-                    ? "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary"
+                    ? "pointer-events-auto bg-secondary text-secondary-foreground hover:bg-primary/50"
                     : "pointer-events-none",
                 )}
                 search={(prev) => ({

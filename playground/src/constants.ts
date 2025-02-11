@@ -1,3 +1,5 @@
+export const DISCORD_INVITE_URL = "https://discord.com/invite/cqdY6SpfVR";
+
 export const FEATURE_FLAG_WORKFLOWS = "workflows";
 export const FEATURE_FLAG_TRACES = "traces";
 export const FEATURE_FLAG_ERROR_REPORTING = "error-reporting";

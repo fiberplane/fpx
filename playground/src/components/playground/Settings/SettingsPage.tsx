@@ -1,7 +1,11 @@
-import { ModeToggle } from "@/components/mode-toggle";
+import { ThemeSelect } from "@/components/theme-select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { FEATURE_FLAG_TRACES, FEATURE_FLAG_WORKFLOWS } from "@/constants";
+import {
+  DISCORD_INVITE_URL,
+  FEATURE_FLAG_TRACES,
+  FEATURE_FLAG_WORKFLOWS,
+} from "@/constants";
 import { useStudioStore } from "../store";
 import { Auths } from "./Auths";
 
@@ -28,8 +32,8 @@ export function SettingsPage() {
               Customize the appearance of your application.
             </p>
           </div>
-          <div className="p-4 border rounded-lg ">
-            <ModeToggle />
+          <div className="p-2 rounded-lg ">
+            <ThemeSelect />
           </div>
         </div>
         <Separator />
@@ -58,8 +62,17 @@ export function SettingsPage() {
                   Workflows
                 </label>
                 <p className="text-sm text-muted-foreground">
-                  Enable support for creating and managing API workflow.
-                  Requires an API key from Fiberplane.
+                  Enable support for creating and managing API workflows.
+                  Requires an API key from Fiberplane, which you can request in
+                  <a
+                    href={DISCORD_INVITE_URL}
+                    className="text-primary/80 inline-flex ml-1 items-baseline underline gap-1 hover:text-primary"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Discord
+                  </a>
+                  .
                 </p>
               </div>
             </div>

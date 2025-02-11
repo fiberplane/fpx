@@ -9,15 +9,18 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        // NOTE - Our accent color is too strong to keep as default button style, so we're using secondary as default
         default:
-          "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+          "bg-secondary text-secondary-foreground shadow hover:bg-secondary/80",
+        primary:
+          "bg-primary text-primary-foreground shadow hover:bg-primary/80",
         destructive:
           "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
           "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
         secondary:
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        ghost: "hover:bg-accent/15 hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
