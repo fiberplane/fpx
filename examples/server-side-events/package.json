@@ -13,5 +13,5 @@
     "@cloudflare/workers-types": "^4.20241112.0",
     "wrangler": "^3.91.0"
   },
-  "homepage": "https://github.com/fiberplane/fpx/examples/server-side-events#readme"
+  "homepage": "https://github.com/fiberplane/fiberplane/examples/server-side-events#readme"
 }

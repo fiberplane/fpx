@@ -1,11 +1,11 @@
 {
-  "name": "fpx",
+  "name": "fiberplane",
   "version": "1.0.0",
   "description": "Local development debugging interface for Hono apps, powered by OpenTelemetry",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "postinstall": "pnpm run build:types && pnpm run build:source-analysis",
-    "build:embedded": "pnpm build:playground && pnpm clean:embedded && pnpm --filter @fiberplane/hono build && cp -r playground/dist packages/fiberplane-hono/dist/playground",
+    "build:embedded": "pnpm build:playground && pnpm clean:embedded && pnpm --filter @fiberplane/hono build && cp -r packages/playground/dist packages/fiberplane-hono/dist/playground",
     "build:playground": "pnpm --filter @fiberplane/playground build",
     "build:source-analysis": "pnpm --filter @fiberplane/source-analysis build",
     "build:studio": "pnpm clean:studio && pnpm build:studio-api && pnpm build:studio-frontend",

@@ -6,10 +6,10 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fiberplane/fpx.git"
+    "url": "https://github.com/fiberplane/fiberplane.git"
   },
   "bugs": {
-    "url": "https://github.com/fiberplane/fpx/issues"
+    "url": "https://github.com/fiberplane/fiberplane/issues"
   },
   "engines": {
     "node": ">=16.0.0"
