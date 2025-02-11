@@ -28,7 +28,7 @@
     "@libsql/client": "^0.14.0",
     "ai": "^3.4.33",
     "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.34.1",
+    "drizzle-orm": "^0.39.3",
     "hono": "^4.6.12",
     "jose": "^5.9.6",
     "tsx": "^4.19.2",
@@ -38,7 +38,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@cloudflare/workers-types": "^4.20241112.0",
-    "drizzle-kit": "^0.30.0",
+    "drizzle-kit": "^0.30.4",
     "wrangler": "^3.91.0"
   }
 }
