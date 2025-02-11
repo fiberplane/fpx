@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { type Context, Hono } from "hono";
 import { env } from "hono/adapter";
 import { z } from "zod";
-import type { RouteEntryId } from "../../../packages/source-analysis/dist/types.js";
+import type { RouteEntryId } from "../../../../../packages/source-analysis/dist/types.js";
 import {
   type NewAppRequest,
   appRequests,

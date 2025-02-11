@@ -1,6 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { z } from "zod";
 import type { Bindings } from "./types";
 import { resolveBody, resolveWebhoncId } from "./utils";
@@ -112,19 +113,15 @@ app.all(
 
     // HACK - Type coercions
     const proxiedBody = parsedResponse?.body as string;
-    const proxiedStatus = parsedResponse?.status as number;
+    const proxiedStatus = parsedResponse?.status as ContentfulStatusCode;
 
     if (shouldRespondWithJson) {
-      return c.json(JSON.parse(proxiedBody), {
-        headers: proxiedHeaders,
-        status: proxiedStatus,
-      });
+      const headerRecord = Object.fromEntries(proxiedHeaders.entries());
+      return c.json(JSON.parse(proxiedBody), proxiedStatus, headerRecord);
     }
 
-    return c.text(proxiedBody, {
-      headers: proxiedHeaders,
-      status: proxiedStatus,
-    });
+    const headerRecord = Object.fromEntries(proxiedHeaders.entries());
+    return c.text(proxiedBody, proxiedStatus, headerRecord);
   },
 );
 
