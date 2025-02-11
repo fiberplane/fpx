@@ -45,7 +45,7 @@ export function PlaygroundInput({
       onSubmit={onSubmit}
       // NOTE - For some reason, in prod (not locally), we get a `margin-block-end: 1rem` on the form element from the user-agent-stylesheet
       //        That's why we add `m-0` to the form element.
-      className="flex items-center justify-between bg-input border rounded-lg mx-0 py-1"
+      className="flex items-center justify-between bg-input border rounded-lg m-0 py-1"
     >
       <div className="flex-1 min-w-0">
         <FpDropdownMenu>
