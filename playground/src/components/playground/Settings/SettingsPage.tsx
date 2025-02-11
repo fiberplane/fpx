@@ -62,7 +62,7 @@ export function SettingsPage() {
                   Workflows
                 </label>
                 <p className="text-sm text-muted-foreground">
-                  Enable support for creating and managing API workflow.
+                  Enable support for creating and managing API workflows.
                   Requires an API key from Fiberplane, which you can request in
                   <a
                     href={DISCORD_INVITE_URL}
