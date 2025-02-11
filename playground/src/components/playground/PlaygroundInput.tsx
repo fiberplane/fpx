@@ -113,7 +113,7 @@ export function PlaygroundInput({
               size="sm"
               type="submit"
               disabled={isPlaygroundRequesting}
-              variant="default"
+              variant="primary"
               className={cn("p-2 md:px-2.5 py-1 h-auto")}
             >
               <span className="hidden md:inline">Send</span>
