@@ -1,5 +1,5 @@
 
-<img src="./studio/src/assets/fp-logo-fav.svg" alt="Fiberplane Logo" width="50" />
+<img src="./studio-frontend/src/assets/fp-logo-fav.svg" alt="Fiberplane Logo" width="50" />
 
 # Fiberplane Studio
 
@@ -7,11 +7,11 @@ Fiberplane Studio is a local tool for building and debugging Hono APIs. It can m
 
 [website & docs](https://fiberplane.com/)
 
-![Fiberplane Studio](./assets/studio.png)
+![Fiberplane Studio](../../assets/studio.png)
 
 ## Quick Start
 
-For FastAPI/Python developers, we've got an experimental library in the [python](./python) folder.
+For FastAPI/Python developers, we've got an experimental library in this monorepo's [python](../../python/fpxpy) folder.
 
 Create Hono project
 
@@ -51,7 +51,7 @@ Visit `http://localhost:8788` to make requests to your api, and see your logs an
 
 ***
 
-Studio is designed to be used in conjunction with the [`@fiberplane/hono-otel` client library](https://www.npmjs.com/package/@fiberplane/hono-otel). You can read more about what it does in [that project's README](./packages/client-library-otel/README.md).
+Studio is designed to be used in conjunction with the [`@fiberplane/hono-otel` client library](https://www.npmjs.com/package/@fiberplane/hono-otel). You can read more about what it does in [that project's README](../../packages/client-library-otel/README.md).
 
 
 ## Contributing
