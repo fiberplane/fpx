@@ -33,7 +33,7 @@ To connect your Hono app to the Studio api, you'll need to add the code in [`pac
 
 Worth noting is that the api connects to a local libsql (sqlite) database. Setup steps for this are simple (you just need to run migrations), and are in [api/README.md](./api/README.md).
 
-The frontend is a React + Typescript + Tailwind app that uses [shadcn/ui](https://ui.shadcn.com/) components. For more info on the frontend, see: [studio-frontend/README.md](./studio/studio-frontend/README.md).
+The frontend is a React + Typescript + Tailwind app that uses [shadcn/ui](https://ui.shadcn.com/) components. For more info on the frontend, see: [studio-frontend/README.md](./apps/studio/studio-frontend/README.md).
 
 There are also folders containing:
 
