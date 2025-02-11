@@ -1,3 +1,4 @@
+import DiscordLogo from "@/assets/discord-logo.svg";
 import FiberplaneLogo from "@/assets/fiberplane-logo-orange.svg";
 import {
   Tooltip,
@@ -8,7 +9,6 @@ import { DISCORD_INVITE_URL } from "@/constants";
 import { useSettingsOpen } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Icon } from "@iconify/react";
-import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { SettingsMenu } from "../Settings";
 import { FloatingSidePanel } from "../SidePanel";
 import { SidePanelTrigger } from "../SidePanel";
@@ -31,16 +31,16 @@ export function BottomBar() {
           <span className="sr-only text-xs text-foreground/80">Fiberplane</span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 px-2">
           <BottomBarExternalLink
             href={DISCORD_INVITE_URL}
-            icon={<DiscordLogoIcon className="w-3.5 h-3.5" />}
-            label="Fiberplane Discord"
+            icon={<DiscordLogo className="w-3.5 h-3.5 text-foreground" />}
+            label="Discord"
           />
           <BottomBarExternalLink
             href="https://github.com/fiberplane/fiberplane"
             icon={<Icon icon="lucide:github" className={cn("h-3.5 w-3.5")} />}
-            label="Fiberplane GitHub"
+            label="GitHub"
           />
         </div>
       </div>
@@ -69,7 +69,7 @@ export function BottomBarExternalLink(props: {
       </TooltipTrigger>
       <TooltipContent
         side="bottom"
-        className="px-2 py-1.5 text-sm flex gap-2 items-center"
+        className="px-1 py-0.5 text-xs flex gap-2 items-center"
         align="center"
       >
         <p>{props.label}</p>
