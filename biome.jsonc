@@ -71,8 +71,8 @@
       "include": [
         "packages/client-library-otel",
         "api",
-        "honc-code-gen",
-        "fp-services",
+        "apps/honc-code-gen",
+        "apps/fp-services",
         "lilo/lilo-worker"
       ],
       "linter": {
@@ -99,8 +99,8 @@
       // API related
       "meta/*.json",
       // Honc code gen playground outputs
-      "honc-code-gen/outputs/**/*",
-      "honc-code-gen/storage/**/*",
+      "apps/honc-code-gen/outputs/**/*",
+      "apps/honc-code-gen/storage/**/*",
       // Client library and website related
       "dist",
       "lilo/lilo-frontend/dist",
