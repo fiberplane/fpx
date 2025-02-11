@@ -28,15 +28,20 @@ charles-barky
 
 export async function generateName(AI: Ai, description: string) {
   const model = "@cf/meta/llama-3.1-8b-instruct-fast";
-  const result = await AI.run(model as BaseAiTextGenerationModels, {
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: EXAMPLE_USER_PROMPT },
-      { role: "assistant", content: EXAMPLE_ASSISTANT_RESPONSE },
-      { role: "user", content: createPrompt(description) },
-    ],
-    temperature: 0.2,
-  });
+  const result = await AI.run(
+    // HACK - Need to coerce the type here because this model is not in the AiModels type for some reason
+    //        https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct-fast/
+    model as "@cf/meta/llama-3.1-8b-instruct",
+    {
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: EXAMPLE_USER_PROMPT },
+        { role: "assistant", content: EXAMPLE_ASSISTANT_RESPONSE },
+        { role: "user", content: createPrompt(description) },
+      ],
+      temperature: 0.2,
+    },
+  );
 
   let name: string;
 
