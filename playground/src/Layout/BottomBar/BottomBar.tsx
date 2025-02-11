@@ -1,3 +1,4 @@
+import FiberplaneLogo from "@/assets/fiberplane-logo-orange.svg";
 import {
   Tooltip,
   TooltipContent,
@@ -6,6 +7,7 @@ import {
 import { useSettingsOpen } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Icon } from "@iconify/react";
+import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { SettingsMenu } from "../Settings";
 import { FloatingSidePanel } from "../SidePanel";
 import { SidePanelTrigger } from "../SidePanel";
@@ -23,15 +25,21 @@ export function BottomBar() {
           <FloatingSidePanel />
         </div>
 
+        <div className="flex items-center justify-center gap-1.5 h-6">
+          {/* @ts-expect-error - SVG is not typed properly in our app */}
+          <FiberplaneLogo className="w-5 h-5" />
+          <span className="sr-only text-xs text-foreground/80">Fiberplane</span>
+        </div>
+
         <div className="flex items-center gap-2">
           <BottomBarExternalLink
             href="https://discord.com/invite/cqdY6SpfVR"
-            icon="lucide:discord"
+            icon={<DiscordLogoIcon className="w-3.5 h-3.5" />}
             label="Fiberplane Discord"
           />
           <BottomBarExternalLink
             href="https://github.com/fiberplane/fiberplane"
-            icon="lucide:github"
+            icon={<Icon icon="lucide:github" className={cn("h-3.5 w-3.5")} />}
             label="Fiberplane GitHub"
           />
         </div>
@@ -42,7 +50,7 @@ export function BottomBar() {
 
 export function BottomBarExternalLink(props: {
   href: string;
-  icon: string;
+  icon: React.ReactNode;
   label: string;
 }) {
   return (
@@ -56,7 +64,7 @@ export function BottomBarExternalLink(props: {
           target="_blank"
           rel="noreferrer"
         >
-          <Icon icon={props.icon} className={cn("h-4 w-4")} />
+          {props.icon}
         </a>
       </TooltipTrigger>
       <TooltipContent
