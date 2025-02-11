@@ -1,4 +1,4 @@
-import { createMiddleware } from "@fiberplane/embedded";
+import { createFiberplane } from "@fiberplane/hono";
 import { instrument } from "@fiberplane/hono-otel";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { logger } from "hono/logger";
@@ -45,37 +45,38 @@ app.doc("/doc", (c) => ({
 // Mount the Fiberplane playground to play with the API
 app.use(
   "/fp/*",
-  createMiddleware({
-    apiKey: "12345",
-    spec: "/doc",
+  createFiberplane({
+    // apiKey: "12345",
+    openapi: { url: "/doc" },
   }),
 );
 // app.use(
 //   "/fp/*",
-//   createMiddleware({
-//     // @ts-expect-error - The imported spec does not match our expected OpenAPIv3 type
-//     spec: app.getOpenAPIDocument({
-//       openapi: "3.0.0",
-//       info: {
-//         title: "Lilo API",
-//         version: "0.0.1",
-//         description: "API documentation for Lilo",
-//       },
-//       servers: [
-//         // NOTE - Embedded should add the current origin automatically.
-//         //
-//         // {
-//         //   // url: new URL(c.req.url).origin,
-//         //   url: "http://localhost:6246",
-//         //   description: "Local",
-//         // },
-//         {
-//           // url: new URL(c.req.url).origin,
-//           url: "https://lilo.fp.dev",
-//           description: "Production",
+//   createFiberplane({
+//     openapi: {
+//       content: JSON.stringify(app.getOpenAPIDocument({
+//         openapi: "3.0.0",
+//         info: {
+//           title: "Lilo API",
+//           version: "0.0.1",
+//           description: "API documentation for Lilo",
 //         },
-//       ],
-//     }),
+//         servers: [
+//           // NOTE - Embedded should add the current origin automatically.
+//           //
+//           // {
+//           //   // url: new URL(c.req.url).origin,
+//           //   url: "http://localhost:6246",
+//           //   description: "Local",
+//           // },
+//           {
+//             // url: new URL(c.req.url).origin,
+//             url: "https://lilo.fp.dev",
+//             description: "Production",
+//           },
+//         ],
+//       }))
+//     },
 //   }),
 // );
 

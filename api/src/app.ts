@@ -7,7 +7,6 @@ import type * as schema from "./db/schema.js";
 import type { Bindings, Variables } from "./lib/types.js";
 import logger from "./logger/index.js";
 
-// import { createMiddleware } from "@fiberplane/embedded";
 import { HTTPException } from "hono/http-exception";
 import type * as webhoncType from "./lib/webhonc/index.js";
 import appRoutes from "./routes/app-routes.js";
@@ -73,13 +72,6 @@ export function createApp(
   app.route("/", appRoutes);
   app.route("/", settings);
   app.route("/", collections);
-
-  // app.use(
-  //   "/fp/*",
-  //   createMiddleware({
-  //     apiKey: "1234",
-  //   }),
-  // );
 
   return app;
 }
