@@ -1,7 +1,7 @@
 import { useMedia } from "./useMedia";
 
 /**
- * HACK - targeting `sm` breakpoint from tailwind
+ * HACK - targeting `md` breakpoint from tailwind
  *
  * IMPROVE - Use css variable instead of hardcoded 640px?
  */
