@@ -729,6 +729,12 @@ importers:
 
   packages/embedded:
     dependencies:
+      '@hono/zod-validator':
+        specifier: ^0.4.2
+        version: 0.4.2(hono@4.7.0)(zod@3.24.1)
+      jsonpointer:
+        specifier: ^5.0.1
+        version: 5.0.1
       zod:
         specifier: ^3.24.1
         version: 3.24.1
@@ -743,8 +749,8 @@ importers:
         specifier: ^18.2.0
         version: 18.3.1
       hono:
-        specifier: ^4.6.12
-        version: 4.6.13
+        specifier: ^4.7.0
+        version: 4.7.0
       nodemon:
         specifier: ^3.1.7
         version: 3.1.7
@@ -8420,8 +8426,9 @@ packages:
     resolution: {integrity: sha512-iE6xOPwDYlfnZFwk6BfIMMIH4WZm3pPhz6rc1uJM/OPew0pjG5K6p8WTLaMBY1/szF/T0TaEjprMpwn16BA0NQ==}
     engines: {node: '>=16.9.0'}
 
-  hookable@5.5.3:
-    resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
+  hono@4.7.0:
+    resolution: {integrity: sha512-hV97aIR4WYbG30k234sD9B3VNr1ZWdQRmrVF76LKFlmI7O9Yo70mG9+mFwyQ6Sjrz4wH71GfnBxv6CPjcx3QNw==}
+    engines: {node: '>=16.9.0'}
 
   html-entities@2.5.2:
     resolution: {integrity: sha512-K//PSRMQk4FZ78Kyau+mZurHn3FH0Vwr+H36eE0rPbeYkRRi9YxceYPhuN60UwWorxyKHhqoAJl2OFKa4BVtaA==}
@@ -14495,6 +14502,11 @@ snapshots:
   '@hono/zod-validator@0.4.2(hono@4.6.16)(zod@3.24.1)':
     dependencies:
       hono: 4.6.16
+      zod: 3.24.1
+
+  '@hono/zod-validator@0.4.2(hono@4.7.0)(zod@3.24.1)':
+    dependencies:
+      hono: 4.7.0
       zod: 3.24.1
 
   '@hookform/resolvers@3.9.1(react-hook-form@7.53.2(react@18.3.1))':
@@ -20590,7 +20602,7 @@ snapshots:
 
   hono@4.6.16: {}
 
-  hookable@5.5.3: {}
+  hono@4.7.0: {}
 
   html-entities@2.5.2: {}
 
