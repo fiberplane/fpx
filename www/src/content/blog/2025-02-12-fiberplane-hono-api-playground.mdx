@@ -13,6 +13,7 @@ tags:
 
 import PackageManagers from "@/components/PackageManagers.astro";
 import { LinkCard } from "@astrojs/starlight/components";
+import playgroundVideo from "../../assets/blog/2025-02-12-playground.mp4";
 
 For developers building TypeScript APIs, the power of Hono is the bet many are taking.
 It’s blazing fast, lightweight, designed explicitly for edge and serverless, and integrates
@@ -66,6 +67,27 @@ app.use(
 ````
 
 Just start your Hono API, navigate to the mounted `/fp` endpoint to access the Fiberplane Playground.
+
+<video
+  autoplay
+  disablePictureInPicture
+  loop
+  muted
+  playsinline
+  preload
+  width="100%"
+  style="border-radius: 0.5rem;"
+>
+  <source src={playgroundVideo} type="video/mp4" />
+  <p>
+    Your browser does not support the video tag.
+
+    Alternatively, let us know by
+    <a href="https://github.com/fiberplane/fpx/issues/new">opening an issue
+    </a> on GitHub!
+
+  </p>
+</video>
 
 ### The first step toward better Hono APIs and Cloudflare Worker debugging
 
