@@ -5,15 +5,17 @@ on:
   pull_request:
     branches: ["*"]
     paths:
-      - "api/**"
+      - "apps/studio/studio-api/**"
       - "packages/client-library-otel/**"
-      - "studio/**"
+      - "apps/studio/studio-frontend/**"
+      - "playground/**"
   push:
     branches: ["main", "release-*"]
     paths:
-      - "api/**"
+      - "apps/studio/studio-api/**"
       - "packages/client-library-otel/**"
-      - "studio/**"
+      - "apps/studio/studio-frontend/**"
+      - "playground/**"
 
 env:
   CARGO_TERM_COLOR: always
@@ -66,6 +68,9 @@ jobs:
 
       # Testing
 
+      - name: Test Playground
+        run: pnpm --filter @fiberplane/playground test
+
       - name: Test Studio API
         run: pnpm --filter @fiberplane/studio test
 
@@ -88,7 +93,7 @@ jobs:
       # Release a preview version
 
       - name: Copy the frontend files into the api
-        run: cp -r ./studio/dist/* ./api/dist
+        run: cp -r ./apps/studio/studio-frontend/dist/* ./apps/studio/studio-api/dist
 
       - name: Publish a temporary preview version
-        run: pnpx pkg-pr-new publish --pnpm "./api" "./packages/client-library-otel"
+        run: pnpx pkg-pr-new publish --pnpm "./apps/studio/studio-api" "./packages/client-library-otel"

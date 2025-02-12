@@ -1,0 +1,44 @@
+{
+  "name": "fp-services",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "dev:cron": "pnpm dev:scheduled",
+    "dev:scheduled": "wrangler dev --test-scheduled",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "db:touch": "wrangler d1 execute fp-services --local --command='SELECT 1'",
+    "db:migrate:prod": "AUTH_ENV=production drizzle-kit migrate",
+    "db:studio:prod": "AUTH_ENV=production drizzle-kit studio",
+    "format": "biome check . --write",
+    "keypair:generate": "tsx keypair-generate.ts",
+    "lint": "biome lint .",
+    "test": "vitest --run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^0.0.66",
+    "@fiberplane/hono-otel": "0.4.0-canary.0",
+    "@hono/oauth-providers": "^0.6.2",
+    "@hono/zod-validator": "^0.4.1",
+    "@langchain/core": "^0.3.19",
+    "@libsql/client": "^0.14.0",
+    "ai": "^3.4.33",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.39.3",
+    "hono": "^4.6.12",
+    "jose": "^5.9.6",
+    "tsx": "^4.19.2",
+    "vitest": "^2.1.6",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@cloudflare/workers-types": "^4.20241112.0",
+    "drizzle-kit": "^0.30.4",
+    "wrangler": "^3.91.0"
+  }
+}

@@ -24,7 +24,7 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "zod": "^3.23.8"
+    "zod": "^3.24.1"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^0.0.51",

@@ -3,9 +3,8 @@ shared/dist
 .env
 .envrc
 
-# To make my life temporarily easier
-lilo/lilo-worker/.prod.vars
-lilo/lilo-worker/.dev.vars
+# personal script to purge all node modules
+remove_node_modules.sh
 
 # Cursor
 .cursorrules
@@ -53,3 +52,6 @@ remove_node_modules.sh
 
 # Ignore .dev.vars files in the examples folder
 examples/**/*.dev.vars
+workflows-api/workflows.db
+playground/dist
+workflows-api/.dev.vars

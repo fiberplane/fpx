@@ -1,1 +1,0 @@
-export { externalApiRouter } from "./api";

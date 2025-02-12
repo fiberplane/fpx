@@ -1,40 +1,37 @@
 {
-  "name": "fpx",
+  "name": "fiberplane",
   "version": "1.0.0",
   "description": "Local development debugging interface for Hono apps, powered by OpenTelemetry",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "postinstall": "pnpm run build:types && pnpm run build:source-analysis",
-    "build:types": "pnpm --filter @fiberplane/fpx-types build",
+    "build:fp-hono": "pnpm build:playground && pnpm clean:fp-hono && pnpm --filter @fiberplane/hono build && cp -r packages/playground/dist packages/fiberplane-hono/dist/playground",
+    "build:playground": "pnpm --filter @fiberplane/playground build",
     "build:source-analysis": "pnpm --filter @fiberplane/source-analysis build",
-    "build:fpx-studio": "pnpm clean:fpx-studio && pnpm build:api && pnpm build:frontend",
-    "build:lilo": "pnpm clean:lilo && pnpm build:lilo-frontend",
-    "build:lilo-frontend": "pnpm --filter lilo-frontend build && cp -r lilo/lilo-frontend/dist lilo/lilo-worker/public",
-    "build:api": "pnpm --filter @fiberplane/studio build",
+    "build:studio": "pnpm clean:studio && pnpm build:studio-api && pnpm build:studio-frontend",
+    "build:studio-api": "pnpm --filter @fiberplane/studio build",
+    "build:studio-frontend": "pnpm --filter @fiberplane/studio-frontend build && cp -r apps/studio/studio-frontend/dist/* apps/studio/studio-api/dist",
+    "build:types": "pnpm --filter @fiberplane/fpx-types build",
     "build:www": "pnpm --filter www build",
-    "build:frontend": "pnpm --filter @fiberplane/studio-frontend build && cp -r studio/dist/* api/dist",
-    "deploy:lilo": "pnpm build:lilo && pnpm --filter lilo-worker run deploy",
-    "dev:api": "pnpm --filter @fiberplane/studio dev",
     "dev:www": "pnpm --filter www dev",
-    "dev:frontend": "pnpm --filter @fiberplane/studio-frontend dev",
-    "clean:fpx-studio": "pnpm clean:api && pnpm clean:frontend",
-    "clean:lilo": "pnpm clean:lilo-worker && pnpm clean:lilo-frontend",
-    "clean:lilo-worker": "rimraf lilo/lilo-worker/public",
-    "clean:lilo-frontend": "rimraf lilo/lilo-frontend/dist",
-    "clean:api": "rimraf api/dist",
-    "clean:frontend": "rimraf studio/dist",
+    "dev:studio": "pnpm --filter @fiberplane/studio-frontend dev",
+    "dev:studio-api": "pnpm --filter @fiberplane/studio dev",
+    "clean:fp-hono": "rimraf packages/fiberplane-hono/dist",
+    "clean:studio": "pnpm clean:studio-api && pnpm clean:studio-frontend",
+    "clean:studio-api": "rimraf apps/studio/studio-api/dist",
+    "clean:studio-frontend": "rimraf apps/studio/studio-frontend/dist",
     "format": "biome check . --write",
     "lint": "pnpm --recursive lint",
     "typecheck": "pnpm --recursive typecheck"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/fiberplane/fpx.git"
+    "url": "https://github.com/fiberplane/fiberplane.git"
   },
   "bugs": {
-    "url": "https://github.com/fiberplane/fpx/issues"
+    "url": "https://github.com/fiberplane/fiberplane/issues"
   },
-  "homepage": "https://github.com/fiberplane/fpx#readme",
+  "homepage": "https://github.com/fiberplane/fiberplane#readme",
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "pkg-pr-new": "^0.0.35",
