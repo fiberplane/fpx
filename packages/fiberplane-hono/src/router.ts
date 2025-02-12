@@ -3,24 +3,33 @@ import { logIfDebug } from "./debug.js";
 import createApiRoutes from "./routes/api/index.js";
 import createEmbeddedPlayground from "./routes/playground.js";
 import type { FiberplaneAppType, ResolvedEmbeddedOptions } from "./types.js";
-import createRunnerApiRoute from "./routes/runner/index.js";
+import createRunnerRoute from "./routes/runner/index.js";
+import { contextStorage } from "hono/context-storage";
 
 // We use a factory pattern to create routes, which allows for clean dependency injection
 // of the apiKey. This keeps the implementation isolated and prevents us from having to
 // extend the consuming Hono app's context with our own variables and types.
 export function createRouter<E extends Env>(
-  options: ResolvedEmbeddedOptions,
-): Hono<E & FiberplaneAppType> {
+  options: ResolvedEmbeddedOptions<E>,
+): Hono<E & FiberplaneAppType<E>> {
   // Important: whatever gets passed to createEmbeddedPlayground
   // is passed to the playground, aka is on the HTML
   // We therefore remove the apiKey
   const { apiKey, fpxEndpoint, debug, ...sanitizedOptions } = options;
 
-  const app = new Hono<E & FiberplaneAppType>();
+  const app = new Hono<E & FiberplaneAppType<E>>();
   const isDebugEnabled = debug ?? false;
 
   app.use(async (c, next) => {
     c.set("debug", isDebugEnabled);
+    await next();
+  });
+
+  app.use(contextStorage())
+
+  app.use(async (c, next) => {
+    c.set("userApp", options.userApp);
+    c.set("userEnv", options.userEnv);
     await next();
   });
 
@@ -31,8 +40,8 @@ export function createRouter<E extends Env>(
       isDebugEnabled,
       "Fiberplane API Key Present. Creating internal API router.",
     );
+    app.route("/w", createRunnerRoute(apiKey));
     app.route("/api", createApiRoutes(apiKey, fpxEndpoint));
-    app.route("/w", createRunnerApiRoute(apiKey));
   } else {
     logIfDebug(
       isDebugEnabled,

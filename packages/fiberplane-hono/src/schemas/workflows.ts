@@ -1,14 +1,68 @@
-// All copied from the Playground Services
+// All copied from the service schema
 
 import { z } from "zod";
 
 // Core workflow step types
 export const StepParameterSchema = z.object({
   name: z.string().describe("Name of the parameter. Example: email"),
+  in: z
+    .enum(["query", "path", "header", "cookie"])
+    .describe("Where the parameter is located. Example: query"),
   value: z
     .string()
     .describe(
       "Value or reference to input/previous step output. Example: $.inputs.userEmail",
+    ),
+});
+
+export const StepRequestBodySchema = z.object({
+  contentType: z
+    .enum([
+      "application/json",
+      "application/x-www-form-urlencoded",
+      "multipart/form-data",
+    ])
+    .describe(
+      "The MIME type of the body of the request. Example: application/json",
+    ),
+  payload: z.union([
+    // JSON Object Example - direct object payload
+    z.record(z.union([
+      z.string(),
+      z.number(),
+      z.boolean(),
+      z.null(),
+      z.array(z.union([z.string(), z.number(), z.boolean(), z.null()])),
+      z.record(z.union([z.string(), z.number(), z.boolean(), z.null()]))
+    ])).describe("Direct JSON object payload"),
+    
+    // Complete Runtime Expression - string starting with $
+    z.string().describe("Runtime expression reference"),
+    
+    // Form Data Example - record of primitive values
+    z.record(z.union([
+      z.string(),
+      z.number(),
+      z.boolean()
+    ])).describe("Form data payload")
+  ]).describe("The payload of the request. Can be a direct JSON object, runtime expression, or form data."),
+  replacements: z
+    .array(
+      z.object({
+        target: z
+          .string()
+          .describe(
+            "The target of the replacement - JSON pointer to the value to replace. Example: /email",
+          ),
+        value: z
+          .any()
+          .describe(
+            "The value to replace the target with. Example: test@example.com",
+          ),
+      }),
+    )
+    .describe(
+      "Replacements to make to the payload. Example: [{ target: '/email', value: 'test@example.com' }]",
     ),
 });
 
@@ -36,15 +90,15 @@ export const StepSchema = z.object({
     .describe(
       "What this step does. Example: Create a new user account in the database",
     ),
-  operation: z
-    .string()
-    .describe(
-      "The operationId from OpenAPI spec (e.g., createUser) or the path (e.g., /users/create)",
-    ),
+  operation: z.object({
+    method: z.enum(["get", "post", "put", "delete", "patch", "head", "options", "trace"]).describe("The HTTP method to use for the operation. Example: post"),
+    path: z.string().describe("The path to the operation. Example: /users"),
+  }),
   parameters: z
     .array(StepParameterSchema)
     .default([])
     .describe("Parameters needed for the operation"),
+  requestBody: StepRequestBodySchema.optional(),
   successCriteria: z
     .array(StepSuccessCriteriaSchema)
     .default([])

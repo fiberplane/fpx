@@ -1,4 +1,6 @@
-export interface EmbeddedOptions {
+import type { Env, Hono } from "hono";
+
+export interface EmbeddedOptions<E extends Env> {
   /**
    * (Optional) Fiberplane API key to use for the embedded playground api.
    *
@@ -14,20 +16,25 @@ export interface EmbeddedOptions {
    */
   cdn?: string;
   openapi?: OpenAPIOptions;
-
+  /**
+   * The Hono app to use for the embedded runner.
+   */
+  app: Hono<E>;
   /**
    * Enable debug statements
    */
   debug?: boolean;
 }
 
-export interface ResolvedEmbeddedOptions extends EmbeddedOptions {
+export interface ResolvedEmbeddedOptions<E extends Env> extends EmbeddedOptions<E> {
   mountedPath: string;
   fpxEndpoint?: string;
+  userApp: Hono<E>;
+  userEnv: Env;
 }
 
-export interface SanitizedEmbeddedOptions
-  extends Omit<ResolvedEmbeddedOptions, "apiKey"> {}
+export interface SanitizedEmbeddedOptions<E extends Env>
+  extends Omit<ResolvedEmbeddedOptions<E>, "apiKey"> {}
 
 export interface OpenAPIOptions {
   /**
@@ -44,8 +51,10 @@ export interface OpenAPIOptions {
   content?: string;
 }
 
-export interface FiberplaneAppType {
+export interface FiberplaneAppType<E extends Env> {
   Variables: {
     debug: boolean;
+    userApp: Hono<E>;
+    userEnv: Env;
   };
 }

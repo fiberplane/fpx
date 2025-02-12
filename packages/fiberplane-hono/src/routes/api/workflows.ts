@@ -3,8 +3,8 @@ import { PLAYGROUND_SERVICES_URL } from "../../constants.js";
 import { logIfDebug } from "../../debug.js";
 import type { FiberplaneAppType } from "../../types.js";
 
-export default function createWorkflowsApiRoute(apiKey: string) {
-  const app = new Hono<FiberplaneAppType>();
+export default function createWorkflowsApiRoute<E extends Env>(apiKey: string) {
+  const app = new Hono<FiberplaneAppType<E>>();
 
   // Proxy all requests to fp-services but attach a token
   app.all("*", async (c) => {
