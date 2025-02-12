@@ -30,6 +30,8 @@ and tests all within one interface.
 That’s why we built the Fiberplane [**API Playground for Hono**](https://github.com/fiberplane/fiberplane), designed to
 give developers a native UX for exploring and testing their Hono service APIs.
 
+![Fiberplane API Playground for Hono](@/assets/blog/2025-02-12-fiberplane-hono-api-playground.png)
+
 ### Your Hono.js API available to spec in under a minute
 
 Leveraging OpenAPI, the explorer generates values, types, and documentation and more:
@@ -46,11 +48,9 @@ Leveraging OpenAPI, the explorer generates values, types, and documentation and 
 
 The Fiberplane Playground is available as middleware that you can install as follows:
 
-<PackageManagers type="install" pkg="@fiberplane/hono" />
+<PackageManagers pkg="@fiberplane/hono" />
 
-
-sadsad
-
+Next, just import the middleware and add it to your Hono app.
 ```tsx
 import { Hono } from "hono";
 import { createFiberplane } from "@fiberplane/hono";
@@ -65,7 +65,7 @@ app.use(
 );
 ````
 
-[Embed video]
+Just start your Hono API, navigate to the mounted `/fp` endpoint to access the Fiberplane Playground.
 
 ### The first step toward better Hono APIs and Cloudflare Worker debugging
 
