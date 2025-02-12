@@ -95,7 +95,9 @@ export function PlaygroundInput({
                       <Method method={route.method} className="ml-1 text-xs" />
                       <div className="flex w-full my-2">
                         <div className="flex-initial text-xs w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0 disabled:cursor-text disabled:bg-muted py-0">
-                          {route.summary || route.description || route.path}
+                          {route.operation.summary ||
+                            route.operation.description ||
+                            route.path}
                         </div>
                       </div>
                     </div>

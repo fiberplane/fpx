@@ -10,15 +10,16 @@ import type { RoutesSlice, StudioState } from "./types";
 
 export const routesSlice: StateCreator<
   StudioState,
-  [["zustand/immer", never], ["zustand/devtools", never]],
+  [["zustand/devtools", never]],
   [],
   RoutesSlice
 > = (set) => ({
   appRoutes: [],
   activeRoute: null,
   tagOrder: [],
-  setRoutes: (routes) =>
-    set((state) => {
+  setRoutes: (routes) => {
+    return set((initialState: StudioState): StudioState => {
+      const state = { ...initialState };
       const path = state.activeRoute?.path || "";
       const method = state.activeRoute?.method || "GET";
       const matchedRoute = findMatchedRoute(
@@ -30,7 +31,10 @@ export const routesSlice: StateCreator<
       state.appRoutes = routes;
 
       state.activeRoute = nextSelectedRoute;
-      for (const route of routes) {
+
+      const route = state.activeRoute;
+      if (route) {
+        // for (const route of routes) {
         const id = getRouteId({
           method: route.method,
           path: addBaseUrl(state.serviceBaseUrl, route.path, {
@@ -43,15 +47,21 @@ export const routesSlice: StateCreator<
           state.apiCallState[id] = params;
         }
       }
-    }),
+
+      return state;
+    });
+  },
 
   setTagOrder: (tagOrder) =>
-    set((state) => {
+    set((initialState: StudioState): StudioState => {
+      const state = { ...initialState };
       state.tagOrder = tagOrder;
+      return state;
     }),
 
   setActiveRoute: (route: ApiRoute) =>
-    set((state) => {
+    set((initialState: StudioState): StudioState => {
+      const state = { ...initialState };
       const nextMethod = apiRouteToInputMethod(route);
 
       state.activeRoute = route;
@@ -66,7 +76,6 @@ export const routesSlice: StateCreator<
       // Update tabs (you might want to move this logic to a separate slice)
       state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
         method: nextMethod,
-        openApiSpec: route?.openApiSpec,
       });
       state.activeRequestsPanelTab = state.visibleRequestsPanelTabs.includes(
         state.activeRequestsPanelTab,
@@ -82,5 +91,7 @@ export const routesSlice: StateCreator<
 
       // Add content type header (you might want to move this to a separate function)
       updateContentTypeHeaderInState(state);
+
+      return state;
     }),
 });
