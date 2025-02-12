@@ -8,8 +8,6 @@ export type KeyColor = "text-primary" | "text-info";
  * and it is used to represent a new parameter that has not yet been added to the list.
  */
 export type DraftKeyValueParameter = KeyValueParameter & {
-  key: "";
-  value: "";
   enabled: false;
 };
 

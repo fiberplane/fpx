@@ -63,6 +63,10 @@ export function usePlaygroundSubmitHandler({
         key: "Authorization",
         enabled: true,
         value: `Bearer ${authorization.token}`,
+        parameter: {
+          name: "Authorization",
+          in: "header",
+        },
       });
     }
 

@@ -12,6 +12,8 @@ import {
   isDraftParameter,
 } from "./data";
 import type { ChangeKeyValueParametersHandler } from "./types";
+import { isSupportedSchemaObject } from "@/lib/isOpenApi";
+import { Label } from "@/components/ui/label";
 
 type Props = {
   keyValueParameters: KeyValueParameter[];
@@ -26,7 +28,7 @@ type Props = {
 
 type KeyValueRowProps = {
   isDraft: boolean;
-  parameter: KeyValueParameter;
+  keyValueData: KeyValueParameter;
   onChangeEnabled: (enabled: boolean) => void;
   onChangeKey?: (key: string) => void;
   onChangeValue: (value: string) => void;
@@ -46,7 +48,7 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
     onChangeKey,
     onChangeValue,
     removeValue,
-    parameter,
+    keyValueData,
     onSubmit,
     handleCmdG,
     handleCmdB,
@@ -54,8 +56,10 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
     keyInputType,
     valueInputType,
   } = props;
-  const { enabled, key, value } = parameter;
+  const { enabled, key, value, parameter } = keyValueData;
   const [isHovering, setIsHovering] = useState(false);
+
+  const schema = parameter.schema && isSupportedSchemaObject(parameter.schema) ? parameter.schema : undefined;
   return (
     <div
       className={cn("flex items-center space-x-0 rounded p-0")}
@@ -82,16 +86,31 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
         handleCmdG={handleCmdG}
         handleCmdB={handleCmdB}
       />
-      <CodeMirrorInput
-        className="w-[calc(100%-140px)]"
-        value={value}
-        placeholder="value"
-        onChange={(value) => onChangeValue(value ?? "")}
-        onSubmit={onSubmit}
-        inputType={valueInputType}
-        handleCmdG={handleCmdG}
-        handleCmdB={handleCmdB}
-      />
+      {schema?.enum ? (<div className="flex flex-wrap gap-2 flex-1">
+        {schema.enum.map((enumValue) =>
+        (<label key={`${keyValueData.id}_${enumValue}`} className="grid grid-cols-[auto_1fr] gap-2 items-center cursor-pointer overflow-hidden text-muted-foreground hover:text-foreground" >
+          <input
+            type="radio"
+            name={keyValueData.id}
+            value={value}
+            checked={value === enumValue}
+            onChange={() => onChangeValue(enumValue)}
+            className="peer"
+          />
+          <div className="grid gap-2 peer-checked:text-foreground">{enumValue}</div>
+        </label>))
+        }
+      </div>) :
+        <CodeMirrorInput
+          className="w-[calc(100%-140px)]"
+          value={value}
+          placeholder="value"
+          onChange={(value) => onChangeValue(value ?? "")}
+          onSubmit={onSubmit}
+          inputType={valueInputType}
+          handleCmdG={handleCmdG}
+          handleCmdB={handleCmdB}
+        />}
       <div
         className={cn("ml-1 flex invisible", {
           visible: !isDraft && isHovering && !!removeValue,
@@ -104,7 +123,7 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
           onClick={() => !isDraft && removeValue?.()}
         />
       </div>
-    </div>
+    </div >
   );
 };
 
@@ -127,7 +146,7 @@ export const KeyValueForm = (props: Props) => {
         return (
           <KeyValueRow
             key={parameter.id}
-            parameter={parameter}
+            keyValueData={parameter}
             isDraft={isDraft}
             onChangeEnabled={createChangeEnabled(
               onChange,

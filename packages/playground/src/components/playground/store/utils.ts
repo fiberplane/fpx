@@ -73,7 +73,17 @@ export function extractPathParams(path: string) {
 }
 
 export function mapPathParamKey(key: string) {
-  return { key, value: "", id: key, enabled: false, type: "string" as const };
+  return {
+    key,
+    value: "",
+    id: key,
+    enabled: false,
+    type: "string" as const,
+    parameter: {
+      name: key,
+      in: "path",
+    },
+  };
 }
 
 export function extractMatchedPathParams(

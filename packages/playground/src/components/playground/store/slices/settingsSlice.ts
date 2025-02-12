@@ -47,6 +47,10 @@ const getInitialAuthHeaders = () =>
       key: "",
       value: "",
       enabled: false,
+      parameter: {
+        name: "",
+        in: "header",
+      },
     },
   ]);
 

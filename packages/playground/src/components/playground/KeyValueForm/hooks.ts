@@ -6,9 +6,19 @@ import type { DraftKeyValueParameter } from "./types";
 
 const INITIAL_KEY_VALUE_PARAMETER: KeyValueParameter = {
   id: createParameterId(),
-  key: "",
-  value: "",
+  key: "" as const,
+  value: "" as const,
   enabled: false,
+  parameter: {
+    name: "",
+    // We don't know where this parameter might be used, and it's not really relevant here either.
+    // This parameter is for things that the user is adding beyond what's defined in the openapi spec/doc
+    in: "query",
+    // Schema seems to be optional, but we should assume "string" as the default value
+    // schema: {
+    //   type: "string",
+    // },
+  },
 };
 
 export const useKeyValueForm = (initial?: KeyValueParameter[]) => {
@@ -113,10 +123,9 @@ export const enforceSingleTerminalDraftParameter = (
  */
 const concatDraftParameter = (parameters: KeyValueParameter[]) => {
   const DRAFT_PARAMETER: DraftKeyValueParameter = {
+    ...INITIAL_KEY_VALUE_PARAMETER,
     id: createParameterId(),
     enabled: false,
-    key: "",
-    value: "",
   };
   return [...parameters, DRAFT_PARAMETER];
 };

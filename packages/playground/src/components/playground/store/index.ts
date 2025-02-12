@@ -7,7 +7,6 @@ export type {
   KeyValueParameter,
 } from "./types";
 export type { StudioState } from "./slices";
-export { KeyValueParameterSchema } from "./types";
 export { PlaygroundBodySchema, type PlaygroundBodyType } from "./request-body";
 export {
   useActiveRoute,

@@ -36,7 +36,7 @@ export const PathParamForm = (props: Props) => {
         return (
           <KeyValueRow
             key={parameter.id}
-            parameter={parameter}
+            keyValueData={parameter}
             isDraft={isDraft}
             onChangeEnabled={createChangeEnabled(
               onChange,

@@ -14,8 +14,8 @@ export const initializeKeyValueFormData = (): DraftKeyValueParameter[] => {
  * Type guard to determine if a {@link KeyValueParameter} is a {@link DraftKeyValueParameter}.
  */
 export const isDraftParameter = (
-  parameter: KeyValueParameter,
-): parameter is DraftKeyValueParameter => {
+  parameter: Omit<KeyValueParameter, "parameter">,
+): parameter is Omit<DraftKeyValueParameter, "parameter"> => {
   return (
     parameter.enabled === false &&
     parameter.key === "" &&
@@ -139,7 +139,9 @@ function generateUUID() {
   return `${timeStamp}-${randomPart()}-${randomPart()}`;
 }
 
-export function reduceKeyValueParameters(parameters: KeyValueParameter[]) {
+export function reduceKeyValueParameters(
+  parameters: Array<Omit<KeyValueParameter, "parameter">>,
+) {
   return parameters.reduce(
     (o, param) => {
       if (isDraftParameter(param)) {

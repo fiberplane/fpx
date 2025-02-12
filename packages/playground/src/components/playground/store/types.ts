@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { PlaygroundBodySchema } from "./request-body";
 import type { StudioState } from "./slices";
+import type { SupportedParameterObject } from "@/lib/isOpenApi";
 
 const PlaygroundResponseBodySchema = z.discriminatedUnion("type", [
   z.object({
@@ -65,18 +66,17 @@ export type PlaygroundActiveResponse = z.infer<
   typeof PlaygroundActiveResponseSchema
 >;
 
-export const KeyValueParameterSchema = z.object({
-  id: z.string(),
-  key: z.string(),
-  value: z.string(),
-  enabled: z.boolean(),
-});
-
 /**
  * A "key-value parameter" is a record containing `key` and `value` properties.
  * It can be used to represent things like query parameters or headers.
  */
-export type KeyValueParameter = z.infer<typeof KeyValueParameterSchema>;
+export type KeyValueParameter = {
+  id: string;
+  key: string;
+  value: string;
+  enabled: boolean;
+  parameter: SupportedParameterObject;
+};
 
 export type PlaygroundState = StudioState;
 

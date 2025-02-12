@@ -60,6 +60,7 @@ export function extractQueryParamsFromOpenApiDefinition(
         "",
       enabled: param.required || false,
       type: "string" as const,
+      parameter: param,
     }),
   );
 

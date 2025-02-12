@@ -153,6 +153,10 @@ function getUpdateOperation(
         key: "Content-Type",
         value: nextContentTypeValue,
         enabled: true,
+        parameter: {
+          name: "Content-Type",
+          in: "headers",
+        },
       },
     };
   }
@@ -184,6 +188,10 @@ function getUpdateOperation(
     value: {
       ...currentContentTypeHeader,
       value: nextContentTypeValue,
+      operation: {
+        name: currentContentTypeHeader.key,
+        in: "header",
+      },
     },
   };
 }

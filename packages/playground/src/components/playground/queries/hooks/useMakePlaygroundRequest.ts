@@ -237,6 +237,10 @@ function createBody(body: PlaygroundBody) {
           id: item.id,
           enabled: item.enabled,
           key: item.key,
+          parameter: {
+            name: item.key,
+            in: "body",
+          },
           // HACK - We know these are all non-strings because of the `hasFile` case above
           value: item.value.value as string,
         })),
