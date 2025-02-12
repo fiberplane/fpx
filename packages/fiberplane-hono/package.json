@@ -23,7 +23,7 @@
     "build": "tsc",
     "format": "biome check . --write",
     "lint": "biome lint .",
-    "test": "vitest --run",
+    "test": "vitest",
     "typecheck": "tsc --noEmit",
     "watch": "nodemon --watch src --ext ts,js,json --exec \"pnpm run build\""
   },
