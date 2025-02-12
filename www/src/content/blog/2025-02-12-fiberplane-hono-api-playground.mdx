@@ -1,0 +1,108 @@
+---
+title: "Fiberplane: Your Hono-native API Playground, powered by OpenAPI"
+description: "Announcing a Hono-native API Playground for developers building TypeScript APIs."
+slug: hono-native-playground
+date: 2025-02-12
+author: Micha "mies" Hernandez van Leuffen
+tags:
+  - hono
+  - openapi
+  - middleware
+  - apis
+---
+
+import PackageManagers from "@/components/PackageManagers.astro";
+import { LinkCard } from "@astrojs/starlight/components";
+import playgroundVideo from "../../assets/blog/2025-02-12-playground.mov";
+
+For developers building TypeScript APIs, the power of Hono is the bet many are taking.
+It’s blazing fast, lightweight, designed explicitly for edge and serverless, and integrates
+incredibly well with OpenAPI via their [official package](https://hono.dev/examples/hono-openapi) and
+[Rhinobase](https://github.com/rhinobase/hono-openapi).
+Just last week, [the latest version release](https://github.com/honojs/hono/releases/tag/v4.7.0) included new
+middleware features and a fresh schema validator - all enhancements that continue to make Hono
+the choice for modern web developers.
+
+Hono is our TypeScript framework of choice - we love it so much we created the [HONC stack](https://honc.dev/) to make
+it as easy as possible for developers to try it out. While the OpenAPI functionality is powerful, we dreamed of a
+simplified UI that makes this seamlessly automated for developers. A place where you can generate the docs, routes,
+and tests all within one interface.
+
+That’s why we built the Fiberplane [**API Playground for Hono**](https://github.com/fiberplane/fiberplane), designed to
+give developers a native UX for exploring and testing their Hono service APIs.
+
+![Fiberplane API Playground for Hono](@/assets/blog/2025-02-12-fiberplane-hono-api-playground.png)
+
+### Your Hono.js API available to spec in under a minute
+
+Leveraging OpenAPI, the explorer generates values, types, and documentation and more:
+
+- Easily install the Playground through pluggable middleware
+- Access built-in interactive documentation
+- Automatically discover routes via OpenAPI spec and show these as human-readable CRUD operations
+- Generate a request to test endpoints in real-time
+- Add authentication headers and reuse these throughout requests
+- Quickly navigate with keyboard navigation and shortcuts
+- Switch between beautiful themes for light and dark mode
+
+### Getting Started
+
+The Fiberplane Playground is available as middleware that you can install as follows:
+
+<PackageManagers pkg="@fiberplane/hono" />
+
+Next, just import the middleware and add it to your Hono app.
+```tsx
+import { Hono } from "hono";
+import { createFiberplane } from "@fiberplane/hono";
+
+const app = new Hono();
+
+app.use(
+  "/fp/*",
+  createFiberplane({
+    openapi: { url: "/openapi.json" },
+  }),
+);
+````
+
+Just start your Hono API, navigate to the mounted `/fp` endpoint to access the Fiberplane Playground.
+
+<video
+  autoplay
+  disablePictureInPicture
+  loop
+  muted
+  playsinline
+  preload
+  width="100%"
+  style="border-radius: 0.5rem;"
+>
+  <source src={playgroundVideo} type="video/mp4" />
+  <p>
+    Your browser does not support the video tag.
+
+    Alternatively, let us know by
+    <a href="https://github.com/fiberplane/fpx/issues/new">opening an issue
+    </a> on GitHub!
+
+  </p>
+</video>
+
+### The first step toward better Hono APIs and Cloudflare Worker debugging
+
+As the way we build and deploy modern APIs evolve, and more developers adopt edge-first and performant tooling,
+we see the future in the power of Hono.js and Cloudflare. This initial API playground creates an easy interface to spin up new,
+top-quality APIs. The next step in our roadmap is a tool for better testing, tracing, and workflows to chain API requests together.
+
+We’re releasing new features in the next couple of sprints.
+Join the [Discord here](https://discord.com/invite/cqdY6SpfVR) for early previews (and access).
+
+### It’s alpha - here’s what’s in progress
+
+Just a few disclaimers while you are using the API Playground
+* For now the Playground is a bit of a purist, so JSON is the only supported format. Multipart/form-data is coming soon.
+* Websockets and Server-Sent Events (SSE) are on the roadmap but not live yet.
+* An OpenAPI spec is required. You've got two options: craft it yourself like a hand-coded masterpiece, or let AI generate it for you from your API code.
+
+The Fiberplane Hono Playground is open source and available on [GitHub](https://github.com/fiberplane/fiberplane).
