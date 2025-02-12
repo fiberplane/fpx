@@ -1,1 +1,0 @@
-export { AuthSelector } from "./AuthSelector";
