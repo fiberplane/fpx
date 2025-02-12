@@ -6,7 +6,7 @@
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "types": ["vitest/globals"],
     "esModuleInterop": true,
     "outDir": "./dist",

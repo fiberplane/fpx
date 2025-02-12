@@ -3,6 +3,7 @@ import { logIfDebug } from "./debug.js";
 import createApiRoutes from "./routes/api/index.js";
 import createEmbeddedPlayground from "./routes/playground.js";
 import type { FiberplaneAppType, ResolvedEmbeddedOptions } from "./types.js";
+import createRunnerApiRoute from "./routes/runner/index.js";
 
 // We use a factory pattern to create routes, which allows for clean dependency injection
 // of the apiKey. This keeps the implementation isolated and prevents us from having to
@@ -31,12 +32,16 @@ export function createRouter<E extends Env>(
       "Fiberplane API Key Present. Creating internal API router.",
     );
     app.route("/api", createApiRoutes(apiKey, fpxEndpoint));
+    app.route("/w", createRunnerApiRoute(apiKey));
   } else {
     logIfDebug(
       isDebugEnabled,
       "Fiberplane API Key *Not* Present. Internal API router disabled.",
     );
     app.use("/api/*", async (c) => {
+      return c.json({ error: "Fiberplane API key is not set" }, 402);
+    });
+    app.use("/w/*", async (c) => {
       return c.json({ error: "Fiberplane API key is not set" }, 402);
     });
   }
