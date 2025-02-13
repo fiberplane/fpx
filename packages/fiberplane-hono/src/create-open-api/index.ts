@@ -16,7 +16,7 @@ type OpenAPISpec = {
 };
 
 interface CreateOpenAPISpecOptions {
-  info: OpenAPIV3.InfoObject;
+  info?: OpenAPIV3.InfoObject;
   tags?: OpenAPIV3.TagObject[];
   servers?: OpenAPIV3.ServerObject[];
   components?: OpenAPIV3.ComponentsObject;
@@ -47,63 +47,54 @@ export function createOpenAPISpec(
   options: CreateOpenAPISpecOptions,
 ): OpenAPISpec {
   const routes = app.routes;
-  const paths: OpenAPIV3.PathsObject = {};
+  const paths: OpenAPIV3.PathsObject = routes
+    .filter(({ method }) => method.toLowerCase() !== "all")
+    .reduce((paths, { path, method }) => {
+      const methodLower = method.toLowerCase();
 
-  for (const route of routes) {
-    const { path, method } = route;
+      // Convert Hono path params (e.g. /users/:id) to OpenAPI path params (e.g. /users/{id})
+      // and extract the param names for documentation
+      const { openApiPath, pathParams } = (
+        path.match(/:([^/]+)/g) || []
+      ).reduce(
+        (acc, param) => ({
+          openApiPath: acc.openApiPath.replace(param, `{${param.slice(1)}}`),
+          pathParams: [...acc.pathParams, param.slice(1)],
+        }),
+        { openApiPath: path, pathParams: [] as string[] },
+      );
 
-    const methodLower = method.toLowerCase();
+      const operation: OpenAPIV3.OperationObject = {
+        summary: `${method.toUpperCase()} ${openApiPath}`,
+        ...(pathParams.length > 0 && {
+          parameters: pathParams.map((param) => ({
+            name: param,
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+          })),
+        }),
+        responses: {
+          "200": { description: "Successful operation" },
+        },
+      };
 
-    // Skip 'all' method routes
-    if (methodLower === "all") {
-      continue;
-    }
+      return {
+        ...paths,
+        [openApiPath]: {
+          ...paths[openApiPath],
+          [methodLower]: operation,
+        },
+      };
+    }, {} as OpenAPIV3.PathsObject);
 
-    // Convert Hono path params (e.g. /users/:id) to OpenAPI path params (e.g. /users/{id})
-    // and extract the param names for documentation
-    const { openApiPath, pathParams } = (path.match(/:([^/]+)/g) || []).reduce(
-      (acc, param) => ({
-        openApiPath: acc.openApiPath.replace(param, `{${param.slice(1)}}`),
-        pathParams: [...acc.pathParams, param.slice(1)],
-      }),
-      { openApiPath: path, pathParams: [] as string[] },
-    );
-
-    if (!paths[openApiPath]) {
-      paths[openApiPath] = {};
-    }
-
-    const operation: OpenAPIV3.OperationObject = {
-      summary: `${method.toUpperCase()} ${path}`,
-      ...(pathParams.length > 0 && {
-        parameters: pathParams.map((param) => ({
-          name: param,
-          in: "path",
-          required: true,
-          schema: { type: "string" },
-        })),
-      }),
-      responses: {
-        "200": { description: "Successful operation" },
-      },
-    };
-
-    paths[openApiPath] = {
-      ...paths[openApiPath],
-      [methodLower]: operation,
-    };
-  }
-
-  const spec: OpenAPISpec = {
+  return {
     openapi: "3.0.0",
-    info: options.info,
+    info: options.info ?? { title: "Hono API", version: "1.0.0" },
     paths,
+    ...(options.tags && { tags: options.tags }),
+    ...(options.servers && { servers: options.servers }),
+    ...(options.components && { components: options.components }),
+    ...(options.security && { security: options.security }),
   };
-
-  if (options.tags) spec.tags = options.tags;
-  if (options.servers) spec.servers = options.servers;
-  if (options.components) spec.components = options.components;
-  if (options.security) spec.security = options.security;
-
-  return spec;
 }
