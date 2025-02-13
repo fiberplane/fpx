@@ -9,7 +9,9 @@ import {
 
 const { wrap } = shimmer;
 
-export function patchFetch() {
+export function patchFetch(options: {
+  isLocal: boolean;
+}) {
   // Check if the function is already patched
   // If it is, we don't want to patch it again
   if (isWrapped(globalThis.fetch)) {
@@ -22,12 +24,15 @@ export function patchFetch() {
         name: "fetch",
         spanKind: SpanKind.CLIENT,
         onStart: (span, [input, init]) => {
-          span.setAttributes(getRequestAttributes(input, init));
+          span.setAttributes(getRequestAttributes(input, init, options));
         },
         onSuccess: async (span, responsePromise) => {
           const response = await responsePromise;
           const attributeResponse = response.clone();
-          const attributes = await getResponseAttributes(attributeResponse);
+          const attributes = await getResponseAttributes(
+            attributeResponse,
+            options,
+          );
           span.setAttributes(attributes);
         },
       },

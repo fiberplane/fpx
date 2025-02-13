@@ -14,6 +14,7 @@ import {
   FPX_REQUEST_SCHEME,
   FPX_REQUEST_SEARCH,
   FPX_RESPONSE_BODY,
+  IGNORED_HEADERS,
 } from "../constants";
 import type {
   GlobalResponse,
@@ -21,7 +22,7 @@ import type {
   InitParam,
   InputParam,
 } from "../types";
-import { getNodeSafeEnv } from "./env";
+import { getPlatformSafeEnv } from "./env";
 import { safelySerializeJSON } from "./json";
 
 // There are so many different types of headers
@@ -50,18 +51,23 @@ export function headersToObject(headers: PossibleHeaders) {
 export async function getRootRequestAttributes(
   request: Request,
   honoEnv: unknown,
+  options: {
+    isLocal: boolean;
+  },
 ) {
+  const { isLocal } = options;
   let attributes: Attributes = {};
 
   // HACK - We need to account for the fact that the Hono `env` is different across runtimes
   //        If process.env is available, we use that, otherwise we use the `env` object from the Hono runtime
-  const env = getNodeSafeEnv(honoEnv);
-  if (env) {
-    // NOTE - We should not *ever* do this in production
+  const env = getPlatformSafeEnv(honoEnv);
+
+  // Only send env vars when running in local mode
+  if (isLocal && env) {
     attributes[FPX_REQUEST_ENV] = safelySerializeJSON(env);
   }
 
-  if (request.body) {
+  if (isLocal && request.body) {
     const bodyAttr = await formatRootRequestBody(request);
     if (bodyAttr) {
       attributes = {
@@ -74,7 +80,12 @@ export async function getRootRequestAttributes(
   if (request.headers) {
     const headers = headersToObject(new Headers(request.headers));
     for (const [key, value] of Object.entries(headers)) {
-      attributes[`http.request.header.${key}`] = value;
+      // Redact sensitive headers when running in production
+      attributes[`http.request.header.${key}`] = getSafeHeaderValue(
+        key,
+        value,
+        isLocal,
+      );
     }
   }
 
@@ -114,7 +125,14 @@ async function formatRootRequestBody(request: Request) {
   };
 }
 
-export function getRequestAttributes(input: InputParam, init?: InitParam) {
+export function getRequestAttributes(
+  input: InputParam,
+  init: InitParam | undefined,
+  options: {
+    isLocal: boolean;
+  },
+) {
+  const { isLocal } = options;
   const requestMethod =
     typeof input === "string" || input instanceof URL ? "GET" : input.method;
   const requestUrl = input instanceof Request ? input.url : input;
@@ -136,22 +154,35 @@ export function getRequestAttributes(input: InputParam, init?: InitParam) {
     [FPX_REQUEST_SCHEME]: urlScheme,
   };
 
-  // Init should not be null or undefined
+  // Init should not be null or undefined - but we do call it with undefined for the root request
   if (init) {
     const { body } = init;
-    if (body != null) {
+    if (!isLocal && body != null) {
       attributes[FPX_REQUEST_BODY] = formatBody(body);
     }
 
     if (init.headers) {
       const headers = headersToObject(new Headers(init.headers));
       for (const [key, value] of Object.entries(headers)) {
-        attributes[`http.request.header.${key}`] = value;
+        // Redact sensitive headers when running in production
+        attributes[`http.request.header.${key}`] = getSafeHeaderValue(
+          key,
+          value,
+          isLocal,
+        );
       }
     }
   }
 
   return attributes;
+}
+
+function getSafeHeaderValue(key: string, value: string, isLocal: boolean) {
+  if (!isLocal && IGNORED_HEADERS.has(key.toLowerCase())) {
+    return "REDACTED";
+  }
+
+  return value;
 }
 
 function formatBody(body: BodyInit) {
@@ -269,16 +300,21 @@ async function streamToString(stream: ReadableStream) {
 
 export async function getResponseAttributes(
   response: GlobalResponse | HonoResponse,
+  options: {
+    isLocal: boolean;
+  },
 ) {
+  const { isLocal } = options;
   const attributes: Attributes = {
     [EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE]: String(response.status),
     [SEMATTRS_HTTP_SCHEME]: response.url.split(":")[0],
   };
 
-  const responseText = await tryGetResponseBodyAsText(response);
-
-  if (responseText) {
-    attributes[FPX_RESPONSE_BODY] = responseText;
+  if (isLocal) {
+    const responseText = await tryGetResponseBodyAsText(response);
+    if (responseText) {
+      attributes[FPX_RESPONSE_BODY] = responseText;
+    }
   }
 
   const contentLength = response.headers.get("content-length");
@@ -289,7 +325,11 @@ export async function getResponseAttributes(
   const headers = response.headers;
   const responseHeaders = headersToObject(headers);
   for (const [key, value] of Object.entries(responseHeaders)) {
-    attributes[`http.response.header.${key}`] = value;
+    attributes[`http.response.header.${key}`] = getSafeHeaderValue(
+      key,
+      value,
+      isLocal,
+    );
   }
 
   return attributes;

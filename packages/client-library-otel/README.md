@@ -9,7 +9,7 @@ so any time you use a `console.log`, `console.error`, etc., in your app, it will
 
 Likewise, any time your app makes a `fetch` request, it will create a trace for that request. This behavior is configurable.
 
-The library is a no-op when the `FPX_ENDPOINT` environment variable is not present, so it is safe to deploy to production.
+The library is a no-op when the `FIBERPLANE_OTEL_ENDPOINT` environment variable is not present, so it is safe to deploy to production.
 
 ## Quick Start
 
@@ -91,16 +91,16 @@ If you're running in Cloudflare Workers, enable nodejs compatibility mode. (This
 compatibility_flags = [ "nodejs_compat" ]
 ```
 
-#### The `FPX_ENDPOINT` Environment Variable
+#### The `FIBERPLANE_OTEL_ENDPOINT` Environment Variable
 
-When your app is running, the `FPX_ENDPOINT` environment variable controls where the FPX client library sends telemetry data.
+When your app is running, the `FIBERPLANE_OTEL_ENDPOINT` environment variable controls where the FPX client library sends telemetry data.
 
 If it is not defined, the middleware will do nothing. This means you can safely deploy your Hono app to any cloud environment, and by default, it will not collect and send telemetry data.
 
-The Fiberplane cli (`npx @fiberplane/studio`) should help you initialize your project correctly, but if you want to connect your api to Fiberplane Studio manually, you can add or modify this variable with, e.g., `FPX_ENDPOINT=http://localhost:8788/v1/traces` in your environment variable file.
+The Fiberplane cli (`npx @fiberplane/studio`) should help you initialize your project correctly, but if you want to connect your api to Fiberplane Studio manually, you can add or modify this variable with, e.g., `FIBERPLANE_OTEL_ENDPOINT=http://localhost:8788/v1/traces` in your environment variable file.
 
 ```sh
-echo -e '\nFPX_ENDPOINT=http://localhost:8788/v1/traces\n' >> .dev.vars
+echo -e '\FIBERPLANE_OTEL_ENDPOINT=http://localhost:8788/v1/traces\n' >> .dev.vars
 ```
 
 #### Additional Configuration
@@ -138,9 +138,9 @@ export default instrument(app, {
 });
 ```
 
-#### The `FPX_LOG_LEVEL` Environment Variable
+#### The `FIBERPLANE_OTEL_LOG_LEVEL` Environment Variable
 
-The `FPX_LOG_LEVEL` environment variable controls the verbosity of the library's logging.
+The `FIBERPLANE_OTEL_LOG_LEVEL` environment variable controls the verbosity of the library's logging.
 
 The possible values are: `debug`, `info`, `warn`, and `error`.
 
