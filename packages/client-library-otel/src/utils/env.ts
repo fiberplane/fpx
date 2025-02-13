@@ -3,7 +3,7 @@
  * This helper will also check process.env and fallback to that if the env var is not present on the `env` object.
  */
 export function getFromEnv(honoEnv: unknown, key: string) {
-  const env = getNodeSafeEnv(honoEnv);
+  const env = getPlatformSafeEnv(honoEnv);
 
   return typeof env === "object" && env !== null
     ? (env as Record<string, string | null>)?.[key]
@@ -11,18 +11,34 @@ export function getFromEnv(honoEnv: unknown, key: string) {
 }
 
 /**
- * Return `process.env` if we're in Node.js, otherwise `honoEnv`
+ * Return `process.env` if we're in Node.js, `Deno.env.toObject()` if we're in Deno, otherwise `honoEnv`
+ *
+ * In the case of Deno, we merge the `Deno.env.toObject()` with the `honoEnv` object.
  *
  * Used to get the env object for accessing and recording env vars.
- * This eixsts because in Node.js, the `env` object passed to `app.fetch` is different from the env object in other runtimes.
+ * This exists because environment variables are accessed differently across runtimes.
  *
  * @param honoEnv - The env object from the `app.fetch` method.
- * @returns - `process.env` if we're in Node.js, otherwise `honoEnv`.
+ * @returns - Environment variables from the appropriate runtime source
  */
-export function getNodeSafeEnv(honoEnv: unknown) {
+export function getPlatformSafeEnv(honoEnv: unknown) {
   const hasProcessEnv = runtimeHasProcessEnv();
+  const hasDenoEnv = runtimeHasDenoEnv();
   const isRunningInHonoNode = isHonoNodeEnv(honoEnv);
-  return hasProcessEnv && isRunningInHonoNode ? process.env : honoEnv;
+
+  if (hasProcessEnv && isRunningInHonoNode) {
+    return process.env;
+  }
+
+  if (hasDenoEnv) {
+    const denoEnv = (globalThis as unknown as DenoEnv).env.toObject();
+    return {
+      ...denoEnv,
+      ...(typeof honoEnv === "object" && honoEnv !== null ? honoEnv : {}),
+    };
+  }
+
+  return honoEnv;
 }
 
 function runtimeHasProcessEnv() {
@@ -30,6 +46,18 @@ function runtimeHasProcessEnv() {
     return true;
   }
   return false;
+}
+
+type DenoEnv = {
+  env: {
+    toObject: () => Record<string, string>;
+  };
+};
+
+function runtimeHasDenoEnv(): boolean {
+  return (
+    typeof (globalThis as unknown as DenoEnv)?.env?.toObject === "function"
+  );
 }
 
 /**

@@ -22,7 +22,7 @@ import type {
   InitParam,
   InputParam,
 } from "../types";
-import { getNodeSafeEnv } from "./env";
+import { getPlatformSafeEnv } from "./env";
 import { safelySerializeJSON } from "./json";
 
 // There are so many different types of headers
@@ -60,7 +60,7 @@ export async function getRootRequestAttributes(
 
   // HACK - We need to account for the fact that the Hono `env` is different across runtimes
   //        If process.env is available, we use that, otherwise we use the `env` object from the Hono runtime
-  const env = getNodeSafeEnv(honoEnv);
+  const env = getPlatformSafeEnv(honoEnv);
 
   // Only send env vars when running in local mode
   if (isLocal && env) {
