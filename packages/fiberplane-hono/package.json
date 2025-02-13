@@ -42,8 +42,8 @@
     "hono": "^4.0"
   },
   "dependencies": {
+    "@cfworker/json-schema": "^4.1.1",
     "@hono/standard-validator": "^0.1.2",
-    "@hono/zod-validator": "^0.4.2",
     "jsonpointer": "^5.0.1",
     "zod": "^3.24.1"
   }
