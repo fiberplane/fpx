@@ -20,8 +20,13 @@ export const FPX_REQUEST_SEARCH = "fpx.http.request.search";
 export const FPX_REQUEST_SCHEME = "fpx.http.request.scheme";
 export const FPX_REQUEST_BODY = "fpx.http.request.body";
 export const FPX_REQUEST_ENV = "fpx.http.request.env";
-
 export const FPX_RESPONSE_BODY = "fpx.http.response.body";
+/**
+ * This attribute is used to indicate if the client library is running in local mode.
+ * In local mode, the client library will send sensitive information (env, request body)
+ * to the Fiberplane Studio.
+ */
+export const FPX_REQUEST_IS_LOCAL = "fpx.http.request.is_local";
 
 export const CF_BINDING_TYPE = "cf.binding.type";
 export const CF_BINDING_NAME = "cf.binding.name";
@@ -33,3 +38,19 @@ export const CF_BINDING_ERROR = "cf.binding.error";
 export const FPX_REQUEST_HANDLER_FILE = "fpx.http.request.handler.file";
 export const FPX_REQUEST_HANDLER_SOURCE_CODE =
   "fpx.http.request.handler.source_code";
+
+/**
+ * These are the headers opentelemetry suggests to ignore when collecting traces.
+ * In practice, we only redact their values when running in production mode.
+ */
+export const IGNORED_HEADERS = new Set([
+  "authorization",
+  "cookie",
+  "set-cookie",
+  "x-api-key",
+  "x-real-ip",
+  "x-forwarded-for",
+  "proxy-authorization",
+  "www-authenticate",
+  "proxy-authenticate",
+]);

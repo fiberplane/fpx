@@ -115,6 +115,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           //        start sending data to the default url.
           const endpoint = getFromEnv(env, ENV_FPX_ENDPOINT);
           const isEnabled = !!endpoint && typeof endpoint === "string";
+          const isLocal: boolean = endpoint?.includes("localhost") ?? false;
 
           const authToken = getFromEnv(env, ENV_FPX_AUTH_TOKEN);
 
@@ -124,6 +125,13 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           const logger = getLogger(FPX_LOG_LEVEL);
           // NOTE - This should only log if the FPX_LOG_LEVEL is "debug"
           logger.debug("Library debug mode is enabled");
+
+          const FPX_IS_LOCAL = isLocal;
+          logger.debug(
+            FPX_IS_LOCAL
+              ? "Library local mode is enabled"
+              : "Library local mode is disabled",
+          );
 
           if (!isEnabled) {
             logger.debug(
@@ -163,7 +171,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             patchConsole();
           }
           if (monitorFetch) {
-            patchFetch();
+            patchFetch({ isLocal: FPX_IS_LOCAL });
           }
 
           const provider = setupTracerProvider({
@@ -179,7 +187,12 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           //        This will place the request in the promise store, so that we can
           //        send the routes in the background while still ensuring the request
           //        completes as usual.
-          sendRoutes(webStandardFetch, endpoint, app, logger, promiseStore);
+          //
+          // NOTE - We only want to send routes to the local endpoint (Studio), because it's
+          //        not needed for the remote endpoint (Fiberplane API).
+          if (FPX_IS_LOCAL) {
+            sendRoutes(webStandardFetch, endpoint, app, logger, promiseStore);
+          }
 
           // Enable tracing for waitUntil
           const proxyExecutionCtx =
@@ -229,6 +242,9 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           const rootRequestAttributes = await getRootRequestAttributes(
             requestForAttributes,
             env,
+            {
+              isLocal: FPX_IS_LOCAL,
+            },
           );
 
           const measuredFetch = measure(
@@ -237,7 +253,9 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
               spanKind: SpanKind.SERVER,
               onStart: (span, [request]) => {
                 const requestAttributes = {
-                  ...getRequestAttributes(request),
+                  ...getRequestAttributes(request, undefined, {
+                    isLocal: FPX_IS_LOCAL,
+                  }),
                   ...rootRequestAttributes,
                 };
                 span.setAttributes(requestAttributes);
@@ -249,7 +267,9 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
                 const attributesResponse = response.clone();
 
                 const updateSpan = async (response: Response) => {
-                  const attributes = await getResponseAttributes(response);
+                  const attributes = await getResponseAttributes(response, {
+                    isLocal: FPX_IS_LOCAL,
+                  });
                   span.setAttributes(attributes);
                   span.end();
                 };
