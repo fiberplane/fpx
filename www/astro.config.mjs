@@ -48,11 +48,50 @@ export default defineConfig({
           items: [
             { link: "/docs/get-started", label: "Docs" },
             { link: "/blog", label: "Blog" },
-            { link: "/changelog", label: "Changelog" },
+            { link: "/changelog", label: "Changelog" }
           ]
         }
       ],
+      favicon: "/favicon.svg",
       head: [
+        {
+          tag: "link",
+          attrs: {
+            rel: "icon",
+            type: "image/png",
+            href: "/favicon-96x96.png",
+            sizes: "96x96"
+          }
+        },
+        {
+          tag: "link",
+          attrs: {
+            rel: "shortcut icon",
+            href: "/favicon.ico"
+          }
+        },
+        {
+          tag: "link",
+          attrs: {
+            rel: "apple-touch-icon",
+            sizes: "180x180",
+            href: "/apple-touch-icon.png"
+          }
+        },
+        {
+          tag: "meta",
+          attrs: {
+            name: "apple-mobile-web-app-title",
+            content: "Fiberplane"
+          }
+        },
+        {
+          tag: "link",
+          attrs: {
+            rel: "manifest",
+            href: "/site.webmanifest"
+          }
+        },
         {
           tag: "script",
           attrs: {
