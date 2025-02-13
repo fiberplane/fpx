@@ -1,5 +1,5 @@
-import { createFiberplane } from "./middleware.js";
 import { createOpenAPISpec } from "./create-open-api/index.js";
+import { createFiberplane } from "./middleware.js";
 // Export the main function
 export { createFiberplane, createOpenAPISpec };
 

@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
 import { Hono } from "hono";
-import { createOpenAPISpec } from "./index.js";
 import type { OpenAPIV3 } from "openapi-types";
+import { describe, expect, it } from "vitest";
+import { createOpenAPISpec } from "./index.js";
 
 describe("createOpenAPISpec", () => {
   it("should generate basic OpenAPI spec for simple routes", () => {
@@ -23,7 +23,7 @@ describe("createOpenAPISpec", () => {
     expect(spec.openapi).toBe("3.0.0");
     expect(spec.info.title).toBe("Test API");
     expect(spec.info.version).toBe("1.0.0");
-    
+
     const paths = spec.paths as OpenAPIV3.PathsObject;
     expect(paths).toHaveProperty("/hello");
     expect(paths).toHaveProperty("/users");
@@ -124,7 +124,8 @@ describe("createOpenAPISpec", () => {
     expect(paths["/resource"]).toHaveProperty("delete");
 
     const methods = paths["/resource"];
-    Object.entries(methods || {}).forEach(([method, operation]) => {
+    // biome-ignore lint/complexity/noForEach: it's fine
+    Object.entries(methods || {}).forEach(([_method, operation]) => {
       const op = operation as OpenAPIV3.OperationObject;
       expect(op.responses).toHaveProperty("200");
       const response = op.responses["200"] as OpenAPIV3.ResponseObject;
