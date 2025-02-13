@@ -1,13 +1,32 @@
 /**
  * In Hono-node environments, env vars are not available on the `env` object that's passed to `app.fetch`.
- * This helper will also check process.env and fallback to that if the env var is not present on the `env` object.
+ * This helper will also check process.env and Deno.env.toObject() and fallback to that if the env var is not present on the `env` object.
+ *
+ * If multiple keys are provided, the first key that exists will be returned.
  */
-export function getFromEnv(honoEnv: unknown, key: string) {
+export function getFromEnv(honoEnv: unknown, key: string | string[]) {
   const env = getPlatformSafeEnv(honoEnv);
 
-  return typeof env === "object" && env !== null
-    ? (env as Record<string, string | null>)?.[key]
-    : null;
+  if (typeof env !== "object" || env === null) {
+    return null;
+  }
+
+  const envRecord = env as Record<string, string | null>;
+
+  // Handle single string key
+  if (typeof key === "string") {
+    return envRecord?.[key] ?? null;
+  }
+
+  // Handle array of keys with precedence
+  for (const k of key) {
+    const value = envRecord?.[k];
+    if (value) {
+      return value;
+    }
+  }
+
+  return null;
 }
 
 /**

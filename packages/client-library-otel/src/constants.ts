@@ -1,10 +1,24 @@
 /**
  * Constants for the environment variables we use to configure the library.
  */
+export const ENV_FIBERPLANE_OTEL_TOKEN = "FIBERPLANE_OTEL_TOKEN";
 export const ENV_FPX_AUTH_TOKEN = "FPX_AUTH_TOKEN";
+
+export const ENV_FIBERPLANE_OTEL_ENDPOINT = "FIBERPLANE_OTEL_ENDPOINT";
 export const ENV_FPX_ENDPOINT = "FPX_ENDPOINT";
+
+export const ENV_FIBERPLANE_OTEL_LOG_LEVEL = "FIBERPLANE_OTEL_LOG_LEVEL";
 export const ENV_FPX_LOG_LEVEL = "FPX_LOG_LEVEL";
+
+export const ENV_FIBERPLANE_SERVICE_NAME = "FIBERPLANE_SERVICE_NAME";
 export const ENV_FPX_SERVICE_NAME = "FPX_SERVICE_NAME";
+
+/**
+ * The environment the library is running in.
+ * If the value is "local", the library will send sensitive information (env, request body, sensitive headers)
+ * to the OpenTelemetry Collector.
+ */
+export const ENV_FIBERPLANE_ENVIRONMENT = "FIBERPLANE_ENVIRONMENT";
 
 /**
  * SEMATTRS_* are constants that should actually be exposed by the Samantic Conventions package

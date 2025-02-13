@@ -11,6 +11,10 @@ import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
 import {
+  ENV_FIBERPLANE_OTEL_ENDPOINT,
+  ENV_FIBERPLANE_OTEL_LOG_LEVEL,
+  ENV_FIBERPLANE_OTEL_TOKEN,
+  ENV_FIBERPLANE_SERVICE_NAME,
   ENV_FPX_AUTH_TOKEN,
   ENV_FPX_ENDPOINT,
   ENV_FPX_LOG_LEVEL,
@@ -37,6 +41,7 @@ import {
   getRequestAttributes,
   getResponseAttributes,
   getRootRequestAttributes,
+  isInLocalMode,
 } from "./utils";
 
 /**
@@ -110,23 +115,40 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             | null
             | Record<string, string | null>;
 
-          // NOTE - We do *not* want to have a default for the FPX_ENDPOINT,
+          // NOTE - We do *not* want to have a default for the FIBERPLANE_OTEL_ENDPOINT (prev: FPX_ENDPOINT),
           //        so that people won't accidentally deploy to production with our middleware and
           //        start sending data to the default url.
-          const endpoint = getFromEnv(env, ENV_FPX_ENDPOINT);
+          const endpoint = getFromEnv(env, [
+            ENV_FIBERPLANE_OTEL_ENDPOINT,
+            ENV_FPX_ENDPOINT,
+          ]);
           const isEnabled = !!endpoint && typeof endpoint === "string";
-          const isLocal: boolean = endpoint?.includes("localhost") ?? false;
+          const isFiberplaneEndpointLocalhost: boolean =
+            endpoint?.includes("localhost") ?? false;
 
-          const authToken = getFromEnv(env, ENV_FPX_AUTH_TOKEN);
+          const authToken = getFromEnv(env, [
+            // FIBERPLANE_OTEL_TOKEN takes precedence over FPX_AUTH_TOKEN
+            ENV_FIBERPLANE_OTEL_TOKEN,
+            // FPX_AUTH_TOKEN is the fallback, here for backwards compatibility
+            ENV_FPX_AUTH_TOKEN,
+          ]);
 
           const FPX_LOG_LEVEL = libraryDebugMode
             ? "debug"
-            : getFromEnv(env, ENV_FPX_LOG_LEVEL);
+            : getFromEnv(env, [
+                // FIBERPLANE_OTEL_LOG_LEVEL takes precedence over FPX_LOG_LEVEL
+                ENV_FIBERPLANE_OTEL_LOG_LEVEL,
+                // FPX_LOG_LEVEL is the fallback, here for backwards compatibility
+                ENV_FPX_LOG_LEVEL,
+              ]);
           const logger = getLogger(FPX_LOG_LEVEL);
           // NOTE - This should only log if the FPX_LOG_LEVEL is "debug"
           logger.debug("Library debug mode is enabled");
 
-          const FPX_IS_LOCAL = isLocal;
+          const FPX_IS_LOCAL = isInLocalMode(
+            env,
+            isFiberplaneEndpointLocalhost,
+          );
           logger.debug(
             FPX_IS_LOCAL
               ? "Library local mode is enabled"
@@ -160,8 +182,12 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             return response;
           }
 
+          // TODO - Could set from url host if we want
           const serviceName =
-            getFromEnv(env, ENV_FPX_SERVICE_NAME) ?? "unknown";
+            getFromEnv(env, [
+              ENV_FIBERPLANE_SERVICE_NAME,
+              ENV_FPX_SERVICE_NAME,
+            ]) ?? "unknown";
 
           // Patch all functions we want to monitor in the runtime
           if (monitorCfBindings) {
