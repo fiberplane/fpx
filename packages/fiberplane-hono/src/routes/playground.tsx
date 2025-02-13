@@ -1,10 +1,10 @@
-import { Hono } from "hono";
-import type { SanitizedEmbeddedOptions } from "../types.js";
+import { Hono, type Env } from "hono";
+import type { FiberplaneAppType, SanitizedEmbeddedOptions } from "../types.js";
 
-export default function createPlayground(
-  sanitizedOptions: SanitizedEmbeddedOptions,
+export default function createPlayground<E extends Env>(
+  sanitizedOptions: SanitizedEmbeddedOptions<E>,
 ) {
-  const app = new Hono();
+  const app = new Hono<E & FiberplaneAppType<E>>();
 
   const { cdn, ...options } = sanitizedOptions;
   const cssBundleUrl = new URL("index.css", cdn).href;
