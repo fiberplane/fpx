@@ -1,9 +1,9 @@
 # Development
 
-While developing within the fpx monorepo, you can run a watcher on the src dir to automatically build the library:
+While developing within the fiberplane monorepo, you can run a watcher on the src dir to automatically build the library:
 
 ```bash
-cd client-library-otel
+cd packages/client-library-otel
 pnpm watch
 ```
 
@@ -22,7 +22,7 @@ Otherwise, if you want to test against an api outside of the monorepo, you can i
 ```json
 {
   "dependencies": {
-    "@fiberplane/hono-otel": "file:../path/to/fpx/packages/client-library-otel"
+    "@fiberplane/hono-otel": "file:../path/to/fiberplane/packages/client-library-otel"
   }
 }
 ```
