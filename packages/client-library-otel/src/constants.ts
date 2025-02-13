@@ -54,7 +54,11 @@ export const FPX_REQUEST_HANDLER_SOURCE_CODE =
   "fpx.http.request.handler.source_code";
 
 /**
- * These are the headers opentelemetry suggests to ignore when collecting traces.
+ * OpenTelemetry advises that instrumentations should require explicit configuration of which headers to capture.
+ *
+ * We want to minimize configuration, so instead,
+ * we've chosen to ignore the following headers by default.
+ *
  * In practice, we only redact their values when running in production mode.
  */
 export const IGNORED_HEADERS = new Set([
@@ -62,9 +66,11 @@ export const IGNORED_HEADERS = new Set([
   "cookie",
   "set-cookie",
   "x-api-key",
+  "x-amz-security-token",
   "x-real-ip",
   "x-forwarded-for",
   "proxy-authorization",
   "www-authenticate",
   "proxy-authenticate",
+  "x-real-ip",
 ]);

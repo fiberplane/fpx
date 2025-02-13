@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getFromEnv, getPlatformSafeEnv } from "./env";
 
 describe("env utils", () => {
@@ -18,7 +18,9 @@ describe("env utils", () => {
         SECOND_KEY: "second_value",
         THIRD_KEY: "third_value",
       };
-      expect(getFromEnv(env, ["FIRST_KEY", "SECOND_KEY", "THIRD_KEY"])).toBe("second_value");
+      expect(getFromEnv(env, ["FIRST_KEY", "SECOND_KEY", "THIRD_KEY"])).toBe(
+        "second_value",
+      );
     });
 
     it("should return null when no keys in array match", () => {
@@ -86,4 +88,4 @@ describe("env utils", () => {
     // Note: We can't easily test Deno environment since it requires mocking globalThis.env
     // which is more complex. In a real environment, that would be handled by the Deno runtime.
   });
-}); 
+});
