@@ -93,6 +93,7 @@ export function createChangeValue(
     (parameterToModify, newValue: string) => {
       return {
         ...parameterToModify,
+        enabled: true,
         value: newValue,
       };
     },

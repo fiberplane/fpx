@@ -6,8 +6,8 @@ import {
   isSupportedRequestBodyObject,
   isSupportedSchemaObject,
 } from "@/lib/isOpenApi";
-import { extractPathParams } from "./utils";
 import type { KeyValueParameter } from "./types";
+import { extractPathParams } from "./utils";
 
 type OutputData = {
   value: string;

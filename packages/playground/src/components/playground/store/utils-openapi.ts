@@ -1,5 +1,6 @@
 import {
   type SupportedParameterObject,
+  type SupportedReferenceObject,
   type SupportedSchemaObject,
   isSupportedParameterObject,
   isSupportedRequestBodyObject,
@@ -50,18 +51,16 @@ export function extractQueryParamsFromOpenApiDefinition(
 
   // Convert OpenAPI params to KeyValueParameter format
   const openApiQueryParams: KeyValueParameter[] = specQueryParams.map(
-    (param) => ({
-      id: param.name,
-      key: param.name,
-      value:
-        (param.schema &&
-          isSupportedSchemaObject(param.schema) &&
-          param.schema.example?.toString()) ||
-        "",
-      enabled: param.required || false,
-      type: "string" as const,
-      parameter: param,
-    }),
+    (param) => {
+      const value = getStringValueFromSchema(param.schema);
+      return {
+        id: param.name,
+        key: param.name,
+        value,
+        enabled: param.required || false,
+        parameter: param,
+      };
+    },
   );
 
   // Merge with existing parameters, preferring existing values
@@ -185,4 +184,44 @@ function generateSampleFromSchema(
     default:
       return null;
   }
+}
+
+function getValueFromSchema(
+  schema: undefined | SupportedSchemaObject | SupportedReferenceObject,
+  options: {
+    // biome-ignore lint/suspicious/noExplicitAny: openapi supports many different types of values
+    defaultValue: any;
+    allowDefaultValue: boolean;
+    allowExample: boolean;
+  },
+  // biome-ignore lint/suspicious/noExplicitAny: openapi supports many different types of values
+): any {
+  if (!schema || !isSupportedSchemaObject(schema)) {
+    return options.defaultValue;
+  }
+
+  if (options.allowDefaultValue && "default" in schema) {
+    return schema.default;
+  }
+
+  if (options.allowExample && "example" in schema) {
+    return schema.example;
+  }
+
+  return options.defaultValue;
+}
+
+function getStringValueFromSchema(
+  schema: undefined | SupportedSchemaObject | SupportedReferenceObject,
+  options: {
+    defaultValue: string;
+    allowDefaultValue: boolean;
+    allowExample: boolean;
+  } = {
+    defaultValue: "",
+    allowDefaultValue: true,
+    allowExample: true,
+  },
+): string {
+  return String(getValueFromSchema(schema, options));
 }

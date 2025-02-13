@@ -1,6 +1,7 @@
 import { CodeMirrorInput } from "@/components/CodeMirrorEditor";
 import type { CodeMirrorInputType } from "@/components/CodeMirrorEditor/CodeMirrorInput";
 import { Checkbox } from "@/components/ui/checkbox";
+import { isSupportedSchemaObject } from "@/lib/isOpenApi";
 import { cn, noop } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
@@ -12,8 +13,6 @@ import {
   isDraftParameter,
 } from "./data";
 import type { ChangeKeyValueParametersHandler } from "./types";
-import { isSupportedSchemaObject } from "@/lib/isOpenApi";
-import { Label } from "@/components/ui/label";
 
 type Props = {
   keyValueParameters: KeyValueParameter[];
@@ -59,7 +58,10 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
   const { enabled, key, value, parameter } = keyValueData;
   const [isHovering, setIsHovering] = useState(false);
 
-  const schema = parameter.schema && isSupportedSchemaObject(parameter.schema) ? parameter.schema : undefined;
+  const schema =
+    parameter.schema && isSupportedSchemaObject(parameter.schema)
+      ? parameter.schema
+      : undefined;
   return (
     <div
       className={cn("flex items-center space-x-0 rounded p-0")}
@@ -86,21 +88,30 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
         handleCmdG={handleCmdG}
         handleCmdB={handleCmdB}
       />
-      {schema?.enum ? (<div className="flex flex-wrap gap-2 flex-1">
-        {schema.enum.map((enumValue) =>
-        (<label key={`${keyValueData.id}_${enumValue}`} className="grid grid-cols-[auto_1fr] gap-2 items-center cursor-pointer overflow-hidden text-muted-foreground hover:text-foreground" >
-          <input
-            type="radio"
-            name={keyValueData.id}
-            value={value}
-            checked={value === enumValue}
-            onChange={() => onChangeValue(enumValue)}
-            className="peer"
-          />
-          <div className="grid gap-2 peer-checked:text-foreground">{enumValue}</div>
-        </label>))
-        }
-      </div>) :
+      {schema?.enum ? (
+        <div className="flex flex-wrap gap-2 flex-1">
+          {schema.enum.map((enumValue) => (
+            <label
+              key={`${keyValueData.id}_${enumValue}`}
+              className="grid grid-cols-[auto_1fr] gap-2 items-center cursor-pointer overflow-hidden text-muted-foreground hover:text-foreground"
+            >
+              <input
+                type="radio"
+                name={keyValueData.id}
+                value={value}
+                checked={value === enumValue}
+                onChange={() => {
+                  onChangeValue(enumValue);
+                }}
+                className="peer"
+              />
+              <div className="grid gap-2 peer-checked:text-foreground">
+                {enumValue}
+              </div>
+            </label>
+          ))}
+        </div>
+      ) : (
         <CodeMirrorInput
           className="w-[calc(100%-140px)]"
           value={value}
@@ -110,7 +121,8 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
           inputType={valueInputType}
           handleCmdG={handleCmdG}
           handleCmdB={handleCmdB}
-        />}
+        />
+      )}
       <div
         className={cn("ml-1 flex invisible", {
           visible: !isDraft && isHovering && !!removeValue,
@@ -123,7 +135,7 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
           onClick={() => !isDraft && removeValue?.()}
         />
       </div>
-    </div >
+    </div>
   );
 };
 

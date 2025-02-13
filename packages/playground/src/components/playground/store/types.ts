@@ -1,7 +1,7 @@
+import type { SupportedParameterObject } from "@/lib/isOpenApi";
 import { z } from "zod";
 import type { PlaygroundBodySchema } from "./request-body";
 import type { StudioState } from "./slices";
-import type { SupportedParameterObject } from "@/lib/isOpenApi";
 
 const PlaygroundResponseBodySchema = z.discriminatedUnion("type", [
   z.object({
