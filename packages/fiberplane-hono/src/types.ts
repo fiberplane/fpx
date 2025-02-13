@@ -55,6 +55,6 @@ export interface FiberplaneAppType<E extends Env> {
   Variables: {
     debug: boolean;
     userApp: Hono<E>;
-    userEnv: Env;
+    userEnv: E;
   };
 }
