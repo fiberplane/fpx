@@ -1,8 +1,8 @@
 // NOTE: most of this code is vibe-coded and haven't been rigurously tested
 // unit tests are green but hey ho
-import { Step, StepParameter } from "../../schemas/workflows.js";
+import type { Step, StepParameter } from "../../schemas/workflows.js";
 import jsonpointer from "jsonpointer";
-import { Workflow } from "../../schemas/workflows.js";
+import type { Workflow } from "../../schemas/workflows.js";
 
 export interface WorkflowContext {
   inputs: Record<string, unknown>;
@@ -206,7 +206,7 @@ export function resolveReference(
     try {
       const pointer = jsonPointerPath.startsWith("/")
         ? jsonPointerPath
-        : "/" + jsonPointerPath;
+        : `/${jsonPointerPath}`
       return jsonpointer.get(baseValue as object, pointer);
     } catch {
       return undefined;

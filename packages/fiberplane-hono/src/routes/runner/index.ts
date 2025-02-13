@@ -1,14 +1,14 @@
 import { Hono, type Env } from "hono";
 import type { FiberplaneAppType } from "../../types.js";
-import { zValidator } from "@hono/zod-validator";
+import { sValidator } from "@hono/standard-validator";
 import { z, ZodError } from "zod";
 import type { Step, Workflow } from "../../schemas/workflows.js";
 import { contextStorage, getContext } from "hono/context-storage";
 import {
   resolveStepParams,
   resolveStepOutputs,
-  WorkflowContext,
-  HttpRequestParams,
+  type WorkflowContext,
+  type HttpRequestParams,
 } from "./resolvers.js";
 import { resolveOutputs } from "./resolvers.js";
 import { formatZodError } from "./utils.js";
@@ -19,7 +19,7 @@ export default function createRunnerRoute<E extends Env>(apiKey: string) {
     .use(contextStorage())
     .post(
       "/:workflowId",
-      zValidator("param", z.object({ workflowId: z.string() })),
+      sValidator("param", z.object({ workflowId: z.string() })),
       async (c) => {
         try {
           const { workflowId } = c.req.valid("param");
@@ -87,9 +87,7 @@ async function executeStep<E extends Env>(
           acc.pathname = acc.pathname.replace(`{${param.name}}`, value);
           break;
         case "query":
-          acc.searchParams +=
-            (acc.searchParams ? "&" : "") +
-            `${encodeURIComponent(param.name)}=${encodeURIComponent(value)}`;
+          acc.searchParams += `${acc.searchParams ? "&" : ""}${encodeURIComponent(param.name)}=${encodeURIComponent(value)}`;
           break;
         case "header":
           headers.append(param.name, value);

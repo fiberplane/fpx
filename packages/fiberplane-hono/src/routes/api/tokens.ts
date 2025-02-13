@@ -1,12 +1,12 @@
-import { Hono } from "hono";
+import { type Env, Hono } from "hono";
 import { z } from "zod";
 import { logIfDebug } from "../../debug.js";
 import { FpService } from "../../services/index.js";
 import type { FiberplaneAppType } from "../../types.js";
 
 // Temporary implementation
-export default function createTokensApiRoute(apiKey: string) {
-  const app = new Hono<FiberplaneAppType>();
+export default function createTokensApiRoute<E extends Env>(apiKey: string) {
+  const app = new Hono<E & FiberplaneAppType<E>>();
 
   const service = new FpService({ apiKey });
 

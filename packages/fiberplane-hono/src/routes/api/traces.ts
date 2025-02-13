@@ -1,12 +1,14 @@
-import { Hono } from "hono";
+import { type Env, Hono } from "hono";
 import { logIfDebug } from "../../debug.js";
 import type { FiberplaneAppType } from "../../types.js";
 
 // Using Record<string, unknown> as a simpler type for JSON data
 type ApiResponse = Record<string, unknown> | Array<Record<string, unknown>>;
 
-export default function createTracesApiRoute(fpxEndpoint?: string) {
-  const app = new Hono<FiberplaneAppType>();
+export default function createTracesApiRoute<E extends Env>(
+  fpxEndpoint?: string,
+) {
+  const app = new Hono<E & FiberplaneAppType<E>>();
 
   app.get("/", async (c) => {
     logIfDebug(
