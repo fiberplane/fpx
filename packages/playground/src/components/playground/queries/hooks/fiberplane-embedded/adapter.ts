@@ -1,7 +1,8 @@
+import { isOpenApiV2 } from "@/lib/isOpenApi";
+import SwaggerParser from "@apidevtools/swagger-parser";
+import type { OpenAPIV3 } from "openapi-types";
 import { specToApiRoutes } from "./spec-to-api-routes";
-import type { ApiRoutesResponse, OpenAPISpec } from "./types";
-import type { ResolvedSpecResult } from "./types";
-
+import type { ApiRoutesResponse, ResolvedDocumentResult } from "./types";
 /**
  * Adapter module for converting OpenAPI specs into ApiRoutesResponse format.
  *
@@ -15,11 +16,7 @@ import type { ResolvedSpecResult } from "./types";
 export async function getApiRoutesFromOpenApiSpec(
   openapi: string,
 ): Promise<ApiRoutesResponse> {
-  // This is the generated ID for the converted routes
-  let id = 1;
-  const generateId = () => id++;
-
-  const result = getOpenApiSpec(openapi);
+  const result = await getOpenApiSpec(openapi);
 
   if (result.type === "empty") {
     return {
@@ -30,24 +27,46 @@ export async function getApiRoutesFromOpenApiSpec(
   }
 
   if (result.type === "error") {
-    return handleSpecError(result, generateId);
+    return handleSpecError(result);
   }
 
-  return specToApiRoutes(result.spec, generateId);
+  return specToApiRoutes(result.value);
 }
 
+async function parseSpec(spec: unknown) {
+  const parser = new SwaggerParser();
+
+  const result = await parser.dereference(spec as OpenAPIV3.Document);
+
+  if (!result) {
+    throw new Error("Unexpected result parsing OpenAPI spec file");
+  }
+
+  if (!result || isOpenApiV2(result)) {
+    throw new Error(
+      "Unsupported OpenAPI v2 (swagger) is not supported. Please update the spec file",
+    );
+  }
+
+  return result;
+}
 /**
  * Attempts to get the OpenAPI spec either from a mock spec or from the route context.
  * Returns empty if no spec is found.
  */
-function getOpenApiSpec(openapi: string): ResolvedSpecResult {
-  if (!openapi) {
+async function getOpenApiSpec(
+  content: string,
+): Promise<ResolvedDocumentResult> {
+  if (!content) {
     return { type: "empty" };
   }
 
   try {
-    const spec = JSON.parse(openapi) as OpenAPISpec;
-    return { type: "success", spec };
+    const result = await parseSpec(
+      typeof content === "string" ? JSON.parse(content) : content,
+    );
+
+    return { type: "success", value: result };
   } catch (error) {
     return {
       type: "error",
@@ -59,8 +78,7 @@ function getOpenApiSpec(openapi: string): ResolvedSpecResult {
 }
 
 async function handleSpecError(
-  result: ResolvedSpecResult & { type: "error" },
-  generateId: () => number,
+  result: ResolvedDocumentResult & { type: "error" },
 ): Promise<ApiRoutesResponse> {
   if (result.retryable && result.attemptedUrl) {
     console.log(
@@ -69,7 +87,7 @@ async function handleSpecError(
     );
     try {
       const spec = await fetch(result.attemptedUrl).then((res) => res.json());
-      return specToApiRoutes(spec, generateId);
+      return specToApiRoutes(spec);
     } catch (_err) {
       console.warn(
         "Fetching the spec failed on the server, and the retry failed",

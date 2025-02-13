@@ -37,9 +37,9 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
     }
   }, [isSelected]);
 
-  const displayText = route.summary || route.path;
-  const tooltipText = route.summary
-    ? `${route.summary}\n${route.path}`
+  const displayText = route.operation.summary || route.path;
+  const tooltipText = route.operation.summary
+    ? `${route.operation.summary}\n${route.path}`
     : route.path;
 
   return (

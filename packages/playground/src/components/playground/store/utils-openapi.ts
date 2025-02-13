@@ -1,3 +1,10 @@
+import {
+  type SupportedParameterObject,
+  type SupportedSchemaObject,
+  isSupportedParameterObject,
+  isSupportedRequestBodyObject,
+  isSupportedSchemaObject,
+} from "@/lib/isOpenApi";
 import { z } from "zod";
 import { enforceTerminalDraftParameter } from "../KeyValueForm";
 import type { ApiRoute } from "../types";
@@ -29,26 +36,30 @@ export function extractQueryParamsFromOpenApiDefinition(
   currentQueryParams: KeyValueParameter[],
   route: ApiRoute,
 ) {
-  if (!route.openApiSpec) {
-    return enforceTerminalDraftParameter(currentQueryParams);
+  const parameters: Array<SupportedParameterObject> = route.parameters ?? [];
+  if (route.operation.parameters) {
+    parameters.push(
+      ...(route.operation.parameters.filter(
+        isSupportedParameterObject,
+      ) as Array<SupportedParameterObject>),
+    );
   }
-
-  const parsedSpec = safeParseOpenApiSpec(route.openApiSpec, route.path);
-  if (!parsedSpec) {
-    return enforceTerminalDraftParameter(currentQueryParams);
-  }
-
   // Extract query parameters from OpenAPI spec
   const specQueryParams =
-    parsedSpec.parameters?.filter((param) => param.in === "query") ?? [];
+    parameters?.filter((param) => param.in === "query") ?? [];
 
   // Convert OpenAPI params to KeyValueParameter format
   const openApiQueryParams: KeyValueParameter[] = specQueryParams.map(
     (param) => ({
       id: param.name,
       key: param.name,
-      value: param.schema.example?.toString() ?? "",
-      enabled: param.required,
+      value:
+        (param.schema &&
+          isSupportedSchemaObject(param.schema) &&
+          param.schema.example?.toString()) ||
+        "",
+      enabled: param.required || false,
+      type: "string" as const,
     }),
   );
 
@@ -80,54 +91,6 @@ const JsonSchemaProperty: JsonSchemaPropertyType = z.object({
   required: z.array(z.string()).optional(),
 });
 
-const OpenApiParameterSchema = z.object({
-  parameters: z
-    .array(
-      z.object({
-        schema: z.object({
-          type: z.string(),
-          example: z.any().optional(),
-        }),
-        required: z.boolean(),
-        name: z.string(),
-        in: z.enum(["path", "query", "header", "cookie"]),
-      }),
-    )
-    .optional(),
-  requestBody: z
-    .object({
-      content: z.object({
-        "application/json": z.object({
-          schema: JsonSchemaProperty,
-        }),
-      }),
-    })
-    .optional(),
-  responses: z.record(z.string(), z.any()).optional(),
-});
-
-/**
- * Validates and parses an OpenAPI specification string against a defined schema
- * @param openApiSpec - OpenAPI specification as a JSON string
- * @param routePath - Route path for error logging purposes
- * @returns Parsed OpenAPI specification object or null if parsing fails
- */
-function safeParseOpenApiSpec(openApiSpec: string, routePath: string) {
-  try {
-    const spec = JSON.parse(openApiSpec);
-    const parsedSpec = OpenApiParameterSchema.safeParse(spec);
-    if (!parsedSpec.success) {
-      console.warn(
-        `Data in openApiSpec for ${routePath} was not in expected format. Here is the error: ${parsedSpec.error?.format?.()}`,
-      );
-      return null;
-    }
-    return parsedSpec.data;
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Extracts a sample JSON body from OpenAPI specification if the current body is empty
  *
@@ -139,27 +102,45 @@ export function extractJsonBodyFromOpenApiDefinition(
   currentBody: PlaygroundBody,
   route: ApiRoute,
 ): PlaygroundBody {
-  // If no OpenAPI spec exists, return current body
-  if (!route.openApiSpec) {
+  // If method doesn't allow for a body, bail out
+  if (route.method === "GET" || route.method === "HEAD") {
     return currentBody;
   }
 
   // FIXME - Just skip modifying file or form data bodies
   if (currentBody.type === "file" || currentBody.type === "form-data") {
+    console.log("body.type");
     return currentBody;
   }
 
   // If current body is not empty return current body
   if (currentBody.value?.trim()) {
+    console.log("body not empty");
     return currentBody;
   }
 
-  const parsedSpec = safeParseOpenApiSpec(route.openApiSpec, route.path);
-  if (!parsedSpec?.requestBody?.content?.["application/json"]?.schema) {
+  const requestBody =
+    route.operation.requestBody &&
+    isSupportedRequestBodyObject(route.operation.requestBody)
+      ? route.operation.requestBody
+      : undefined;
+
+  if (requestBody?.content?.["application/json"]?.schema) {
+    return currentBody;
+  }
+  console.log(
+    'requestBody?.content?.["application/json"]?.schema',
+    requestBody?.content?.["application/json"]?.schema,
+  );
+
+  const schema = requestBody?.content["application/json"]?.schema;
+  console.log("schema", schema);
+  if (!schema || !isSupportedSchemaObject(schema)) {
+    console.warn("Unable to generate sample body", requestBody, route);
     return currentBody;
   }
 
-  const schema = parsedSpec.requestBody.content["application/json"].schema;
+  console.log("eh...", currentBody, route);
   try {
     const sampleBody = generateSampleFromSchema(schema);
     return {
@@ -173,7 +154,7 @@ export function extractJsonBodyFromOpenApiDefinition(
 }
 
 function generateSampleFromSchema(
-  schema: z.infer<typeof JsonSchemaProperty>,
+  schema: SupportedSchemaObject,
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 ): any {
   if (schema.example !== undefined) {

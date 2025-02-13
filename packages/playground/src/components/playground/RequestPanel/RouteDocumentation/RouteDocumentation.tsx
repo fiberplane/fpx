@@ -6,6 +6,13 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  type SupportedOperationObject,
+  type SupportedParameterObject,
+  type SupportedResponseObject,
+  isSupportedParameterObject,
+  isSupportedRequestBodyObject,
+} from "@/lib/isOpenApi";
 import { cn, getHttpMethodTextColor } from "@/utils";
 import { ChevronRight } from "lucide-react";
 import { memo } from "react";
@@ -16,70 +23,53 @@ type OpenAPIParameter = NonNullable<
 >;
 
 type RouteDocumentationProps = {
-  openApiSpec: OpenAPIOperation;
-  route: { path: string; method: string } | null;
-};
-
-const getTitleWithFallback = (
-  title: string | undefined,
-  route: { path: string; method: string } | null,
-) => {
-  if (title) {
-    return title;
-  }
-  if (!route) {
-    return "Untitled";
-  }
-  return (
-    <>
-      <span
-        className={cn(getHttpMethodTextColor(route.method?.toUpperCase?.()))}
-      >
-        {route.method}
-      </span>
-      <span className="ml-1.5">{route.path}</span>
-    </>
-  );
+  operation: SupportedOperationObject;
+  route: { path: string; method: string };
 };
 
 export const RouteDocumentation = memo(function RouteDocumentation({
-  openApiSpec,
+  operation: openApiSpec,
   route,
 }: RouteDocumentationProps) {
-  const { parameters, requestBody, responses, description, summary, title } =
+  const { parameters, requestBody, responses, description, summary } =
     openApiSpec;
-
-  const modTitle = getTitleWithFallback(title, route);
 
   return (
     <ScrollArea className="h-full pb-8">
       <div className="p-2">
-        {(modTitle || summary || description) && (
-          <DocsSection>
-            {modTitle && (
-              <h3 className="text-lg font-semibold text-foreground pb-1 mb-2 border-b">
-                {modTitle}
-              </h3>
-            )}
-            {summary && (
-              <h3 className="text-lg font-normal text-foreground mb-1">
-                {summary}
-              </h3>
-            )}
-            {description && (
-              <p className="text-base text-muted-foreground mb-1">
-                {description}
-              </p>
-            )}
-          </DocsSection>
-        )}
+        <DocsSection>
+          <h3 className="text-lg font-semibold text-foreground pb-1 mb-2 border-b">
+            <span
+              className={cn(
+                getHttpMethodTextColor(route.method?.toUpperCase?.()),
+              )}
+            >
+              {route.method}
+            </span>
+            <span className="ml-1.5">{route.path}</span>
+          </h3>
+          {summary && (
+            <h3 className="text-lg font-normal text-foreground mb-1">
+              {summary}
+            </h3>
+          )}
+          {description && (
+            <p className="text-base text-muted-foreground mb-1">
+              {description}
+            </p>
+          )}
+        </DocsSection>
 
         {/* URL Parameters Section */}
         {parameters && parameters.length > 0 && (
           <DocsSection>
             <SectionHeader>Parameters</SectionHeader>
             <div className="space-y-2">
-              {parameters.map((param, idx) => (
+              {(
+                parameters.filter(
+                  isSupportedParameterObject,
+                ) as Array<SupportedParameterObject>
+              ).map((param, idx) => (
                 <div
                   key={`${param.name}-${idx}`}
                   className="flex flex-col space-y-2"
@@ -99,7 +89,7 @@ export const RouteDocumentation = memo(function RouteDocumentation({
         )}
 
         {/* Request Body Section */}
-        {requestBody && (
+        {requestBody && isSupportedRequestBodyObject(requestBody) && (
           <DocsSection>
             {Object.entries(requestBody.content).map(([mediaType, content]) => (
               <div key={mediaType}>
@@ -124,64 +114,69 @@ export const RouteDocumentation = memo(function RouteDocumentation({
           <DocsSection>
             <SectionHeader>Responses</SectionHeader>
             <div className="space-y-4 ">
-              {Object.entries(responses).map(([status, response]) => (
-                <div
-                  key={status}
-                  className="space-y-2 border-b-2 pb-4 border-dashed"
-                >
-                  {!response.content && (
-                    <div className="">
-                      <div className="mt-2">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <StatusCode status={status} isFailure={false} />
+              {Object.entries(responses).map(
+                ([status, response]: [string, SupportedResponseObject]) => (
+                  <div
+                    key={status}
+                    className="space-y-2 border-b-2 pb-4 border-dashed"
+                  >
+                    {!response.content && (
+                      <div className="">
+                        <div className="mt-2">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <StatusCode status={status} isFailure={false} />
+                            </div>
+                            <ContentTypeBadge mediaType={"—"} />
                           </div>
-                          <ContentTypeBadge mediaType={"—"} />
-                        </div>
-                        {/* Commenting this out solely because it looks bad */}
-                        {/* {response.description && (
+                          {/* Commenting this out solely because it looks bad */}
+                          {/* {response.description && (
                               <div className="text-sm text-gray-300">
                                 {response.description}
                               </div>
                             )} */}
-                        <div className="mt-2 pl-3 text-gray-400 text-sm">
-                          No Content
+                          <div className="mt-2 pl-3 text-gray-400 text-sm">
+                            No Content
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {response.content && (
-                    <div className="">
-                      {Object.entries(response.content).map(
-                        ([mediaType, content]) => (
-                          <div key={mediaType} className="mt-2">
-                            <div className="flex justify-between items-center">
-                              <div className="flex items-center gap-2">
-                                <StatusCode status={status} isFailure={false} />
+                    {response.content && (
+                      <div className="">
+                        {Object.entries(response.content).map(
+                          ([mediaType, content]) => (
+                            <div key={mediaType} className="mt-2">
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                  <StatusCode
+                                    status={status}
+                                    isFailure={false}
+                                  />
+                                </div>
+                                <ContentTypeBadge mediaType={mediaType} />
                               </div>
-                              <ContentTypeBadge mediaType={mediaType} />
-                            </div>
-                            {/* Commenting this out solely because it looks bad */}
-                            {/* {response.description && (
+                              {/* Commenting this out solely because it looks bad */}
+                              {/* {response.description && (
                               <div className="text-sm text-gray-300">
                                 {response.description}
                               </div>
                             )} */}
-                            <div className="mt-2 pl-3">
-                              {content.schema && (
-                                <SchemaViewer
-                                  schema={content.schema as OpenAPISchema}
-                                />
-                              )}
+                              <div className="mt-2 pl-3">
+                                {content.schema && (
+                                  <SchemaViewer
+                                    schema={content.schema as OpenAPISchema}
+                                  />
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
+                          ),
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ),
+              )}
             </div>
           </DocsSection>
         )}
@@ -489,7 +484,7 @@ function DocsParameter({
 /**
  * Get the type (string, int, etc) from a parameter.
  */
-function getTypeFromParameter(param: OpenAPIParameter) {
+function getTypeFromParameter(param: SupportedParameterObject) {
   return (
     (param.schema && "type" in param.schema && param.schema.type) || "string"
   );

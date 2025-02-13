@@ -7,10 +7,11 @@ import type { KeyValueParameter, PlaygroundState } from "./types";
 export const _getActiveRoute = (state: PlaygroundState): ApiRoute => {
   return (
     state.activeRoute ?? {
-      id: Number.NEGATIVE_INFINITY,
+      // id: Number.NEGATIVE_INFINITY,
       path: "",
       method: "GET",
-      openApiSpec: null,
+      operation: {},
+      // openApiSpec: null,
     }
   );
 };
@@ -72,7 +73,7 @@ export function extractPathParams(path: string) {
 }
 
 export function mapPathParamKey(key: string) {
-  return { key, value: "", id: key, enabled: false };
+  return { key, value: "", id: key, enabled: false, type: "string" as const };
 }
 
 export function extractMatchedPathParams(

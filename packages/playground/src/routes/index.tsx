@@ -26,9 +26,8 @@ export const Route = createFileRoute("/")({
  */
 function Index() {
   const search = Route.useSearch();
-  const { appRoutes, clearCurrentPathParams, setActiveRoute } = useStudioStore(
+  const { appRoutes, setActiveRoute } = useStudioStore(
     "appRoutes",
-    "clearCurrentPathParams",
     "setActiveRoute",
   );
 
@@ -47,10 +46,8 @@ function Index() {
   );
 
   const setDefault = useHandler(() => {
-    clearCurrentPathParams();
     if (appRoutes.length === 0) {
       // If there are no routes there isn't much to reset to.
-      console.warn("Attempting to reset when there are no routes");
       return;
     }
     const route = appRoutes[0];

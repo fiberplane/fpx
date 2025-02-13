@@ -1,4 +1,5 @@
 import type { OpenAPIComponents } from "@fiberplane/fpx-types";
+import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 import type { ApiRoute } from "../../../types";
 
 export type ApiRoutesResponse = {
@@ -67,10 +68,10 @@ export function isValidMethod(method: string): method is ValidMethod {
   return VALID_METHODS.includes(method.toUpperCase() as ValidMethod);
 }
 
-export type ResolvedSpecResult =
+export type ResolvedResult<T> =
   | {
       type: "success";
-      spec: OpenAPISpec;
+      value: T;
     }
   | {
       type: "error";
@@ -82,3 +83,7 @@ export type ResolvedSpecResult =
   | {
       type: "empty";
     };
+
+export type ResolvedDocumentResult = ResolvedResult<
+  OpenAPIV3.Document | OpenAPIV3_1.Document
+>;

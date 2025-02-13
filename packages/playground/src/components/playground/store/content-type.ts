@@ -120,7 +120,7 @@ function getUpdateOperation(
   if (!canHaveBody || !activeRoute) {
     return currentContentTypeHeader
       ? {
-          type: "remove",
+          type: "remove" as const,
           value: currentContentTypeHeader,
         }
       : null;
@@ -147,7 +147,7 @@ function getUpdateOperation(
 
     // Add the content type header
     return {
-      type: "add",
+      type: "add" as const,
       value: {
         id: crypto.randomUUID(),
         key: "Content-Type",
@@ -160,7 +160,7 @@ function getUpdateOperation(
   // If the method is GET or HEAD, we don't want to add the content type header
   if (activeRoute.method === "GET" || activeRoute.method === "HEAD") {
     return {
-      type: "remove",
+      type: "remove" as const,
       value: currentContentTypeHeader,
     };
   }
@@ -173,14 +173,14 @@ function getUpdateOperation(
     !currentContentTypeHeader.value?.startsWith("multipart/form-data")
   ) {
     return {
-      type: "remove",
+      type: "remove" as const,
       value: currentContentTypeHeader,
     };
   }
 
   // Update the content type header
   return {
-    type: "update",
+    type: "update" as const,
     value: {
       ...currentContentTypeHeader,
       value: nextContentTypeValue,

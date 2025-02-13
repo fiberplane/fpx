@@ -1,8 +1,10 @@
 import { cn } from "@/utils";
 import { useNavigate } from "@tanstack/react-router";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useStudioStore } from "../../store";
+import { getRouteId } from "../../store/slices/requestResponseSlice";
 import type { ApiRoute } from "../../types";
 import { Search } from "../Search";
 import { RoutesItem } from "./RoutesItem";
@@ -14,7 +16,9 @@ function useRoutesGroupedByTags(routes: ApiRoute[], tagOrder: string[]) {
   const routesGroupedByTags = useMemo(() => {
     return routes.reduce<Record<string | symbol, ApiRoute[]>>((acc, route) => {
       // NOTE - Also group routes without tags under the "untagged" tag
-      const tags = route.tags?.length ? route.tags : [UNTAGGED];
+      const tags = route.operation.tags?.length
+        ? route.operation.tags
+        : [UNTAGGED];
 
       // Add route to each of its tags
       for (const tag of tags) {
@@ -49,6 +53,138 @@ function useRoutesGroupedByTags(routes: ApiRoute[], tagOrder: string[]) {
   return { routesGroupedByTags, sortedTags };
 }
 
+// New component for virtualized routes list
+function VirtualizedRoutesList({
+  routes,
+  selectedRouteIndex,
+  activeRoute,
+  setSelectedRouteIndex,
+}: {
+  routes: Array<ApiRoute>;
+  selectedRouteIndex: number | null;
+  activeRoute: ApiRoute | null;
+  setSelectedRouteIndex: (index: number | null) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const rowVirtualizer = useVirtualizer({
+    count: routes.length,
+    getScrollElement: () => ref.current,
+    estimateSize: () => 28, // Estimate row height
+  });
+
+  return (
+    <div ref={ref} className="overflow-y-auto h-full">
+      <div style={{ height: rowVirtualizer.getTotalSize() }}>
+        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+          const route = routes[virtualRow.index];
+          return (
+            <div
+              key={getRouteId(route)}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                transform: `translateY(${virtualRow.start}px)`,
+              }}
+            >
+              <RoutesItem
+                key={`${route.method}-${route.path}`}
+                index={virtualRow.index}
+                route={route}
+                selectedRoute={
+                  selectedRouteIndex === virtualRow.index ? route : null
+                }
+                activeRoute={activeRoute}
+                setSelectedRouteIndex={setSelectedRouteIndex}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// New component for virtualized routes sections
+function VirtualizedRoutesSections({
+  sortedTags,
+  routesGroupedByTags,
+  allRoutes,
+  activeRoute,
+  selectedRouteIndex,
+  setSelectedRouteIndex,
+}: {
+  sortedTags: Array<string | symbol>;
+  allRoutes: Array<ApiRoute>;
+  routesGroupedByTags: Record<string | symbol, ApiRoute[]>;
+  activeRoute: ApiRoute | null;
+  selectedRouteIndex: number | null;
+  setSelectedRouteIndex: (index: number | null) => void;
+}) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const rowVirtualizer = useVirtualizer({
+    count: sortedTags.length,
+    getScrollElement: () => ref.current,
+    scrollMargin: 20,
+    estimateSize: (index) => {
+      const tag = sortedTags[index];
+      return (routesGroupedByTags[tag]?.length || 0) * 28 + 40; // Estimate height based on number of items
+    },
+  });
+
+  return (
+    <div ref={ref} className="overflow-y-auto h-full grid">
+      <div
+        className="relative w-full"
+        style={{ height: rowVirtualizer.getTotalSize() }}
+      >
+        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+          const tag = sortedTags[virtualRow.index];
+          return (
+            <div
+              key={String(tag)}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                transform: `translateY(${
+                  virtualRow.start - rowVirtualizer.options.scrollMargin
+                }px)`,
+              }}
+            >
+              <RoutesSection
+                key={typeof tag === "string" ? tag : "Symbol('untagged')"}
+                title={typeof tag === "string" ? tag : "Untagged Routes"}
+              >
+                <div className="grid">
+                  {routesGroupedByTags[tag].map((route) => {
+                    const globalIndex = allRoutes.findIndex(
+                      (r) => r.path === route.path && r.method === route.method,
+                    );
+
+                    return (
+                      <RoutesItem
+                        key={`${route.method}-${route.path}`}
+                        index={globalIndex}
+                        route={route}
+                        selectedRoute={
+                          selectedRouteIndex === globalIndex ? route : null
+                        }
+                        activeRoute={activeRoute}
+                        setSelectedRouteIndex={setSelectedRouteIndex}
+                      />
+                    );
+                  })}
+                </div>
+              </RoutesSection>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function RoutesPanel() {
   const {
     appRoutes: routes,
@@ -65,8 +201,10 @@ export function RoutesPanel() {
 
     return routes.filter((r) => {
       const matchesPath = r.path.toLowerCase().includes(cleanFilter);
-      const matchesSummary = r.summary?.toLowerCase().includes(cleanFilter);
-      const matchesTags = r.tags?.some((tag) =>
+      const matchesSummary = r.operation.summary
+        ?.toLowerCase()
+        .includes(cleanFilter);
+      const matchesTags = r.operation.tags?.some((tag) =>
         tag.toLowerCase().includes(cleanFilter),
       );
       return matchesPath || matchesSummary || matchesTags;
@@ -176,65 +314,30 @@ export function RoutesPanel() {
           />
         </div>
       </div>
-      <div className="overflow-y-auto h-full relative flex flex-col gap-2">
+      <div className="h-full relative flex flex-col gap-2 overflow-hidden">
         {hasAnyRoutes &&
           (detectedRoutes.length === 0 ? (
             <div className="italic text-center text-muted-foreground text-xs my-4">
               No routes match filter criteria
             </div>
           ) : sortedTags.length === 0 ? (
-            // If no tags, render routes directly without sections
-            <div className="grid">
-              {allRoutes.map((route) => (
-                <RoutesItem
-                  key={`${route.method}-${route.path}`}
-                  index={allRoutes.findIndex(
-                    (r) => r.path === route.path && r.method === route.method,
-                  )}
-                  route={route}
-                  selectedRoute={
-                    selectedRouteIndex ===
-                    allRoutes.findIndex(
-                      (r) => r.path === route.path && r.method === route.method,
-                    )
-                      ? route
-                      : null
-                  }
-                  activeRoute={activeRoute}
-                  setSelectedRouteIndex={setSelectedRouteIndex}
-                />
-              ))}
-            </div>
+            // Use the new VirtualizedRoutesList component
+            <VirtualizedRoutesList
+              routes={allRoutes}
+              selectedRouteIndex={selectedRouteIndex}
+              activeRoute={activeRoute}
+              setSelectedRouteIndex={setSelectedRouteIndex}
+            />
           ) : (
-            // Otherwise render routes grouped by tags
-            sortedTags.map((tag) => (
-              <RoutesSection
-                key={typeof tag === "string" ? tag : "Symbol('untagged')"}
-                title={typeof tag === "string" ? tag : "Untagged Routes"}
-              >
-                <div className="grid">
-                  {routesGroupedByTags[tag].map((route) => {
-                    // Calculate the global index for this route
-                    const globalIndex = allRoutes.findIndex(
-                      (r) => r.path === route.path && r.method === route.method,
-                    );
-
-                    return (
-                      <RoutesItem
-                        key={`${route.method}-${route.path}`}
-                        index={globalIndex}
-                        route={route}
-                        selectedRoute={
-                          selectedRouteIndex === globalIndex ? route : null
-                        }
-                        activeRoute={activeRoute}
-                        setSelectedRouteIndex={setSelectedRouteIndex}
-                      />
-                    );
-                  })}
-                </div>
-              </RoutesSection>
-            ))
+            // Use the new VirtualizedRoutesSections component
+            <VirtualizedRoutesSections
+              sortedTags={sortedTags}
+              allRoutes={allRoutes}
+              routesGroupedByTags={routesGroupedByTags}
+              activeRoute={activeRoute}
+              selectedRouteIndex={selectedRouteIndex}
+              setSelectedRouteIndex={setSelectedRouteIndex}
+            />
           ))}
       </div>
     </div>

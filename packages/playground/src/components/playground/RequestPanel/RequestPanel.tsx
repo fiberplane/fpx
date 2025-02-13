@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/tabs";
 import { cn } from "@/utils";
 import { EraserIcon } from "@radix-ui/react-icons";
-import { memo, useMemo } from "react";
+import { memo } from "react";
 import { FormDataForm } from "../FormDataForm";
 import { KeyValueForm } from "../KeyValueForm";
 import type { PlaygroundBody, RequestsPanelTab } from "../store";
@@ -24,7 +24,7 @@ import { useStudioStore } from "../store";
 import { useApiCallData } from "../store/hooks/useApiCallData";
 import { AuthSelector } from "./AuthSelector";
 import { Faker } from "./Faker";
-import { RouteDocumentation, isOpenApiOperation } from "./RouteDocumentation";
+import { RouteDocumentation } from "./RouteDocumentation";
 
 type RequestPanelProps = {
   onSubmit: () => void;
@@ -36,31 +36,31 @@ export const RequestPanel = memo(function RequestPanel(
   const { onSubmit } = props;
 
   const {
-    setCurrentBody: setBody,
-    setCurrentRequestHeaders: setRequestHeaders,
-    setCurrentQueryParams: setQueryParams,
-    setCurrentPathParams: setPathParams,
-    clearCurrentPathParams: clearPathParams,
-    handleRequestBodyTypeChange,
     activeRequestsPanelTab,
-    setActiveRequestsPanelTab,
-    visibleRequestsPanelTabs,
     activeRoute,
-    togglePanel,
+    clearCurrentPathParams: clearPathParams,
     fillInFakeData,
+    handleRequestBodyTypeChange,
+    setActiveRequestsPanelTab,
+    setCurrentBody: setBody,
+    setCurrentPathParams: setPathParams,
+    setCurrentQueryParams: setQueryParams,
+    setCurrentRequestHeaders: setRequestHeaders,
+    togglePanel,
+    visibleRequestsPanelTabs,
   } = useStudioStore(
-    "setCurrentBody",
-    "setCurrentRequestHeaders",
-    "setCurrentQueryParams",
-    "setCurrentPathParams",
-    "clearCurrentPathParams",
-    "handleRequestBodyTypeChange",
     "activeRequestsPanelTab",
-    "setActiveRequestsPanelTab",
-    "visibleRequestsPanelTabs",
     "activeRoute",
-    "togglePanel",
+    "clearCurrentPathParams",
     "fillInFakeData",
+    "handleRequestBodyTypeChange",
+    "setActiveRequestsPanelTab",
+    "setCurrentBody",
+    "setCurrentPathParams",
+    "setCurrentQueryParams",
+    "setCurrentRequestHeaders",
+    "togglePanel",
+    "visibleRequestsPanelTabs",
   );
 
   const { body, pathParams, queryParams, requestHeaders } = useApiCallData(
@@ -84,15 +84,7 @@ export const RequestPanel = memo(function RequestPanel(
   };
 
   const shouldShowBody = shouldShowRequestTab("body");
-  const openApiSpec = useMemo(() => {
-    try {
-      return JSON.parse(activeRoute?.openApiSpec ?? "{}");
-    } catch (_e) {
-      return null;
-    }
-  }, [activeRoute?.openApiSpec]);
-  const shouldShowDocs = isOpenApiOperation(openApiSpec);
-
+  const showDocs = !!activeRoute;
   return (
     <FpTabs
       value={activeRequestsPanelTab}
@@ -129,7 +121,7 @@ export const RequestPanel = memo(function RequestPanel(
             </span>
           )}
         </FpTabsTrigger>
-        {shouldShowDocs && <FpTabsTrigger value="docs">Docs</FpTabsTrigger>}
+        {showDocs && <FpTabsTrigger value="docs">Docs</FpTabsTrigger>}
 
         <div className="flex items-center justify-end flex-grow ml-auto">
           <Faker />
@@ -266,9 +258,12 @@ export const RequestPanel = memo(function RequestPanel(
           )}
         </FpTabsContent>
       )}
-      {shouldShowDocs && (
+      {showDocs && (
         <FpTabsContent value="docs">
-          <RouteDocumentation openApiSpec={openApiSpec} route={activeRoute} />
+          <RouteDocumentation
+            operation={activeRoute.operation}
+            route={activeRoute}
+          />
         </FpTabsContent>
       )}
 

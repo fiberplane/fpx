@@ -17,7 +17,6 @@ export const isRequestsPanelTab = (tab: unknown): tab is RequestsPanelTab => {
 
 export const getVisibleRequestPanelTabs = (route: {
   method: RequestMethod;
-  openApiSpec: unknown | undefined;
 }): RequestsPanelTab[] => {
   const result: RequestsPanelTab[] = ["params", "headers", "auth"];
 
@@ -25,11 +24,8 @@ export const getVisibleRequestPanelTabs = (route: {
   if (canHaveBody) {
     result.push("body");
   }
-  // If we have docs, show the docs tab
-  const hasDocs = !!route.openApiSpec;
-  if (hasDocs) {
-    result.push("docs");
-  }
+
+  result.push("docs");
   return result;
 };
 

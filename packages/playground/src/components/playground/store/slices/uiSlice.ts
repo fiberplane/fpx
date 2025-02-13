@@ -4,33 +4,40 @@ import type { StudioState, UISlice } from "./types";
 
 export const uiSlice: StateCreator<
   StudioState,
-  [["zustand/immer", never], ["zustand/devtools", never]],
+  [["zustand/devtools", never]],
   [],
   UISlice
 > = (set) => {
   return {
     sidePanel: isLgScreen() ? "open" : "closed",
     togglePanel: (panelName: "sidePanel") =>
-      set((state) => {
+      set((initialState: StudioState): StudioState => {
+        const state = { ...initialState };
         state[panelName] = state[panelName] === "open" ? "closed" : "open";
-        return;
+        return state;
       }),
 
     timelineShowLogs: true,
     timelineAsTree: true,
     toggleTimelineAsTree: () =>
-      set((state) => {
+      set((initialState: StudioState): StudioState => {
+        const state = { ...initialState };
         state.timelineAsTree = !state.timelineAsTree;
+        return state;
       }),
     toggleTimelineLogs: () =>
-      set((state) => {
+      set((initialState: StudioState): StudioState => {
+        const state = { ...initialState };
         state.timelineShowLogs = !state.timelineShowLogs;
+        return state;
       }),
 
     shortcutsOpen: false,
     setShortcutsOpen: (open: boolean) =>
-      set((state) => {
+      set((initialState: StudioState): StudioState => {
+        const state = { ...initialState };
         state.shortcutsOpen = open;
+        return state;
       }),
   };
 };
