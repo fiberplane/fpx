@@ -3,17 +3,18 @@ import packageJson from "../package.json" assert { type: "json" };
 import { logIfDebug } from "./debug.js";
 import { createRouter } from "./router.js";
 import type { EmbeddedOptions, ResolvedEmbeddedOptions } from "./types.js";
-import { contextStorage } from "hono/context-storage";
 
 const VERSION = packageJson.version;
-const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/hono/dist/playground/`;
+const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/hono@${VERSION}/dist/playground/`;
 
 export const createFiberplane =
-  <E extends Env & { Variables: { userApp: Hono<E>, userEnv: Env } }>(options: EmbeddedOptions<E>): MiddlewareHandler =>
+  <E extends Env & { Variables: { userApp: Hono<E>; userEnv: Env } }>(
+    options: EmbeddedOptions<E>,
+  ): MiddlewareHandler =>
   async (c, next) => {
     const debug = options.debug ?? false;
-    const userApp = options.app
-    const userEnv = c.env
+    const userApp = options.app;
+    const userEnv = c.env;
     logIfDebug(debug, "debug logs are enabled");
 
     const apiKey = options.apiKey ?? getApiKey(c, debug);
