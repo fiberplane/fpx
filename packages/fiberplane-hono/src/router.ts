@@ -25,7 +25,29 @@ export function createRouter<E extends Env>(
     await next();
   });
 
-  app.use(contextStorage())
+  app.use(contextStorage());
+
+  app.use(async (c, next) => {
+    await next();
+    logIfDebug(isDebugEnabled, "==== matched routes ====");
+    for (const [
+      i,
+      { handler, method, path },
+    ] of c.req.matchedRoutes.entries()) {
+      const name =
+        handler.name || (handler.length < 2 ? "[handler]" : "[middleware]");
+      logIfDebug(
+        isDebugEnabled,
+        method,
+        " ",
+        path,
+        " ".repeat(Math.max(10 - path.length, 0)),
+        name,
+        i === c.req.routeIndex ? "<- respond from here" : "",
+      );
+    }
+    logIfDebug(isDebugEnabled, "==== end of matched routes ====");
+  });
 
   app.use(async (c, next) => {
     c.set("userApp", options.userApp);
@@ -55,7 +77,7 @@ export function createRouter<E extends Env>(
     });
   }
 
-  const embeddedPlayground = createEmbeddedPlayground(sanitizedOptions);
+  const embeddedPlayground = createEmbeddedPlayground<E>(sanitizedOptions);
   app.route("/", embeddedPlayground);
 
   return app;
