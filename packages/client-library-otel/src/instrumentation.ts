@@ -328,13 +328,16 @@ function setupTracerProvider(options: {
     }),
   });
 
-  const headers: Record<string, string> = options.authToken
+  const headers: Record<string, string> | undefined = options.authToken
     ? { Authorization: `Bearer ${options.authToken}` }
-    : {};
+    : undefined;
 
   const exporter = new OTLPTraceExporter({
     url: options.endpoint,
-    headers,
+    // HACK - Only add headers because if we add an empty header object,
+    //        the OTLPTraceExporter will think we're in the browser for some odd reason.
+    //        (This happened to us in Cloudflare Workers)
+    ...(headers && { headers }),
   });
   provider.addSpanProcessor(
     new SimpleSpanProcessor(exporter),
