@@ -93,7 +93,7 @@ export function KeyboardShortcutsModal({
                             ) : (
                               <KeyboardShortcutKey
                                 key={key}
-                                className="inline-flex min-w-[1.75rem] justify-center"
+                                className="inline-flex px-2 min-w-[1.75rem] min-h-[1.75rem] justify-center"
                               >
                                 {key}
                               </KeyboardShortcutKey>

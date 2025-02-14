@@ -1,8 +1,8 @@
 import FpThemeIllustrationDark from "@/assets/FpThemeIllustrationDark.svg";
 import FpThemeIllustrationLight from "@/assets/FpThemeIllustrationLight.svg";
 import FpThemeIllustrationSystem from "@/assets/FpThemeIllustrationSystem.svg";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { FpLabel } from "@/components/ui/label";
+import { FpRadioGroup, FpRadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import { useTheme } from "./theme-provider";
 
@@ -20,7 +20,7 @@ function ThemeOption({ value, label }: ThemeOptionProps) {
         : FpThemeIllustrationSystem;
   return (
     <div className="relative flex items-start">
-      <Label
+      <FpLabel
         htmlFor={value}
         className={cn(
           "flex cursor-pointer flex-col items-center rounded-lg p-2",
@@ -31,7 +31,7 @@ function ThemeOption({ value, label }: ThemeOptionProps) {
       >
         <Illustration className="w-full h-auto mb-2" />
         <div className="flex items-center gap-2 w-full justify-start">
-          <RadioGroupItem
+          <FpRadioGroupItem
             value={value}
             id={value}
             className={cn(
@@ -44,7 +44,7 @@ function ThemeOption({ value, label }: ThemeOptionProps) {
             {label}
           </span>
         </div>
-      </Label>
+      </FpLabel>
     </div>
   );
 }
@@ -53,7 +53,7 @@ export function ThemeSelect() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <RadioGroup
+    <FpRadioGroup
       defaultValue={theme}
       onValueChange={(value: "light" | "dark" | "system") => setTheme(value)}
       className="flex gap-6"
@@ -61,6 +61,6 @@ export function ThemeSelect() {
       <ThemeOption value="system" label="System" />
       <ThemeOption value="dark" label="Dark" />
       <ThemeOption value="light" label="Light" />
-    </RadioGroup>
+    </FpRadioGroup>
   );
 }

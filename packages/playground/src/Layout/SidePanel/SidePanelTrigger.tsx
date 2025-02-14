@@ -13,7 +13,8 @@ import { useHotkeys } from "react-hotkeys-hook";
 export function SidePanelTrigger() {
   const { sidePanel, togglePanel } = useStudioStore("sidePanel", "togglePanel");
 
-  useHotkeys("mod+b", () => {
+  useHotkeys("mod+b", (event) => {
+    event.preventDefault();
     togglePanel("sidePanel");
   });
 

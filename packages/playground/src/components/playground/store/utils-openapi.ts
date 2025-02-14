@@ -1,12 +1,15 @@
 import {
+  type SupportedMediaTypeObject,
   type SupportedParameterObject,
   type SupportedReferenceObject,
   type SupportedSchemaObject,
   isSupportedParameterObject,
-  isSupportedRequestBodyObject,
   isSupportedSchemaObject,
 } from "@/lib/isOpenApi";
 import { z } from "zod";
+import { enforceFormDataTerminalDraftParameter } from "../FormDataForm";
+import { createFormDataParameter } from "../FormDataForm/data";
+import type { FormDataParameter } from "../FormDataForm/types";
 import { enforceTerminalDraftParameter } from "../KeyValueForm";
 import type { ApiRoute } from "../types";
 import type { KeyValueParameter, PlaygroundBody } from "./types";
@@ -91,6 +94,57 @@ const JsonSchemaProperty: JsonSchemaPropertyType = z.object({
   required: z.array(z.string()).optional(),
 });
 
+export function extractFormDataFromOpenApiDefinition(
+  mediaType: SupportedMediaTypeObject,
+): PlaygroundBody {
+  const values: Array<FormDataParameter> = [];
+
+  // // TODO handle examples?
+  if (mediaType.schema && isSupportedSchemaObject(mediaType.schema)) {
+    const schema = mediaType.schema;
+    console.log("schema", schema);
+    if (schema.type === "object") {
+      if (schema.additionalProperties) {
+        console.warn(
+          "Additional properties detected, but aren't handled currently",
+        );
+      }
+
+      const { properties = {} } = schema;
+      for (const key of Object.keys(properties)) {
+        const propertySchema = properties[key];
+        if (!isSupportedSchemaObject(propertySchema)) {
+          continue;
+        }
+
+        // Const supported types
+        const propertySchemaType = propertySchema.type || "";
+        if (
+          !Array.isArray(propertySchemaType) &&
+          ["string", "number", "integer", "boolean"].includes(
+            propertySchemaType,
+          )
+        ) {
+          const newParameter = createFormDataParameter(
+            key,
+            String(propertySchema.default || ""),
+          );
+
+          newParameter.enabled = !!schema.required?.includes(key);
+          values.push(newParameter);
+        }
+      }
+    }
+  }
+  // values.push(createFormDataParameter("", ""));
+
+  return {
+    type: "form-data",
+    isMultipart: true,
+    value: enforceFormDataTerminalDraftParameter(values),
+  };
+}
+
 /**
  * Extracts a sample JSON body from OpenAPI specification if the current body is empty
  *
@@ -100,47 +154,38 @@ const JsonSchemaProperty: JsonSchemaPropertyType = z.object({
  */
 export function extractJsonBodyFromOpenApiDefinition(
   currentBody: PlaygroundBody,
-  route: ApiRoute,
+  mediaType: SupportedMediaTypeObject,
 ): PlaygroundBody {
-  // If method doesn't allow for a body, bail out
-  if (route.method === "GET" || route.method === "HEAD") {
-    return currentBody;
-  }
+  // // FIXME - Just skip modifying file or form data bodies
+  // if (currentBody.type === "file" || currentBody.type === "form-data") {
+  //   return currentBody;
+  // }
 
-  // FIXME - Just skip modifying file or form data bodies
-  if (currentBody.type === "file" || currentBody.type === "form-data") {
-    console.log("body.type");
-    return currentBody;
-  }
+  // // If current body is not empty return current body
+  // if (currentBody.value?.trim()) {
+  //   return currentBody;
+  // }
 
-  // If current body is not empty return current body
-  if (currentBody.value?.trim()) {
-    console.log("body not empty");
-    return currentBody;
-  }
+  // const requestBody =
+  //   route.operation.requestBody &&
+  //   isSupportedRequestBodyObject(route.operation.requestBody)
+  //     ? route.operation.requestBody
+  //     : undefined;
 
-  const requestBody =
-    route.operation.requestBody &&
-    isSupportedRequestBodyObject(route.operation.requestBody)
-      ? route.operation.requestBody
-      : undefined;
+  // if (requestBody?.content?.["application/json"]?.schema) {
+  //   return currentBody;
+  // }
+  // console.log(
+  //   'requestBody?.content?.["application/json"]?.schema',
+  //   requestBody?.content?.["application/json"]?.schema,
+  // );
 
-  if (requestBody?.content?.["application/json"]?.schema) {
-    return currentBody;
-  }
-  console.log(
-    'requestBody?.content?.["application/json"]?.schema',
-    requestBody?.content?.["application/json"]?.schema,
-  );
-
-  const schema = requestBody?.content["application/json"]?.schema;
-  console.log("schema", schema);
+  const schema = mediaType.schema;
+  // console.log("schema", schema, requestBody?.content);
   if (!schema || !isSupportedSchemaObject(schema)) {
-    console.warn("Unable to generate sample body", requestBody, route);
     return currentBody;
   }
 
-  console.log("eh...", currentBody, route);
   try {
     const sampleBody = generateSampleFromSchema(schema);
     return {
@@ -148,7 +193,7 @@ export function extractJsonBodyFromOpenApiDefinition(
       value: JSON.stringify(sampleBody, null, 2),
     };
   } catch (error) {
-    console.warn(`Failed to generate sample body for ${route.path}:`, error);
+    console.warn("Failed to generate sample body", error);
     return currentBody;
   }
 }

@@ -1,3 +1,10 @@
+import {
+  type SupportedMediaTypeObject,
+  type SupportedReferenceObject,
+  type SupportedRequestBodyObject,
+  isSupportedOperationObject,
+  isSupportedRequestBodyObject,
+} from "@/lib/isOpenApi";
 import { createObjectFromKeyValueParameters } from "@/utils";
 import type { StateCreator } from "zustand";
 import { enforceFormDataTerminalDraftParameter } from "../../FormDataForm";
@@ -5,7 +12,7 @@ import { enforceTerminalDraftParameter } from "../../KeyValueForm";
 import type { ApiRoute } from "../../types";
 import { updateContentTypeHeaderInState } from "../content-type";
 import { setBodyTypeInState } from "../set-body-type";
-import type { KeyValueParameter } from "../types";
+import type { KeyValueParameter, PlaygroundBody } from "../types";
 import {
   addBaseUrl,
   extractPathParams,
@@ -19,6 +26,7 @@ import {
   transformToFormParams,
 } from "../utils-faker";
 import {
+  extractFormDataFromOpenApiDefinition,
   extractJsonBodyFromOpenApiDefinition,
   extractQueryParamsFromOpenApiDefinition,
 } from "../utils-openapi";
@@ -401,8 +409,71 @@ export function createInitialApiCallData(route?: ApiRoute): ApiCallData {
     data.queryParams,
     route,
   );
-  data.body = extractJsonBodyFromOpenApiDefinition(data.body, route);
+  if (route.operation.requestBody) {
+    console.log(route.operation.requestBody);
+  }
+
+  // Does the route support a body parameter?
+  if (
+    route.method !== "GET" &&
+    route.method !== "HEAD" &&
+    isSupportedOperationObject(route)
+  ) {
+    data.body = extractBodyFromOpenApiDefinition(
+      data.body,
+      route.operation.requestBody,
+      "application/json",
+    );
+  }
   return data;
+}
+
+const supportedBodyTypes = ["application/json", "multipart/form-data"] as const;
+type SupportedBodyContentType = (typeof supportedBodyTypes)[number];
+
+function extractBodyFromOpenApiDefinition(
+  currentBody: PlaygroundBody,
+  bodyObject: SupportedRequestBodyObject | SupportedReferenceObject | undefined,
+  preferredContentType: SupportedBodyContentType = "application/json",
+): PlaygroundBody {
+  if (bodyObject === undefined || !isSupportedRequestBodyObject(bodyObject)) {
+    return currentBody;
+  }
+
+  type ContentMap = {
+    contentType: SupportedBodyContentType;
+    mediaType: SupportedMediaTypeObject;
+  };
+  const contentTypes = Object.entries(bodyObject.content)
+    .filter(([contentType]) =>
+      supportedBodyTypes.includes(contentType as SupportedBodyContentType),
+    )
+    .map(
+      ([contentType, mediaTypeObject]): ContentMap => ({
+        contentType: contentType as SupportedBodyContentType,
+        mediaType: mediaTypeObject as SupportedMediaTypeObject,
+      }),
+    );
+  console.log("types", Object.keys(bodyObject.content), contentTypes);
+
+  const extract = ({ contentType, mediaType }: ContentMap): PlaygroundBody => {
+    console.log("exact extract", contentType);
+    switch (contentType) {
+      case "application/json": {
+        return extractJsonBodyFromOpenApiDefinition(currentBody, mediaType);
+      }
+      case "multipart/form-data": {
+        return extractFormDataFromOpenApiDefinition(mediaType);
+      }
+    }
+
+    return currentBody;
+  };
+
+  const content =
+    contentTypes.find((item) => item.contentType === preferredContentType) ||
+    contentTypes[0];
+  return content ? extract(content) : currentBody;
 }
 
 export function createEmptyApiCallData(): ApiCallData {

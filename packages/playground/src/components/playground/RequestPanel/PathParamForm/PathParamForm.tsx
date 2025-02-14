@@ -1,4 +1,4 @@
-import { KeyValueRow } from "../../KeyValueForm";
+import { KeyValueFormRow } from "../../KeyValueForm";
 import { createChangeEnabled } from "../../KeyValueForm/data";
 import type { ChangeKeyValueParametersHandler } from "../../KeyValueForm/types";
 import type { KeyValueParameter } from "../../store";
@@ -34,7 +34,7 @@ export const PathParamForm = (props: Props) => {
       {keyValueParameters.map((parameter) => {
         const isDraft = !parameter.value;
         return (
-          <KeyValueRow
+          <KeyValueFormRow
             key={parameter.id}
             keyValueData={parameter}
             isDraft={isDraft}

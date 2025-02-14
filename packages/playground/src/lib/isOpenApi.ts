@@ -73,3 +73,7 @@ export function isSupportedSchemaObject(
   // If it's not a reference object, then it must be "the other thing" (supported schema object)
   return "$ref" in value === false;
 }
+
+export type SupportedMediaTypeObject =
+  | OpenAPIV3.MediaTypeObject
+  | OpenAPIV3_1.MediaTypeObject;

@@ -70,8 +70,12 @@ export function createChangeKey(
     allParameters,
     parameter,
     (parameterToModify, newKey: string) => {
+      const enabled =
+        parameterToModify.enabled ||
+        (!!parameterToModify.key && !!parameterToModify.value);
       return {
         ...parameterToModify,
+        enabled,
         key: newKey,
       };
     },
@@ -91,9 +95,13 @@ export function createChangeValue(
     allParameters,
     parameter,
     (parameterToModify, newValue: string) => {
+      // Prefer to only enable the key/value if there's also a key set
+      const enabled =
+        parameterToModify.enabled ||
+        (!!parameterToModify.key && !!parameterToModify.value);
       return {
         ...parameterToModify,
-        enabled: true,
+        enabled,
         value: newValue,
       };
     },
