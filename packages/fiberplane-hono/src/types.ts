@@ -26,11 +26,14 @@ export interface EmbeddedOptions<E extends Env> {
   debug?: boolean;
 }
 
-export interface ResolvedEmbeddedOptions<E extends Env> extends EmbeddedOptions<E> {
+export interface ResolvedEmbeddedOptions<E extends Env>
+  extends Omit<EmbeddedOptions<E>, "cdn"> { // cdn is required in resolved options
   mountedPath: string;
   fpxEndpoint?: string;
   userApp: Hono<E>;
   userEnv: Env;
+  /** URL of the CDN to use for the embedded playground UI */
+  cdn: string;
 }
 
 export interface SanitizedEmbeddedOptions<E extends Env>
