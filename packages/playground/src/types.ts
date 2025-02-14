@@ -43,7 +43,10 @@ export interface Output {
 export interface WorkflowStep {
   stepId: string;
   description: string;
-  operation: string;
+  operation: {
+    method: string;
+    path: string;
+  };
   parameters: Parameter[];
   successCriteria: SuccessCriteria[];
   outputs: Output[];

@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { FpTabsContent, FpTabsList, FpTabsTrigger } from "@/components/ui/tabs";
 import { FpTabs } from "@/components/ui/tabs";
-import { useShake } from "@/hooks";
+import { useCopyToClipboard, useShake } from "@/hooks";
 import { useOpenApiParse } from "@/lib/hooks/useOpenApiParse";
 import { useOpenApiSpec } from "@/lib/hooks/useOpenApiSpec";
 import { workflowQueryOptions } from "@/lib/hooks/useWorkflows";
@@ -34,15 +34,18 @@ import {
   ArrowDownToDot,
   ChevronDown,
   Edit,
+  Copy,
   Play,
   StepBack,
   StepForward,
+  Check,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { z } from "zod";
 import { useShallow } from "zustand/react/shallow";
 import { isOpenApiV2, isOpenApiV3x } from "../lib/isOpenApiV2";
+import { useMountedPath } from "@/hooks/use-mounted-path";
 
 type OpenAPIOperation = OpenAPI.Operation;
 export const Route = createFileRoute("/workflows/$workflowId")({
@@ -73,7 +76,10 @@ function WorkflowDetail() {
   const { data: spec, error: loadingError } = useOpenApiSpec(openapi);
   const { data: validatedOpenApi, error: parsingError } = useOpenApiParse(spec);
 
-  const getOperationDetails = (operationString: string) => {
+  const getOperationDetails = (operationObject: {
+    method: string;
+    path: string;
+  }) => {
     if (!validatedOpenApi) {
       return null;
     }
@@ -82,7 +88,8 @@ function WorkflowDetail() {
       return null;
     }
 
-    const [method, path] = operationString.split(" ");
+    const method = operationObject.method;
+    const path = operationObject.path;
 
     const pathObj = validatedOpenApi.paths[path];
     if (!pathObj) {
@@ -120,7 +127,7 @@ function WorkflowDetail() {
 
   if (loadingError || parsingError) {
     return (
-      <div className="grid place-items-center h-full">
+      <div className="grid h-full place-items-center">
         <div className="text-center">
           <h2 className="text-2xl font-medium">Error loading OpenAPI spec</h2>
           <p className="text-sm text-muted-foreground">
@@ -150,6 +157,7 @@ function WorkflowDetail() {
             {workflow.description && (
               <p className="text-sm text-foreground">{workflow.description}</p>
             )}
+            <WorkflowUrl workflowId={workflow.workflowId} />
           </div>
         </div>
 
@@ -170,7 +178,7 @@ function WorkflowDetail() {
                 )}
               />
             ) : (
-              <em className="block text-center text-muted-foreground text-sm">
+              <em className="block text-sm text-center text-muted-foreground">
                 No inputs required
               </em>
             )}
@@ -178,13 +186,13 @@ function WorkflowDetail() {
           <ListSection
             title={
               <div className="grid gap-2 items-center grid-cols-[1fr_auto]">
-                <h3 className="text-lg font-medium flex items-center gap-2 justify-between">
+                <h3 className="flex items-center justify-between gap-2 text-lg font-medium">
                   Steps
-                  <div className="font-normal text-sm text-muted-foreground flex items-center">
+                  <div className="flex items-center text-sm font-normal text-muted-foreground">
                     <Button
                       variant="ghost"
                       size="icon-xs"
-                      className="w-auto px-1 py-1 hover:text-muted rounded-sm gap-0"
+                      className="w-auto gap-0 px-1 py-1 rounded-sm hover:text-muted"
                     >
                       <Play />
                       Run {workflow.steps.length} steps
@@ -209,7 +217,7 @@ function WorkflowDetail() {
                 ))}
               </div>
 
-              <div className="flex gap-2 items-center h-fit text-muted-foreground justify-center border-t border-t-muted pt-2">
+              <div className="flex items-center justify-center gap-2 pt-2 border-t h-fit text-muted-foreground border-t-muted">
                 Go to
                 <Link
                   to="."
@@ -293,7 +301,7 @@ function WorkflowDetail() {
     const value = inputValues[propertyKey] || "";
 
     return (
-      <div key={propertyKey} className="grid gap-1 lg:grid-cols-2 items-center">
+      <div key={propertyKey} className="grid items-center gap-1 lg:grid-cols-2">
         <div className="pt-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">
@@ -469,7 +477,8 @@ function StepDetails({
   };
 
   const handleExecute = () => {
-    const [method, path] = step.operation.split(" ");
+    const method = step.operation.method;
+    const path = step.operation.path;
     if (!method || !path) {
       return;
     }
@@ -578,13 +587,16 @@ function StepDetails({
     return value === param.value && param.value.startsWith("$");
   });
 
+  const stepMethod = step.operation.method;
+  const stepPath = step.operation.path;
+
   return (
-    <div className="h-full p-4 overflow-y-auto overflow-x-hidden border rounded-md ">
+    <div className="h-full p-4 overflow-x-hidden overflow-y-auto border rounded-md ">
       <div className="max-w-[800px]">
         <div className="grid items-center mb-6">
           <div className="grid grid-cols-[1fr_auto] gap-1">
             <h2 className="text-2xl font-medium">{step.description}</h2>
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
               <Button
                 onClick={(e) => {
                   if (hasUnresolvedParams) {
@@ -653,13 +665,9 @@ function StepDetails({
               <div>
                 <p className="mb-1 text-sm font-medium">Operation</p>
                 <div className="flex items-end gap-2 font-mono text-sm">
-                  <Method
-                    method={
-                      operationDetails?.method || step.operation.split(" ")[0]
-                    }
-                  />
+                  <Method method={operationDetails?.method || stepMethod} />
                   <span className="text-muted-foreground">
-                    {operationDetails?.path || step.operation.split(" ")[1]}
+                    {operationDetails?.path || stepPath}
                   </span>
                 </div>
                 {operationDetails?.operation?.summary && (
@@ -690,7 +698,7 @@ function StepDetails({
                       }
                       className="grid grid-rows-[auto_1fr] overflow-hidden"
                     >
-                      <div className="flex items-center gap-3 mb-3 mx-2 justify-between">
+                      <div className="flex items-center justify-between gap-3 mx-2 mb-3">
                         <div className="text-sm font-medium">Response</div>
                         <StatusBadge
                           status={
@@ -771,7 +779,7 @@ function StepDetails({
             {step.outputs.length > 0 && (
               <ListSection title="Outputs">
                 <CollapsibleList
-                  className="overflow-hidden mx-1"
+                  className="mx-1 overflow-hidden"
                   items={step.outputs}
                   renderItem={(output) => (
                     <OutputItem
@@ -801,7 +809,7 @@ function ListSection({
     <div className="py-1.5 pb-2 rounded-lg bg-muted">
       <div className="grid items-center mx-2">
         <div className="p-1.5 pt-0.5 text-sm font-medium">{title}</div>
-        <div className="bg-background rounded-md p-2 w-full">{children}</div>
+        <div className="w-full p-2 rounded-md bg-background">{children}</div>
       </div>
     </div>
   );
@@ -991,8 +999,8 @@ function ParameterItem({ param }: { param: Parameter }) {
         {value === NOT_FOUND ? (
           param.value.startsWith("$steps.") ? (
             <div>
-              <div className="text-danger italic">No value set</div>
-              <div className="text-sm font-sans text-muted-foreground">
+              <div className="italic text-danger">No value set</div>
+              <div className="font-sans text-sm text-muted-foreground">
                 (source:{" "}
                 {stepName && (
                   <Link
@@ -1010,26 +1018,26 @@ function ParameterItem({ param }: { param: Parameter }) {
               </div>
             </div>
           ) : param.value.startsWith("$inputs.") ? (
-            <div className="flex gap-2 justify-start items-center">
-              <div className="text-danger italic">No value set</div>
+            <div className="flex items-center justify-start gap-2">
+              <div className="italic text-danger">No value set</div>
               <Button
                 variant="outline"
                 size="icon-xs"
                 title={param.name}
-                className="w-auto px-1 py-1 hover:text-primary-foreground font-normal"
+                className="w-auto px-1 py-1 font-normal hover:text-primary-foreground"
               >
                 <Edit />
                 Edit
               </Button>
             </div>
           ) : (
-            <div className="flex gap-2 justify-start items-center">
+            <div className="flex items-center justify-start gap-2">
               {JSON.stringify(param.value)}
             </div>
           )
         ) : (
           <>
-            <pre className="font-mono bg-background overflow-auto max-w-full">
+            <pre className="max-w-full overflow-auto font-mono bg-background">
               <code>
                 {JSON.stringify(value, null, "\t").replaceAll(
                   '],\n\t"',
@@ -1037,7 +1045,7 @@ function ParameterItem({ param }: { param: Parameter }) {
                 )}
               </code>
             </pre>
-            <div className="text-sm font-sans text-muted-foreground">
+            <div className="font-sans text-sm text-muted-foreground">
               (value selector: {param.value}){" "}
               {stepName && (
                 <Link
@@ -1085,7 +1093,7 @@ function OutputItem({
           </>
         ) : (
           <>
-            <pre className="font-mono bg-background overflow-auto max-w-full">
+            <pre className="max-w-full overflow-auto font-mono bg-background">
               <code>
                 {JSON.stringify(value, null, "\t").replaceAll(
                   '],\n\t"',
@@ -1093,11 +1101,49 @@ function OutputItem({
                 )}
               </code>
             </pre>
-            <div className="text-sm font-sans text-muted-foreground">
+            <div className="font-sans text-sm text-muted-foreground">
               (value selector: {output.value})
             </div>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+interface CopyableUrlProps {
+  workflowId: string;
+}
+
+function WorkflowUrl({ workflowId }: CopyableUrlProps) {
+  const mountedPath = useMountedPath();
+  const { isCopied, copyToClipboard } = useCopyToClipboard();
+
+  const workflowUrl = `${window.location.origin}${mountedPath}/w/${workflowId}`;
+
+  return (
+    <div className="mt-3 py-1.5 pb-2 rounded-lg bg-muted">
+      <div className="mx-2">
+        <div className="p-1.5 pt-0.5 text-sm font-medium">
+          Run this workflow by making a POST request to
+        </div>
+        <div className="flex items-center gap-2 overflow-x-auto text-sm">
+          <code className="text-accent truncate max-w-[400px] p-2 rounded-md bg-background">
+            {workflowUrl}
+          </code>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => copyToClipboard(workflowUrl)}
+            className="w-auto h-auto p-1 rounded-sm text-foreground hover:text-foreground"
+          >
+            {isCopied ? (
+              <Check className="w-4 h-4" />
+            ) : (
+              <Copy className="w-4 h-4" />
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );
