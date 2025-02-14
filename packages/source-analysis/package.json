@@ -25,7 +25,7 @@
     "@hono/zod-openapi": "^0.18.0",
     "@types/node": "^22.10.0",
     "@types/resolve": "^1.20.6",
-    "vitest": "^2.1.6"
+    "vitest": "^1.6.1"
   },
   "dependencies": {
     "chokidar": "^3.6.0",
