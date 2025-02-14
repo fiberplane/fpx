@@ -1,44 +1,43 @@
-import { Hono, type Env } from "hono";
-import type { FiberplaneAppType } from "../../types.js";
-import { sValidator } from "@hono/standard-validator";
-import { z } from "zod";
-import type { Step, Workflow } from "../../schemas/workflows.js";
-import { getContext } from "hono/context-storage";
-import {
-  resolveStepParams,
-  resolveStepOutputs,
-  type WorkflowContext,
-  type HttpRequestParams,
-} from "./resolvers.js";
-import { resolveOutputs } from "./resolvers.js";
-import { getWorkflowById } from "./utils.js";
 // TODO: ideally we'd replace this with a zod validator but cheaper and simpler
 // to use a basic json schema validator for now
 import { Validator } from "@cfworker/json-schema";
+import { sValidator } from "@hono/standard-validator";
+import { type Env, Hono } from "hono";
+import { getContext } from "hono/context-storage";
+import { z } from "zod";
+import type { Step, Workflow } from "../../schemas/workflows.js";
+import type { FiberplaneAppType } from "../../types.js";
+import {
+  type HttpRequestParams,
+  type WorkflowContext,
+  resolveStepOutputs,
+  resolveStepParams,
+} from "./resolvers.js";
+import { resolveOutputs } from "./resolvers.js";
+import { getWorkflowById } from "./utils.js";
 
 export default function createRunnerRoute<E extends Env>(apiKey: string) {
-  const runner = new Hono<E & FiberplaneAppType<E>>()
-    .post(
-      "/:workflowId",
-      sValidator("param", z.object({ workflowId: z.string() })),
-      async (c) => {
-        const { workflowId } = c.req.valid("param");
-        const { data: workflow } = await getWorkflowById(workflowId, apiKey);
+  const runner = new Hono<E & FiberplaneAppType<E>>().post(
+    "/:workflowId",
+    sValidator("param", z.object({ workflowId: z.string() })),
+    async (c) => {
+      const { workflowId } = c.req.valid("param");
+      const { data: workflow } = await getWorkflowById(workflowId, apiKey);
 
-        const validator = new Validator(workflow.inputs);
+      const validator = new Validator(workflow.inputs);
 
-        const body = await c.req.json();
+      const body = await c.req.json();
 
-        const { valid, errors } = validator.validate(body);
-        if (!valid) {
-          const errorMessage = errors.map((error) => error.error).join("\n");
-          return c.json({ error: errorMessage }, 400);
-        }
+      const { valid, errors } = validator.validate(body);
+      if (!valid) {
+        const errorMessage = errors.map((error) => error.error).join("\n");
+        return c.json({ error: errorMessage }, 400);
+      }
 
-        const result = await executeWorkflow(workflow, body);
-        return c.json(result);
-      },
-    );
+      const result = await executeWorkflow(workflow, body);
+      return c.json(result);
+    },
+  );
 
   return runner;
 }

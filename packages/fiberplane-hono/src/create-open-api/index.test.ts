@@ -23,7 +23,7 @@ describe("createOpenAPISpec", () => {
     expect(spec.openapi).toBe("3.0.0");
     expect(spec.info.title).toBe("Test API");
     expect(spec.info.version).toBe("1.0.0");
-    
+
     const paths = spec.paths as OpenAPIV3.PathsObject;
     expect(paths).toHaveProperty("/hello");
     expect(paths).toHaveProperty("/users");

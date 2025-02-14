@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { FpTabsContent, FpTabsList, FpTabsTrigger } from "@/components/ui/tabs";
 import { FpTabs } from "@/components/ui/tabs";
 import { useCopyToClipboard, useShake } from "@/hooks";
+import { useMountedPath } from "@/hooks/use-mounted-path";
 import { useOpenApiParse } from "@/lib/hooks/useOpenApiParse";
 import { useOpenApiSpec } from "@/lib/hooks/useOpenApiSpec";
 import { workflowQueryOptions } from "@/lib/hooks/useWorkflows";
@@ -32,20 +33,19 @@ import {
 } from "@tanstack/react-router";
 import {
   ArrowDownToDot,
+  Check,
   ChevronDown,
-  Edit,
   Copy,
+  Edit,
   Play,
   StepBack,
   StepForward,
-  Check,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { z } from "zod";
 import { useShallow } from "zustand/react/shallow";
 import { isOpenApiV2, isOpenApiV3x } from "../lib/isOpenApiV2";
-import { useMountedPath } from "@/hooks/use-mounted-path";
 
 type OpenAPIOperation = OpenAPI.Operation;
 export const Route = createFileRoute("/workflows/$workflowId")({

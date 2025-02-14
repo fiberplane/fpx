@@ -27,7 +27,8 @@ export interface EmbeddedOptions<E extends Env> {
 }
 
 export interface ResolvedEmbeddedOptions<E extends Env>
-  extends Omit<EmbeddedOptions<E>, "cdn"> { // cdn is required in resolved options
+  extends Omit<EmbeddedOptions<E>, "cdn"> {
+  // cdn is required in resolved options
   mountedPath: string;
   fpxEndpoint?: string;
   userApp: Hono<E>;

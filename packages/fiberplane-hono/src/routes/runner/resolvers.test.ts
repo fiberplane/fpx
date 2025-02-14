@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { Step, Workflow } from "../../schemas/workflows.js";
 import {
-  resolveReference,
-  resolveStepParams,
   resolveOutputs,
+  resolveReference,
   resolveStepOutputs,
+  resolveStepParams,
 } from "./resolvers.js";
 
 // Test fixtures
@@ -140,6 +140,7 @@ describe("resolveReference", () => {
 
   it("should resolve response body references", () => {
     const result = resolveReference("$response.body#/data/name", {
+      // biome-ignore lint/style/noNonNullAssertion: it's fine
       response: mockWorkflowContext.steps.createApp.response!,
     });
     expect(result).toBe("Test App");
@@ -155,6 +156,7 @@ describe("resolveReference", () => {
 
   it("should resolve JSON pointer in response body", () => {
     const result = resolveReference("$response.body#/data/id", {
+      // biome-ignore lint/style/noNonNullAssertion: it's fine
       response: mockWorkflowContext.steps.createApp.response!,
     });
     expect(result).toBe("c08e1c2e-6f68-41fd-8b1f-d2b2f5198e5d");

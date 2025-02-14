@@ -25,27 +25,35 @@ export const StepRequestBodySchema = z.object({
     .describe(
       "The MIME type of the body of the request. Example: application/json",
     ),
-  payload: z.union([
-    // JSON Object Example - direct object payload
-    z.record(z.union([
-      z.string(),
-      z.number(),
-      z.boolean(),
-      z.null(),
-      z.array(z.union([z.string(), z.number(), z.boolean(), z.null()])),
-      z.record(z.union([z.string(), z.number(), z.boolean(), z.null()]))
-    ])).describe("Direct JSON object payload"),
-    
-    // Complete Runtime Expression - string starting with $
-    z.string().describe("Runtime expression reference"),
-    
-    // Form Data Example - record of primitive values
-    z.record(z.union([
-      z.string(),
-      z.number(),
-      z.boolean()
-    ])).describe("Form data payload")
-  ]).describe("The payload of the request. Can be a direct JSON object, runtime expression, or form data."),
+  payload: z
+    .union([
+      // JSON Object Example - direct object payload
+      z
+        .record(
+          z.union([
+            z.string(),
+            z.number(),
+            z.boolean(),
+            z.null(),
+            z.array(z.union([z.string(), z.number(), z.boolean(), z.null()])),
+            z.record(z.union([z.string(), z.number(), z.boolean(), z.null()])),
+          ]),
+        )
+        .describe("Direct JSON object payload"),
+
+      // Complete Runtime Expression - string starting with $
+      z
+        .string()
+        .describe("Runtime expression reference"),
+
+      // Form Data Example - record of primitive values
+      z
+        .record(z.union([z.string(), z.number(), z.boolean()]))
+        .describe("Form data payload"),
+    ])
+    .describe(
+      "The payload of the request. Can be a direct JSON object, runtime expression, or form data.",
+    ),
   replacements: z
     .array(
       z.object({
@@ -91,7 +99,18 @@ export const StepSchema = z.object({
       "What this step does. Example: Create a new user account in the database",
     ),
   operation: z.object({
-    method: z.enum(["get", "post", "put", "delete", "patch", "head", "options", "trace"]).describe("The HTTP method to use for the operation. Example: post"),
+    method: z
+      .enum([
+        "get",
+        "post",
+        "put",
+        "delete",
+        "patch",
+        "head",
+        "options",
+        "trace",
+      ])
+      .describe("The HTTP method to use for the operation. Example: post"),
     path: z.string().describe("The path to the operation. Example: /users"),
   }),
   parameters: z

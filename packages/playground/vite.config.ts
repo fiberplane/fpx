@@ -2,12 +2,12 @@ import path from "node:path";
 import replace from "@rollup/plugin-replace";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react-swc";
+import { config } from "dotenv";
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import svgr from "vite-plugin-svgr";
-import { config } from "dotenv";
 
-config({path: "./.dev.vars"});
+config({ path: "./.dev.vars" });
 
 // The SPA, when running locally, needs to proxy requests to the embedded API sometimes
 // It's nice to be able to configure this.
@@ -43,7 +43,7 @@ export default defineConfig({
         target: EMBEDDED_API_URL,
         headers: {
           Authorization: `Bearer ${process.env.FIBERPLANE_API_KEY}`,
-        }
+        },
       },
     },
     cors: true,

@@ -1,10 +1,10 @@
 import { type Env, Hono } from "hono";
+import { contextStorage } from "hono/context-storage";
 import { logIfDebug } from "./debug.js";
 import createApiRoutes from "./routes/api/index.js";
 import createEmbeddedPlayground from "./routes/playground.js";
-import type { FiberplaneAppType, ResolvedEmbeddedOptions } from "./types.js";
 import createRunnerRoute from "./routes/runner/index.js";
-import { contextStorage } from "hono/context-storage";
+import type { FiberplaneAppType, ResolvedEmbeddedOptions } from "./types.js";
 
 // We use a factory pattern to create routes, which allows for clean dependency injection
 // of the apiKey. This keeps the implementation isolated and prevents us from having to
