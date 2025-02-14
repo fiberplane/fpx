@@ -1,24 +1,17 @@
-# This workflow will be triggered by a GitHub pull-request.
-name: Build node packages
+name: Build @fiberplane/playground and @fiberplane/hono
 
 on:
   pull_request:
     branches: ["*"]
     paths:
-      - "apps/studio/studio-api/**"
-      - "apps/studio/studio-frontend/**"
-      - "packages/client-library-otel/**"
       - "packages/fiberplane-hono/**"
       - "packages/playground/**"
-
   push:
     branches: ["main", "release-*"]
     paths:
-      - "apps/studio/studio-api/**"
-      - "apps/studio/studio-frontend/**"
-      - "packages/client-library-otel/**"
       - "packages/fiberplane-hono/**"
       - "packages/playground/**"
+
 env:
   CARGO_TERM_COLOR: always
   FORCE_COLOR: true
@@ -52,9 +45,6 @@ jobs:
         env:
           CI: true
 
-      - name: Build shared types
-        run: pnpm build:types
-
       # Linting: we use global biome command
       # any extra commands should be added to the lint:ci script
       # in the package.json
@@ -66,39 +56,30 @@ jobs:
         run: pnpm --recursive lint:ci
 
       - name: Typecheck all workspaces
-        run: pnpm --recursive typecheck
+        run: pnpm \
+          --filter @fiberplane/playground \
+          --filter @fiberplane/hono \
+          typecheck
 
       # Testing
 
-      - name: Test Playground
+      - name: Test @fiberplane/playground
         run: pnpm --filter @fiberplane/playground test
 
-      - name: Test Studio API
-        run: pnpm --filter @fiberplane/studio test
-
-      - name: Test Studio Frontend
-        run: pnpm --filter @fiberplane/studio-frontend test
-
-      - name: Test Client Library
-        run: pnpm --filter @fiberplane/hono-otel test
+      - name: Test @fiberplane/hono
+        run: pnpm --filter @fiberplane/hono test
 
       - name: Test Embedded Hono
         run: pnpm --filter @fiberplane/hono test
 
       # Building
 
-      - name: Build api, frontend and client library
+      - name: Build api, frontend and client libra
         run: |
           pnpm \
-            --filter=@fiberplane/studio-frontend \
-            --filter=@fiberplane/studio \
-            --filter=@fiberplane/hono-otel \
-            build
+            build:fp-hono
 
       # Release a preview version
 
-      - name: Copy the frontend files into the api
-        run: cp -r ./apps/studio/studio-frontend/dist/* ./apps/studio/studio-api/dist
-
       - name: Publish a temporary preview version
-        run: pnpx pkg-pr-new publish --pnpm "./apps/studio/studio-api" "./packages/client-library-otel"
+        run: pnpx pkg-pr-new publish --pnpm "./packages/fiberplane-hono"

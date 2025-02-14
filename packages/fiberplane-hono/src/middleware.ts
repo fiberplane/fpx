@@ -1,4 +1,4 @@
-import type { Context, MiddlewareHandler } from "hono";
+import type { Context, Env, Hono, MiddlewareHandler } from "hono";
 import packageJson from "../package.json" assert { type: "json" };
 import { logIfDebug } from "./debug.js";
 import { createRouter } from "./router.js";
@@ -8,9 +8,13 @@ const VERSION = packageJson.version;
 const CDN_URL = `https://cdn.jsdelivr.net/npm/@fiberplane/hono@${VERSION}/dist/playground/`;
 
 export const createFiberplane =
-  (options: EmbeddedOptions): MiddlewareHandler =>
+  <E extends Env & { Variables: { userApp: Hono<E>; userEnv: Env } }>(
+    options: EmbeddedOptions<E>,
+  ): MiddlewareHandler =>
   async (c, next) => {
     const debug = options.debug ?? false;
+    const userApp = options.app;
+    const userEnv = c.env;
     logIfDebug(debug, "debug logs are enabled");
 
     const apiKey = options.apiKey ?? getApiKey(c, debug);
@@ -27,10 +31,12 @@ export const createFiberplane =
       cdn: options.cdn ?? CDN_URL,
       mountedPath,
       fpxEndpoint,
+      userApp,
+      userEnv,
       ...options,
       // Add the api key with a fallback to the env var FIBERPLANE_API_KEY
       apiKey,
-    } satisfies ResolvedEmbeddedOptions);
+    } satisfies ResolvedEmbeddedOptions<E>);
 
     // Create a new request with the corrected (internal) path
     const newUrl = new URL(c.req.url);

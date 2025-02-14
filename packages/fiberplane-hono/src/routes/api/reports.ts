@@ -1,10 +1,10 @@
-import { Hono } from "hono";
+import { type Env, Hono } from "hono";
 import { PLAYGROUND_SERVICES_URL } from "../../constants.js";
 import { logIfDebug } from "../../debug.js";
 import type { FiberplaneAppType } from "../../types.js";
 
-export default function createReportsApiRoute(apiKey: string) {
-  const app = new Hono<FiberplaneAppType>();
+export default function createReportsApiRoute<E extends Env>(apiKey: string) {
+  const app = new Hono<E & FiberplaneAppType<E>>();
 
   // Proxy all requests to fp-services but attach a token
   app.all("*", async (c) => {

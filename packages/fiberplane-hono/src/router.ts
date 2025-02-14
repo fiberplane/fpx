@@ -1,25 +1,57 @@
 import { type Env, Hono } from "hono";
+import { contextStorage } from "hono/context-storage";
 import { logIfDebug } from "./debug.js";
 import createApiRoutes from "./routes/api/index.js";
 import createEmbeddedPlayground from "./routes/playground.js";
+import createRunnerRoute from "./routes/runner/index.js";
 import type { FiberplaneAppType, ResolvedEmbeddedOptions } from "./types.js";
 
 // We use a factory pattern to create routes, which allows for clean dependency injection
 // of the apiKey. This keeps the implementation isolated and prevents us from having to
 // extend the consuming Hono app's context with our own variables and types.
 export function createRouter<E extends Env>(
-  options: ResolvedEmbeddedOptions,
-): Hono<E & FiberplaneAppType> {
+  options: ResolvedEmbeddedOptions<E>,
+): Hono<E & FiberplaneAppType<E>> {
   // Important: whatever gets passed to createEmbeddedPlayground
   // is passed to the playground, aka is on the HTML
   // We therefore remove the apiKey
   const { apiKey, fpxEndpoint, debug, ...sanitizedOptions } = options;
 
-  const app = new Hono<E & FiberplaneAppType>();
+  const app = new Hono<E & FiberplaneAppType<E>>();
   const isDebugEnabled = debug ?? false;
 
   app.use(async (c, next) => {
     c.set("debug", isDebugEnabled);
+    await next();
+  });
+
+  app.use(contextStorage());
+
+  app.use(async (c, next) => {
+    await next();
+    logIfDebug(isDebugEnabled, "==== matched routes ====");
+    for (const [
+      i,
+      { handler, method, path },
+    ] of c.req.matchedRoutes.entries()) {
+      const name =
+        handler.name || (handler.length < 2 ? "[handler]" : "[middleware]");
+      logIfDebug(
+        isDebugEnabled,
+        method,
+        " ",
+        path,
+        " ".repeat(Math.max(10 - path.length, 0)),
+        name,
+        i === c.req.routeIndex ? "<- respond from here" : "",
+      );
+    }
+    logIfDebug(isDebugEnabled, "==== end of matched routes ====");
+  });
+
+  app.use(async (c, next) => {
+    c.set("userApp", options.userApp);
+    c.set("userEnv", options.userEnv);
     await next();
   });
 
@@ -30,6 +62,7 @@ export function createRouter<E extends Env>(
       isDebugEnabled,
       "Fiberplane API Key Present. Creating internal API router.",
     );
+    app.route("/w", createRunnerRoute(apiKey));
     app.route("/api", createApiRoutes(apiKey, fpxEndpoint));
   } else {
     logIfDebug(
@@ -39,9 +72,12 @@ export function createRouter<E extends Env>(
     app.use("/api/*", async (c) => {
       return c.json({ error: "Fiberplane API key is not set" }, 402);
     });
+    app.use("/w/*", async (c) => {
+      return c.json({ error: "Fiberplane API key is not set" }, 402);
+    });
   }
 
-  const embeddedPlayground = createEmbeddedPlayground(sanitizedOptions);
+  const embeddedPlayground = createEmbeddedPlayground<E>(sanitizedOptions);
   app.route("/", embeddedPlayground);
 
   return app;

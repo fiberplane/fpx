@@ -1,0 +1,73 @@
+name: Test and build @fiberplane/hono-otel
+
+on:
+  pull_request:
+    branches: ["*"]
+    paths:
+      - "packages/client-library-otel/**"
+  push:
+    branches: ["main", "release-*"]
+    paths:
+      - "packages/client-library-otel/**"
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_COLOR: true
+
+jobs:
+  build_packages:
+    name: Build packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "pnpm"
+
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
+        with:
+          version: 1.9.4
+
+      - name: Install dependencies
+        run: pnpm install
+        env:
+          CI: true
+
+      # Linting: we use global biome command
+      # any extra commands should be added to the lint:ci script
+      # in the package.json
+
+      - name: Lint all workspaces (biome)
+        run: biome ci .
+
+      - name: Lint all workspaces (eslint or other linters)
+        run: pnpm --filter @fiberplane/hono-otel lint:ci
+
+      - name: Typecheck all workspaces
+        run: pnpm --filter @fiberplane/hono-otel typecheck
+
+      # Testing
+
+      - name: Test @fiberplane/hono
+        run: pnpm --filter @fiberplane/hono-otel test
+
+      # Building
+
+      - name: Build api, frontend and client libra
+        run: |
+          pnpm --filter=@fiberplane/hono-otel build
+
+      # Release a preview version
+
+      - name: Publish a temporary preview version
+        run: pnpx pkg-pr-new publish --pnpm "./packages/client-library-otel"

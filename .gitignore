@@ -55,3 +55,5 @@ examples/**/*.dev.vars
 workflows-api/workflows.db
 playground/dist
 workflows-api/.dev.vars
+.ragrep
+packages/playground/.dev.vars

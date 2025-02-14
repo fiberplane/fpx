@@ -23,6 +23,16 @@ interface CreateOpenAPISpecOptions {
   security?: OpenAPIV3.SecurityRequirementObject[];
 }
 
+type HttpMethod =
+  | "get"
+  | "put"
+  | "post"
+  | "delete"
+  | "options"
+  | "head"
+  | "patch"
+  | "trace";
+
 /**
  * Create an OpenAPI specification for a Hono application
  * @param app - The Hono application to create the OpenAPI specification for
@@ -50,7 +60,7 @@ export function createOpenAPISpec(
   const paths: OpenAPIV3.PathsObject = routes
     .filter(({ method }) => method.toLowerCase() !== "all")
     .reduce((paths, { path, method }) => {
-      const methodLower = method.toLowerCase();
+      const methodLower = method.toLowerCase() as HttpMethod;
 
       // Convert Hono path params (e.g. /users/:id) to OpenAPI path params (e.g. /users/{id})
       // and extract the param names for documentation
@@ -79,22 +89,37 @@ export function createOpenAPISpec(
         },
       };
 
-      return {
-        ...paths,
-        [openApiPath]: {
-          ...paths[openApiPath],
-          [methodLower]: operation,
-        },
-      };
+      // Create a new path object if it doesn't exist
+      if (!paths[openApiPath]) {
+        paths[openApiPath] = {} as OpenAPIV3.PathItemObject;
+      }
+
+      // Add the method operation to the path
+      const pathItem = paths[openApiPath] as OpenAPIV3.PathItemObject;
+      pathItem[methodLower] = operation;
+
+      return paths;
     }, {} as OpenAPIV3.PathsObject);
 
-  return {
+  // Construct the final OpenAPI spec without spread operators
+  const spec: OpenAPISpec = {
     openapi: "3.0.0",
     info: options.info ?? { title: "Hono API", version: "1.0.0" },
     paths,
-    ...(options.tags && { tags: options.tags }),
-    ...(options.servers && { servers: options.servers }),
-    ...(options.components && { components: options.components }),
-    ...(options.security && { security: options.security }),
   };
+
+  if (options.tags) {
+    spec.tags = options.tags;
+  }
+  if (options.servers) {
+    spec.servers = options.servers;
+  }
+  if (options.components) {
+    spec.components = options.components;
+  }
+  if (options.security) {
+    spec.security = options.security;
+  }
+
+  return spec;
 }
