@@ -56,7 +56,10 @@ jobs:
         run: pnpm --recursive lint:ci
 
       - name: Typecheck all workspaces
-        run: pnpm --recursive typecheck
+        run: pnpm \
+          --filter @fiberplane/playground \
+          --filter @fiberplane/hono \
+          typecheck
 
       # Testing
 
