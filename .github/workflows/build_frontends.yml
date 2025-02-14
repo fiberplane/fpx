@@ -6,17 +6,19 @@ on:
     branches: ["*"]
     paths:
       - "apps/studio/studio-api/**"
-      - "packages/client-library-otel/**"
       - "apps/studio/studio-frontend/**"
-      - "playground/**"
+      - "packages/client-library-otel/**"
+      - "packages/fiberplane-hono/**"
+      - "packages/playground/**"
+
   push:
     branches: ["main", "release-*"]
     paths:
       - "apps/studio/studio-api/**"
-      - "packages/client-library-otel/**"
       - "apps/studio/studio-frontend/**"
-      - "playground/**"
-
+      - "packages/client-library-otel/**"
+      - "packages/fiberplane-hono/**"
+      - "packages/playground/**"
 env:
   CARGO_TERM_COLOR: always
   FORCE_COLOR: true
@@ -79,6 +81,9 @@ jobs:
 
       - name: Test Client Library
         run: pnpm --filter @fiberplane/hono-otel test
+
+      - name: Test Embedded Hono
+        run: pnpm --filter @fiberplane/hono test
 
       # Building
 
