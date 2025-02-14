@@ -1,16 +1,16 @@
-name: Build @fiberplane/playground and @fiberplane/hono
+name: Build Studio v1
 
 on:
   pull_request:
     branches: ["*"]
     paths:
-      - "packages/fiberplane-hono/**"
-      - "packages/playground/**"
+      - "apps/studio/studio-api/**"
+      - "apps/studio/studio-frontend/**"
   push:
     branches: ["main", "release-*"]
     paths:
-      - "packages/fiberplane-hono/**"
-      - "packages/playground/**"
+      - "apps/studio/studio-api/**"
+      - "apps/studio/studio-frontend/**"
 
 env:
   CARGO_TERM_COLOR: always
@@ -45,6 +45,9 @@ jobs:
         env:
           CI: true
 
+      - name: Build shared types
+        run: pnpm build:types
+
       # Linting: we use global biome command
       # any extra commands should be added to the lint:ci script
       # in the package.json
@@ -60,23 +63,25 @@ jobs:
 
       # Testing
 
-      - name: Test @fiberplane/playground
-        run: pnpm --filter @fiberplane/playground test
+      - name: Test Studio API
+        run: pnpm --filter @fiberplane/studio test
 
-      - name: Test @fiberplane/hono
-        run: pnpm --filter @fiberplane/hono test
-
-      - name: Test Embedded Hono
-        run: pnpm --filter @fiberplane/hono test
+      - name: Test Studio Frontend
+        run: pnpm --filter @fiberplane/studio-frontend test
 
       # Building
 
-      - name: Build api, frontend and client libra
+      - name: Build api, frontend and client library
         run: |
           pnpm \
-            build:fp-hono
+            --filter=@fiberplane/studio-frontend \
+            --filter=@fiberplane/studio \
+            build
 
       # Release a preview version
 
+      - name: Copy the frontend files into the api
+        run: cp -r ./apps/studio/studio-frontend/dist/* ./apps/studio/studio-api/dist
+
       - name: Publish a temporary preview version
-        run: pnpx pkg-pr-new publish --pnpm "./packages/fiberplane-hono"
+        run: pnpx pkg-pr-new publish --pnpm "./apps/studio/studio-api" "./packages/client-library-otel"

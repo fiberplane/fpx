@@ -1,16 +1,14 @@
-name: Build @fiberplane/playground and @fiberplane/hono
+name: Test and build @fiberplane/hono-otel
 
 on:
   pull_request:
     branches: ["*"]
     paths:
-      - "packages/fiberplane-hono/**"
-      - "packages/playground/**"
+      - "packages/client-library-otel/**"
   push:
     branches: ["main", "release-*"]
     paths:
-      - "packages/fiberplane-hono/**"
-      - "packages/playground/**"
+      - "packages/client-library-otel/**"
 
 env:
   CARGO_TERM_COLOR: always
@@ -53,30 +51,23 @@ jobs:
         run: biome ci .
 
       - name: Lint all workspaces (eslint or other linters)
-        run: pnpm --recursive lint:ci
+        run: pnpm --filter @fiberplane/hono-otel lint:ci
 
       - name: Typecheck all workspaces
-        run: pnpm --recursive typecheck
+        run: pnpm --filter @fiberplane/hono-otel typecheck
 
       # Testing
 
-      - name: Test @fiberplane/playground
-        run: pnpm --filter @fiberplane/playground test
-
       - name: Test @fiberplane/hono
-        run: pnpm --filter @fiberplane/hono test
-
-      - name: Test Embedded Hono
-        run: pnpm --filter @fiberplane/hono test
+        run: pnpm --filter @fiberplane/hono-otel test
 
       # Building
 
       - name: Build api, frontend and client libra
         run: |
-          pnpm \
-            build:fp-hono
+          pnpm --filter=@fiberplane/hono-otel build
 
       # Release a preview version
 
       - name: Publish a temporary preview version
-        run: pnpx pkg-pr-new publish --pnpm "./packages/fiberplane-hono"
+        run: pnpx pkg-pr-new publish --pnpm "./packages/client-library-otel"
