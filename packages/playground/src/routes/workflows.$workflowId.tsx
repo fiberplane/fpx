@@ -42,7 +42,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { z } from "zod";
 import { useShallow } from "zustand/react/shallow";
-import { isOpenApiV2, isOpenApiV3x } from "../lib/isOpenApiV2";
+import { isOpenApiV2, isOpenApiV3x } from "../lib/isOpenApi";
 
 type OpenAPIOperation = OpenAPI.Operation;
 export const Route = createFileRoute("/workflows/$workflowId")({

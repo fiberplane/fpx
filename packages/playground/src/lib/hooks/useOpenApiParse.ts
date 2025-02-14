@@ -1,7 +1,5 @@
-import { validate } from "@apidevtools/swagger-parser";
-// import { validate } from "@scalar/openapi-parser";
+import { dereference } from "@apidevtools/swagger-parser";
 import { useQuery } from "@tanstack/react-query";
-// import type { OpenAPI } from "openapi-types";
 
 export function useOpenApiParse(spec: string | undefined) {
   return useQuery({
@@ -12,7 +10,7 @@ export function useOpenApiParse(spec: string | undefined) {
       }
 
       const parsed = JSON.parse(spec);
-      const result = await validate(parsed);
+      const result = await dereference(parsed);
       return result;
     },
     enabled: !!spec,

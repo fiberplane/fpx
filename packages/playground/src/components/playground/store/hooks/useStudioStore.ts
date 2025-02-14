@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { immer } from "zustand/middleware/immer";
 import { useShallow } from "zustand/react/shallow";
 import {
   type StudioState,
@@ -31,13 +30,13 @@ export function useStudioStore<
 
 export const useStudioStoreRaw = create<StudioState>()(
   devtools(
-    immer((...a) => ({
+    (...a) => ({
       ...routesSlice(...a),
       ...tabsSlice(...a),
       ...requestResponseSlice(...a),
       ...uiSlice(...a),
       ...settingsSlice(...a),
-    })),
+    }),
     { name: "StudioStore" },
   ),
 );

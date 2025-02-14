@@ -79,39 +79,50 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => {
     // Input values state
     inputValues: {},
     setInputValue: (key, value) =>
-      set((state) => ({
-        inputValues: {
-          ...state.inputValues,
-          [key]: value,
-        },
-      })),
-    resetInputValues: () => set({ inputValues: {} }),
+      set(
+        (state): WorkflowStore => ({
+          ...state,
+          inputValues: {
+            ...state.inputValues,
+            [key]: value,
+          },
+        }),
+      ),
+    resetInputValues: () => set((state) => ({ ...state, inputValues: {} })),
 
     // Output values state
     outputValues: {},
     setOutputValue: (key, value) =>
-      set((state) => ({
-        outputValues: {
-          ...state.outputValues,
-          [key]: value,
-        },
-      })),
-    resetOutputValues: () => set({ outputValues: {} }),
+      set(
+        (state): WorkflowStore => ({
+          ...state,
+          outputValues: {
+            ...state.outputValues,
+            [key]: value,
+          },
+        }),
+      ),
+    resetOutputValues: () => set((state) => ({ ...state, outputValues: {} })),
 
     // Workflow Command state
     isWorkflowCommandOpen: false,
-    setWorkflowCommandOpen: (open) => set({ isWorkflowCommandOpen: open }),
+    setWorkflowCommandOpen: (open) => () =>
+      set((state) => ({
+        ...state,
+        isWorkflowCommandOpen: open,
+      })),
 
     // Workflow state
     workflowState: {},
     setStepResult: (stepId, result) =>
       set((state) => ({
+        ...state,
         workflowState: {
           ...state.workflowState,
           [stepId]: result,
         },
       })),
-    resetWorkflowState: () => set({ workflowState: {} }),
+    resetWorkflowState: () => set((state) => ({ ...state, workflowState: {} })),
 
     // Resolution helpers
     resolveRuntimeExpression: (expression: string) => {

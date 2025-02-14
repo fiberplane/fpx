@@ -1,10 +1,9 @@
 import type { ApiRoute, RequestMethod } from "../types";
 import { findMatchedRoute } from "./match";
-const toRoute = (path: string, method: RequestMethod) => ({
-  id: 1,
+const toRoute = (path: string, method: RequestMethod): ApiRoute => ({
   path,
   method,
-  openApiSpec: null,
+  operation: {},
 });
 
 describe("findSmartRouterMatch", () => {

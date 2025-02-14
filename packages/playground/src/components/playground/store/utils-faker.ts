@@ -1,7 +1,11 @@
-import type {
-  OpenAPIOperation,
-  OpenAPISchema,
-} from "../RequestPanel/RouteDocumentation";
+import {
+  type SupportedOperationObject,
+  type SupportedParameterObject,
+  type SupportedSchemaObject,
+  isSupportedParameterObject,
+  isSupportedRequestBodyObject,
+  isSupportedSchemaObject,
+} from "@/lib/isOpenApi";
 import { extractPathParams } from "./utils";
 
 type FakeDataOutput = {
@@ -12,11 +16,15 @@ type FakeDataOutput = {
 };
 
 function generateSmartFakeValue(
-  schema: OpenAPISchema,
+  schema: SupportedSchemaObject,
   fieldName: string,
 ): unknown {
   // Handle array type
-  if (schema.type === "array" && schema.items) {
+  if (
+    schema.type === "array" &&
+    schema.items &&
+    isSupportedSchemaObject(schema.items)
+  ) {
     return [generateSmartFakeValue(schema.items, `${fieldName}Item`)];
   }
 
@@ -82,7 +90,7 @@ function generateSmartFakeValue(
 }
 
 export function generateFakeData(
-  routeSpec: OpenAPIOperation,
+  routeSpec: SupportedOperationObject,
   path: string,
 ): FakeDataOutput {
   const output: FakeDataOutput = {
@@ -95,12 +103,16 @@ export function generateFakeData(
   // Handle path parameters
   const pathParamNames = extractPathParams(path);
   const pathParamSpecs =
-    routeSpec.parameters?.filter((p) => p.in === "path") || [];
+    routeSpec.parameters?.filter(
+      (p) => isSupportedParameterObject(p) && p.in === "path",
+    ) || [];
 
   // Map path parameters to their specs if available
   for (const paramName of pathParamNames) {
-    const paramSpec = pathParamSpecs.find((p) => p.name === paramName);
-    if (paramSpec?.schema) {
+    const paramSpec = pathParamSpecs.find(
+      (p) => isSupportedParameterObject(p) && p.name === paramName,
+    ) as SupportedParameterObject | undefined;
+    if (paramSpec?.schema && isSupportedSchemaObject(paramSpec.schema)) {
       output.pathParams[paramName] = String(
         generateSmartFakeValue(paramSpec.schema, paramName),
       );
@@ -114,8 +126,16 @@ export function generateFakeData(
 
   // Handle query and header parameters
   if (routeSpec.parameters) {
-    for (const param of routeSpec.parameters) {
-      const fakeValue = generateSmartFakeValue(param.schema || {}, param.name);
+    const parameters = routeSpec.parameters.filter(
+      isSupportedParameterObject,
+    ) as Array<SupportedParameterObject>;
+    for (const param of parameters) {
+      const fakeValue = generateSmartFakeValue(
+        param.schema && isSupportedSchemaObject(param.schema)
+          ? param.schema
+          : {},
+        isSupportedParameterObject(param) ? param.name : "",
+      );
 
       if (param.in === "query") {
         output.queryParams[param.name] = String(fakeValue);
@@ -127,11 +147,15 @@ export function generateFakeData(
 
   // Handle request body
   if (
-    routeSpec.requestBody?.content &&
+    routeSpec.requestBody &&
+    isSupportedRequestBodyObject(routeSpec.requestBody) &&
+    routeSpec.requestBody.content &&
     "application/json" in routeSpec.requestBody.content
   ) {
     const bodySchema = routeSpec.requestBody.content["application/json"].schema;
-    output.body = generateSmartFakeValue(bodySchema, "root");
+    if (bodySchema && isSupportedSchemaObject(bodySchema)) {
+      output.body = generateSmartFakeValue(bodySchema, "root");
+    }
   }
 
   return output;

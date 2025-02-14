@@ -4,7 +4,7 @@ import type { StudioState, TabsSlice } from "./types";
 
 export const tabsSlice: StateCreator<
   StudioState,
-  [["zustand/immer", never], ["zustand/devtools", never]],
+  [["zustand/devtools", never]],
   [],
   TabsSlice
 > = (set) => ({
@@ -14,16 +14,22 @@ export const tabsSlice: StateCreator<
   visibleResponsePanelTabs: ["response", "headers"],
 
   setActiveRequestsPanelTab: (tab) =>
-    set((state) => {
+    set((initialState: StudioState): StudioState => {
+      const state = { ...initialState };
       if (isRequestsPanelTab(tab)) {
         state.activeRequestsPanelTab = tab;
       }
+
+      return state;
     }),
   setActiveResponsePanelTab: (tab) =>
-    set((state) => {
+    set((initialState: StudioState): StudioState => {
+      const state = { ...initialState };
       if (isResponsePanelTab(tab)) {
         state.activeResponsePanelTab = tab;
       }
+
+      return state;
     }),
 });
 
