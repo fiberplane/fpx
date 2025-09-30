@@ -1,0 +1,48 @@
+---
+title: "Vibe Summer Roundup: MCP Becomes the Go-To for AI Tool Integration"
+description: "Vibe Summer Roundup"
+slug: vibe-summer-roundup
+date: 2025-09-30
+author: Meghan Murphy
+tags:
+  - mcp
+  - vibe coding
+  - community
+  - hack challenge
+---
+The Vibe Summer hackathon was four weeks of casual vibe coding that brought the MCPs heat! Our partners [Cloudflare](https://developers.cloudflare.com), [n8n](https://n8n.io), [ElevenLabs](https://elevenlabs.io), and [Google Gemini](https://aistudio.google.com/prompts/new_chat) each hosted a week of challenges, prizes, and live streams. Builders gathered in Discord to swap ideas and push out submissions at all hours. On the surface it was fun, chaotic, and experimental. But underneath, a clear pattern emerged.
+Every winning project pointed in the same direction: developers are already treating MCP as the default way to make tools accessible to AI agents.
+
+## Challenge 1: Fiberplane + Cloudflare, “Get Your Vibe Goose On”
+The first week set the tone. Fiberplane and Cloudflare framed the challenge around exploring new kinds of MCP servers using [Workers](https://workers.cloudflare.com/) and the Fiberplane codegen platform. The partner focus was on making tool calls efficient, fast, and serverless by design.
+The winner was [Screenshift](https://screensift-mcp.bharathkumaradinarayan.workers.dev/mcp) by [Bharath19](https://github.com/Barath19) a screenshot analysis server combining Gemini vision with OCR, translation, QR scanning, and music recognition.
+Runner up was the [Travel Assistant MCP](https://github.com/Virtuoso633/travel-assistant-mcp), a production-ready server with 16 tools for weather, currency, events, itinerary generation, expense tracking, and even a gamification system with points and rewards. 
+Other projects filled out the theme: a personal productivity brain that connected Calendar, Tasks, Spotify, and YouTube Music; a Slack assistant for workspace automation. One participant described using Fiberplane codegen as “cheating with the speed at which it generated the whole app.”
+The signal from this week was clear. Developers delivered on what high quality MCPs can look like instead of single APIs.
+Watch the livestream announcing week 1 winners: https://youtube.com/live/1qouE9utVx4
+
+##Challenge 2: n8n, “Workflows and AI Agents”
+The second week was all about workflows [n8n’s](https://n8n.io) framing was to demonstrate how workflow automation can be combined with AI agents that source their tooling through MCP servers. The challenge encouraged participants to treat n8n not as the destination but as the orchestration layer connected through MCP.
+The winning project was an [Executive Assistant agent](https://www.youtube.com/watch?v=wGeb7E8uaao) by [joedeveloper702](https://github.com/joedeveloper702) that generated nightly summaries of the next day’s schedule. It showed how MCP servers could become context hubs feeding n8n workflows, rather than brittle point-to-point integrations.
+Other submissions reinforced the theme. A Slack news digest combined news APIs, daily scheduling, and posting into a channel. Duckie 2.0 turned GitHub repos into intelligent stories and team insights, orchestrated through n8n and MCP. There was even a customer support workflow where email intake flowed into an MCP server for secure storage, classification, and ticket routing, with n8n handling the automation.
+This challenge highlighted MCP as the entry point for AI agent orchestration. Developers built AI agents that connect to MCP servers as the foundation, and then extended those agents through workflows. The key isn’t just about using APIs—it’s about combining the right interfaces in the right places. MCP servers handle communication between AI agents, while traditional APIs handle communication between standard software systems and services.
+https://youtube.com/live/i67VbnxSX2I 
+
+## Challenge 3: ElevenLabs, “Make Your API Speak”
+Week three moved into voice. [ElevenLabs](https://elevenlabs.io) set the challenge of making APIs audible and conversational. The goal was to give agents a voice and test how MCP could serve as the action layer behind it.
+The winning project was Voice Travel Concierge ([test it here!](https://elevenlabs.io/app/talk-to?agent_id=agent_0401k31c9dqde72vwj3sjcja898g)) by [Xetrisomeman](https://github.com/xettrisomeman), a full voice-first travel assistant that ran on a custom MCP server deployed to Cloudflare Workers. With 16 specialized tools for travel planning, expense tracking, event discovery, and itinerary generation, it demonstrated how voice interaction plus MCP tool calls could replace the need to juggle multiple apps.
+Other submissions expanded the space. TextCast turned long-form text into environment-specific audiobooks using ElevenLabs text-to-speech and MCP servers on Cloudflare. Get-A-Gist provided real-time spoken summaries over phone calls, combining Gemini, search APIs, and ElevenLabs. Several participants built voice-driven fact checkers, podcast summarizers, and lightweight agents that could run on the phone with a single button.
+Voice projects showed MCP’s role as the connective tissue between conversation and execution. Voice was the interface, MCP was the infrastructure.
+Watch the livestream for an awesome ElevenLabs walkthrough and prior week’s winners: https://youtube.com/live/4IMYVpQqrW4 
+
+##Challenge 4: Google Gemini, “Leverage AI in Your API”
+The final week brought [Gemini](https://aistudio.google.com/prompts/new_chat) into the mix. The challenge was to use Gemini models to extend MCP servers, moving beyond plain text responses into structured reasoning and data generation.
+The winning project was Code Tutor MCP by [musicjoeyoung](https://github.com/musicjoeyoung), a server that analyzed codebases and produced structured outputs like explanations, quiz questions, and diagrams. It exposed a simple web viewer so developers could interact with the analysis in a learning workflow.
+Other projects explored similar themes. A Gemini-powered Travel Assistant generated structured itineraries in JSON and saved them directly to a D1 database. A handwriting recognition project turned notes into digital records through Siri integration. There was even a doomsday risk analyzer that used Gemini embeddings to process long news contexts.
+These projects showed Gemini not just as a conversational model but as a structured reasoning engine. Paired with MCP, it became a way to generate usable data directly for tools, not just text for humans.
+Watch the finale! https://youtube.com/live/Y-e33aYKZK0
+
+## Why MCP Is the New Tool Call
+MCP is attracting attention because it enables AI agents to access tooling in a structured way. The situation is somewhat analogous to the early days of APIs, when standardized interfaces became essential for exposing system capabilities. Today, developer platforms not only need APIs for traditional system-to-system but also need to account for AI agents as consumers. MCP addresses that emerging requirement, creating both new opportunities and new design challenges.
+Fiberplane’s MCP framework turns the vibe-coded experiments into the foundation for agent-native applications. Request for access here: https://fiberplane.com/
+
