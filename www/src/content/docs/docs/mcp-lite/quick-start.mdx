@@ -1,0 +1,46 @@
+---
+title: Quick Start
+description: Install and spin up a minimal MCP server with Hono and Zod.
+---
+
+```bash
+npm install mcp-lite
+```
+
+```ts
+import { Hono } from "hono";
+import { McpServer, StreamableHttpTransport } from "mcp-lite";
+import { z } from "zod";
+
+const mcp = new McpServer({
+  name: "example-server",
+  version: "1.0.0",
+  schemaAdapter: (schema) => z.toJSONSchema(schema as z.ZodType)
+});
+
+const WeatherInputSchema = z.object({ location: z.string() });
+const WeatherOutputSchema = z.object({ temperature: z.number(), conditions: z.string() });
+
+mcp.tool("getWeather", {
+  description: "Gets weather information for a location",
+  inputSchema: WeatherInputSchema,
+  outputSchema: WeatherOutputSchema,
+  handler: (args) => ({
+    content: [{ type: "text", text: `Weather in ${args.location}: 22°C, sunny` }],
+    structuredContent: { temperature: 22, conditions: "sunny" }
+  })
+});
+
+const transport = new StreamableHttpTransport();
+const httpHandler = transport.bind(mcp);
+
+const app = new Hono();
+app.all("/mcp", async (c) => {
+  const response = await httpHandler(c.req.raw);
+  return response;
+});
+```
+
+> [!tip]
+> The Model Context Protocol (MCP) is an open standard enabling secure connections between host apps and external data sources and tools.
+

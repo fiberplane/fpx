@@ -42,6 +42,14 @@ export default defineConfig({
             }
           ]
         },
+        {
+          label: "MCP Gateway",
+          autogenerate: { directory: "docs/mcp-gateway" }
+        },
+        {
+          label: "MCP Lite",
+          autogenerate: { directory: "docs/mcp-lite" }
+        },
         { label: "Blog", link: "/blog" },
         { label: "Changelog", link: "/changelog" }
       ],

@@ -1,0 +1,71 @@
+---
+title: MCP Concepts
+description: Tools, resources, prompts, and elicitations
+---
+
+### Tools
+
+```ts
+server.tool("add", {
+  description: "Adds two numbers",
+  inputSchema: {
+    type: "object",
+    properties: { a: { type: "number" }, b: { type: "number" } },
+    required: ["a", "b"]
+  },
+  outputSchema: {
+    type: "object",
+    properties: { result: { type: "number" } },
+    required: ["result"]
+  },
+  handler: (args: { a: number; b: number }) => ({
+    content: [{ type: "text", text: String(args.a + args.b) }],
+    structuredContent: { result: args.a + args.b }
+  })
+});
+```
+
+### Resources
+
+```ts
+server.resource(
+  "file://config.json",
+  { name: "App Configuration", description: "Application configuration file", mimeType: "application/json" },
+  async (uri) => ({
+    contents: [{ uri: uri.href, type: "text", text: JSON.stringify({ name: "my-app" }), mimeType: "application/json" }]
+  })
+);
+```
+
+### Prompts
+
+```ts
+server.prompt("greet", {
+  description: "Generate a greeting",
+  handler: () => ({
+    messages: [{ role: "user", content: { type: "text", text: "Hello, how are you?" } }]
+  })
+});
+```
+
+### Elicitation
+
+```ts
+server.tool("delete_record", {
+  inputSchema: z.object({ recordId: z.string(), tableName: z.string() }),
+  handler: async (args, ctx) => {
+    if (!ctx.client.supports("elicitation")) {
+      throw new Error("Elicitation not supported");
+    }
+    const response = await ctx.elicit({
+      message: `Delete record "${args.recordId}" from "${args.tableName}"?`,
+      schema: z.object({ confirmed: z.boolean() })
+    });
+    if (response.action === "accept" && response.content.confirmed) {
+      return { content: [{ type: "text", text: "Record deleted" }] };
+    }
+    return { content: [{ type: "text", text: "Deletion cancelled" }] };
+  }
+});
+```
+

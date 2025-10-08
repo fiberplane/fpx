@@ -1,0 +1,23 @@
+---
+title: Sessions
+description: Stateless by default, enable sessions for SSE and replay
+---
+
+### Stateless Mode
+
+```ts
+const transport = new StreamableHttpTransport();
+```
+
+### Stateful Mode
+
+```ts
+import { StreamableHttpTransport, InMemorySessionAdapter } from "mcp-lite";
+
+const transport = new StreamableHttpTransport({
+  sessionAdapter: new InMemorySessionAdapter({ maxEventBufferSize: 1024 })
+});
+```
+
+This enables session persistence, SSE streaming, event replay, and progress notifications.
+

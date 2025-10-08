@@ -1,0 +1,60 @@
+---
+title: Type Safety
+description: Automatic type inference and structured outputs
+---
+
+### Automatic Type Inference
+
+Standard Schema validators provide automatic type inference:
+
+```ts
+import { z } from "zod";
+
+const SearchSchema = z.object({
+  query: z.string(),
+  limit: z.number().optional(),
+  filters: z.array(z.string()).optional()
+});
+
+server.tool("search", {
+  inputSchema: SearchSchema,
+  handler: (args) => {
+    // args is typed as { query: string, limit?: number, filters?: string[] }
+    args.query.toLowerCase();
+    args.limit ?? 10;
+    args.filters?.map((f) => f.trim());
+
+    return { content: [{ type: "text", text: "..." }] };
+  }
+});
+```
+
+### Structured Outputs
+
+Tools can return both human-readable content and machine-readable structured data. Use `outputSchema` to define the shape of `structuredContent`.
+
+```ts
+const WeatherOutputSchema = z.object({
+  temperature: z.number(),
+  conditions: z.string()
+});
+
+server.tool("getWeather", {
+  inputSchema: z.object({ location: z.string() }),
+  outputSchema: WeatherOutputSchema,
+  handler: (args) => ({
+    content: [{ type: "text", text: `Weather in ${args.location}: 22°C, sunny` }],
+    // structuredContent is typed and validated at runtime
+    structuredContent: {
+      temperature: 22,
+      conditions: "sunny"
+    }
+  })
+});
+```
+
+The `outputSchema` provides runtime validation and type inference for `structuredContent`.
+
+> [!note]
+> See the MCP structured content spec: https://modelcontextprotocol.io/specification/2025-06-18/server/tools#structured-content
+

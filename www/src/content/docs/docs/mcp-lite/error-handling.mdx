@@ -1,0 +1,31 @@
+---
+title: Error Handling
+description: RpcError and custom error hooks
+---
+
+```ts
+import { RpcError, JSON_RPC_ERROR_CODES } from "mcp-lite";
+
+server.tool("divide", {
+  inputSchema: z.object({ a: z.number(), b: z.number() }),
+  handler: (args) => {
+    if (args.b === 0) {
+      throw new RpcError(JSON_RPC_ERROR_CODES.INVALID_PARAMS, "Division by zero");
+    }
+    return { content: [{ type: "text", text: String(args.a / args.b) }] };
+  }
+});
+
+// Custom error handler
+server.onError((error, ctx) => {
+  if (error instanceof MyCustomError) {
+    return {
+      code: -32001,
+      message: "Custom error",
+      data: { requestId: ctx.requestId }
+    };
+  }
+  // Return undefined for default handling
+});
+```
+

@@ -1,0 +1,55 @@
+---
+title: Middleware & Composition
+description: Hono-style middleware and grouping servers
+---
+
+### Middleware
+
+```ts
+// Logging
+server.use(async (ctx, next) => {
+  const start = Date.now();
+  await next();
+  console.log(`${ctx.request.method} took ${Date.now() - start}ms`);
+});
+
+// Authentication
+server.use(async (ctx, next) => {
+  const token = ctx.request.headers?.get?.("Authorization");
+  if (!token) throw new Error("Unauthorized");
+  ctx.state.user = await validateToken(token);
+  await next();
+});
+
+// Rate limiting
+server.use(async (ctx, next) => {
+  const userId = ctx.state.user?.id;
+  if (await isRateLimited(userId)) {
+    throw new Error("Rate limit exceeded");
+  }
+  await next();
+});
+```
+
+### Server Composition
+
+```ts
+const gitServer = new McpServer({ name: "git", version: "1.0.0" })
+  .tool("clone", { /* ... */ })
+  .tool("commit", { /* ... */ });
+
+const dbServer = new McpServer({ name: "database", version: "1.0.0" })
+  .tool("query", { /* ... */ })
+  .tool("migrate", { /* ... */ });
+
+// With namespacing
+const app = new McpServer({ name: "app", version: "1.0.0" })
+  .group("git", gitServer)      // Registers: git/clone, git/commit
+  .group("db", dbServer);        // Registers: db/query, db/migrate
+
+// Without namespacing
+const app2 = new McpServer({ name: "app", version: "1.0.0" })
+  .group(gitServer)              // Registers: clone, commit
+  .group(dbServer);              // Registers: query, migrate
+```
+

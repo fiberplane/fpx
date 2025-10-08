@@ -1,0 +1,74 @@
+---
+title: Runtimes & Frameworks
+description: Use StreamableHttpTransport anywhere the Fetch API exists
+---
+
+`StreamableHttpTransport` runs anywhere the Fetch API is available.
+
+### Hono + Bun
+
+```ts
+import { Hono } from "hono";
+import { McpServer, StreamableHttpTransport } from "mcp-lite";
+import { z } from "zod";
+
+const server = new McpServer({
+  name: "my-server",
+  version: "1.0.0",
+  schemaAdapter: (schema) => z.toJSONSchema(schema as z.ZodType)
+}).tool("echo", {
+  inputSchema: z.object({ message: z.string() }),
+  handler: (args) => ({ content: [{ type: "text", text: args.message }] })
+});
+
+const transport = new StreamableHttpTransport();
+const handler = transport.bind(server);
+const app = new Hono();
+app.all("/mcp", (c) => handler(c.req.raw));
+export default app;
+```
+
+### Cloudflare Workers (stateless starter)
+
+```ts
+import { McpServer, StreamableHttpTransport } from "mcp-lite";
+import { z } from "zod";
+
+export default {
+  async fetch(request: Request): Promise<Response> {
+    const server = new McpServer({
+      name: "worker-server",
+      version: "1.0.0",
+      schemaAdapter: (schema) => z.toJSONSchema(schema as z.ZodType)
+    }).tool("echo", {
+      inputSchema: z.object({ message: z.string() }),
+      handler: (args) => ({ content: [{ type: "text", text: args.message }] })
+    });
+
+    const transport = new StreamableHttpTransport();
+    return transport.bind(server)(request);
+  }
+};
+```
+
+### Next.js App Router
+
+```ts
+import { McpServer, StreamableHttpTransport } from "mcp-lite";
+import { z } from "zod";
+
+const server = new McpServer({
+  name: "nextjs-server",
+  version: "1.0.0",
+  schemaAdapter: (schema) => z.toJSONSchema(schema as z.ZodType)
+}).tool("echo", {
+  inputSchema: z.object({ message: z.string() }),
+  handler: (args) => ({ content: [{ type: "text", text: args.message }] })
+});
+
+const handler = new StreamableHttpTransport().bind(server);
+
+export const POST = handler;
+export const GET = handler;
+```
+

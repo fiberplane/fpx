@@ -1,0 +1,69 @@
+---
+title: Scaling with Adapters
+description: Start stateless and add storage/queueing when needed
+---
+
+You can begin with a single file server and add state only when you need it. Adapters let you swap in storage or queueing code without touching tools or handlers.
+
+### Scaling playbook
+
+- **Local prototyping**: Run the transport with no adapters. Every request is stateless and there is nothing to clean up.
+- **Single server**: Add `InMemorySessionAdapter` (and optionally `InMemoryClientRequestAdapter`) so progress notifications and elicitations can span multiple requests from the same client.
+- **Distributed or serverless**: Implement the adapters against shared infrastructure (Redis, SQL, message queues, Durable Objects, etc.). See the Cloudflare Workers example for a KV-backed implementation.
+
+### Deployment Patterns
+
+| Environment | Session Storage | State Storage | Transport Configuration |
+|-------------|-----------------|---------------|-------------------------|
+| Development | None            | N/A           | `StreamableHttpTransport()` |
+| Single server | In-memory     | In-memory     | `InMemorySessionAdapter` |
+| Distributed | Redis/KV        | Redis/KV      | Custom adapters |
+
+### Adapter Configuration
+
+```ts
+// Development: stateless
+const transport = new StreamableHttpTransport();
+
+// Production: with sessions and client requests
+const transport = new StreamableHttpTransport({
+  sessionAdapter: new InMemorySessionAdapter({
+    maxEventBufferSize: 1024
+  }),
+  clientRequestAdapter: new InMemoryClientRequestAdapter({
+    defaultTimeoutMs: 30000
+  })
+});
+```
+
+### Built-in Adapters
+
+- `InMemorySessionAdapter` — Session storage in memory
+- `InMemoryClientRequestAdapter` — Client request tracking in memory
+
+### Client Requests and Elicitation
+
+The server can send JSON-RPC requests back to the MCP client (for example when you call `ctx.elicit`). Those requests are routed through the `ClientRequestAdapter`.
+
+Provide one when you need timeouts/retries, durable delivery after the original POST, or shared storage in multi-instance deployments. In-memory covers local runs; for production implement the interface using Redis/SQL/queues/Durable Objects.
+
+### Custom Adapters
+
+```ts
+interface SessionAdapter {
+  generateSessionId(): string;
+  create(id: string, meta: SessionMeta): Promise<SessionData>;
+  has(id: string): Promise<boolean>;
+  get(id: string): Promise<SessionData | undefined>;
+  appendEvent(id: string, streamId: string, message: unknown): Promise<EventId>;
+  replay(id: string, lastEventId: EventId, write: WriteFunction): Promise<void>;
+  delete(id: string): Promise<void>;
+}
+
+interface ClientRequestAdapter {
+  createPending(sessionId: string, requestId: string, options): { promise: Promise<Response> };
+  resolvePending(sessionId: string, requestId: string, response: Response): boolean;
+  rejectPending(sessionId: string, requestId: string, error: Error): boolean;
+}
+```
+

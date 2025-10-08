@@ -1,0 +1,23 @@
+---
+title: Context API
+description: Typed access to session data, auth, and client capabilities
+---
+
+```ts
+handler: (args, ctx) => {
+  ctx.progress?.({ progress: 50, total: 100 });
+  ctx.session?.id;
+  ctx.authInfo?.userId;
+  ctx.state.myCustomData = "...";
+
+  const validated = ctx.validate(MySchema, data);
+
+  if (ctx.client.supports("elicitation")) {
+    const result = await ctx.elicit({
+      message: "Confirm action?",
+      schema: z.object({ confirmed: z.boolean() })
+    });
+  }
+}
+```
+
