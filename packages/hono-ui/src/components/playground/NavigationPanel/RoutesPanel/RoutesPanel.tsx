@@ -1,3 +1,4 @@
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/utils";
 import { useNavigate } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -65,16 +66,27 @@ function VirtualizedRoutesList({
   activeRoute: ApiRoute | null;
   setSelectedRouteIndex: (index: number | null) => void;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
   const rowVirtualizer = useVirtualizer({
     count: routes.length,
-    getScrollElement: () => ref.current,
+    getScrollElement: () =>
+      scrollAreaRef.current?.querySelector(
+        "[data-radix-scroll-area-viewport]",
+      ) as HTMLElement,
     estimateSize: () => 28, // Estimate row height
   });
 
   return (
-    <div ref={ref} className="overflow-y-auto h-full">
-      <div style={{ height: rowVirtualizer.getTotalSize() }}>
+    <ScrollArea className="h-full" ref={scrollAreaRef}>
+      <div
+        style={{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+          width: "100%",
+          position: "relative",
+          contain: "strict",
+        }}
+      >
         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
           const route = routes[virtualRow.index];
           return (
@@ -102,11 +114,11 @@ function VirtualizedRoutesList({
           );
         })}
       </div>
-    </div>
+    </ScrollArea>
   );
 }
 
-// New component for virtualized routes sections
+// Improved virtualized routes sections with ScrollArea
 function VirtualizedRoutesSections({
   sortedTags,
   routesGroupedByTags,
@@ -122,10 +134,14 @@ function VirtualizedRoutesSections({
   selectedRouteIndex: number | null;
   setSelectedRouteIndex: (index: number | null) => void;
 }) {
-  const ref = useRef<HTMLDivElement | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
   const rowVirtualizer = useVirtualizer({
     count: sortedTags.length,
-    getScrollElement: () => ref.current,
+    getScrollElement: () =>
+      scrollAreaRef.current?.querySelector(
+        "[data-radix-scroll-area-viewport]",
+      ) as HTMLElement,
     scrollMargin: 20,
     estimateSize: (index) => {
       const tag = sortedTags[index];
@@ -134,7 +150,7 @@ function VirtualizedRoutesSections({
   });
 
   return (
-    <div ref={ref} className="overflow-y-auto h-full grid">
+    <ScrollArea className="h-full" ref={scrollAreaRef}>
       <div
         className="relative w-full"
         style={{ height: rowVirtualizer.getTotalSize() }}
@@ -182,7 +198,7 @@ function VirtualizedRoutesSections({
           );
         })}
       </div>
-    </div>
+    </ScrollArea>
   );
 }
 
